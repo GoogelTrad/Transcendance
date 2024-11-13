@@ -61,7 +61,7 @@ function RegisterForm()
                     <form className='registration-form' onSubmit={handleSubmit}>
                         <div className='form-group'>
                             <label htmlFor='pseudo'>Username:</label>
-                            <input
+                            <input className='input-form'
                                 type='text'
                                 id='pseudo'
                                 name='pseudo'
@@ -72,7 +72,7 @@ function RegisterForm()
                         </div>
                         <div className='form-group'>
                             <label htmlFor="mail">Mail:</label>
-                            <input
+                            <input className='input-form'
                                 type='email'
                                 id='mail'
                                 name='mail'
@@ -83,7 +83,7 @@ function RegisterForm()
                         </div>
                         <div className='form-group'>
                             <label htmlFor='password'>Password:</label>
-                            <input 
+                            <input className='input-form'
                                 type='password'
                                 id='password'
                                 name='password'
@@ -94,7 +94,7 @@ function RegisterForm()
                         </div>
                         <div className='form-group'>
                             <label htmlFor='password_confirm'>Confirm Password:</label>
-                            <input
+                            <input className='input-form'
                                 type='password'
                                 id='password_confirm'
                                 name='password_confirm'
@@ -107,7 +107,7 @@ function RegisterForm()
                         {errorMessage && <p className='error-message'>{errorMessage}</p>}
                         {successMessage && <p className='success-manage'>{successMessage}</p>}
 
-                        {/* <Button type='submit' className='submit-button' class="btn btn-primary p-2 border border-0 rounded-pill">Register</Button> */}
+                        <Button type='submit' className='submit-button' class="btn btn-primary p-2 border border-0 rounded-pill">Register</Button>
                     </form>
                 </div>
             </div>
