@@ -15,3 +15,12 @@ Frontend :
     - On peut voir la liste des packages installer dans le package.json
     - Pour installer un package :
         - "npm i <nom_package>
+
+
+GIT :
+    - git checkout blablabla -> Changer de branche
+    - git checkout -b blabla-new -> Créer une branche à partir de ta branche actuelle
+    - git merge blabla -> Merge blabla dans ta branche actuelle
+    - git push --set-upstream origin blabla -> Push ta branche local blabla sur le repo (Quand tu créer une branche elle est locale et existe pas encore la bas)
+    - git branch -D <nom_branch>
+    - git push origin --delete <nom_branch>
