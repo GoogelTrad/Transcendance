@@ -1,0 +1,22 @@
+.form-container
+{
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    margin: 1rem;
+}
+
+.form-box
+{
+    display: flex;
+    padding: 1rem;
+    border: solid;
+    flex-direction: column;
+    
+}
+
+.registration-form
+{
+    display: flex;
+    flex-direction: column;
+}

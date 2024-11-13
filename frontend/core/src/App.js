@@ -9,32 +9,34 @@ function App() {
   return (
       <Router>
         <div>
-          <nav>
-              <div class="d-flex p-2">
-                <button className="buttonUsers" class="button rounded">
-                  <Link to="/register" class="text-decoration-none text-dark">Users</Link>
-                </button>
-              </div>
-              <div class="d-flex p-2">
-                <button className="buttonGame" class="button rounded">
-                  <Link to="/game" class="text-decoration-none text-dark">Game</Link>
-                </button>
-              </div>
-              <div class="d-flex p-2">
-                <button className="buttonChat" class="button rounded">
-                  <Link to="/chat" class="text-decoration-none text-dark">Chat</Link>
-                </button>
-              </div>
-              <div class="d-flex p-2">
-                <button className="buttonAccueil" class="button rounded">
-                  <Link to="/home" class="text-decoration-none text-dark">Accueil</Link>
-                </button>
-              </div>
-          </nav>
-  
-          <Routes>
-            <Route path="/register" element={<RegisterForm />} />
-          </Routes>
+          <div className='head'>
+            <nav className='nav'>
+                <div>
+                  <button className="buttonUsers">
+                    <Link to="/register" class="text-decoration-none text-dark">Users</Link>
+                  </button>
+                </div>
+                <div>
+                  <button className="buttonGame">
+                    <Link to="/game" class="text-decoration-none text-dark">Game</Link>
+                  </button>
+                </div>
+                <div>
+                  <button className="buttonChat">
+                    <Link to="/chat" class="text-decoration-none text-dark">Chat</Link>
+                  </button>
+                </div>
+                <div>
+                  <button className="buttonAccueil">
+                    <Link to="/home" class="text-decoration-none text-dark">Home</Link>
+                  </button>
+                </div>
+            </nav>
+          </div>
+    
+            <Routes>
+              <Route path="/register" element={<RegisterForm />} />
+            </Routes>
         </div>
       </Router>
   );

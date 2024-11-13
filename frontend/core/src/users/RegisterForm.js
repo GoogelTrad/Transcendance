@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios'
 import Button from 'react-bootstrap/Button';
 
-// import './RegisterForm.css'
+import './RegisterForm.css'
 
 function RegisterForm()
 {
@@ -14,6 +14,9 @@ function RegisterForm()
         password_confirm: '',
         pp: null,
     });
+
+    const [errorMessage, setErrorMessage] = useState('');
+    const [successMessage, setSuccessMessage] = useState('');
 
     const handleChange = (e) => 
     {
@@ -52,14 +55,13 @@ function RegisterForm()
 
     return (
         <>
-            <div className='form-container' class="d-flex p-1 justify-content-center flex-row vh-100">
-                <div class="d-flex flex-column border border-black border-2 rounded align-items-center h-full p-2 align-self-center">
-                    <h2 class="p-2 text-">User Registration</h2>
-                    <form className='registration-form' onSubmit={handleSubmit} class="d-flex flex-column align-items-center gap-2">
-                        <div className='form-group' class="d-flex input-group input-group-sm w-full flex-column">
+            <div className='form-container'>
+                <div className='form-box'>
+                    <h2>User Registration</h2>
+                    <form className='registration-form' onSubmit={handleSubmit}>
+                        <div className='form-group'>
                             <label htmlFor='pseudo'>Username:</label>
                             <input
-                                class="form-control w-100 border rounded-3"
                                 type='text'
                                 id='pseudo'
                                 name='pseudo'
@@ -68,10 +70,9 @@ function RegisterForm()
                                 required>
                             </input>
                         </div>
-                        <div className='form-group' class="d-flex input-group input-group-sm w-full flex-column">
+                        <div className='form-group'>
                             <label htmlFor="mail">Mail:</label>
                             <input
-                                class="form-control w-100 border rounded-3"
                                 type='email'
                                 id='mail'
                                 name='mail'
@@ -80,10 +81,9 @@ function RegisterForm()
                                 required>
                             </input>
                         </div>
-                        <div className='form-group' class="d-flex input-group input-group-sm w-full flex-column">
+                        <div className='form-group'>
                             <label htmlFor='password'>Password:</label>
                             <input 
-                                class="form-control w-100 border rounded-3"
                                 type='password'
                                 id='password'
                                 name='password'
@@ -92,10 +92,9 @@ function RegisterForm()
                                 required>
                             </input>
                         </div>
-                        <div className='form-group' class="d-flex input-group input-group-sm w-full flex-column">
+                        <div className='form-group'>
                             <label htmlFor='password_confirm'>Confirm Password:</label>
                             <input
-                                class="form-control w-100 border rounded-3"
                                 type='password'
                                 id='password_confirm'
                                 name='password_confirm'
@@ -108,9 +107,9 @@ function RegisterForm()
                         {errorMessage && <p className='error-message'>{errorMessage}</p>}
                         {successMessage && <p className='success-manage'>{successMessage}</p>}
 
-                        <Button type='submit' className='submit-button' class="btn btn-primary p-2 border border-0 rounded-pill">Register</Button>
+                        {/* <Button type='submit' className='submit-button' class="btn btn-primary p-2 border border-0 rounded-pill">Register</Button> */}
                     </form>
-                    </div>
+                </div>
             </div>
         </>
 
