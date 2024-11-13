@@ -1,4 +1,19 @@
 services:
+  nginx:
+    env_file: .env
+    container_name: nginx
+    build: nginx/
+    depends_on:
+      - react
+    volumes:
+      - project:/home/
+    networks:
+      - tdc
+    image: nginx
+    ports:
+      - 8080:80
+    restart: unless-stopped
+      
   db:
     container_name: db
     image: postgres
@@ -9,7 +24,7 @@ services:
     networks:
       - tdc
     volumes:
-      - db:/home/db 
+      - db:/home/db
 
   react:
     container_name: react
