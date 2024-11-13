@@ -1,0 +1,63 @@
+services:
+  db:
+    container_name: db
+    image: postgres
+    restart: unless-stopped
+    env_file: .env
+    ports:
+      - 5432:5432
+    networks:
+      - tdc
+    volumes:
+      - db:/home/db 
+
+  react:
+    container_name: react
+    image: front
+    restart: unless-stopped
+    env_file: .env
+    build: ./frontend/
+    volumes:
+      - project:/home/
+    depends_on:
+      - db
+      - django
+    ports:
+      - 3000:3000
+    networks:
+      - tdc
+
+  django: 
+    container_name: django
+    image: django
+    restart: unless-stopped
+    env_file: .env
+    build: ./backend/
+    volumes:
+      - project:/home/
+    depends_on:
+      - db
+    ports:
+      - 8000:8000
+    networks: 
+      - tdc
+
+volumes:
+  project:
+    driver: local
+    driver_opts:
+        type: none
+        o: 'bind'
+        device: .
+  db:
+    driver: local
+    driver_opts:
+      type: none
+      o: 'bind'
+      device: ./db
+
+
+networks:
+  tdc:
+    name: tdc
+    driver: bridge
