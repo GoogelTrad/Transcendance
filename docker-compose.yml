@@ -11,7 +11,7 @@ services:
       - tdc
     image: nginx
     ports:
-      - 8080:80
+      - 8089:443
     restart: unless-stopped
       
   db:
