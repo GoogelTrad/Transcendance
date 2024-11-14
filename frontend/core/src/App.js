@@ -4,6 +4,8 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min';
 import RegisterForm from './users/RegisterForm';
 import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
+import Welcome_game from './Game/Welcome_game.js';
+import Game from './Game/Game.js';
 
 function App() {
   return (
@@ -18,7 +20,7 @@ function App() {
                 </div>
                 <div>
                   <button className="buttonGame">
-                    <Link to="/game" class="text-decoration-none text-dark">Game</Link>
+                    <Link to="/Welcome_game" class="text-decoration-none text-dark">Game</Link>
                   </button>
                 </div>
                 <div>
@@ -33,9 +35,10 @@ function App() {
                 </div>
             </nav>
           </div>
-    
             <Routes>
               <Route path="/register" element={<RegisterForm />} />
+              <Route path="/Welcome_game" element={<Welcome_game />} />
+              <Route path="/Game" element={<Game />} />
             </Routes>
         </div>
       </Router>

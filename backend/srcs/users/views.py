@@ -6,7 +6,7 @@ from .models import Users
 
 class RegisterView(APIView):
     def post(self, request, *args, **kwargs):
-        form = RegisterForm(request.data, request.FILES)
+        form = RegisterForm(request.data, request.FILES) 
         
         if form.is_valid():
             user = form.save()

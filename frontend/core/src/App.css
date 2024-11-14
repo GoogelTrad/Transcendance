@@ -1,3 +1,10 @@
+@font-face {
+  font-family: 'AmericanCaptain';
+  src: url('./fonts/American\ Captain.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
 .head
 {
   width: 100%;
