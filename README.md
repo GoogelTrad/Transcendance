@@ -22,5 +22,5 @@ GIT :
     - git checkout -b blabla-new -> Créer une branche à partir de ta branche actuelle (a prioriser ?)
     - git push --set-upstream origin blabla -> Push ta branche local blabla sur le repo (Quand tu créer une branche elle est locale et existe pas encore la bas)
     - git branch -D <nom_branch> -> Pour delete la branche localement
-    - git push origin --delete <nom_branch> -> Pour delete la branche sur le git
     - git merge blabla -> Merge blabla dans ta branche actuelle -> git push pour appliquer sur le git
+    - git push origin --delete <nom_branch> -> Pour delete la branche sur le git
