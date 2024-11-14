@@ -1,15 +1,36 @@
 from django import forms
 from .models import Users
+from django.contrib.auth import authenticate
+from django.contrib.auth.models import User 
+from django.contrib.auth import password_validation
+
+class LoginForm(forms.Form):
+    username = forms.CharField(label="Username")
+    password = forms.CharField(widget=forms.PasswordInput, label="Password")
+
+    def clean(self):
+        cleaned_data = super().clean()
+        username = cleaned_data.get('username')
+        password = cleaned_data.get('password')
+
+        if username and password:
+            # Utilisation du modèle User par défaut de Django
+            user = authenticate(username=username, password=password)
+            if not user:
+                raise forms.ValidationError("Invalid Username or Password")
+        
+        return cleaned_data
+
 
 class RegisterForm(forms.ModelForm):
     password_confirm = forms.CharField(
         widget=forms.PasswordInput,
         label="Confirm Password"
     )
-    
+
     class Meta:
-        model = Users
-        fields = ['pseudo', 'mail', 'password', 'pp']
+        model = User 
+        fields = ['username', 'email', 'password']
         widgets = {
             'password': forms.PasswordInput(),
         }

@@ -3,7 +3,8 @@ import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min';
 import RegisterForm from './users/RegisterForm';
-import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Link, useNavigate } from 'react-router-dom';
+import LoginForm from './users/LoginForm';
 
 function App() {
   return (
@@ -36,6 +37,8 @@ function App() {
     
             <Routes>
               <Route path="/register" element={<RegisterForm />} />
+              <Route path="/login" element={<LoginForm />} />
+
             </Routes>
         </div>
       </Router>

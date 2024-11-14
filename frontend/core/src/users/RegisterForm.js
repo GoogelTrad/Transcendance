@@ -1,15 +1,19 @@
 import React, { useState } from 'react';
 import axios from 'axios'
 import Button from 'react-bootstrap/Button';
-
+import LoginForm from './LoginForm';
 import './RegisterForm.css'
+import {useNavigate, Link } from 'react-router-dom';
+
 
 function RegisterForm()
 {
+    const navigate = useNavigate();
+
     const [formData, setFormData] = useState
     ({
-        pseudo: '',
-        mail: '',
+        username: '',
+        email: '',
         password: '',
         password_confirm: '',
         pp: null,
@@ -60,25 +64,27 @@ function RegisterForm()
                     <h2>User Registration</h2>
                     <form className='registration-form' onSubmit={handleSubmit}>
                         <div className='form-group'>
-                            <label htmlFor='pseudo'>Username:</label>
+                            <label htmlFor='username'>Username:</label>
                             <input className='input-form'
                                 type='text'
-                                id='pseudo'
-                                name='pseudo'
-                                value={formData.pseudo}
+                                id='username'
+                                name='username'
+                                value={formData.username}
                                 onChange={handleChange}
-                                required>
+                                required
+                                placeholder='Username'>
                             </input>
                         </div>
                         <div className='form-group'>
-                            <label htmlFor="mail">Mail:</label>
+                            <label htmlFor="email">Mail:</label>
                             <input className='input-form'
                                 type='email'
-                                id='mail'
-                                name='mail'
+                                id='email'
+                                name='email'
                                 value={formData.mail}
                                 onChange={handleChange}
-                                required>
+                                required
+                                placeholder='Email'>
                             </input>
                         </div>
                         <div className='form-group'>
@@ -89,7 +95,8 @@ function RegisterForm()
                                 name='password'
                                 value={formData.password}
                                 onChange={handleChange}
-                                required>
+                                required
+                                placeholder='Password'>
                             </input>
                         </div>
                         <div className='form-group'>
@@ -100,7 +107,8 @@ function RegisterForm()
                                 name='password_confirm'
                                 value={formData.password_confirm}
                                 onChange={handleChange}
-                                required>
+                                required
+                                placeholder='Confirm Password'>
                             </input>
                         </div>
 
@@ -109,10 +117,16 @@ function RegisterForm()
 
                         <Button type='submit' className='submit-button' class="btn btn-primary p-2 border border-0 rounded-pill">Register</Button>
                     </form>
+                    <div className='login-text'>
+                        <p>Already have an account ?</p>
+                        
+                        <div>
+                            <Link to='/login'>Login</Link>
+                        </div>
+                    </div>
                 </div>
             </div>
         </>
-
     );
 }
 

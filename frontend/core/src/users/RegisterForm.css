@@ -9,9 +9,11 @@
 .form-box
 {
     margin-top: 10rem;
-    background-color: gray;
+    background-color: #bbb9b9;
     display: flex;
-    padding: 2rem;
+    padding-left: 2rem;
+    padding-top: 1.5rem;
+    padding-right: 2rem;
     border: solid;
     border-radius: 2rem;
     flex-direction: column;
@@ -35,6 +37,13 @@
 
 .input-form
 {
-    border-radius: 0.5rem;
+    border-radius: 0.2rem;
     border-style: none;
+}
+
+.login-text
+{
+    display: flex;
+    flex-direction: row;
+    gap: 0.3rem;
 }
