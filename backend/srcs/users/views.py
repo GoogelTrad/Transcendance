@@ -4,6 +4,8 @@ from django.contrib.auth import authenticate, login
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
+from rest_framework_simplejwt.tokens import RefreshToken
+
 from .forms import RegisterForm
 from .forms import LoginForm
 
@@ -52,3 +54,11 @@ class loginView(APIView):
                 }, status=status.HTTP_400_BAD_REQUEST)
 
         return Response(form.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+def get_tokens_for_user(user):
+    refresh = RefreshToken.for_user(user)
+
+    return {
+        'refresh': str(refresh),
+        'access': str(refresh.access_token),
+    }

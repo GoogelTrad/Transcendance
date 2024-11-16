@@ -80,7 +80,7 @@ function LoginForm()
                             value={formData.username}
                             onChange={handleChange}
                             required
-                            placeholder='Username'>    
+                            placeholder='Type your username'>    
                         </input>
                     </div>
                     <div className='form-group'>
@@ -92,7 +92,7 @@ function LoginForm()
                             value={formData.password}
                             onChange={handleChange}
                             required
-                            placeholder='Password'>
+                            placeholder='Type your password'>
                         </input>
                     </div>
 
@@ -103,7 +103,7 @@ function LoginForm()
                     <div className='register-text'>
                         <p>Need to create an account ?</p>
                         
-                        <div>
+                        <div className='register-here'>
                             <Link to='/register'>Register here</Link>
                         </div>
                     </div>
