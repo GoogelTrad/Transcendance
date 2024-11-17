@@ -10,12 +10,9 @@ function LoginForm()
     const navigate = useNavigate();
     const [formData, setFormData] = useState
     ({
-        username: '',
+        name: '',
         password: '',
     });
-
-    const [errorMessage, setErrorMessage] = useState('');
-    const [successMessage, setSuccessMessage] = useState('');
 
     const handleChange = (e) => 
     {
@@ -30,54 +27,38 @@ function LoginForm()
     const handleSubmit = async (e) =>
     {
         e.preventDefault();
-
         const data = new FormData();
         for (const [key, value] of Object.entries(formData))
-            data.append(key, value)
-        try
+            data.append(key, value);
+        try 
         {
-            const reponse = await axios.post('http://localhost:8000/users/login', data, {
-                headers:{
+            await axios.post('http://localhost:8000/api/login', data, {
+                headers: {
                     'Content-Type': 'multipart/form-data',
-                }
+                },
+                withCredentials: true,
             });
-
-            if (reponse.status == 201)
-            {
-                //token
-                if (reponse.data.token)
-                    localStorage.setItem('access_token', reponse.data.token);
-                navigate('/home');
-            }
-            else
-                alert("Login successful but something went wrong!");
-            // alert(reponse.data.message);
-        }
+            navigate("/home");
+        } 
         catch (error)
         {
-            if (error.reponse)
-                alert(`Error: ${error.reponse.data.message || "Bad Input"}`);
-            else if (error.request)
-                alert("Network error! Please try again later.");
-            else
-                alert("An unexpected error occurred!");
-
             console.error(error);
         }
     };
+
 
     return (
         <>
             <div className='login-container'>
                 <form className='login-form' onSubmit={handleSubmit}>
-                    <h1 className='title'>User Login</h1>
+                    <h1 className='title'>Please Login</h1>
                     <div className='form-group'>
-                        <label htmlFor='username'>Username</label>
+                        <label htmlFor='name'>Username</label>
                         <input className='input-form'
                             type='text'
-                            id='username'
-                            name='username'
-                            value={formData.username}
+                            id='name'
+                            name='name'
+                            value={formData.name}
                             onChange={handleChange}
                             required
                             placeholder='Type your username'>    
@@ -96,10 +77,7 @@ function LoginForm()
                         </input>
                     </div>
 
-                        {errorMessage && <p className='error-message'>{errorMessage}</p>}
-                        {successMessage && <p className='success-manage'>{successMessage}</p>}
-    
-                    <Button type='submit' className='submit-button' class="btn btn-primary p-2 border border-0 rounded-pill">Login</Button>
+                    <Button type='submit' className='submit-button btn'>Login</Button>
                     <div className='register-text'>
                         <p>Need to create an account ?</p>
                         

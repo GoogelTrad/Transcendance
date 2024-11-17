@@ -1,64 +1,90 @@
-from django.contrib.auth.models import User
-from django.contrib.auth.hashers import make_password
-from django.contrib.auth import authenticate, login
-from rest_framework.response import Response
-from rest_framework.views import APIView
+from django.shortcuts import render
 from rest_framework import status
-from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.views import APIView
+from rest_framework.viewsets import ViewSet
+from rest_framework.response import Response
+from rest_framework.exceptions import AuthenticationFailed
+from rest_framework.decorators import api_view, action
+from .serializer import UserSerializer
+from .models import User
+import jwt
 
-from .forms import RegisterForm
-from .forms import LoginForm
 
-class RegisterView(APIView):
-    def post(self, request, *args, **kwargs):
-        form = RegisterForm(request.data, request.FILES)
+class LoginView():
+    @api_view(['POST'])
+    def loginUser(request):
+        name = request.data['name']
+        password = request.data['password']
+
+        user = User.objects.filter(name=name).first()
+
+        if user is None:
+            raise AuthenticationFailed('User not found!')
         
-        if form.is_valid():
-            user = form.save(commit=False)
-            user.password = make_password(user.password)  # Hash du mot de passe
-            user.save()
+        if not user.check_password(password):
+            raise AuthenticationFailed('Incorrect password!')
+        
+        payload = {
+            'id': user.id,
+            'name': user.name,
+            'email': user.email,
+        }
 
-            return Response({
-                "message": "User registered successfully!",
-                "user": {
-                    "id": user.id,
-                    "username": user.username,
-                    "email": user.email,
-                }
-            }, status=status.HTTP_201_CREATED)
-        else:
-            return Response(form.errors, status=status.HTTP_400_BAD_REQUEST)
+        token = jwt.encode(payload, 'coucou', 'HS256')
 
-class loginView(APIView):
-    def post(self, request, *args, **kwargs):
-        form = LoginForm(request.data, request.FILES)
+        reponse = Response()
 
-        if form.is_valid():
-            username = form.cleaned_data['username']
-            password = form.cleaned_data['password']
+        reponse.set_cookie(key='token', value=token, max_age=3600)
 
-            user = authenticate(request=request, username=username, password=password)
-            
-            if user is not None:
-                login(request, user)
-                return Response({
-                    "message": "User login successfully!",
-                    "user": {
-                        "id": user.id,
-                        "username": user.username, 
-                    }
-                }, status=status.HTTP_201_CREATED)
-            else:
-                return Response({
-                    "message": "Invalid credentials"
-                }, status=status.HTTP_400_BAD_REQUEST)
+        reponse.data = {
+            'token': token
+        }
 
-        return Response(form.errors, status=status.HTTP_400_BAD_REQUEST)
+        return reponse
+
+class UserView():
+    @api_view(['GET', 'PUT', 'DELETE'])
+    def userDetails(request, pk):
+        token = request.COOKIE.get('token')
+
+        if not token:
+            raise AuthenticationFailed('Unauthenticated!')
+
+        try:
+            user = User.objects.get(pk=pk)
+        except:
+            raise AuthenticationFailed('User not found!')
+
+        if request.method == 'GET':
+            serializer = UserSerializer(user)
+            return Response(serializer.data)
+        
+        elif request.method == 'PUT':
+            serializer = UserSerializer(user, data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
-def get_tokens_for_user(user):
-    refresh = RefreshToken.for_user(user)
+        elif request.method == 'DELETE':
+            user.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
 
-    return {
-        'refresh': str(refresh),
-        'access': str(refresh.access_token),
-    }
+    @api_view(['POST'])
+    def createUser(request):
+        serializer = UserSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)   
+        serializer.save()
+
+        return Response(serializer.data)
+
+
+# class LogoutView(APIView):
+#     def post(self, request):
+#         response = Response()
+#         response.delete_cookie('jwt')
+#         response.data = {
+#             'message': 'success'
+#         }
+
+#         return response
