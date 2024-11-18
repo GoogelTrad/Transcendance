@@ -6,6 +6,7 @@ from rest_framework.response import Response
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.decorators import api_view, action
 from .serializer import UserSerializer
+from django.http import HttpResponse
 from .models import User
 import jwt
 
@@ -45,10 +46,6 @@ class LoginView():
 class UserView():
     @api_view(['GET', 'PUT', 'DELETE'])
     def userDetails(request, pk):
-        token = request.COOKIE.get('token')
-
-        if not token:
-            raise AuthenticationFailed('Unauthenticated!')
 
         try:
             user = User.objects.get(pk=pk)

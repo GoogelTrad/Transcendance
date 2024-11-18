@@ -9,7 +9,7 @@ function Home()
 
     function getCookie(name) {
         const value = document.cookie;
-        const parts = value.match(`(\s|^)${name}=([^;]*);`)[2];
+        const parts = value.match(`(?:\s|^)${name}=([^;]*);?`)[1];
     
         return parts
     }
