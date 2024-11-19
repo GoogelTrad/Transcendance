@@ -1,20 +1,30 @@
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useEffect, useState } from "react";
+import { getCookies } from "../App";
 
 
 const AuthContext = React.createContext();
 
-export default AuthContext;
+export const AuthProvider = ({children}) => 
+{
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-// export const AuthContext = createContext();
+    useEffect(() => {
+        const token = getCookies('token');
+        if (token)
+            setIsAuthenticated(true);
+    }, []);
+    return (
+        <AuthContext.Provider value={{ isAuthenticated, setIsAuthenticated }}>
+            {children}
+        </AuthContext.Provider>
+    );
+};
 
-// export const AuthProvider = ({ children }) => {
-//     const [isAuthenticated, setIsAuthenticated] = useState(false);
-
-//     return (
-//         <AuthContext.Provider value ={{ isAuthenticated, setIsAuthenticated}}>
-//             {children}
-//         </AuthContext.Provider>
-//     );
-// };
-
-// export const useAuth = () => useContext(AuthContext);
+export const useAuth = () => 
+{
+    const context = useContext(AuthContext);
+    if (!context) {
+        throw new Error("useAuth must be used within an AuthProvider");
+    }
+    return context;
+}
