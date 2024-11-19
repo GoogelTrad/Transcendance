@@ -38,6 +38,7 @@ function LoginForm()
                 },
                 withCredentials: true,
             });
+            // setIsAuthenticated(true);
             navigate("/home");
         } 
         catch (error)
