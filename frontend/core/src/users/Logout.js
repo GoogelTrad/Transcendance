@@ -1,14 +1,11 @@
 import { useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
-import { getCookie } from '../Home';
+import { getCookies } from '../App.js';
 import axios from 'axios';
 
-
-
 function Logout() {
+    // const {setIsAuthenticated} = useAuth();
     const navigate = useNavigate();
-
-    console.log("j'essaie de partir");
 
     useEffect (() => 
         {
@@ -16,7 +13,7 @@ function Logout() {
             {
                 try 
                 {
-                    const token = getCookie('token');
+                    const token = getCookies('token');
                     const reponse = await axios.get(`http://localhost:8000/api/logout`, {
                         headers: {
                             "Content-Type": "application/json",
@@ -25,6 +22,7 @@ function Logout() {
                         withCredentials: true,
                     });
                     alert('deco');
+                    // setIsAuthenticated(false);
                 }
                 catch (error)
                 {

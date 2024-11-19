@@ -1,28 +1,21 @@
 import React, {useEffect, useState} from "react";
 import axios from 'axios';
 import { jwtDecode } from "jwt-decode";
-
-
-export function getCookie(name) {
-    const value = document.cookie;
-    const parts = value.match(`(?:\s|^)${name}=([^;]*);?`)[1];
-
-    return parts
-}
+import { getCookies } from './App.js';
 
 
 function Home()
 {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
-
+    
     useEffect (() => 
     {
         const fetchUserData = async () => 
         {
             try 
             {
-                const token = getCookie('token');
+                const token = getCookies('token');
                 if (token)
                 {
                     const decodeToken = jwtDecode(token);
