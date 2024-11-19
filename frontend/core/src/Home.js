@@ -2,17 +2,19 @@ import React, {useEffect, useState} from "react";
 import axios from 'axios';
 import { jwtDecode } from "jwt-decode";
 
+
+export function getCookie(name) {
+    const value = document.cookie;
+    const parts = value.match(`(?:\s|^)${name}=([^;]*);?`)[1];
+
+    return parts
+}
+
+
 function Home()
 {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
-
-    function getCookie(name) {
-        const value = document.cookie;
-        const parts = value.match(`(?:\s|^)${name}=([^;]*);?`)[1];
-    
-        return parts
-    }
 
     useEffect (() => 
     {
@@ -21,16 +23,18 @@ function Home()
             try 
             {
                 const token = getCookie('token');
-                const decodeToken = jwtDecode(token);
-                const reponse = await axios.get(`http://localhost:8000/api/user/${decodeToken.id}`, {
-                    headers: {
-                        "Content-Type": "application/json",
-                        'Authorization': `Bearer ${token}`,
-                    },
-                    withCredentials: true,
-                });
-                alert('coucou');
-                setUser(reponse.data);
+                if (token)
+                {
+                    const decodeToken = jwtDecode(token);
+                    const reponse = await axios.get(`http://localhost:8000/api/user/${decodeToken.id}`, {
+                        headers: {
+                            "Content-Type": "application/json",
+                            'Authorization': `Bearer ${token}`,
+                        },
+                        withCredentials: true,
+                    });
+                    setUser(reponse.data);
+                }
             }
             catch (error)
             {

@@ -47,25 +47,26 @@ class UserView():
     @api_view(['GET', 'PUT', 'DELETE'])
     def userDetails(request, pk):
 
-        try:
-            user = User.objects.get(pk=pk)
-        except:
-            raise AuthenticationFailed('User not found!')
+        if not request.user.is_authenticated:
+            try:
+                user = User.objects.get(pk=pk)
+            except:
+                raise AuthenticationFailed('User not found!')
 
-        if request.method == 'GET':
-            serializer = UserSerializer(user)
-            return Response(serializer.data)
-        
-        elif request.method == 'PUT':
-            serializer = UserSerializer(user, data=request.data)
-            if serializer.is_valid():
-                serializer.save()
+            if request.method == 'GET':
+                serializer = UserSerializer(user)
                 return Response(serializer.data)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
-        elif request.method == 'DELETE':
-            user.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
+            
+            elif request.method == 'PUT':
+                serializer = UserSerializer(user, data=request.data)
+                if serializer.is_valid():
+                    serializer.save()
+                    return Response(serializer.data)
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+            elif request.method == 'DELETE':
+                user.delete()
+                return Response(status=status.HTTP_204_NO_CONTENT)
 
     @api_view(['POST'])
     def createUser(request):
@@ -75,7 +76,17 @@ class UserView():
 
         return Response(serializer.data)
 
+class LogoutView():
+    @api_view(['GET'])
+    def logoutUser(request):
+        reponse = Response()
+        reponse.delete_cookie('token')
+        reponse.data = {
+            'message': 'success'
+        }
+        return reponse
 
+        
 # class LogoutView(APIView):
 #     def post(self, request):
 #         response = Response()

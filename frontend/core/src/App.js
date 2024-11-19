@@ -4,7 +4,10 @@ import 'bootstrap/dist/js/bootstrap.bundle.min';
 import RegisterForm from './users/RegisterForm';
 import LoginForm from './users/LoginForm';
 import Home from './Home';
-import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
+import getCookie from './Home.js';
+import Logout from './users/Logout';
+import { BrowserRouter as Router, Route, Routes, Link, Outlet, Navigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 
 function App() {
   return (
@@ -37,6 +40,11 @@ function App() {
                     <Link to="/home" className="text-decoration-none text-dark">Home</Link>
                   </button>
                 </div>
+                <div>
+                  <button className="buttonLogout">
+                    <Link to="/logout" className="text-decoration-none text-dark">Logout</Link>
+                  </button>
+                </div>
             </nav>
           </div>
     
@@ -44,6 +52,7 @@ function App() {
               <Route path="/home" element={<Home />} />
               <Route path="/register" element={<RegisterForm />} />
               <Route path="/login" element={<LoginForm />} />
+              <Route path='/logout' element={<Logout />} />
             </Routes>
         </div>
       </Router>
