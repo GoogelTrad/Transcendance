@@ -14,3 +14,8 @@
   margin-left: 1rem;
   gap: 1rem;
 }
+
+body
+{
+  background-color: black !important;
+}

@@ -24,3 +24,9 @@ GIT :
     - git branch -D <nom_branch> -> Pour delete la branche localement
     - git merge blabla -> Merge blabla dans ta branche actuelle -> git push pour appliquer sur le git
     - git push origin --delete <nom_branch> -> Pour delete la branche sur le git
+
+
+DB :
+    - Pour se connecter : "psql -U db_user -d database"
+    - Pour voir les tables "\d"
+    - Pour voir le contenu d'une table "SELECT * FROM <nom_table>;"
