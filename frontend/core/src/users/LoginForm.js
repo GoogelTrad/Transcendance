@@ -4,9 +4,11 @@ import Button from 'react-bootstrap/Button';
 import './LoginForm.css'
 import {Link} from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from './AuthContext';
 
 function LoginForm()
 {
+    const {isAuthenticated, setIsAuthenticated} = useAuth();
     const navigate = useNavigate();
     const [formData, setFormData] = useState
     ({
@@ -38,7 +40,7 @@ function LoginForm()
                 },
                 withCredentials: true,
             });
-            // setIsAuthenticated(true);
+            setIsAuthenticated(true);
             navigate("/home");
         } 
         catch (error)

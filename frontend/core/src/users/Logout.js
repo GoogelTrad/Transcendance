@@ -1,10 +1,12 @@
 import { useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import { getCookies } from '../App.js';
+import { useAuth } from './AuthContext.js';
 import axios from 'axios';
 
 function Logout() {
-    // const {setIsAuthenticated} = useAuth();
+    const {isAuthenticated, setIsAuthenticated} = useAuth();
+
     const navigate = useNavigate();
 
     useEffect (() => 
@@ -21,8 +23,7 @@ function Logout() {
                         },
                         withCredentials: true,
                     });
-                    alert('deco');
-                    // setIsAuthenticated(false);
+                    setIsAuthenticated(false);
                 }
                 catch (error)
                 {
