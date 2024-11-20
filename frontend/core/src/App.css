@@ -19,3 +19,7 @@ body
 {
   background-color: black !important;
 }
+
+#root {
+  height: 100%;
+}

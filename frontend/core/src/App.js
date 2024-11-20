@@ -5,6 +5,7 @@ import RegisterForm from './users/RegisterForm';
 import LoginForm from './users/LoginForm';
 import Home from './Home';
 import Logout from './users/Logout';
+import Home_game from './game/Home_game';
 import { AuthProvider, useAuth } from './users/AuthContext';
 import { BrowserRouter as Router, Route, Routes, Link, Outlet, Navigate, useNavigate } from 'react-router-dom';
 import React, {useEffect, useState} from "react";
@@ -74,7 +75,7 @@ function App() {
   return (
     <AuthProvider>
       <Router>
-        <div>
+        <div className='h-100'>
           <div className='head'>
             <NavBar />
           </div>
@@ -84,6 +85,7 @@ function App() {
             <Route path="/register" element={<RegisterForm />} />
             <Route path="/login" element={<LoginForm />} />
             <Route path='/logout' element={<Logout />} />
+            <Route path='/game' element={<Home_game />} />
           </Routes>
         </div>
       </Router>

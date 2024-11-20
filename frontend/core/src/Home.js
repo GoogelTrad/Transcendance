@@ -50,7 +50,7 @@ function Home()
         <div>
             <h1>HOME</h1>
             {user ? (
-                <div>
+                <div>   
                     <p>Nom : {user.name}</p>
                     <p>Email : {user.email}</p>
                 </div>

@@ -1,0 +1,20 @@
+html, body, #root {
+    height: 100%;
+    margin: 0;
+}
+
+.title {
+
+    color: azure;
+}
+
+.button_play {
+    margin-left: 1rem;
+    margin-top: 10rem;
+}
+
+.button_tournement {
+    margin-left: 50rem;
+    margin-top: 10rem;
+}
+
