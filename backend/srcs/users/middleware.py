@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from django.http import JsonResponse
 from django.http import HttpResponse
 from rest_framework.exceptions import AuthenticationFailed
 from .serializer import UserSerializer
@@ -15,7 +16,6 @@ class SimpleMiddleware:
         # Code to be executed for each request before
         # the view (and later middleware) are called.
         if not request.path == '/api/login' and request.path == '/api/user/create':
-            # request.user = None
 
             auth_header = request.headers.get('Authorization')
             
@@ -24,6 +24,8 @@ class SimpleMiddleware:
             
             try:
                 token = auth_header.split(' ')[1]
+                if not token:
+                    raise AuthenticationFailed('Token is invalid!')
                 payload = jwt.decode(token, 'coucou', algorithms=['HS256'])
                 request.user = payload
                 # return (HttpResponse(request.user))
