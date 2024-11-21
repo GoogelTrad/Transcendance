@@ -44,7 +44,7 @@ class LoginView():
         return reponse
 
 class UserView():
-    @api_view(['GET', 'PUT', 'DELETE'])
+    @api_view(['GET', 'PATCH', 'DELETE'])
     def userDetails(request, pk):
 
         if not request.user.is_authenticated:
@@ -57,11 +57,22 @@ class UserView():
                 serializer = UserSerializer(user)
                 return Response(serializer.data)
             
-            elif request.method == 'PUT':
-                serializer = UserSerializer(user, data=request.data)
+            elif request.method == 'PATCH':
+                serializer = UserSerializer(user, data=request.data, partial=True)
                 if serializer.is_valid():
                     serializer.save()
-                    return Response(serializer.data)
+                    payload = {
+                        'id': user.id,
+                        'name': user.name,
+                        'email': user.email,
+                    }
+                    reponse = Response()
+                    reponse.delete_cookie('token')
+                    token = jwt.encode(payload, 'coucou', 'HS256')
+                    reponse.set_cookie(key='token', value=token, max_age=3600)
+                    reponse.data = serializer.data;
+                    
+                    return reponse
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
             elif request.method == 'DELETE':
