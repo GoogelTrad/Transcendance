@@ -21,21 +21,20 @@ function Game() {
             {
                 const decodeCookie = jwtDecode(cookie);
                 console.log(decodeCookie.name);
-                const reponse = await axios.post(`http://localhost:8000/game`,{
+                const reponse = await axios.post(`http://localhost:8000/game/createGame`,{
                     headers: {
                         "Content-Type": "application/json",
                         'Authorization': `Bearer ${cookie}`,
                     },
                     withCredentials: true,
                 });
-
             }
         }
         catch (error)
         {
             console.error('Erreur lors de la récupération des données utilisateur', error);
         }
-
+        const reponse2 = await axios.get(`http://localhost:8000/game/gametest`)
     };
 
     return (

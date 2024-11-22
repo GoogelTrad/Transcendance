@@ -16,11 +16,48 @@ class HomeGameView:
         return Response()
         
 
-
 class GameView:
+    
+    @api_view(['GET'])
+    def createGame(request):
+        serializer = GameSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response(serializer.data)
+
     @api_view(['POST'])
     def GameDetails(request):
+
+        name = request.data.get('name')
+        
+        payload = {
+            'name'  : name,
+        }
+
+        token = jwt.encode(payload, 'coucou', 'HS256')
+
+        response = Response()
+
+        response.set_cookie(key='token', value=token, max_age=3600)
+
+        response.data = {
+            'token' : token
+        }
+
         return Response()
+        
+    @api_view(['GET'])
+    def GameTest(request):
+        reponse = Response()
+        reponse.delete_cookie('token')
+        reponse.data = {
+            'message': 'success'
+        }
+        return reponse
+
+
+
         
 
 
