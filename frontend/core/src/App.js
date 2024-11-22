@@ -6,6 +6,7 @@ import LoginForm from './users/LoginForm';
 import Home from './Home';
 import Logout from './users/Logout';
 import Home_game from './game/Home_game';
+import Game from './game/game';
 import { AuthProvider, useAuth } from './users/AuthContext';
 import { BrowserRouter as Router, Route, Routes, Link, Outlet, Navigate, useNavigate } from 'react-router-dom';
 import React, {useEffect, useState} from "react";
@@ -52,7 +53,7 @@ function NavBar()
         <>
           <div>
             <button className="buttonGame">
-              <Link to="/game" className="text-decoration-none text-dark">Game</Link>
+              <Link to="/home_game" className="text-decoration-none text-dark">Game</Link>
             </button>
           </div>
           <div>
@@ -85,7 +86,8 @@ function App() {
             <Route path="/register" element={<RegisterForm />} />
             <Route path="/login" element={<LoginForm />} />
             <Route path='/logout' element={<Logout />} />
-            <Route path='/game' element={<Home_game />} />
+            <Route path='/home_game' element={<Home_game />} />
+            <Route path='/game' element={<Game />} />
           </Routes>
         </div>
       </Router>

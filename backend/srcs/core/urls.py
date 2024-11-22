@@ -21,5 +21,6 @@ from rest_framework import routers
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('users.urls')),
+    path('game/', include('game.urls')),
     # path('api/', include(router.urls)),
 ]

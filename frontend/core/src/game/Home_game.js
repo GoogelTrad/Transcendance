@@ -9,17 +9,20 @@ import React, {useEffect, useState} from "react";
 function Home_game(){
     
     return (
-        <div className='h-100'>
-            <h1 className='title'>PONG</h1>
-            <div className='row h-100 g-0'>
-                <div className='col d-flex justify-content-center align-items-center'>
-                    <Button type='submit' className=''>Play</Button>
+    <>
+        <h1 className='position-absolute title text-center text-white title-overlay w-100'>PONG</h1>
+        <div className='d-flex flex-column align-items-center justify-content-center h-100'>
+            
+            <div className='d-flex gap-5'>
+                <div className='col d-flex justify-content-center align-items-center '>
+                    <Link to="/game"><Button type='submit' className=''>Play</Button></Link>
                 </div>
                 <div className='col d-flex justify-content-center align-items-center'>
                     <Button type='submit' className=''>Tournement</Button>
                 </div>
             </div>
         </div>
+    </>
     );
 };
 
