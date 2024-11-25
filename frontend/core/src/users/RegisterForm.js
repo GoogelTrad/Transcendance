@@ -13,7 +13,7 @@ function RegisterForm()
         name: '',
         email: '',
         password: '',
-        // password_confirm: '',
+        password_confirm: '',
     });
 
     const handleChange = (e) =>
@@ -41,7 +41,7 @@ function RegisterForm()
                     'Content-Type': 'application/json',
                 }
             });
-            navigate("/home");
+            navigate("/login");
         } 
         catch (error)
         {
@@ -91,7 +91,7 @@ function RegisterForm()
                                 placeholder='Password'>
                             </input>
                         </div>
-                        {/* <div className='form-group'>
+                        <div className='form-group'>
                             <label htmlFor='password_confirm'>Confirm Password:</label>
                             <input className='input-form'
                                 type='password'
@@ -102,7 +102,7 @@ function RegisterForm()
                                 required
                                 placeholder='Confirm Password'>
                             </input>
-                        </div> */}
+                        </div>
 
                         <Button type='submit' className='submit-button btn'>Register</Button>
                     </form>
