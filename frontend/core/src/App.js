@@ -15,7 +15,7 @@ export function getCookies(name) {
   if (!value)
     parts = null;
   else
-  parts = value.match(`(?:\s|^)${name}=([^;]*);?`)[1];
+    parts = value.match(`(?:\s|^)${name}=([^;]*);?`)?.[1];
 
   return (parts);
 }

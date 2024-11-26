@@ -3,11 +3,17 @@ from .models import User
 
 class UserSerializer(serializers.ModelSerializer):
     password_confirm = serializers.CharField(max_length=255, write_only=True)
+    profile_image_url = serializers.SerializerMethodField()
     
     class Meta:
         model = User
-        fields = ['id', 'name', 'email', 'password', 'password_confirm']
+        fields = ['id', 'name', 'email', 'password', 'password_confirm', 'profile_image', 'profile_image_url']
         
+    def get_profile_image_url(self, obj):
+        if obj.profile_image:
+            return obj.profile_image.url
+        return None   
+    
     def validate(self, data):
         password = data.get('password')
         password_confirm = data.get('password_confirm')

@@ -51,7 +51,7 @@ function ChangeDetails({setUser, setValue, toChange})
                             name={toChange}
                             value={detail}
                             onChange={handleChange}
-                            required
+                            required$
                             placeholder='modify your details here'>    
                         </input>
                     </div>
@@ -68,13 +68,35 @@ function Profile()
 	const [user, setUser] = useState(null);
 	const [showChangeUsername, setShowChangeUsername] = useState(false);
 	const [showChangePassword, setShowChangePassword] = useState(false);
+	const [showChangeImage, setShowChangeImage] = useState(false)
+	const token = getCookies('token');
 
-    
+    const handleFileChange = async (e) => {
+		e.preventDefault();
+		const selectedImage = e.target.files[0];
+		
+		try {
+			const response = await axios.patch( `http://localhost:8000/api/user/${user.id}`, {
+					'profile_image': selectedImage,
+				} , {
+				headers: {
+				"Content-Type": "multipart/form-data",
+				'Authorization': `Bearer ${token}`,
+				},
+				withCredentials: true,
+			}
+			);
+			setUser(response.data); // Mettre à jour l'état utilisateur avec les nouvelles données
+		} 
+		catch (error) {
+			console.error("Error uploading profile image:", error);
+		}
+	};
+
 	const fetchUserData = async () => 
 	{
 		try 
 		{
-			const token = getCookies('token');
 			if (token)
 			{
 				const decodeToken = jwtDecode(token);
@@ -104,6 +126,21 @@ function Profile()
 			{user ? (
 				<div className="profile">
 					<div className="profile-container">
+						<label htmlFor="profile_image">
+							<img
+								src={user.profile_image ? `http://localhost:8000${user.profile_image}` : '/default.png'}
+								alt="Profile"
+								className="profile-picture"
+								style={{ width: '100px', height: '100px', borderRadius: '50%', cursor: 'pointer',}}
+							/>
+							<input
+								type="file"
+								id="profile_image"
+								accept="image/*"
+								style={{ display: 'none' }}
+								onChange={(e) => handleFileChange(e)}
+							/>
+						</label>
 						<p>Nom : {user.name}</p>
 						{!(showChangeUsername) ? (
 							<Button className='btn rounded' onClick={() => setShowChangeUsername(true)}>Change Username</Button>
