@@ -6,7 +6,7 @@ import LoginForm from './users/LoginForm';
 import Home from './Home';
 import Logout from './users/Logout';
 import Home_game from './game/Home_game';
-import Game from './game/game';
+import { Game, Games} from './game/game';
 import { AuthProvider, useAuth } from './users/AuthContext';
 import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
 import Profile from './users/Profile';
@@ -98,6 +98,7 @@ function App() {
             <Route path='/home_game' element={<Home_game />} />
             <Route path='/game' element={<Game />} />
             <Route path='/profile' element={<Profile />} />
+            <Route path='/games' element={<Games />} />
           </Routes>
         </div>
       </Router>
