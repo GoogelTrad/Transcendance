@@ -25,10 +25,13 @@ class LoginView():
         if not user.check_password(password):
             raise AuthenticationFailed('Incorrect password!')
         
+        profile_image_url = user.profile_image.url if user.profile_image else None
+        
         payload = {
             'id': user.id,
             'name': user.name,
             'email': user.email,
+            'profile_image_url': profile_image_url,
         }
 
         token = jwt.encode(payload, 'coucou', 'HS256')
@@ -61,10 +64,12 @@ class UserView():
                 serializer = UserSerializer(user, data=request.data, partial=True)
                 if serializer.is_valid():
                     serializer.save()
+                    profile_image_url = user.profile_image.url if user.profile_image else None
                     payload = {
                         'id': user.id,
                         'name': user.name,
                         'email': user.email,
+                        'profile_image_url': profile_image_url,
                     }
                     reponse = Response()
                     reponse.delete_cookie('token')
@@ -86,6 +91,7 @@ class UserView():
         serializer.save()
 
         return Response(serializer.data)
+
 
 class LogoutView():
     @api_view(['GET'])
