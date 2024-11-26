@@ -8,4 +8,3 @@ urlpatterns = [
     path('gametest', GameView.GameTest, name="gametest"),
     path('createGame', GameView.createGame, name="creategame"),
 ]
-x

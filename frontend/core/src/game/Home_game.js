@@ -10,7 +10,7 @@ function Home_game(){
     
     return (
     <>
-        <h1 className='position-absolute title text-center text-white title-overlay w-100'>PONG</h1>
+        <h1 className='position-absolute title text-center text-white title-overlay w-100'>hi</h1>
         <div className='d-flex flex-column align-items-center justify-content-center h-100'>
             
             <div className='d-flex gap-5'>
