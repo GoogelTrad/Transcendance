@@ -5,6 +5,7 @@ import './LoginForm.css'
 import {Link} from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from './AuthContext';
+import axiosInstance from '../instance/AxiosInstance';
 
 function LoginForm()
 {
@@ -34,17 +35,14 @@ function LoginForm()
             data.append(key, value);
         try 
         {
-            await axios.post('http://localhost:8000/api/login', data, {
+            await axiosInstance.post('http://localhost:8000/api/login', data, {
                 headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
-                withCredentials: true,
-            });
+                'Content-Type': 'multipart/form-data',
+            }})
             setIsAuthenticated(true);
             navigate("/home");
         } 
-        catch (error)
-        {
+        catch (error) {
             console.error(error);
         }
     };
