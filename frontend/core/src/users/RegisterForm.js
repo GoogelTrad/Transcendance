@@ -3,6 +3,7 @@ import axios from 'axios'
 import Button from 'react-bootstrap/Button';
 import './RegisterForm.css'
 import {useNavigate, Link } from 'react-router-dom';
+import axiosInstance from '../instance/AxiosInstance';
 
 
 function RegisterForm()
@@ -36,15 +37,10 @@ function RegisterForm()
         }
         try 
         {
-            await axios.post('http://localhost:8000/api/user/create/', data, {
-                headers: {
-                    'Content-Type': 'application/json',
-                }
-            });
+            await axiosInstance.post('http://localhost:8000/api/user/create/', data)
             navigate("/login");
         } 
-        catch (error)
-        {
+        catch (error) {
             console.error(error);
         }
     };

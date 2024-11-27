@@ -2,9 +2,9 @@ import "./Profile.css"
 import { getCookies } from "../App"
 import { useNavigate } from "react-router-dom"
 import React, {useEffect, useState} from "react";
-import axios from 'axios';
 import { jwtDecode } from "jwt-decode";
 import Button from 'react-bootstrap/Button';
+import axiosInstance from "../instance/AxiosInstance";
 
 function ChangeDetails({setUser, setValue, toChange})
 {
@@ -23,14 +23,9 @@ function ChangeDetails({setUser, setValue, toChange})
         e.preventDefault();
         try 
         {
-            const reponse = await axios.patch(`http://localhost:8000/api/user/${user.id}`, {
-				[toChange] : detail }, {
-                headers: {
-                    'Content-Type': 'application/json',
-					'Authorization': `Bearer ${token}`,
-                },
-                withCredentials: true,
-            });
+			const reponse = await axiosInstance.patch(`http://localhost:8000/api/user/${user.id}`, {
+				[toChange] : detail
+			})
 			setValue(false);
 			setUser(reponse.data);
         } 
@@ -70,23 +65,21 @@ function Profile()
 	const [showChangePassword, setShowChangePassword] = useState(false);
 	const [showChangeImage, setShowChangeImage] = useState(false)
 	const token = getCookies('token');
+	const decodeToken = jwtDecode(token);
 
     const handleFileChange = async (e) => {
 		e.preventDefault();
 		const selectedImage = e.target.files[0];
 		
 		try {
-			const response = await axios.patch( `http://localhost:8000/api/user/${user.id}`, {
-					'profile_image': selectedImage,
-				} , {
+			const response = await axiosInstance.patch(`api/user/${decodeToken.id}`, { 
+				'profile_image' : selectedImage 
+				}, {
 				headers: {
-				"Content-Type": "multipart/form-data",
-				'Authorization': `Bearer ${token}`,
+					'Content-Type': 'multipart/form-data',
 				},
-				withCredentials: true,
-			}
-			);
-			setUser(response.data); // Mettre à jour l'état utilisateur avec les nouvelles données
+			})
+			setUser(response.data);
 		} 
 		catch (error) {
 			console.error("Error uploading profile image:", error);
@@ -99,14 +92,7 @@ function Profile()
 		{
 			if (token)
 			{
-				const decodeToken = jwtDecode(token);
-				const reponse = await axios.get(`http://localhost:8000/api/user/${decodeToken.id}`, {
-					headers: {
-						"Content-Type": "application/json",
-						'Authorization': `Bearer ${token}`,
-					},
-					withCredentials: true,
-				});
+				const reponse = await axiosInstance.get(`/api/user/${decodeToken.id}`);
 				setUser(reponse.data);
 			}
 		}

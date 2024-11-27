@@ -10,6 +10,7 @@ import Game from './game/game';
 import { AuthProvider, useAuth } from './users/AuthContext';
 import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
 import Profile from './users/Profile';
+import { useNavigate } from 'react-router-dom';
 
 export function getCookies(name) {
   const value = document.cookie;
@@ -82,6 +83,7 @@ function NavBar()
 }
 
 function App() {
+  
   return (
     <AuthProvider>
       <Router>
