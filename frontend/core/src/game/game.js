@@ -9,16 +9,18 @@ import { getCookies } from './../App.js';
 import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
 
 const Games = () => {
-   // const [scores, setScores] = useState([]);
+    const [scores, setScores] = useState([]);
+    const [game, setGame] = useState(null);
     const [player1, setPlayer1] = useState("");
     const [score, setScore] = useState(0);
 
-    const fetchScores = async () => {
+    const fetchScores = async (gameId) => {
         try {
-            const response = await axios.get(`http://localhost:8000/game/createGame`);
-          //  setScores(response.data.scores);  // Mettre à jour l'état des scores
+            const response = await axios.get(`http://localhost:8000/game/fetch_data/${gameId}/`);
+            setGame(response.data);
+            console.log("Game data:", response.data);
         } catch (error) {
-            console.error("Error fetching scores:", error);
+            console.error("Error fetching game by ID:", error);
         }
     };
 
@@ -29,7 +31,8 @@ const Games = () => {
                 'Content-Type': 'application/json',
                 }
             });
-            fetchScores();
+            console.log(response.data.id);
+            fetchScores(response.data.id);
         } catch (error) {
             console.error("Error submitting score:", error);
         }
@@ -56,6 +59,19 @@ const Games = () => {
                     placeholder="Enter score"
                 />
                 <Button onClick={submitScore}>Submit Score</Button>
+            </div>
+            <div>
+                {game ? (
+                    <div>
+                        <h2>Game Details</h2>
+                        <p>Player 1: {game.player1}</p>
+                        <p>Player 2: {game.player2}</p>
+                        <p>Score: {game.score}</p>
+                        <p>Winner: {game.winner}</p>
+                    </div>
+                ) : (
+                    <p>Loading game details...</p>
+                )}
             </div>
         </div>
     );

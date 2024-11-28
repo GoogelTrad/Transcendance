@@ -17,6 +17,7 @@ class HomeGameView:
         
 
 class GameView:
+
     @api_view(['POST'])
     def keep_score(request):
         serializer = GameSerializer(data=request.data)
@@ -27,6 +28,16 @@ class GameView:
             return Response(response_data, status=status.HTTP_201_CREATED)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @api_view(['GET'])
+    def fetch_data(request, game_id):
+        try:
+            game = Game.objects.get(pk=game_id)
+        except Game.DoesNotExist:
+            return Response({"error": "Game not found"}, status=status.HTTP_404_NOT_FOUND)
+        serializer = GameSerializer(game)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
 
     @api_view(['POST'])
     def GameDetails(request):

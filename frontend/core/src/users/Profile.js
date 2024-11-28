@@ -69,7 +69,6 @@ function Profile()
 	const [showChangeUsername, setShowChangeUsername] = useState(false);
 	const [showChangePassword, setShowChangePassword] = useState(false);
 
-    
 	const fetchUserData = async () => 
 	{
 		try 
