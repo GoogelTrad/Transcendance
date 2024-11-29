@@ -4,7 +4,9 @@ import Button from 'react-bootstrap/Button';
 import './RegisterForm.css'
 import {useNavigate, Link } from 'react-router-dom';
 import axiosInstance from '../instance/AxiosInstance';
-
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { showToast } from '../instance/ToastsInstance';
 
 function RegisterForm()
 {
@@ -37,10 +39,11 @@ function RegisterForm()
         }
         try 
         {
-            await axiosInstance.post('http://localhost:8000/api/user/create/', data)
+            await axiosInstance.post('api/user/create', data)
             navigate("/login");
         } 
         catch (error) {
+            showToast("error", "Cannot create the account!");
             console.error(error);
         }
     };
@@ -110,6 +113,7 @@ function RegisterForm()
                         </div>
                     </div>
                 </div>
+                <ToastContainer />
             </div>
         </>
     );

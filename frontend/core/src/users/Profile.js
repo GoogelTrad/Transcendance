@@ -23,7 +23,7 @@ function ChangeDetails({setUser, setValue, toChange})
         e.preventDefault();
         try 
         {
-			const reponse = await axiosInstance.patch(`http://localhost:8000/api/user/${user.id}`, {
+			const reponse = await axiosInstance.patch(`api/user/${user.id}`, {
 				[toChange] : detail
 			})
 			setValue(false);
@@ -80,6 +80,7 @@ function Profile()
 				},
 			})
 			setUser(response.data);
+			console.log(user.profile_image)
 		} 
 		catch (error) {
 			console.error("Error uploading profile image:", error);
@@ -92,7 +93,7 @@ function Profile()
 		{
 			if (token)
 			{
-				const reponse = await axiosInstance.get(`/api/user/${decodeToken.id}`);
+				const reponse = await axiosInstance.get(`api/user/${decodeToken.id}`);
 				setUser(reponse.data);
 			}
 		}

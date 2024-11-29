@@ -16,7 +16,7 @@ function Logout() {
             {
                 try 
                 {
-                    const reponse = await axiosInstance.get(`http://localhost:8000/api/logout`)
+                    const reponse = await axiosInstance.get(`api/logout`)
                     setIsAuthenticated(false);
                 }
                 catch (error) {

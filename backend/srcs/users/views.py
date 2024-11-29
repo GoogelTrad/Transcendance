@@ -102,14 +102,3 @@ class LogoutView():
             'message': 'success'
         }
         return reponse
-
-        
-# class LogoutView(APIView):
-#     def post(self, request):
-#         response = Response()
-#         response.delete_cookie('jwt')
-#         response.data = {
-#             'message': 'success'
-#         }
-
-#         return response
