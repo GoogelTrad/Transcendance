@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { getCookies } from "../App";
 
-
 const AuthContext = React.createContext();
 
 export const AuthProvider = ({children}) => 

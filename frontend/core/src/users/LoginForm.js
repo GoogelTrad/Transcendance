@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
-import axios from 'axios'
 import Button from 'react-bootstrap/Button';
-import './LoginForm.css'
+import './LoginForm.css';
 import {Link} from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 import axiosInstance from '../instance/AxiosInstance';
+import { ToastContainer } from 'react-toastify';
+import { showToast } from '../instance/ToastsInstance';
+import 'react-toastify/dist/ReactToastify.css';
 
 function LoginForm()
 {
@@ -35,7 +37,7 @@ function LoginForm()
             data.append(key, value);
         try 
         {
-            await axiosInstance.post('http://localhost:8000/api/login', data, {
+            await axiosInstance.post('api/login', data, {
                 headers: {
                 'Content-Type': 'multipart/form-data',
             }})
@@ -43,10 +45,10 @@ function LoginForm()
             navigate("/home");
         } 
         catch (error) {
+            showToast("error", "Incorrect login!");
             console.error(error);
         }
     };
-
 
     return (
         <>
@@ -86,7 +88,10 @@ function LoginForm()
                             <Link to='/register'>Register here</Link>
                         </div>
                     </div>
+                    <div>
+                    </div>
                 </form>
+                <ToastContainer />
             </div>
         </>
     )
