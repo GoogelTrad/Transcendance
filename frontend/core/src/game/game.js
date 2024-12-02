@@ -27,9 +27,11 @@ const Games = () => {
     const submitScore = async () => {
         try {
             const response = await axios.post(`http://localhost:8000/game/keep_score`, { player1, score, }, { 
-                headers: {
-                'Content-Type': 'application/json',
-                }
+            headers: {
+                    'Content-Type': 'application/json',
+					'Authorization': `Bearer ${token}`,
+                },
+                withCredentials: true,
             });
             console.log(response.data.id);
             fetchScores(response.data.id);
@@ -45,13 +47,8 @@ const Games = () => {
     return (
         <div>
             <h1>Game Scores</h1>
+            
             <div>
-                <input 
-                    type="text" 
-                    value={player1} 
-                    onChange={(e) => setPlayer1(e.target.value)} 
-                    placeholder="Enter player name"
-                />
                 <input 
                     type="number" 
                     value={score} 
@@ -77,7 +74,6 @@ const Games = () => {
     );
 };
 
-// Composant pour gérer l'envoi et la récupération du token
 function Game() {
     const handleSubmit = async (e) => {
         try {
@@ -86,7 +82,6 @@ function Game() {
                 const decodeCookie = jwtDecode(cookie);
                 console.log(decodeCookie.name);
 
-                // Appel API avec authentification par token
                 await axios.post('http://localhost:8000/game/gameDetails', {}, {
                     headers: {
                         "Content-Type": "application/json",
@@ -115,4 +110,4 @@ function Game() {
     );
 }
 
-export { Game, Games };  // Exporter les deux composants pour les utiliser dans d'autres fichiers
+export { Game, Games };  

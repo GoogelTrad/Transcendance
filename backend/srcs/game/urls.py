@@ -7,5 +7,5 @@ urlpatterns = [
     path('gameDetails', GameView.GameDetails, name="gameDetails"),
     path('gametest', GameView.GameTest, name="gametest"),
     path('keep_score', GameView.keep_score, name="keep_score"),
-    path('fetch_data/<int:game_id>', GameView.fetch_data, name="fetch_data"),
+    path('fetch_data/<int:game_id>/', GameView.fetch_data, name="fetch_data"),
 ]

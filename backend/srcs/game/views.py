@@ -20,6 +20,18 @@ class GameView:
 
     @api_view(['POST'])
     def keep_score(request):
+        if not token:
+                raise AuthenticationFailed('No token provided')
+        try:
+            payload= jwt.decode(token, 'coucou', algorithms=['HS256'])
+            user_name = payload['name']
+        except jwt.ExpiredSignatureError:
+            raise AuthenticationFailed('Token expired! Please log in again.')
+        except jwt.DecodeError:
+            raise AuthenticationFailed('Invalid token!')
+        game_instance = Game.objects.create(
+            player1=user_name,
+        )
         serializer = GameSerializer(data=request.data)
         if serializer.is_valid():
             game_instance = serializer.save()
