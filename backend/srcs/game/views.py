@@ -23,24 +23,23 @@ class GameView:
 
     @api_view(['GET', 'PATCH'])
     def fetch_data(request, game_id):
+        try:
+            game = Game.objects.get(pk=game_id)
+        except Game.DoesNotExist:
+            return Response({"error": "Game not found"}, status=status.HTTP_404_NOT_FOUND)
+
         if request.method == 'GET':
-            try:
-                game = Game.objects.get(pk=game_id)
-            except Game.DoesNotExist:
-                return Response({"error": "Game not found"}, status=status.HTTP_404_NOT_FOUND)
             serializer = GameSerializer(game)
             return Response(serializer.data, status=status.HTTP_200_OK)
-        elif request.method == 'PATCH':
-            try:
-                game = Game.objects.get(id=game_id)
-                serializer = GameSerializer(game, data=request.data, partial=True)
-                if serializer.is_valid():
-                    serializer.save()
-                    return Response(serializer.data, status=status.HTTP_200_OK)
-                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-            except Game.DoesNotExist:
-                return Response({"error": "Game not found"}, status=status.HTTP_404_NOT_FOUND)
 
+        elif request.method == 'PATCH':
+            serializer = GameSerializer(game, data=request.data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                # Toujours retourner l'objet complet mis à jour
+                return Response(GameSerializer(game).data, status=status.HTTP_200_OK)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
     @api_view(['POST'])
     def GameDetails(request):
 

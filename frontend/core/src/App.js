@@ -96,7 +96,7 @@ function App() {
             <Route path="/login" element={<LoginForm />} />
             <Route path='/logout' element={<Logout />} />
             <Route path='/home_game' element={<Home_game />} />
-            <Route path='/game' element={<Game />} />
+            <Route path='/game/:id' element={<Game />} />
             <Route path='/profile' element={<Profile />} />
             <Route path='/games/:id' element={<Games />} />
           </Routes>

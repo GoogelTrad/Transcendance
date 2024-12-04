@@ -3,10 +3,10 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min';
 import Button from 'react-bootstrap/Button';
 import axios from 'axios';
-import { useState, useEffect } from 'react';
+import { useState, useEffect , useRef } from 'react';
 import { jwtDecode } from "jwt-decode";
 import { getCookies } from './../App.js';
-import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Link, useNavigate } from 'react-router-dom';
 import { useParams } from 'react-router-dom';
 
 const Games = () => {
@@ -15,13 +15,17 @@ const Games = () => {
     const [score1, setScore1] = useState('');
     const [score2, setScore2] = useState('');
     const [player2, setPlayer2] = useState('');
+    const navigate = useNavigate();
     const [isEditingPlayer2, setIsEditingPlayer2] = useState(true);
+    const [time, setTime] = useState(150);
+
+    const timerRef = useRef(null);
 
     const fetch_data = async () => {
         try {
             const response = await axios.get(`http://localhost:8000/game/fetch_data/${id}/`);
             setGame(response.data);
-            console.log("Game data:", response.data);
+            //console.log("Game data:", response.data);
         } catch (error) {
             console.error("Error fetching game by ID:", error);
         }
@@ -29,19 +33,20 @@ const Games = () => {
 
     const update_game = async () => {
         try {
-                await axios.patch(`http://localhost:8000/game/fetch_data/${id}/`, { game }, {
+                await axios.patch(`http://localhost:8000/game/fetch_data/${id}/`, { ...game }, {
                 headers: {
                     'Content-Type': 'application/json',
                 }
             }
         )
+        //setGame(response.data);
         } catch (error) {
             console.error("Error fetching game by ID:", error);
         }
     };
 
     const handleScoreChange = (player, e) => {
-        console.log(player);
+        //console.log(player);
         if (player === game.player1) {
             setScore1(e.target.value);
         }
@@ -70,20 +75,44 @@ const Games = () => {
 
     const namePlayer2 = (e) => {
         setGame({ ...game, player2: e.target.value });
-        update_game();
-        console.log("game details : ", game);
+        //update_game();
+        //console.log("game details : ", game);
     };
 
     const handleKeyPress = (e) => {
-        console.log(e.key);
         if (e.key === 'Enter') {
             setIsEditingPlayer2(false);
             setPlayer2(game.player2);
         }
     };
 
+    const handleStat  = async () => {
+        console.log("game details", game);
+        if (game.score1 > game.score2)
+        {
+            game.winner = game.player1;
+            game.loser = game.player2;
+        }
+        else if (game.score1 < game.score2)
+        {
+            game.winner = game.player2;
+            game.loser = game.player1;
+        }
+
+        setGame({...game, time: time});        
+        if (timerRef.current) {
+            clearInterval(timerRef.current);
+        }
+        update_game();
+        navigate(`/game/${id}`);
+    };
+
     useEffect(() => {
         fetch_data();
+        timerRef.current = setInterval(() => {
+            setTime((prevTime) => prevTime - 1);
+        }, 1000);
+        return () => clearInterval(timerRef.current);
     }, []);
 
     if (!game) {
@@ -93,6 +122,7 @@ const Games = () => {
     return (
         <div className="games-container container-fluid">
             <h1 className="position-absolute title text-center text-white title-overlay w-100">PLAY</h1>
+            <h1 className="position-absolute title text-center text-white title-overlay w-100" style={{ top: "150px" }} >{time}</h1>
                 <div className="d-flex justify-content-center align-items-center w-100 h-100">
                     <div className="d-flex flex-column align-items-center justify-content-center col-12 col-md-5 flex-grow-1">
                         <h3>{game?.player1 || 'Player 1'}</h3>
@@ -133,13 +163,12 @@ const Games = () => {
                     </div>
                 </div>
                 <div className="position-absolute w-100 d-flex justify-content-center" style={{ bottom: "20px" }}>
-                <Link to="/game">
-                    <Button
-                        className="btn btn-primary"
-                    >
-                        STAT
-                    </Button>
-                    </Link>
+                        <Button
+                            className="btn btn-primary"
+                            onClick={handleStat}
+                            >
+                            STAT
+                        </Button>
                 </div>
         </div>
     );
@@ -147,7 +176,24 @@ const Games = () => {
 
 
 function Game() {
-    const handleSubmit = async (e) => {
+    const [game, setGame] = useState('');
+    const { id } = useParams();
+
+    const fetch_data = async () => {
+        try {
+            const response = await axios.get(`http://localhost:8000/game/fetch_data/${id}/`);
+            setGame(response.data);
+            console.log("Game data:", response.data);
+        } catch (error) {
+            console.error("Error fetching game by ID:", error);
+        }
+    };
+
+    useEffect(() => {
+        fetch_data();
+    }, []);
+
+    /*const handleSubmit = async (e) => {
         try {
             const cookie = getCookies('token');
             if (cookie) {
@@ -173,16 +219,29 @@ function Game() {
         } catch (error) {
             console.error('Erreur lors de la récupération des données utilisateur', error);
         }
-    };
+    };*/
 
     return (
         <div>
             <div className="games-container container-fluid">
             <h1 className="position-absolute title text-center text-white title-overlay w-100">STAT</h1>
-            
+            <h1 className="position-absolute title text-center text-white title-overlay w-100" style={{ top: "120px" }}>TIME : {game?.time}</h1>
+                <div className="d-flex justify-content-center align-items-center w-100 h-100">
+                        <div className="d-flex flex-column align-items-center justify-content-center col-12 col-md-5 flex-grow-1">
+                            <p> Player1 : {game?.player1}</p>
+                            <p> Score1 : {game?.score1} </p>
+                            <h2 className="position-absolute title text-center text-white title-overlay w-100"  style={{ bottom: "120px" }} >WINNER : {game?.winner}</h2>
+                        </div>
+                        <div style={{ borderLeft: "2px dashed #ccc", height: "100%", margin: "0 30px" }}></div>
+                        <div className="d-flex flex-column align-items-center justify-content-center col-12 col-md-5 flex-grow-1">
+                            <p> Player 2 : {game?.player2} </p>
+                            <p> Score2 : {game?.score2} </p>
+                            <h2 className="position-absolute title text-center text-white title-overlay w-100 "  style={{ bottom: "120px" }} >Loser : {game?.loser}</h2>
+                        </div>
+                {/* <Button type='submit' className='test' onClick={handleSubmit}>Test</Button> */}
+                {/* <Link to={Games} className="text-decoration-none text-dark">SCORE</Link> */}
+                </div>
             </div>
-            <Button type='submit' className='test' onClick={handleSubmit}>Test</Button>
-            <Link to={Games} className="text-decoration-none text-dark">SCORE</Link>
         </div>
     );
 }
