@@ -98,8 +98,9 @@ function App() {
             <Route path='/home_game' element={<Home_game />} />
             <Route path='/game' element={<Game />} />
             <Route path='/profile' element={<Profile />} />
-            <Route path='/games' element={<Games />} />
+            <Route path='/games/:id' element={<Games />} />
           </Routes>
+          
         </div>
       </Router>
     </AuthProvider>

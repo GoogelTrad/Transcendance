@@ -1,5 +1,32 @@
-.test {
+.games-container {
+    height: 100vh;
+    display: flex;
+    flex-direction: row;
+    background-image: url('./utils/fond.jpg');
+    background-size: cover; /* Pour ajuster la taille */
+    background-position: center;
+    background-repeat: no-repeat;
+  }
+  
+  .games-container h1,
+  .games-container h2,
+  .games-container h3,
+  .games-container p {
+    font-family: 'Press Start 2P', cursive;
+    color: rgb(0, 0, 0) !important;
+  }
+  
+  .games-container h1 {
+    margin-top: 4rem;
+  }
+  
+  .games-container .test {
     align-items: center;
     margin-top: 50px;
     margin-left: 50px;
-}
+  }
+  
+  .games-container .div {
+    margin-top: 150px;
+  }
+  

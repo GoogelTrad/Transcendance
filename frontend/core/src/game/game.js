@@ -7,16 +7,19 @@ import { useState, useEffect } from 'react';
 import { jwtDecode } from "jwt-decode";
 import { getCookies } from './../App.js';
 import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 
 const Games = () => {
-    const [scores, setScores] = useState([]);
     const [game, setGame] = useState(null);
-    const [player1, setPlayer1] = useState("");
-    const [score, setScore] = useState(0);
+    const { id } = useParams();
+    const [score1, setScore1] = useState('');
+    const [score2, setScore2] = useState('');
+    const [player2, setPlayer2] = useState('');
+    const [isEditingPlayer2, setIsEditingPlayer2] = useState(true);
 
-    const fetchScores = async (gameId) => {
+    const fetch_data = async () => {
         try {
-            const response = await axios.get(`http://localhost:8000/game/fetch_data/${gameId}/`);
+            const response = await axios.get(`http://localhost:8000/game/fetch_data/${id}/`);
             setGame(response.data);
             console.log("Game data:", response.data);
         } catch (error) {
@@ -24,55 +27,124 @@ const Games = () => {
         }
     };
 
-    const submitScore = async () => {
+    const update_game = async () => {
         try {
-            const response = await axios.post(`http://localhost:8000/game/keep_score`, { player1, score, }, { 
-            headers: {
+                await axios.patch(`http://localhost:8000/game/fetch_data/${id}/`, { game }, {
+                headers: {
                     'Content-Type': 'application/json',
-					'Authorization': `Bearer ${token}`,
-                },
-                withCredentials: true,
-            });
-            console.log(response.data.id);
-            fetchScores(response.data.id);
+                }
+            }
+        )
         } catch (error) {
-            console.error("Error submitting score:", error);
+            console.error("Error fetching game by ID:", error);
+        }
+    };
+
+    const handleScoreChange = (player, e) => {
+        console.log(player);
+        if (player === game.player1) {
+            setScore1(e.target.value);
+        }
+        else if (player === game.player2) {
+            setScore2(e.target.value);
+        }
+
+        
+    };
+
+    const submitScore = (player) => {
+        if(player === game.player1) {
+            const newScore = (parseInt(game?.score1, 10) || 0) + parseInt(score1, 10);
+            const updatedGame = { ...game, score1: newScore };
+            setGame(updatedGame);
+            setScore1('');
+        }
+        else if (player === game.player2) {
+            const newScore = (parseInt(game?.score2, 10) || 0) + parseInt(score2, 10);
+            const updatedGame = { ...game, score2: newScore };
+            setGame(updatedGame);
+            setScore2('');
+        }
+        
+    };
+
+    const namePlayer2 = (e) => {
+        setGame({ ...game, player2: e.target.value });
+        update_game();
+        console.log("game details : ", game);
+    };
+
+    const handleKeyPress = (e) => {
+        console.log(e.key);
+        if (e.key === 'Enter') {
+            setIsEditingPlayer2(false);
+            setPlayer2(game.player2);
         }
     };
 
     useEffect(() => {
-        fetchScores();
-    }, []); 
+        fetch_data();
+    }, []);
+
+    if (!game) {
+        return <div>Loading...</div>;
+    }
 
     return (
-        <div>
-            <h1>Game Scores</h1>
-            
-            <div>
-                <input 
-                    type="number" 
-                    value={score} 
-                    onChange={(e) => setScore(e.target.value)} 
-                    placeholder="Enter score"
-                />
-                <Button onClick={submitScore}>Submit Score</Button>
-            </div>
-            <div>
-                {game ? (
-                    <div>
-                        <h2>Game Details</h2>
-                        <p>Player 1: {game.player1}</p>
-                        <p>Player 2: {game.player2}</p>
-                        <p>Score: {game.score}</p>
-                        <p>Winner: {game.winner}</p>
+        <div className="games-container container-fluid">
+            <h1 className="position-absolute title text-center text-white title-overlay w-100">PLAY</h1>
+                <div className="d-flex justify-content-center align-items-center w-100 h-100">
+                    <div className="d-flex flex-column align-items-center justify-content-center col-12 col-md-5 flex-grow-1">
+                        <h3>{game?.player1 || 'Player 1'}</h3>
+                        <p>{game?.score1}</p>
+                        <div>
+                            <input
+                            type="number"
+                            value={score1}
+                            onChange={(e) => handleScoreChange(game?.player1, e)}
+                            placeholder="Enter score"
+                            />
+                            <Button onClick={() => submitScore(game?.player1)}>Submit Score</Button>
+                        </div>
                     </div>
-                ) : (
-                    <p>Loading game details...</p>
-                )}
-            </div>
+                    
+                    <div style={{ borderLeft: "2px dashed #ccc", height: "100%", margin: "0 30px" }}></div>
+                    <div className="d-flex flex-column align-items-center justify-content-center col-12 col-md-5 flex-grow-1">
+                        <h3>{game?.player2 || 'Player 2'}</h3>
+                        {isEditingPlayer2 ? (
+                            <input
+                            type="text"
+                            value={game.player2 || ''}
+                            onChange={namePlayer2}
+                            onKeyDown={handleKeyPress}
+                            placeholder="Enter name"
+                            />
+                        ) : null}
+                        <p>{game?.score2}</p>
+                        <div>
+                            <input
+                                type="number"
+                                value={score2}
+                                onChange={(e) => handleScoreChange(game?.player2, e)}
+                                placeholder="Enter score"
+                            />
+                            <Button onClick={() => submitScore(game?.player2)}>Submit Score</Button>
+                        </div>
+                    </div>
+                </div>
+                <div className="position-absolute w-100 d-flex justify-content-center" style={{ bottom: "20px" }}>
+                <Link to="/game">
+                    <Button
+                        className="btn btn-primary"
+                    >
+                        STAT
+                    </Button>
+                    </Link>
+                </div>
         </div>
     );
 };
+
 
 function Game() {
     const handleSubmit = async (e) => {
@@ -82,6 +154,7 @@ function Game() {
                 const decodeCookie = jwtDecode(cookie);
                 console.log(decodeCookie.name);
 
+                // Appel API avec authentification par token
                 await axios.post('http://localhost:8000/game/gameDetails', {}, {
                     headers: {
                         "Content-Type": "application/json",
@@ -104,10 +177,14 @@ function Game() {
 
     return (
         <div>
+            <div className="games-container container-fluid">
+            <h1 className="position-absolute title text-center text-white title-overlay w-100">STAT</h1>
+            
+            </div>
             <Button type='submit' className='test' onClick={handleSubmit}>Test</Button>
             <Link to={Games} className="text-decoration-none text-dark">SCORE</Link>
         </div>
     );
 }
 
-export { Game, Games };  
+export { Game, Games }; 

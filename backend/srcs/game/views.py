@@ -11,45 +11,35 @@ from .models import Game
 import jwt
 
 class HomeGameView:
-    @api_view(['GET'])
-    def home_page(APIView):
-        return Response()
-        
-
-class GameView:
-
     @api_view(['POST'])
-    def keep_score(request):
-        if not token:
-                raise AuthenticationFailed('No token provided')
-        try:
-            payload= jwt.decode(token, 'coucou', algorithms=['HS256'])
-            user_name = payload['name']
-        except jwt.ExpiredSignatureError:
-            raise AuthenticationFailed('Token expired! Please log in again.')
-        except jwt.DecodeError:
-            raise AuthenticationFailed('Invalid token!')
-        game_instance = Game.objects.create(
-            player1=user_name,
-        )
+    def create_game(request):
         serializer = GameSerializer(data=request.data)
         if serializer.is_valid():
             game_instance = serializer.save()
-            response_data = serializer.data
-            response_data['id'] = game_instance.id
-            return Response(response_data, status=status.HTTP_201_CREATED)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"id": game_instance.id, **serializer.data}, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    @api_view(['GET'])
+class GameView:
+
+    @api_view(['GET', 'PATCH'])
     def fetch_data(request, game_id):
-        try:
-            game = Game.objects.get(pk=game_id)
-        except Game.DoesNotExist:
-            return Response({"error": "Game not found"}, status=status.HTTP_404_NOT_FOUND)
-        serializer = GameSerializer(game)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
+        if request.method == 'GET':
+            try:
+                game = Game.objects.get(pk=game_id)
+            except Game.DoesNotExist:
+                return Response({"error": "Game not found"}, status=status.HTTP_404_NOT_FOUND)
+            serializer = GameSerializer(game)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        elif request.method == 'PATCH':
+            try:
+                game = Game.objects.get(id=game_id)
+                serializer = GameSerializer(game, data=request.data, partial=True)
+                if serializer.is_valid():
+                    serializer.save()
+                    return Response(serializer.data, status=status.HTTP_200_OK)
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            except Game.DoesNotExist:
+                return Response({"error": "Game not found"}, status=status.HTTP_404_NOT_FOUND)
 
     @api_view(['POST'])
     def GameDetails(request):
