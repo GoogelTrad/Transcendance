@@ -11,21 +11,35 @@ from .models import Game
 import jwt
 
 class HomeGameView:
-    @api_view(['GET'])
-    def home_page(APIView):
-        return Response()
-        
+    @api_view(['POST'])
+    def create_game(request):
+        serializer = GameSerializer(data=request.data)
+        if serializer.is_valid():
+            game_instance = serializer.save()
+            return Response({"id": game_instance.id, **serializer.data}, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class GameView:
-    
-    @api_view(['GET'])
-    def createGame(request):
-        serializer = GameSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
 
-        return Response(serializer.data)
+    @api_view(['GET', 'PATCH'])
+    def fetch_data(request, game_id):
+        try:
+            game = Game.objects.get(pk=game_id)
+        except Game.DoesNotExist:
+            return Response({"error": "Game not found"}, status=status.HTTP_404_NOT_FOUND)
 
+        if request.method == 'GET':
+            serializer = GameSerializer(game)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        elif request.method == 'PATCH':
+            serializer = GameSerializer(game, data=request.data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                # Toujours retourner l'objet complet mis à jour
+                return Response(GameSerializer(game).data, status=status.HTTP_200_OK)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
     @api_view(['POST'])
     def GameDetails(request):
 
@@ -44,7 +58,6 @@ class GameView:
         response.data = {
             'token' : token
         }
-
         return Response()
         
     @api_view(['GET'])
