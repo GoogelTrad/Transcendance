@@ -1,0 +1,48 @@
+html, body, #root {
+    height: 100%;
+    margin: 0;
+    overflow: hidden;
+}
+
+.title {
+    display: grid;
+    justify-content: center;
+    color: azure;
+}
+
+.games-container {
+    height: 100vh;
+    display: flex;
+    flex-direction: row;
+    background-image: url('./utils/fond.jpg');
+    background-size: cover; 
+    background-position: center;
+    background-repeat: no-repeat;
+    
+  }
+  
+  .games-container h1,
+  .games-container h2,
+  .games-container h3,
+  .games-container p {
+    font-family: 'Press Start 2P', cursive;
+    color: black !important;
+    text-transform: uppercase;
+  }
+  
+  .games-container h1 {
+    margin-top: 4rem;
+  }
+  
+  .games-container .button {
+    background-color: transparent ;
+    border: 0px;
+    color: black;
+    font-family: 'Press Start 2P', cursive;
+    font-weight: bold;
+    padding: 30px 60px;
+    font-size: 30px;
+    text-transform: uppercase;
+  }
+
+  

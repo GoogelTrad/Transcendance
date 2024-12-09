@@ -3,6 +3,7 @@ import { useEffect } from 'react';
 import { getCookies } from '../App.js';
 import { useAuth } from './AuthContext.js';
 import axios from 'axios';
+import axiosInstance from '../instance/AxiosInstance.js';
 
 function Logout() {
     const {isAuthenticated, setIsAuthenticated} = useAuth();
@@ -15,23 +16,14 @@ function Logout() {
             {
                 try 
                 {
-                    const token = getCookies('token');
-                    const reponse = await axios.get(`http://localhost:8000/api/logout`, {
-                        headers: {
-                            "Content-Type": "application/json",
-                            'Authorization': `Bearer ${token}`,
-                        },
-                        withCredentials: true,
-                    });
+                    const reponse = await axiosInstance.get(`api/logout`)
                     setIsAuthenticated(false);
                 }
-                catch (error)
-                {
+                catch (error) {
                     console.error('Erreur lors de la récupération des données utilisateur', error);
                 }
                 navigate('/home');
             }
-    
             fetchUserData();
         }, []);
 

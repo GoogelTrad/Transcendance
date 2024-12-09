@@ -3,7 +3,10 @@ import axios from 'axios'
 import Button from 'react-bootstrap/Button';
 import './RegisterForm.css'
 import {useNavigate, Link } from 'react-router-dom';
-
+import axiosInstance from '../instance/AxiosInstance';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { showToast } from '../instance/ToastsInstance';
 
 function RegisterForm()
 {
@@ -13,7 +16,7 @@ function RegisterForm()
         name: '',
         email: '',
         password: '',
-        // password_confirm: '',
+        password_confirm: '',
     });
 
     const handleChange = (e) =>
@@ -36,15 +39,11 @@ function RegisterForm()
         }
         try 
         {
-            await axios.post('http://localhost:8000/api/user/create/', data, {
-                headers: {
-                    'Content-Type': 'application/json',
-                }
-            });
-            navigate("/home");
+            await axiosInstance.post('api/user/create', data)
+            navigate("/login");
         } 
-        catch (error)
-        {
+        catch (error) {
+            showToast("error", "Cannot create the account!");
             console.error(error);
         }
     };
@@ -91,7 +90,7 @@ function RegisterForm()
                                 placeholder='Password'>
                             </input>
                         </div>
-                        {/* <div className='form-group'>
+                        <div className='form-group'>
                             <label htmlFor='password_confirm'>Confirm Password:</label>
                             <input className='input-form'
                                 type='password'
@@ -102,7 +101,7 @@ function RegisterForm()
                                 required
                                 placeholder='Confirm Password'>
                             </input>
-                        </div> */}
+                        </div>
 
                         <Button type='submit' className='submit-button btn'>Register</Button>
                     </form>
@@ -114,6 +113,7 @@ function RegisterForm()
                         </div>
                     </div>
                 </div>
+                <ToastContainer />
             </div>
         </>
     );

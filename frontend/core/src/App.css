@@ -5,17 +5,35 @@
   align-items: center;
   display: flex;
   flex-direction: row;
-  justify-content: center;
 }
-
-.nav
+.accueil-container
 {
-  padding: 1rem;
-  margin-left: 1rem;
-  gap: 1rem;
+  display: flex;
+  align-items: left;
 }
 
 body
 {
   background-color: black !important;
+  color: white !important;
+  font-family: 'Press Start 2P', cursive;
+  background-color: #000;
+  color: lime;
+}
+
+.welcome-container
+{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 30%;
+}
+
+h1
+{
+  font-size: 100px !important;
+}
+
+#root {
+  height: 100%;
 }

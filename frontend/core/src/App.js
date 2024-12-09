@@ -6,9 +6,12 @@ import LoginForm from './users/LoginForm';
 import Home from './Home';
 import Logout from './users/Logout';
 import Room from './chat/index';
+import Home_game from './game/Home_game';
+import { Game, Games} from './game/game';
 import { AuthProvider, useAuth } from './users/AuthContext';
-import { BrowserRouter as Router, Route, Routes, Link, Outlet, Navigate, useNavigate } from 'react-router-dom';
-import React, {useEffect, useState} from "react";
+import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
+import Profile from './users/Profile';
+import { useNavigate } from 'react-router-dom';
 
 export function getCookies(name) {
   const value = document.cookie;
@@ -16,9 +19,9 @@ export function getCookies(name) {
   if (!value)
     parts = null;
   else
-  parts = value.match(`(?:\s|^)${name}=([^;]*);?`)?.[1];
+    parts = value.match(`(?:\s|^)${name}=([^;]*);?`)?.[1];
 
-return (parts);
+  return (parts);
 }
 
 function NavBar()
@@ -26,60 +29,66 @@ function NavBar()
   const {isAuthenticated} = useAuth();
 
   return (
-    <nav className='nav'>
-      <div>
-        <button className="buttonAccueil">
-          <Link to="/home" className="text-decoration-none text-dark">Home</Link>
-        </button>
-      </div>
+    <nav className='navbar navbar-expand-md navbar-dark fixed-top bg-dark'>
+      <div className='container-fluid'>
+        <div className='accueil-container'>
+          <button className="buttonAccueil">
+            <Link to="/home" className="text-decoration-none text-dark">Home</Link>
+          </button>
+        </div>
 
-      {!isAuthenticated && (
-        <>
-          <div>
-            <button className="buttonRegister">
-              <Link to="/register" className="text-decoration-none text-dark">Register</Link>
-            </button>
-          </div>
-          <div>
-            <button className="buttonLogin">
-              <Link to="/login" className="text-decoration-none text-dark">Login</Link>
-            </button>
-          </div>
-        </>
-      )}
+        {!isAuthenticated && (
+          <>
+            <div className='d-flex flex-row'>
+              <div>
+                <button className="buttonLogin">
+                  <Link to="/login" className="text-decoration-none text-dark">Login</Link>
+                </button>
+              </div>
+              <div>
+                <button className="buttonRegister">
+                  <Link to="/register" className="text-decoration-none text-dark">Register</Link>
+                </button>
+              </div>
+            </div>
+          </>
+        )}
 
-      {isAuthenticated && (
-        <>
-          <div>
-            <button className="buttonGame">
-              <Link to="/game" className="text-decoration-none text-dark">Game</Link>
-            </button>
-          </div>
-          <div>
-            <button className="buttonChat">
-              <Link to="/chat" className="text-decoration-none text-dark">Chat</Link>
-            </button>
-          </div>
-          <div>
-            <button className="buttonLogout">
-              <Link to="/logout" className="text-decoration-none text-dark">Logout</Link>
-            </button>
-
-            <button className="buttonGame">
-              <Link to="/chat" className="text-decoration-none text-dark">Game</Link>
-            </button>
-          </div>
-        </>
-      )}
+        {isAuthenticated && (
+          <>
+            <div>
+              <button className="buttonGame">
+                <Link to="/home_game" className="text-decoration-none text-dark">Game</Link>
+              </button>
+              <button className="buttonChat">
+                <Link to="/chat" className="text-decoration-none text-dark">Chat</Link>
+              </button>
+            </div>
+            <div className='d-flex flex-row'>
+              <div>
+                <button className="buttonProfile">
+                  <Link to="/profile" className="text-decoration-none text-dark">Profile</Link>
+                </button>
+              </div>
+              <div>
+                <button className="buttonLogout">
+                  <Link to="/logout" className="text-decoration-none text-dark">Logout</Link>
+                </button>
+              </div>
+            </div>
+          </>
+        )}
+        </div>
     </nav>
   );
 }
 
 function App() {
+  
   return (
     <AuthProvider>
       <Router>
-        <div>
+        <div className='h-100'>
           <div className='head'>
             <NavBar />
           </div>
@@ -90,7 +99,12 @@ function App() {
             <Route path="/login" element={<LoginForm />} />
             <Route path='/logout' element={<Logout />} />
             <Route path='/chat' element={<Room />} />
+            <Route path='/home_game' element={<Home_game />} />
+            <Route path='/game/:id' element={<Game />} />
+            <Route path='/profile' element={<Profile />} />
+            <Route path='/games/:id' element={<Games />} />
           </Routes>
+          
         </div>
       </Router>
     </AuthProvider>
