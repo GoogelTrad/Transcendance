@@ -5,6 +5,7 @@ import RegisterForm from './users/RegisterForm';
 import LoginForm from './users/LoginForm';
 import Home from './Home';
 import Logout from './users/Logout';
+import Room from './chat/index';
 import { AuthProvider, useAuth } from './users/AuthContext';
 import { BrowserRouter as Router, Route, Routes, Link, Outlet, Navigate, useNavigate } from 'react-router-dom';
 import React, {useEffect, useState} from "react";
@@ -15,7 +16,7 @@ export function getCookies(name) {
   if (!value)
     parts = null;
   else
-  parts = value.match(`(?:\s|^)${name}=([^;]*);?`)[1];
+  parts = value.match(`(?:\s|^)${name}=([^;]*);?`)?.[1];
 
 return (parts);
 }
@@ -63,6 +64,10 @@ function NavBar()
             <button className="buttonLogout">
               <Link to="/logout" className="text-decoration-none text-dark">Logout</Link>
             </button>
+
+            <button className="buttonGame">
+              <Link to="/chat" className="text-decoration-none text-dark">Game</Link>
+            </button>
           </div>
         </>
       )}
@@ -84,6 +89,7 @@ function App() {
             <Route path="/register" element={<RegisterForm />} />
             <Route path="/login" element={<LoginForm />} />
             <Route path='/logout' element={<Logout />} />
+            <Route path='/chat' element={<Room />} />
           </Routes>
         </div>
       </Router>
