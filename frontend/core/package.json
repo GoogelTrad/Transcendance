@@ -14,13 +14,10 @@
     "react-bootstrap": "^2.10.5",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.28.0",
-<<<<<<< HEAD
     "react-scripts": "5.0.1",
     "socket.io-client": "^4.8.1",
     "socketio": "^1.0.0",
-=======
     "react-toastify": "^10.0.6",
->>>>>>> 39259716656867b58788002c6b3cd5dc45babdaf
     "web-vitals": "^2.1.4"
   },
   "scripts": {

@@ -45,7 +45,6 @@ INSTALLED_APPS = [
     'users',
     'livechat',
     'channels',
-	'public_chat',
     'game',
 ]
 
