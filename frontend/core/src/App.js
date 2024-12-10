@@ -6,8 +6,9 @@ import LoginForm from './users/LoginForm';
 import Home from './Home';
 import Friends from './friends/Friends';
 import Logout from './users/Logout';
+import Room from './chat/index';
 import Home_game from './game/Home_game';
-import Game from './game/game';
+import { Game, Games} from './game/game';
 import { AuthProvider, useAuth } from './users/AuthContext';
 import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
 import Profile from './users/Profile';
@@ -100,11 +101,14 @@ function App() {
             <Route path="/register" element={<RegisterForm />} />
             <Route path="/login" element={<LoginForm />} />
             <Route path='/logout' element={<ProtectedRoute><Logout /></ProtectedRoute>} />
+            <Route path='/chat' element={<Room />} />
             <Route path='/home_game' element={<ProtectedRoute><Home_game /></ProtectedRoute>} />
-            <Route path='/game' element={<ProtectedRoute><Game /></ProtectedRoute>} />
+            <Route path='/game/:id' element={<ProtectedRoute><Game /></ProtectedRoute>} />
             <Route path='/profile' element={<ProtectedRoute><Profile /></ProtectedRoute>} />
             <Route path='/friends' element={<ProtectedRoute><Friends /></ProtectedRoute>} />
+            <Route path='/games/:id' element={<Games />} />
           </Routes>
+          
         </div>
       </Router>
     </AuthProvider>
