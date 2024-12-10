@@ -5,6 +5,7 @@ import django
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'core.settings')  # Remplace 'mon_projet' par le nom de ton projet
 django.setup()
 
+from users.models import User
 from django.contrib.auth import get_user_model
 
 def create_superuser(username, password, email):

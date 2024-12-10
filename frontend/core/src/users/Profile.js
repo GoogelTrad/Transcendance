@@ -1,6 +1,6 @@
 import "./Profile.css"
 import { getCookies } from "../App"
-import { useNavigate } from "react-router-dom"
+import { useNavigate, Link } from "react-router-dom"
 import React, {useEffect, useState} from "react";
 import { jwtDecode } from "jwt-decode";
 import Button from 'react-bootstrap/Button';
@@ -14,6 +14,7 @@ function ChangeDetails({setUser, setValue, toChange})
 	const [detail, setDetails] = useState('');
 
 	const handleChange = (e) => {
+		e.preventDefault();
 		const { value } = e.target;
 		setDetails(value);
 	  };
@@ -46,7 +47,7 @@ function ChangeDetails({setUser, setValue, toChange})
                             name={toChange}
                             value={detail}
                             onChange={handleChange}
-                            required$
+                            required
                             placeholder='modify your details here'>    
                         </input>
                     </div>
@@ -106,7 +107,7 @@ function Profile()
     useEffect (() => 
     {
         fetchUserData();
-    }, [setUser]);
+    }, []);
 
 	return (
 		<>
@@ -147,10 +148,16 @@ function Profile()
 							</>
 						)}
 					</div>
+					<div className="friends">
+						<button className="buttonFriends">
+						<Link to="/friends" className="text-decoration-none text-dark">Friends</Link>
+						</button>
+					</div>
 				</div>
 			) : (
 				<p>Aucun utilisateur trouvé.</p>
 			)}
+
 		</>
 	);
 }

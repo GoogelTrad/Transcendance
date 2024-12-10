@@ -22,3 +22,10 @@
 {
 	border: solid
 }
+
+
+.friends
+{
+	display: flex;
+	justify-content: center;
+}

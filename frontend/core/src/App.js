@@ -4,6 +4,7 @@ import 'bootstrap/dist/js/bootstrap.bundle.min';
 import RegisterForm from './users/RegisterForm';
 import LoginForm from './users/LoginForm';
 import Home from './Home';
+import Friends from './friends/Friends';
 import Logout from './users/Logout';
 import Home_game from './game/Home_game';
 import Game from './game/game';
@@ -11,6 +12,8 @@ import { AuthProvider, useAuth } from './users/AuthContext';
 import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
 import Profile from './users/Profile';
 import { useNavigate } from 'react-router-dom';
+import { Button } from 'bootstrap/dist/js/bootstrap.bundle.min';
+import ProtectedRoute from './instance/RouteInstance';
 
 export function getCookies(name) {
   const value = document.cookie;
@@ -96,10 +99,11 @@ function App() {
             <Route path="/home" element={<Home />} />
             <Route path="/register" element={<RegisterForm />} />
             <Route path="/login" element={<LoginForm />} />
-            <Route path='/logout' element={<Logout />} />
-            <Route path='/home_game' element={<Home_game />} />
-            <Route path='/game' element={<Game />} />
-            <Route path='/profile' element={<Profile />} />
+            <Route path='/logout' element={<ProtectedRoute><Logout /></ProtectedRoute>} />
+            <Route path='/home_game' element={<ProtectedRoute><Home_game /></ProtectedRoute>} />
+            <Route path='/game' element={<ProtectedRoute><Game /></ProtectedRoute>} />
+            <Route path='/profile' element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+            <Route path='/friends' element={<ProtectedRoute><Friends /></ProtectedRoute>} />
           </Routes>
         </div>
       </Router>

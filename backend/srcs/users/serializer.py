@@ -1,13 +1,15 @@
 from rest_framework import serializers
 from .models import User
+from friends.serializer import FriendSerializer
 
 class UserSerializer(serializers.ModelSerializer):
+    friends = FriendSerializer(many=True, read_only=True)
     password_confirm = serializers.CharField(max_length=255, write_only=True)
     profile_image_url = serializers.SerializerMethodField()
     
     class Meta:
         model = User
-        fields = ['id', 'name', 'email', 'password', 'password_confirm', 'profile_image', 'profile_image_url']
+        fields = ['id', 'name', 'email', 'password', 'password_confirm', 'profile_image', 'profile_image_url', 'friends']
         
     def get_profile_image_url(self, obj):
         if obj.profile_image:
@@ -49,3 +51,5 @@ class UserSerializer(serializers.ModelSerializer):
 
         instance.save()
         return instance
+        
+        

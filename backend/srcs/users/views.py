@@ -7,7 +7,8 @@ from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.decorators import api_view, action
 from .serializer import UserSerializer
 from django.http import HttpResponse
-from .models import User
+from django.contrib.auth import authenticate, login
+from .models import User, ValidToken
 import jwt
 
 
@@ -35,6 +36,9 @@ class LoginView():
         }
 
         token = jwt.encode(payload, 'coucou', 'HS256')
+        if ValidToken.objects.filter(user=user).exists():
+            ValidToken.objects.filter(user=user).delete()
+        ValidToken.objects.create(user=user, token=token)
 
         reponse = Response()
 
@@ -96,6 +100,13 @@ class UserView():
 class LogoutView():
     @api_view(['GET'])
     def logoutUser(request):
+        
+        auth_header = request.headers.get('Authorization')
+        if not auth_header:
+            raise AuthenticationFailed('Authorization header missing!')
+        token = auth_header.split(' ')[1]
+        ValidToken.objects.filter(token=token).delete()
+        
         reponse = Response()
         reponse.delete_cookie('token')
         reponse.data = {
