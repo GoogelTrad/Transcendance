@@ -27,6 +27,7 @@ function Home_game() {
             const response = await axios.post(`http://localhost:8000/game/create_game`, { player1 }, { 
                 headers: {
                     'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
                 }
             })
             console.log(response.data);

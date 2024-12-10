@@ -21,10 +21,15 @@ const Games = () => {
     const [TimeIsOver, setTimeIsOver] = useState(false);
     const [update_time, setupdateTime] = useState(init);
     const timerRef = useRef(init);
-
+    const token = getCookies('token');
     const fetch_data = async () => {
         try {
-            const response = await axios.get(`http://localhost:8000/game/fetch_data/${id}/`);
+            const response = await axios.get(`http://localhost:8000/game/fetch_data/${id}/` , {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                }
+            });
             setGame(response.data);
             //console.log("Game data:", response.data);
         } catch (error) {
@@ -37,9 +42,18 @@ const Games = () => {
             await axios.patch(`http://localhost:8000/game/fetch_data/${id}/`, { ...game }, {
                 headers: {
                     'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
                 }
             }
             )
+            const ws = new WebSocket('ws://localhost:8000/ws/game/');
+            ws.onopen = () => {
+                console.log('WebSocket is open');
+                ws.send(game.player1);
+            };
+            ws.onmessage = function(e) {
+                console.log('Received:', e.data);
+            };
             //setGame(response.data);
         } catch (error) {
             console.error("Error fetching game by ID:", error);
@@ -178,19 +192,27 @@ const Games = () => {
 function Game() {
     const [game, setGame] = useState('');
     const { id } = useParams();
+    const token = getCookies('token');
+
+    
 
     const fetch_data = async () => {
         try {
-            const response = await axios.get(`http://localhost:8000/game/fetch_data/${id}/`);
+            const response = await axios.get(`http://localhost:8000/game/fetch_data/${id}/`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                }
+            });
             setGame(response.data);
         } catch (error) {
             console.error("Error fetching game by ID:", error);
         }
     };
 
-    useEffect(() => {
-        fetch_data();
-    }, []);
+     useEffect(() => {
+         fetch_data();
+     }, []);
 
     /*const handleSubmit = async (e) => {
         try {
