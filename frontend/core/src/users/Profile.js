@@ -1,6 +1,6 @@
 import "./Profile.css"
 import { getCookies } from "../App"
-import { useNavigate, Link } from "react-router-dom"
+import { useNavigate, Link, useParams } from "react-router-dom"
 import React, {useEffect, useState} from "react";
 import { jwtDecode } from "jwt-decode";
 import Button from 'react-bootstrap/Button';
@@ -65,8 +65,10 @@ function Profile()
 	const [showChangeUsername, setShowChangeUsername] = useState(false);
 	const [showChangePassword, setShowChangePassword] = useState(false);
 	const [showChangeImage, setShowChangeImage] = useState(false)
+	const [isPermitted, setIsPermitted] = useState(false);
 	const token = getCookies('token');
 	const decodeToken = jwtDecode(token);
+	const { id } = useParams();
 
     const handleFileChange = async (e) => {
 		e.preventDefault();
@@ -90,11 +92,15 @@ function Profile()
 
 	const fetchUserData = async () => 
 	{
+		if (decodeToken.id == id)
+			setIsPermitted(true);
+		else
+			setIsPermitted(false);
 		try 
 		{
 			if (token)
 			{
-				const reponse = await axiosInstance.get(`api/user/${decodeToken.id}`);
+				const reponse = await axiosInstance.get(`api/user/${id}`);
 				setUser(reponse.data);
 			}
 		}
@@ -107,7 +113,7 @@ function Profile()
     useEffect (() => 
     {
         fetchUserData();
-    }, []);
+    }, [id]);
 
 	return (
 		<>
@@ -130,29 +136,41 @@ function Profile()
 							/>
 						</label>
 						<p>Nom : {user.name}</p>
-						{!(showChangeUsername) ? (
-							<Button className='btn rounded' onClick={() => setShowChangeUsername(true)}>Change Username</Button>
-						) : (
-							<>
-								<ChangeDetails setUser={setUser} setValue={setShowChangeUsername} toChange={'name'}/>
-								<Button className='btn rounded' onClick={() => setShowChangeUsername(false)}>Cancel</Button>
-							</>
-						)}
-						<p>Email : {user.email}</p>
-						{!(showChangePassword) ? (
-							<Button className='btn rounded' onClick={() => setShowChangePassword(true)}>Change Pass</Button>
-						) : (
-							<>
-								<ChangeDetails setUser={setUser} setValue={setShowChangePassword} toChange={'password'}/>
-								<Button className='btn rounded' onClick={() => setShowChangePassword(false)}>Cancel</Button>
-							</>
-						)}
+						<>
+							{isPermitted ? (
+								<>
+									{showChangeUsername ? (
+										<>
+											<ChangeDetails setUser={setUser} setValue={setShowChangeUsername} toChange={'name'} />
+											<Button className="btn rounded" onClick={() => setShowChangeUsername(false)}>Cancel</Button>
+										</>
+									) : (
+										<Button className="btn rounded" onClick={() => setShowChangeUsername(true)}>Change Username</Button>
+									)}
+
+									{showChangePassword ? (
+										<>
+											<ChangeDetails setUser={setUser} setValue={setShowChangePassword} toChange={'password'} />
+											<Button className="btn rounded" onClick={() => setShowChangePassword(false)}>Cancel</Button>
+										</>
+									) : (
+										<Button className="btn rounded" onClick={() => setShowChangePassword(true)}>Change Pass</Button>
+									)}
+									<p>Email : {user.email}</p>
+								</>
+							) : (
+								<></>
+							)}
+					</>
 					</div>
+					{isPermitted ? (
 					<div className="friends">
 						<button className="buttonFriends">
 						<Link to="/friends" className="text-decoration-none text-dark">Friends</Link>
 						</button>
-					</div>
+					</div> ) :
+					<></>
+				}
 				</div>
 			) : (
 				<p>Aucun utilisateur trouvé.</p>

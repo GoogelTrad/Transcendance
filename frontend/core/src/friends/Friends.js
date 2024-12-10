@@ -4,6 +4,7 @@ import { getCookies } from '../App';
 import { jwtDecode } from 'jwt-decode';
 import { showToast } from '../instance/ToastsInstance';
 import { ToastContainer } from 'react-toastify';
+import { Link } from 'react-router-dom';
 
 function SeeFriendsRequest({ toWhom, type, onResponse }) {
     const handleResponse = async () => {
@@ -90,6 +91,7 @@ function FriendRequests() {
 
     const handleRequestResponse = (id) => {
         setFriendRequests((prevRequests) => prevRequests.filter((req) => req.id !== id));
+		fetchFriendList();
     };
 
     useEffect(() => {
@@ -110,7 +112,8 @@ function FriendRequests() {
                     	alt={`${friend.name}'s profile`} 
                     	style={{ width: '50px', height: '50px', borderRadius: '50%', marginRight: '10px' }}
                 	/>
-                	<span style={{ fontWeight: 'bold' }}>{friend.name}</span> <span style={{ color: 'gray' }}>({friend.email})</span>
+					 <Link to={`/profile/${friend.id}`} className="text-decoration-none text-white">{friend.name}</Link>
+                	{/* <span style={{ fontWeight: 'bold' }}>{friend.name}</span> <span style={{ color: 'gray' }}>({friend.email})</span> */}
             		</li>
         			))}
     				</ul>

@@ -62,7 +62,12 @@ class UserView():
 
             if request.method == 'GET':
                 serializer = UserSerializer(user)
-                return Response(serializer.data)
+                user_data = serializer.data
+                if user_data == request.user:
+                    filtered_user = {key: value for key, value in user_data.items() if key != 'password'}
+                else:
+                    filtered_user = {key: value for key, value in user_data.items() if key not in ['password']}
+                return Response(filtered_user)
             
             elif request.method == 'PATCH':
                 serializer = UserSerializer(user, data=request.data, partial=True)

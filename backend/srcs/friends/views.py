@@ -107,7 +107,7 @@ def searchAddFriend(request, name):
 		serializer = UserSerializer(user, many=True)
 		user_data = []
 		for user in serializer.data:
-			filtered_user = {key: value for key, value in user.items() if key not in ['password']}
+			filtered_user = {key: value for key, value in user.items() if key not in ['password', 'email']}
 			user_data.append(filtered_user)
 		return Response(user_data)
 	return Response({'error': 'User not found!'}, status=status.HTTP_404_NOT_FOUND)
