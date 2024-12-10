@@ -15,6 +15,7 @@ import Profile from './users/Profile';
 import { useNavigate } from 'react-router-dom';
 import { Button } from 'bootstrap/dist/js/bootstrap.bundle.min';
 import ProtectedRoute from './instance/RouteInstance';
+import { jwtDecode } from 'jwt-decode';
 
 export function getCookies(name) {
   const value = document.cookie;
@@ -30,6 +31,10 @@ export function getCookies(name) {
 function NavBar()
 {
   const {isAuthenticated} = useAuth();
+  const token = getCookies('token');
+  let decodeToken = null;
+  if (token)
+    decodeToken = jwtDecode(token);
 
   return (
     <nav className='navbar navbar-expand-md navbar-dark fixed-top bg-dark'>
@@ -70,7 +75,7 @@ function NavBar()
             <div className='d-flex flex-row'>
               <div>
                 <button className="buttonProfile">
-                  <Link to="/profile" className="text-decoration-none text-dark">Profile</Link>
+                  <Link to={`/profile/${decodeToken.id}`} className="text-decoration-none text-dark">Profile</Link>
                 </button>
               </div>
               <div>
@@ -104,7 +109,7 @@ function App() {
             <Route path='/chat' element={<Room />} />
             <Route path='/home_game' element={<ProtectedRoute><Home_game /></ProtectedRoute>} />
             <Route path='/game/:id' element={<ProtectedRoute><Game /></ProtectedRoute>} />
-            <Route path='/profile' element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+            <Route path='/profile/:id' element={<ProtectedRoute><Profile /></ProtectedRoute>} />
             <Route path='/friends' element={<ProtectedRoute><Friends /></ProtectedRoute>} />
             <Route path='/games/:id' element={<Games />} />
           </Routes>
