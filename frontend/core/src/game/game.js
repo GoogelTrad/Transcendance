@@ -8,6 +8,7 @@ import { jwtDecode } from "jwt-decode";
 import { getCookies } from './../App.js';
 import { BrowserRouter as Router, Route, Routes, Link, useNavigate } from 'react-router-dom';
 import { useParams } from 'react-router-dom';
+import axiosInstance from '../instance/AxiosInstance.js';
 
 const Games = () => {
     const [game, setGame] = useState(null);
@@ -54,7 +55,6 @@ const Games = () => {
             ws.onmessage = function(e) {
                 console.log('Received:', e.data);
             };
-            //setGame(response.data);
         } catch (error) {
             console.error("Error fetching game by ID:", error);
         }

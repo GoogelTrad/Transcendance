@@ -31,7 +31,8 @@ function Home_game() {
                 }
             })
             console.log(response.data);
-            navigate(`/games/${response.data.id}`);
+            navigate(`/games_pong/${response.data.id}`)
+        //    navigate(`/games/${response.data.id}`);
         } catch (error) {
             console.error("Error submitting Player:", error);
         }
@@ -41,6 +42,8 @@ function Home_game() {
         <>
         <div className="games-container container-fluid">
             <h1 className='position-absolute title text-center text-white title-overlay w-100'>pong</h1>
+
+
             <div className="d-flex flex-column align-items-center justify-content-center col-12 col-md-5 flex-grow-1">
                 <Button
                     type='submit'

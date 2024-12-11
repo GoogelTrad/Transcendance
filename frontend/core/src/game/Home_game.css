@@ -45,4 +45,9 @@ html, body, #root {
     text-transform: uppercase;
   }
 
+  canvas {
+    background-color: transparent;
+    width : 100vw;
+    height: 100vh;
+}
   

@@ -7,6 +7,7 @@ import Home from './Home';
 import Logout from './users/Logout';
 import Room from './chat/index';
 import Home_game from './game/Home_game';
+import Games_pong from './game/Games_pong';
 import { Game, Games} from './game/game';
 import { AuthProvider, useAuth } from './users/AuthContext';
 import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
@@ -103,6 +104,7 @@ function App() {
             <Route path='/game/:id' element={<Game />} />
             <Route path='/profile' element={<Profile />} />
             <Route path='/games/:id' element={<Games />} />
+            <Route path='/games_pong/:id' element={<Games_pong />} />
           </Routes>
           
         </div>
