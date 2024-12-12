@@ -1,3 +1,2 @@
 __pycache__/
-srcs/game/__pycache__/*
-srcs/users/__pycache__/*
+*.py[cod]
