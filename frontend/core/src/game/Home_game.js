@@ -31,8 +31,8 @@ function Home_game() {
                 }
             })
             console.log(response.data);
-            navigate(`/games_pong/${response.data.id}`)
-        //    navigate(`/games/${response.data.id}`);
+        //    navigate(`/games_pong/${response.data.id}`)
+            navigate(`/games/${response.data.id}`);
         } catch (error) {
             console.error("Error submitting Player:", error);
         }

@@ -61,7 +61,6 @@ const Games = () => {
     };
 
     const handleScoreChange = (player, e) => {
-        //console.log(player);
         if (player === game.player1) {
             setScore1(e.target.value);
         }
@@ -107,7 +106,7 @@ const Games = () => {
             clearInterval(timerRef.current);
         }
         await update_game();
-        navigate(`/game/${id}`);
+        navigate(`/games_pong/${id}`, { state: { game } });
     };
 
     useEffect(() => {

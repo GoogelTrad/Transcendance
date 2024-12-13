@@ -8,3 +8,7 @@ class Game(models.Model):
     player2 = models.CharField(max_length=255, blank=True)
     winner = models.CharField(max_length=255, blank=True)
     loser = models.CharField(max_length=255, blank=True)
+    player1_paddle_x = models.IntegerField(default=0)
+    player1_paddle_y = models.IntegerField(default=0)
+    player2_paddle_x = models.IntegerField(default=0)
+    player2_paddle_y = models.IntegerField(default=0)
