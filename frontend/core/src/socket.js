@@ -2,12 +2,14 @@ import { useEffect, useState } from "react";
 
 const BASE_URL = 'ws://localhost:8000/ws/'
 
-export default function useSocket(name) {
+export default function useSocket(name, param = '') {
 	const [ready, setReady] = useState(false);
 	const [socket, setSocket] = useState();
+	const handlers = new Map();
   
 	useEffect(() => {
-		let socket = new WebSocket(`${BASE_URL}${name}/`)
+		let socket = new WebSocket(`${BASE_URL}${name}/${String(param)}`)
+
 		socket.onopen = () => {
 			console.log('WebSocket connected');
 			setReady(true);
@@ -17,11 +19,20 @@ export default function useSocket(name) {
 			console.log('WebSocket disconnected');
 		};
 
+		socket.onmessage = (e) => {
+			const data = JSON.parse(e.data);
+			if (data.type && handlers.has(data.type)) {
+				const listenner = handlers.get(data.type)
+				listenner(data);
+			}
+		}
+
 		setSocket(socket);
 
 		return () => {
 			if (ready) {
 				socket.close();
+				handlers.clear();
 				setReady(false);
 			}
 		};
@@ -33,12 +44,19 @@ export default function useSocket(name) {
 		}
 	}
 
-	const add = (listenner) => {
-		if (socket)
-			socket.onmessage = listenner
+	const on = (event, listenner) => {
+		if (!handlers.has(event)) {
+			handlers.set(event, listenner);
+		}
+	};
+
+	const remove = (event) => {
+		if (event in handlers) {
+			delete handlers[event];
+		}
 	}
 
 	return {
-		current: socket, ready, send, add
+		current: socket, ready, send, on, remove
 	};
 }

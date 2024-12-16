@@ -3,7 +3,10 @@ from django.http import JsonResponse
 from django.http import HttpResponse
 from rest_framework.exceptions import AuthenticationFailed
 from .serializer import UserSerializer
-from .models import User
+from django.contrib.auth import authenticate
+from .models import User, ValidToken
+from django.utils.timezone import now
+from datetime import timedelta
 import jwt
 
 
@@ -25,12 +28,19 @@ class SimpleMiddleware:
                 token = auth_header.split(' ')[1]
                 if not token:
                     raise AuthenticationFailed('Token is invalid!')
+                
+                if not ValidToken.objects.filter(token=token).exists():
+                    raise AuthenticationFailed('Invalid or expired token!')
+                
                 payload = jwt.decode(token, 'coucou', algorithms=['HS256'])
-                request.user = payload
+                user = authenticate(request, user_id=payload['id'])
+                if user is not None:
+                    request.user = user
             except jwt.ExpiredSignatureError:
                 raise AuthenticationFailed('Token expired!')
             except jwt.InvalidTokenError:
                 raise AuthenticationFailed('Invalid token!')
+            
         response = self.get_response(request)
 
         return response
