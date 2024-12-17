@@ -3,25 +3,33 @@ import { getCookies } from '../App';
 import { AuthProvider, useAuth } from '../users/AuthContext';
 import React, {useEffect, useState} from "react";
 
+
 function ProtectedRoute({ children }) {
-	const navigate = useNavigate();
-	const [token, setToken] = useState(getCookies('token'));
-	const {isAuthenticated, setIsAuthenticated} = useAuth();
+    const navigate = useNavigate();
+    const { isAuthenticated, setIsAuthenticated } = useAuth();
 
-    useEffect(() => {
-        const checkToken = () => {
-            const currentToken = getCookies('token');
-            setToken(currentToken);
-
-            if (!currentToken) {
-                setIsAuthenticated(false);
-                navigate('/login');
-            }
-        };
+	const checkToken = () => {
+		const currentToken = getCookies('token');
+		
+		if (!currentToken || typeof currentToken !== 'string') {
+			console.log('Invalid token, redirecting to login...');
+			setIsAuthenticated(false);
+			navigate('/login');
+		} else {
+			setIsAuthenticated(true);
+		}
+	};
+    
+	useEffect(() => {
         checkToken();
     }, [navigate, setIsAuthenticated]);
 
-    return token ? children : null;
+    const currentToken = getCookies('token');
+    if (!currentToken || typeof currentToken !== 'string') {
+        return null;
+    }
+
+    return children;
 }
 
 export default ProtectedRoute;

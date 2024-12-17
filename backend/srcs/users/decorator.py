@@ -12,17 +12,17 @@ def jwt_auth_required(view_func):
             raise AuthenticationFailed('Authorization header missing!')
 
         try:
-            # Extrait le token du header
             token = auth_header.split(' ')[1]
-            # Décode le token et vérifie la validité
             payload = jwt.decode(token, 'coucou', algorithms=['HS256'])
-            # Recherche l'utilisateur correspondant à l'ID dans le payload
             user = get_user_model().objects.get(id=payload['id'])
-            # Assigne l'utilisateur au request.user
             request.user = user
         except jwt.ExpiredSignatureError:
+            user.status = 'offline'
+            user.save()
             raise AuthenticationFailed('Token expired!')
         except jwt.InvalidTokenError:
+            user.status = 'offline'
+            user.save()
             raise AuthenticationFailed('Invalid token!')
         except get_user_model().DoesNotExist:
             raise AuthenticationFailed('User not found!')

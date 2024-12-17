@@ -5,6 +5,7 @@ import React, {useEffect, useState} from "react";
 import { jwtDecode } from "jwt-decode";
 import Button from 'react-bootstrap/Button';
 import axiosInstance from "../instance/AxiosInstance";
+import useJwt from "../instance/JwtInstance";
 
 function ChangeDetails({setUser, setValue, toChange})
 {
@@ -67,8 +68,9 @@ function Profile()
 	const [showChangeImage, setShowChangeImage] = useState(false)
 	const [isPermitted, setIsPermitted] = useState(false);
 	const token = getCookies('token');
-	const decodeToken = jwtDecode(token);
 	const { id } = useParams();
+	const getJwt = useJwt();
+	const decodeToken = getJwt(token);
 
     const handleFileChange = async (e) => {
 		e.preventDefault();

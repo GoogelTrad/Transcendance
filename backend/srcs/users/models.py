@@ -9,8 +9,10 @@ class User(AbstractUser):
     name = models.CharField(max_length=255, unique=True)
     email = models.CharField(max_length=255, unique=True)
     profile_image = models.ImageField(upload_to='profile_images/', null=True, blank=True)
-    password = models.CharField(max_length=255)
+    password = models.CharField(max_length=255, blank=True)
     friends = models.ManyToManyField("User", blank=True)
+    status = models.CharField(max_length=20, default='offline')
+    is_stud = models.BooleanField(max_length=255, default=False)
     username = None
 
     USERNAME_FIELD = 'name'
