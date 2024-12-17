@@ -4,28 +4,30 @@ import { getCookies } from '../App.js';
 import { useAuth } from './AuthContext.js';
 import axios from 'axios';
 import axiosInstance from '../instance/AxiosInstance.js';
+import { showToast } from '../instance/ToastsInstance';
 
 function Logout() {
-    const {isAuthenticated, setIsAuthenticated} = useAuth();
+    const {setIsAuthenticated} = useAuth();
 
     const navigate = useNavigate();
 
-    useEffect (() => 
+    const logoutUser = async () => 
+    {
+        try 
         {
-            const fetchUserData = async () => 
-            {
-                try 
-                {
-                    const reponse = await axiosInstance.get(`api/logout`)
-                    setIsAuthenticated(false);
-                }
-                catch (error) {
-                    console.error('Erreur lors de la récupération des données utilisateur', error);
-                }
-                navigate('/home');
-            }
-            fetchUserData();
-        }, []);
+            const reponse = await axiosInstance.get(`api/logout`)
+            setIsAuthenticated(false);
+        }
+        catch (error) {
+            console.error('Erreur lors de la récupération des données utilisateur', error);
+        }
+        navigate('/home');
+    }
+
+    useEffect (() => 
+    {
+        logoutUser();
+    }, []);
 
     return (
         <p>Coucou</p>

@@ -1,2 +1,7 @@
-- faire en sorte que le nom de l'utilisateur soit present a cote du message qu'il envoie
-- faire en sorte que le champ de saisi de message se clean une fois le message envoye
+- mettre le nom d'utilisateur a cote de chaque message qu'il envoie
+- ajouter l'heure a cote des messages envoyes 
+- creer un scroll pour que le dernier message soit affiche en bas de l'espace de messages
+
+- mettre une limite de X messages
+- pouvoir cliquer sur le nom de chaque utilisateur pour afficher leur profil
+- mettre un logo fleche a la place du texte "send" sur le button d'envoie

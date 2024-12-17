@@ -36,7 +36,6 @@ class GameView:
             serializer = GameSerializer(game, data=request.data, partial=True)
             if serializer.is_valid():
                 serializer.save()
-                # Toujours retourner l'objet complet mis à jour
                 return Response(GameSerializer(game).data, status=status.HTTP_200_OK)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
@@ -69,6 +68,28 @@ class GameView:
         }
         return reponse
 
+    @api_view(['PATCH'])
+    def paddle_up(request, game_id):
+        try:
+            game = Game.objects.get(pk=game_id)
+        except Game.DoesNotExist:
+            return Response({"error": "Game not found"}, status=status.HTTP_404_NOT_FOUND)
+        setattr(game, 'player1_paddle_y', getattr(game, 'player1_paddle_y') - 1)
+        game.save()
+        serializer = GameSerializer(game)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+    @api_view(['PATCH'])
+    def paddle_down(request, game_id):
+        try:
+            game = Game.objects.get(pk=game_id)
+        except Game.DoesNotExist:
+            return Response({"error": "Game not found"}, status=status.HTTP_404_NOT_FOUND)
+        setattr(game, 'player1_paddle_y', getattr(game, 'player1_paddle_y') + 1)
+        game.save()
+        serializer = GameSerializer(game)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
         

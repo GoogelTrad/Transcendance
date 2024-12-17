@@ -24,6 +24,7 @@ from django.conf.urls.static import static
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('users.urls')),
+    path('friends/', include('friends.urls')),
     path("livechat/", include("livechat.urls")),
     path('game/', include('game.urls')),
 	path('socket.io/', socket.handler),

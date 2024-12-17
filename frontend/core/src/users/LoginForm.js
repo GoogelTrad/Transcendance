@@ -15,12 +15,13 @@ function LoginForm()
     const navigate = useNavigate();
     const [formData, setFormData] = useState
     ({
-        name: '',
-        password: '',
+        name: 'r',
+        password: 'r',
     });
 
     const handleChange = (e) => 
     {
+        e.preventDefault();
         const {name, value} = e.target;
         setFormData
         ({
@@ -45,7 +46,7 @@ function LoginForm()
             navigate("/home");
         } 
         catch (error) {
-            showToast("error", "Incorrect login!");
+            showToast("error", "Incorrect login or password!");
             console.error(error);
         }
     };

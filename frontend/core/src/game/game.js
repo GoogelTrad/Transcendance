@@ -11,6 +11,7 @@ import { useParams } from 'react-router-dom';
 import axiosInstance from '../instance/AxiosInstance.js';
 import useSocket from '../socket.js';
 
+import axiosInstance from '../instance/AxiosInstance.js';
 
 const Gamestest = () => {
 	const [game, setGame] = useState(null);
@@ -107,7 +108,7 @@ const Gamestest = () => {
 			clearInterval(timerRef.current);
 		}
 		await update_game();
-		navigate(`/game/${id}`);
+		navigate(`/games_pong/${id}`, { state: { game } });
 	};
 
 	useEffect(() => {
