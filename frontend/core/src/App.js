@@ -7,7 +7,7 @@ import Home from './Home';
 import Logout from './users/Logout';
 import Room from './chat/index';
 import Home_game from './game/Home_game';
-import { Game, Games} from './game/game';
+import { Gametest, Game, Games} from './game/game';
 import { AuthProvider, useAuth } from './users/AuthContext';
 import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
 import Profile from './users/Profile';
@@ -29,7 +29,7 @@ function NavBar()
   const {isAuthenticated} = useAuth();
 
   return (
-    <nav className='navbar navbar-expand-md navbar-dark fixed-top bg-dark'>
+    <nav className='navbar navbar-expand-md navbar-dark bg-dark'>
       <div className='container-fluid'>
         <div className='accueil-container'>
           <button className="buttonAccueil">
@@ -88,7 +88,7 @@ function App() {
   return (
     <AuthProvider>
       <Router>
-        <div className='h-100'>
+        <div className='h-100 d-flex flex-column'>
           <div className='head'>
             <NavBar />
           </div>
@@ -100,6 +100,7 @@ function App() {
             <Route path='/logout' element={<Logout />} />
             <Route path='/chat' element={<Room />} />
             <Route path='/home_game' element={<Home_game />} />
+            {/* <Route path='/gametest' element={<Gametest />} /> */}
             <Route path='/game/:id' element={<Game />} />
             <Route path='/profile' element={<Profile />} />
             <Route path='/games/:id' element={<Games />} />
