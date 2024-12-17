@@ -28,6 +28,7 @@ urlpatterns = [
     path("livechat/", include("livechat.urls")),
     path('game/', include('game.urls')),
 	path('socket.io/', socket.handler),
+    path('auth/', include('auth.urls')),
 ]
 
 if settings.DEBUG:

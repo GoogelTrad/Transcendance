@@ -16,6 +16,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from 'bootstrap/dist/js/bootstrap.bundle.min';
 import ProtectedRoute from './instance/RouteInstance';
 import { jwtDecode } from 'jwt-decode';
+import useTokenValidation from './instance/EventListener';
 
 export function getCookies(name) {
   const value = document.cookie;
@@ -96,28 +97,35 @@ function App() {
   return (
     <AuthProvider>
       <Router>
-        <div className='h-100'>
-          <div className='head'>
-            <NavBar />
-          </div>
+        <TokenValidationWrapper>
+          <div className='h-100'>
+            <div className='head'>
+              <NavBar />
+            </div>
 
-          <Routes>
-            <Route path="/home" element={<Home />} />
-            <Route path="/register" element={<RegisterForm />} />
-            <Route path="/login" element={<LoginForm />} />
-            <Route path='/logout' element={<ProtectedRoute><Logout /></ProtectedRoute>} />
-            <Route path='/chat' element={<Room />} />
-            <Route path='/home_game' element={<ProtectedRoute><Home_game /></ProtectedRoute>} />
-            <Route path='/game/:id' element={<ProtectedRoute><Game /></ProtectedRoute>} />
-            <Route path='/profile/:id' element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-            <Route path='/friends' element={<ProtectedRoute><Friends /></ProtectedRoute>} />
-            <Route path='/games/:id' element={<Games />} />
-          </Routes>
-          
-        </div>
+            <Routes>
+              <Route path="/home" element={<Home />} />
+              <Route path="/register" element={<RegisterForm />} />
+              <Route path="/login" element={<LoginForm />} />
+              <Route path='/logout' element={<ProtectedRoute><Logout /></ProtectedRoute>} />
+              <Route path='/chat' element={<Room />} />
+              <Route path='/home_game' element={<ProtectedRoute><Home_game /></ProtectedRoute>} />
+              <Route path='/game/:id' element={<ProtectedRoute><Game /></ProtectedRoute>} />
+              <Route path='/profile/:id' element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+              <Route path='/friends' element={<ProtectedRoute><Friends /></ProtectedRoute>} />
+              <Route path='/games/:id' element={<Games />} />
+            </Routes>
+            
+          </div>
+        </TokenValidationWrapper>
       </Router>
     </AuthProvider>
   );
+}
+
+function TokenValidationWrapper({ children }) {
+  useTokenValidation();
+  return children;
 }
 
 export default App;

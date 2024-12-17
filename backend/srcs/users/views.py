@@ -9,6 +9,7 @@ from .serializer import UserSerializer
 from django.http import HttpResponse
 from django.contrib.auth import authenticate, login
 from .models import User, ValidToken
+from users.decorator import jwt_auth_required
 import jwt
 
 
@@ -26,12 +27,16 @@ class LoginView():
         if not user.check_password(password):
             raise AuthenticationFailed('Incorrect password!')
         
+        user.status = 'online'
+        user.save()
+        
         profile_image_url = user.profile_image.url if user.profile_image else None
         
         payload = {
             'id': user.id,
             'name': user.name,
             'email': user.email,
+            'status': user.status,
             'profile_image_url': profile_image_url,
         }
 
@@ -78,6 +83,7 @@ class UserView():
                         'id': user.id,
                         'name': user.name,
                         'email': user.email,
+                        'status': user.status,
                         'profile_image_url': profile_image_url,
                     }
                     reponse = Response()
@@ -104,12 +110,17 @@ class UserView():
 
 class LogoutView():
     @api_view(['GET'])
+    @jwt_auth_required
     def logoutUser(request):
         
         auth_header = request.headers.get('Authorization')
         if not auth_header:
             raise AuthenticationFailed('Authorization header missing!')
+        user = User.objects.get(name=request.user.name)
+        user.status = 'offline'
+        user.save()
         token = auth_header.split(' ')[1]
+        
         ValidToken.objects.filter(token=token).delete()
         
         reponse = Response()

@@ -37,6 +37,8 @@ class SimpleMiddleware:
                 if user is not None:
                     request.user = user
             except jwt.ExpiredSignatureError:
+                user.status = "offline"
+                user.save()
                 raise AuthenticationFailed('Token expired!')
             except jwt.InvalidTokenError:
                 raise AuthenticationFailed('Invalid token!')
