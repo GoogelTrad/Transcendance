@@ -9,7 +9,6 @@ import Logout from './users/Logout';
 import Room from './chat/index';
 import Home_game from './game/Home_game';
 import Games_pong from './game/Games_pong';
-import { Game, Games} from './game/game';
 import { Gametest, Game, Games} from './game/game';
 import { AuthProvider, useAuth } from './users/AuthContext';
 import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';

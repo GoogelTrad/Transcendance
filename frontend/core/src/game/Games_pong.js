@@ -57,6 +57,7 @@ function Games_pong() {
 
         const handleKeyPress = (event) => {
             if (event.key === "ArrowUp") {
+                console.log("cc")
                 socketRef.current.send("paddle_up");
             } else if (event.key === "ArrowDown") {
                 socketRef.current.send("paddle_down");

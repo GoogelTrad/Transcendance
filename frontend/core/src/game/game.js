@@ -11,12 +11,6 @@ import { useParams } from 'react-router-dom';
 import axiosInstance from '../instance/AxiosInstance.js';
 import useSocket from '../socket.js';
 
-import axiosInstance from '../instance/AxiosInstance.js';
-import useSocket from '../socket.js';
-
-import axiosInstance from '../instance/AxiosInstance.js';
-import useSocket from '../socket'
-
 const Gamestest = () => {
 	const [game, setGame] = useState(null);
 	const { id } = useParams();
