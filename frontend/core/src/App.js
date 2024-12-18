@@ -10,6 +10,7 @@ import Room from './chat/index';
 import Home_game from './game/Home_game';
 import Games_pong from './game/Games_pong';
 import { Game, Games} from './game/game';
+import { Gametest, Game, Games} from './game/game';
 import { AuthProvider, useAuth } from './users/AuthContext';
 import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
 import Profile from './users/Profile';
@@ -38,7 +39,7 @@ function NavBar()
     decodeToken = jwtDecode(token);
 
   return (
-    <nav className='navbar navbar-expand-md navbar-dark fixed-top bg-dark'>
+    <nav className='navbar navbar-expand-md navbar-dark bg-dark'>
       <div className='container-fluid'>
         <div className='accueil-container'>
           <button className="buttonAccueil">
@@ -97,7 +98,7 @@ function App() {
   return (
     <AuthProvider>
       <Router>
-        <div className='h-100'>
+        <div className='h-100 d-flex flex-column'>
           <div className='head'>
             <NavBar />
           </div>

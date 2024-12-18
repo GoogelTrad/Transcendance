@@ -1,53 +1,105 @@
 html, body, #root {
-    height: 100%;
-    margin: 0;
-    overflow: hidden;
-}
-
-.title {
-    display: grid;
-    justify-content: center;
-    color: azure;
+  margin: 0;
+  padding: 0;
+  height: 100%; 
+  background-image: url('./utils/fond.jpg'); 
+  background-size: cover;
+  background-position: center; 
+  background-repeat: no-repeat;
 }
 
 .games-container {
-    height: 100vh;
-    display: flex;
-    flex-direction: row;
-    background-image: url('./utils/fond.jpg');
-    background-size: cover; 
-    background-position: center;
-    background-repeat: no-repeat;
-    
-  }
-  
-  .games-container h1,
-  .games-container h2,
-  .games-container h3,
-  .games-container p {
-    font-family: 'Press Start 2P', cursive;
-    color: black !important;
-    text-transform: uppercase;
-  }
-  
-  .games-container h1 {
-    margin-top: 4rem;
-  }
-  
-  .games-container .button {
-    background-color: transparent ;
-    border: 0px;
-    color: black;
-    font-family: 'Press Start 2P', cursive;
-    font-weight: bold;
-    padding: 30px 60px;
-    font-size: 30px;
-    text-transform: uppercase;
-  }
-
-  canvas {
-    background-color: transparent;
-    width : 100vw;
-    height: 100vh;
+  display: flex;
+  flex-direction: row;
+  height: 100%;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  position: relative;
+  color: white;
 }
-  
+
+.games-container .title {
+  font-family: 'Press Start 2P', cursive;
+  font-size: 3rem;
+  text-transform: uppercase;
+  color: black;
+  position: absolute;
+  top: 10%;
+  width: 100%;
+  z-index: 2;
+}
+@keyframes borderAnimation {
+  0% {
+    color: rgb(255, 255, 255); /* Couleur initiale pour le texte */
+    border-color: rgb(255, 255, 255); /* Couleur initiale pour les bordures */
+  }
+  50% {
+    color: rgb(255, 165, 0); /* Orange pour les lettres et les bordures */
+    border-color: rgb(255, 165, 0);
+  }
+  100% {
+    color: rgb(255, 255, 255); /* Retour à la couleur blanche */
+    border-color: rgb(255, 255, 255);
+  }
+}
+
+.button {
+  animation: borderAnimation 2s infinite; /* Animation pour le texte et la bordure */
+  /* Autres propriétés du bouton */
+}
+
+
+@keyframes textAnimation {
+  0% {
+    color: white;
+    text-shadow: 2px 2px 0px black, -2px -2px 0px black, 2px -2px 0px black, -2px 2px 0px black;
+  }
+  50% {
+    color: #f39c12; /* Couleur orange */
+    text-shadow: 2px 2px 5px #f39c12, -2px -2px 5px #f39c12, 2px -2px 5px #f39c12, -2px 2px 5px #f39c12; /* Ombrage plus épais */
+  }
+  100% {
+    color: white;
+    text-shadow: 2px 2px 2px #f39c12, -2px -2px 2px #f39c12, 2px -2px 2px #f39c12, -2px 2px 2px #f39c12; /* Ombrage plus léger */
+  }
+}
+
+.button {
+  background-color: transparent;
+  border: 4px solid black;
+  color: rgb(255, 255, 255);
+  font-family: 'Press Start 2P', cursive;
+  font-weight: bold;
+  padding: 30px 60px;
+  font-size: 50px;
+  text-transform: uppercase;
+  text-shadow: 2px 2px 0px black, -2px -2px 0px black, 2px -2px 0px black, -2px 2px 0px black;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease-in-out;
+  animation: borderAnimation 2s infinite, textAnimation 2s infinite;  /* Animation des bordures et du texte */
+}
+
+.button:hover {
+  animation: none; /* Arrêt de l'animation lors du survol */
+  /* border-color: black; Bordure visible au survol */
+  color: white;  /* Restauration de la couleur du texte */
+  text-shadow: 2px 2px 0px black, -2px -2px 0px black, 2px -2px 0px black, -2px 2px 0px black;
+}
+
+.d-flex.flex-column.align-items-right .button {
+  margin-left: 20%;  
+}
+
+.d-flex.flex-column.align-items-center .button {
+  margin-right: 20%; 
+}
+
+canvas {
+  margin-right: 40px; /* Espace entre le canvas et le texte */
+  margin-left: 20px;  /* Espace entre le canvas et le texte pour Play */
+}
