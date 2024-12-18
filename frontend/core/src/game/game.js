@@ -9,6 +9,7 @@ import { getCookies } from './../App.js';
 import { BrowserRouter as Router, Route, Routes, Link, useNavigate } from 'react-router-dom';
 import { useParams } from 'react-router-dom';
 import axiosInstance from '../instance/AxiosInstance.js';
+import useSocket from '../socket'
 
 const Games = () => {
     const [game, setGame] = useState(null);
@@ -23,6 +24,7 @@ const Games = () => {
     const [update_time, setupdateTime] = useState(init);
     const timerRef = useRef(init);
     const token = getCookies('token');
+
     const fetch_data = async () => {
         try {
             const response = await axios.get(`http://localhost:8000/game/fetch_data/${id}/` , {
@@ -32,7 +34,6 @@ const Games = () => {
                 }
             });
             setGame(response.data);
-            //console.log("Game data:", response.data);
         } catch (error) {
             console.error("Error fetching game by ID:", error);
         }
@@ -47,14 +48,6 @@ const Games = () => {
                 }
             }
             )
-            const ws = new WebSocket('ws://localhost:8000/ws/game/');
-            ws.onopen = () => {
-                console.log('WebSocket is open');
-                ws.send(game.player1);
-            };
-            ws.onmessage = function(e) {
-                console.log('Received:', e.data);
-            };
         } catch (error) {
             console.error("Error fetching game by ID:", error);
         }
