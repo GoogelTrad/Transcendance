@@ -1,11 +1,11 @@
 import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min';
-import RegisterForm from './users/RegisterForm';
 import LoginForm from './users/LoginForm';
 import Home from './Home';
 import Friends from './friends/Friends';
 import Logout from './users/Logout';
+import TerminalLogin from './users/TerminalLogin';
 import Room from './chat/index';
 import Home_game from './game/Home_game';
 import { Game, Games} from './game/game';
@@ -51,12 +51,12 @@ function NavBar()
             <div className='d-flex flex-row'>
               <div>
                 <button className="buttonLogin">
-                  <Link to="/login" className="text-decoration-none text-dark">Login</Link>
+                  <Link to="/terminal" className="text-decoration-none text-dark">Terminal</Link>
                 </button>
               </div>
               <div>
                 <button className="buttonRegister">
-                  <Link to="/register" className="text-decoration-none text-dark">Register</Link>
+                  <Link to="/forms" className="text-decoration-none text-dark">Formulaire</Link>
                 </button>
               </div>
             </div>
@@ -105,8 +105,8 @@ function App() {
 
             <Routes>
               <Route path="/home" element={<Home />} />
-              <Route path="/register" element={<RegisterForm />} />
-              <Route path="/login" element={<LoginForm />} />
+              <Route path="/forms" element={<LoginForm />} />
+              <Route path="/terminal" element={<TerminalLogin />} />
               <Route path='/logout' element={<ProtectedRoute><Logout /></ProtectedRoute>} />
               <Route path='/chat' element={<Room />} />
               <Route path='/home_game' element={<ProtectedRoute><Home_game /></ProtectedRoute>} />

@@ -1,101 +1,176 @@
 import React, { useState } from 'react';
 import Button from 'react-bootstrap/Button';
-import './LoginForm.css';
-import {Link} from 'react-router-dom';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from './AuthContext';
-import axiosInstance from '../instance/AxiosInstance';
+import { useNavigate, Link } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import { showToast } from '../instance/ToastsInstance';
+import axiosInstance from '../instance/AxiosInstance';
 import 'react-toastify/dist/ReactToastify.css';
+import './LoginForm.css';
+import { useAuth } from './AuthContext';
 
-function LoginForm()
-{
-    const {isAuthenticated, setIsAuthenticated} = useAuth();
+function LoginRegister() {
     const navigate = useNavigate();
-    const [formData, setFormData] = useState
-    ({
-        name: 'r',
-        password: 'r',
+    const {isAuthenticated, setIsAuthenticated} = useAuth();
+    const [loginData, setLoginData] = useState({
+        name: '',
+        password: '',
     });
 
-    const handleChange = (e) => 
-    {
-        e.preventDefault();
-        const {name, value} = e.target;
-        setFormData
-        ({
-            ...formData,
-            [name]: value
+    const [registerData, setRegisterData] = useState({
+        name: '',
+        email: '',
+        password: '',
+        password_confirm: '',
+    });
+
+    const handleLoginChange = (e) => {
+        const { name, value } = e.target;
+        setLoginData({
+            ...loginData,
+            [name]: value,
         });
     };
 
-    const handleSubmit = async (e) =>
-    {
+    const handleRegisterChange = (e) => {
+        const { name, value } = e.target;
+        setRegisterData({
+            ...registerData,
+            [name]: value,
+        });
+    };
+
+    const handleLoginSubmit = async (e) => {
         e.preventDefault();
         const data = new FormData();
-        for (const [key, value] of Object.entries(formData))
+        for (const [key, value] of Object.entries(loginData)) {
             data.append(key, value);
-        try 
-        {
+        }
+        try {
             await axiosInstance.post('api/login', data, {
                 headers: {
-                'Content-Type': 'multipart/form-data',
-            }})
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
             setIsAuthenticated(true);
-            navigate("/home");
-        } 
-        catch (error) {
-            showToast("error", "Incorrect login or password!");
-            console.error(error);
+            navigate('/home');
+        } catch (error) {
+            showToast('error', 'Incorrect login or password!');
+        }
+    };
+
+    const handleRegisterSubmit = async (e) => {
+        e.preventDefault();
+        const data = new FormData();
+        for (const [key, value] of Object.entries(registerData)) {
+            data.append(key, value);
+        }
+        try {
+            await axiosInstance.post('api/user/create', data, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+            setIsAuthenticated(true);
+            navigate('/login');
+        } catch (error) {
+            showToast('error', 'Cannot create the account!');
         }
     };
 
     return (
-        <>
-            <div className='login-container'>
-                <form className='login-form' onSubmit={handleSubmit}>
-                    <h1 className='title'>Please Login</h1>
+        <div className="general-forms d-flex justify-content-around align-items-center vh-100">
+            <div className="d-flex flex-column border">
+                <h2 className='titre'>Login here</h2>
+                <form className='login-form d-flex flex-column gap-2 align-items-end' onSubmit={handleLoginSubmit}>
                     <div className='form-group'>
-                        <label htmlFor='name'>Username</label>
-                        <input className='input-form'
+                        <label htmlFor='name'>Username:</label>
+                        <input className='login-input'
                             type='text'
-                            id='name'
+                            id='login-name'
                             name='name'
-                            value={formData.name}
-                            onChange={handleChange}
+                            value={loginData.name}
+                            onChange={handleLoginChange}
                             required
-                            placeholder='Type your username'>    
+                            placeholder='Username'>
                         </input>
                     </div>
                     <div className='form-group'>
-                        <label htmlFor='password'>Password</label>
-                        <input className='input-form'
+                        <label htmlFor='password'>Password:</label>
+                        <input className='login-input'
                             type='password'
-                            id='password'
+                            id='login-password'
                             name='password'
-                            value={formData.password}
-                            onChange={handleChange}
+                            value={loginData.password}
+                            onChange={handleLoginChange}
                             required
-                            placeholder='Type your password'>
+                            placeholder='Password'>
                         </input>
                     </div>
 
                     <Button type='submit' className='submit-button btn'>Login</Button>
-                    <div className='register-text'>
-                        <p>Need to create an account ?</p>
-                        
-                        <div className='register-here'>
-                            <Link to='/register'>Register here</Link>
-                        </div>
-                    </div>
-                    <div>
-                    </div>
                 </form>
-                <ToastContainer />
             </div>
-        </>
-    )
+            <div className="general-register">
+                <div className="d-flex flex-column border">
+                    <h2 className='titre'>Register here</h2>
+                    <form className='register-form d-flex flex-column gap-2 align-items-end' onSubmit={handleRegisterSubmit}>
+                        <div className='form-group '>
+                            <label htmlFor='name'>Username:</label>
+                            <input className='register-input'
+                                type='text'
+                                id='register-name'
+                                name='name'
+                                value={registerData.name}
+                                onChange={handleRegisterChange}
+                                required
+                                placeholder='Username'>
+                            </input>
+                        </div>
+                        <div className='form-group'>
+                            <label htmlFor="email">Mail:</label>
+                            <input className='register-input'
+                                type='email'
+                                id='register-email'
+                                name='email'
+                                value={registerData.mail}
+                                onChange={handleRegisterChange}
+                                required
+                                placeholder='Email'>
+                            </input>
+                        </div>
+                        <div className='form-group'>
+                            <label htmlFor='password'>Password:</label>
+                            <input className='register-input'
+                                type='password'
+                                id='register-password'
+                                name='password'
+                                value={registerData.password}
+                                onChange={handleRegisterChange}
+                                required
+                                placeholder='Password'>
+                            </input>
+                        </div>
+                        <div className='form-group'>
+                            <label htmlFor='password_confirm'>Confirm Password:</label>
+                            <input className='register-input'
+                                type='password'
+                                id='register-password_confirm'
+                                name='password_confirm'
+                                value={registerData.password_confirm}
+                                onChange={handleRegisterChange}
+                                required
+                                placeholder='Confirm Password'>
+                            </input>
+                        </div>
+
+                        <Button type='submit' className='submit-button btn'>Register</Button>
+                    </form>
+                </div>
+            </div>
+
+            <ToastContainer />
+        </div>
+    );
 }
 
-export default LoginForm;
+export default LoginRegister;

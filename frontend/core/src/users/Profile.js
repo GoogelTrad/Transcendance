@@ -67,6 +67,7 @@ function Profile()
 	const [showChangePassword, setShowChangePassword] = useState(false);
 	const [showChangeImage, setShowChangeImage] = useState(false)
 	const [isPermitted, setIsPermitted] = useState(false);
+	const [isStud, setIsStud] = useState(false);
 	const token = getCookies('token');
 	const { id } = useParams();
 	const getJwt = useJwt();
@@ -94,10 +95,18 @@ function Profile()
 
 	const fetchUserData = async () => 
 	{
-		if (decodeToken.id == id)
+		if (decodeToken.id == id && decodeToken.is_stud == false) {
+			setIsStud(false);
 			setIsPermitted(true);
-		else
+		}
+		else if (decodeToken.id == id && decodeToken.is_stud == true) {
+			setIsStud(true);
 			setIsPermitted(false);
+		}
+		else {
+			setIsPermitted(false);
+			setIsStud(false);
+		}
 		try 
 		{
 			if (token)
@@ -138,6 +147,13 @@ function Profile()
 							/>
 						</label>
 						<p>Nom : {user.name}</p>
+						<>
+							{isStud ? (
+								<p>Email : {user.email}</p>
+							) : (
+								<></>
+							)}
+						</>
 						<>
 							{isPermitted ? (
 								<>
