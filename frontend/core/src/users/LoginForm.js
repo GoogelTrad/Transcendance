@@ -31,6 +31,16 @@ function LoginRegister() {
         });
     };
 
+    const handleSchoolLogin = async (e) => {
+        e.preventDefault();
+        try {
+            window.location.href = "http://localhost:8000/auth/code";
+        }
+        catch(error) {
+            return "Error while trying to connect with 42."
+        }
+    }
+
     const handleRegisterChange = (e) => {
         const { name, value } = e.target;
         setRegisterData({
@@ -109,6 +119,9 @@ function LoginRegister() {
 
                     <Button type='submit' className='submit-button btn'>Login</Button>
                 </form>
+                <div>
+                    <button type="submit" onClick={handleSchoolLogin}>42</button>
+                </div>
             </div>
             <div className="general-register">
                 <div className="d-flex flex-column border">
