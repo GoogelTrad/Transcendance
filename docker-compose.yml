@@ -59,13 +59,13 @@ services:
       - tdc
     environment:
       - REDIS_HOST=redis
-      - REDIS_PORT=6379
+      - REDIS_PORT=7000
   
   redis:
     image: redis:latest
     container_name: redis
     ports:
-      - "6379:6379"
+      - "7000:7000"
     command: ["redis-server", "--bind", "0.0.0.0"]
     networks:
       - tdc

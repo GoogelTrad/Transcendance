@@ -16,6 +16,7 @@ class LoginView():
     @api_view(['POST'])
     def loginUser(request):
         name = request.data['name']
+        
         password = request.data['password']
 
         user = User.objects.filter(name=name).first()
@@ -84,7 +85,7 @@ class UserView():
                     reponse.delete_cookie('token')
                     token = jwt.encode(payload, 'coucou', 'HS256')
                     reponse.set_cookie(key='token', value=token, max_age=3600)
-                    reponse.data = serializer.data;
+                    reponse.data = serializer.data
                     
                     return reponse
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

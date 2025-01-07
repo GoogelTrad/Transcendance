@@ -16,7 +16,6 @@ function Home_game() {
 	const canvasRefTournament = useRef(null);
   
 	const token = getCookies('token');
-	const user = jwtDecode(token);
   
 	const drawTriangleWithAnimation = (canvasRef) => {
 		const canvas = canvasRef.current;
@@ -81,18 +80,11 @@ function Home_game() {
 		drawTriangleWithAnimation(canvasRefTournament); // Dessine pour le bouton Tournament_
 	  }
 	}, []);
-  
-	// Mettre à jour le nom du joueur
-	useEffect(() => {
-	  if (user && user.name) {
-		setPlayer1(user.name);
-	  }
-	}, [user]);
-  
+
 	// Fonction pour soumettre le joueur
 	const submitPlayer = async () => {
 	  try {
-		const response = await axiosInstance.post(`http://localhost:8000/game/create_game`, { player1 });
+		const response = await axiosInstance.post(`http://localhost:8000/game/create_game`, {});
 		console.log(response.data);
 		navigate(`/games/${response.data.id}`);
 	  } catch (error) {

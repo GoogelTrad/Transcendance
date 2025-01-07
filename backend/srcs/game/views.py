@@ -8,12 +8,21 @@ from rest_framework.decorators import api_view, action
 from .serializer import GameSerializer
 from django.http import HttpResponse
 from .models import Game
+from users.models import User
 import jwt
 
 class HomeGameView:
     @api_view(['POST'])
     def create_game(request):
-        serializer = GameSerializer(data=request.data)
+        auth_header = request.headers.get('Authorization')
+        if auth_header:
+            token = auth_header.split(' ')[1]
+        else:
+            token = None
+        print("Token:", token)
+        payload = jwt.decode(jwt=token, key='coucou', algorithms=['HS256'])
+        print("User:", payload.get('name'))
+        serializer = GameSerializer(data=request.data, partial=True)
         if serializer.is_valid():
             game_instance = serializer.save()
             return Response({"id": game_instance.id, **serializer.data}, status=status.HTTP_201_CREATED)
@@ -38,6 +47,20 @@ class GameView:
                 serializer.save()
                 return Response(GameSerializer(game).data, status=status.HTTP_200_OK)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @api_view(['GET'])
+    def fetch_data_user(request, user_id):
+        try:
+            user = User.objects.get(id=user_id)
+
+            games = user.games.all().order_by('-time')
+        
+            game_serializer = GameSerializer(games, many=True)
+
+            return Response(game_serializer.data, status=status.HTTP_200_OK)
+    
+        except User.DoesNotExist:
+            return Response({"detail": "User not found."}, status=status.HTTP_404_NOT_FOUND)
         
     @api_view(['POST'])
     def GameDetails(request):
@@ -90,12 +113,3 @@ class GameView:
         game.save()
         serializer = GameSerializer(game)
         return Response(serializer.data, status=status.HTTP_200_OK)
-
-
-        
-
-
-
-
-        
-        

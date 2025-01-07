@@ -9,6 +9,7 @@ import Logout from './users/Logout';
 import Room from './chat/index';
 import Home_game from './game/Home_game';
 import Games_pong from './game/Games_pong';
+import Games_Stats from './game/Stats';
 import { Gametest, Game, Games} from './game/game';
 import { AuthProvider, useAuth } from './users/AuthContext';
 import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
@@ -72,6 +73,9 @@ function NavBar()
               <button className="buttonChat">
                 <Link to="/chat" className="text-decoration-none text-dark">Chat</Link>
               </button>
+              <button className="buttonStats">
+                <Link to={`/stats/${decodeToken.id}`} className="text-decoration-none text-dark">Stats</Link>
+              </button>
             </div>
             <div className='d-flex flex-row'>
               <div>
@@ -114,6 +118,7 @@ function App() {
             <Route path='/friends' element={<ProtectedRoute><Friends /></ProtectedRoute>} />
             <Route path='/games/:id' element={<Games />} />
             <Route path='/games_pong/:id' element={<Games_pong />} />
+            <Route path='/stats/:id' element={<Games_Stats/>} />
           </Routes>
           
         </div>

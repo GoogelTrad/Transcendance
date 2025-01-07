@@ -277,7 +277,7 @@ const Games = () => {
 				case 'ArrowDown':
 					rightY = Math.min(backDimensions.height / 1.31 - height, rightY + 10);
 					break;
-				case 'z':
+				case 'w':
 					leftY = Math.max(0, leftY - 10);
 					break;
 				case 's':

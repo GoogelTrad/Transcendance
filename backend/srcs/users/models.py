@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.utils.timezone import now
 from datetime import timedelta
+import game
 
 
 # Create your models here.
@@ -11,6 +12,7 @@ class User(AbstractUser):
     profile_image = models.ImageField(upload_to='profile_images/', null=True, blank=True)
     password = models.CharField(max_length=255)
     friends = models.ManyToManyField("User", blank=True)
+    games = models.ManyToManyField("game.Game", related_name="players", blank=True)
     username = None
 
     USERNAME_FIELD = 'name'
