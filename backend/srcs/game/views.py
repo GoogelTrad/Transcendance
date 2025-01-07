@@ -7,6 +7,8 @@ from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.decorators import api_view, action
 from .serializer import GameSerializer
 from django.http import HttpResponse
+from django.shortcuts import get_object_or_404
+
 from .models import Game
 from users.models import User
 import jwt
@@ -21,10 +23,14 @@ class HomeGameView:
             token = None
         print("Token:", token)
         payload = jwt.decode(jwt=token, key='coucou', algorithms=['HS256'])
+        user = get_object_or_404(User, name=payload.get('name'))
         print("User:", payload.get('name'))
+        request.data['player1'] = payload.get('name')
         serializer = GameSerializer(data=request.data, partial=True)
         if serializer.is_valid():
             game_instance = serializer.save()
+            user.games.add(game_instance)
+            user.save()
             return Response({"id": game_instance.id, **serializer.data}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
