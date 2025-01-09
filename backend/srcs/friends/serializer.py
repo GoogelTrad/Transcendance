@@ -14,7 +14,7 @@ class FriendSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['id', 'name', 'email', 'profile_image', 'profile_image_url', 'status']
+        fields = ['id', 'name', 'email', 'profile_image', 'profile_image_url', 'status', 'is_stud']
 
     def get_profile_image_url(self, obj):
         if obj.profile_image:

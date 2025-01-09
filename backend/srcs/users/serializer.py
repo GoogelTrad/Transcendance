@@ -38,7 +38,7 @@ class UserSerializer(serializers.ModelSerializer):
         return instance
 
     def update(self, instance, validated_data):
-        validated_data.pop('password_confirm', None)  # Supprimer le champ password_confirm
+        validated_data.pop('password_confirm', None)
         password = validated_data.pop('password', None)
 
         # Mettre à jour les autres champs

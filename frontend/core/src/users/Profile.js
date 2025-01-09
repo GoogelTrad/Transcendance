@@ -107,6 +107,7 @@ function Profile()
 			setIsPermitted(false);
 			setIsStud(false);
 		}
+		console.log(isStud, isPermitted);
 		try 
 		{
 			if (token)

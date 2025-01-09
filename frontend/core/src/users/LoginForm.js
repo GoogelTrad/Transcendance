@@ -12,8 +12,8 @@ function LoginRegister() {
     const navigate = useNavigate();
     const {isAuthenticated, setIsAuthenticated} = useAuth();
     const [loginData, setLoginData] = useState({
-        name: '',
-        password: '',
+        name: 'f',
+        password: 'f',
     });
 
     const [registerData, setRegisterData] = useState({
@@ -88,101 +88,102 @@ function LoginRegister() {
     };
 
     return (
-        <div className="general-forms d-flex justify-content-around align-items-center vh-100">
-            <div className="d-flex flex-column border">
-                <h2 className='titre'>Login here</h2>
-                <form className='login-form d-flex flex-column gap-2 align-items-end' onSubmit={handleLoginSubmit}>
-                    <div className='form-group'>
-                        <label htmlFor='name'>Username:</label>
-                        <input className='login-input'
-                            type='text'
-                            id='login-name'
-                            name='name'
-                            value={loginData.name}
-                            onChange={handleLoginChange}
-                            required
-                            placeholder='Username'>
-                        </input>
+            <div className="coucou row">
+                <div className="col-md-6 d-flex flex-column align-items-center justify-content-center border-end">
+                    <div className='login-coucou d-flex flex-column align-items-center'>
+                        <h2 className='titre'>Login here</h2>
+                        <form className='w-75 d-flex flex-column align-items-center' onSubmit={handleLoginSubmit}>
+                            <div className='mb-3'>
+                                <label htmlFor='name'>Username:</label>
+                                <input className='login-input'
+                                    type='text'
+                                    id='login-name'
+                                    name='name'
+                                    value={loginData.name}
+                                    onChange={handleLoginChange}
+                                    required
+                                    placeholder='Username'>
+                                </input>
+                            </div>
+                            <div className='mb-3'>
+                                <label htmlFor='password'>Password:</label>
+                                <input className='login-input'
+                                    type='password'
+                                    id='login-password'
+                                    name='password'
+                                    value={loginData.password}
+                                    onChange={handleLoginChange}
+                                    required
+                                    placeholder='Password'>
+                                </input>
+                            </div>
+                            <Button type='submit' className='submit-button btn btn-primary'>Login</Button>
+                        </form>
+                        <div>
+                            <Button type="submit" className='submit-button btn btn-primary' onClick={handleSchoolLogin}>42</Button>
+                        </div>
                     </div>
-                    <div className='form-group'>
-                        <label htmlFor='password'>Password:</label>
-                        <input className='login-input'
-                            type='password'
-                            id='login-password'
-                            name='password'
-                            value={loginData.password}
-                            onChange={handleLoginChange}
-                            required
-                            placeholder='Password'>
-                        </input>
+                </div>
+                <div className="col-md-6 d-flex flex-column align-items-center justify-content-center">
+                    <div className='register-coucou d-flex flex-column align-items-center'>
+                        <h2 className='titre'>Register here</h2>
+                        <form className='w-75 d-flex flex-column align-items-center' onSubmit={handleRegisterSubmit}>
+                            <div className='mb-3'>
+                                <label htmlFor='name'>Username:</label>
+                                <input className='register-input'
+                                    type='text'
+                                    id='register-name'
+                                    name='name'
+                                    value={registerData.name}
+                                    onChange={handleRegisterChange}
+                                    required
+                                    placeholder='Username'>
+                                </input>
+                            </div>
+                            <div className='mb-3'>
+                                <label htmlFor="email">Mail:</label>
+                                <input className='register-input'
+                                    type='email'
+                                    id='register-email'
+                                    name='email'
+                                    value={registerData.mail}
+                                    onChange={handleRegisterChange}
+                                    required
+                                    placeholder='Email'>
+                                </input>
+                            </div>
+                            <div className='mb-3'>
+                                <label htmlFor='password'>Password:</label>
+                                <input className='register-input'
+                                    type='password'
+                                    id='register-password'
+                                    name='password'
+                                    value={registerData.password}
+                                    onChange={handleRegisterChange}
+                                    required
+                                    placeholder='Password'>
+                                </input>
+                            </div>
+                            <div className=' mb-3'>
+                                <label htmlFor='password_confirm'>Confirm Password:</label>
+                                <input className='register-input'
+                                    type='password'
+                                    id='register-password_confirm'
+                                    name='password_confirm'
+                                    value={registerData.password_confirm}
+                                    onChange={handleRegisterChange}
+                                    required
+                                    placeholder='Confirm Password'>
+                                </input>
+                            </div>
+
+                            <Button type='submit' className='submit-button btn'>Register</Button>
+                        </form>
                     </div>
-
-                    <Button type='submit' className='submit-button btn'>Login</Button>
-                </form>
-                <div>
-                    <button type="submit" onClick={handleSchoolLogin}>42</button>
                 </div>
-            </div>
-            <div className="general-register">
-                <div className="d-flex flex-column border">
-                    <h2 className='titre'>Register here</h2>
-                    <form className='register-form d-flex flex-column gap-2 align-items-end' onSubmit={handleRegisterSubmit}>
-                        <div className='form-group '>
-                            <label htmlFor='name'>Username:</label>
-                            <input className='register-input'
-                                type='text'
-                                id='register-name'
-                                name='name'
-                                value={registerData.name}
-                                onChange={handleRegisterChange}
-                                required
-                                placeholder='Username'>
-                            </input>
-                        </div>
-                        <div className='form-group'>
-                            <label htmlFor="email">Mail:</label>
-                            <input className='register-input'
-                                type='email'
-                                id='register-email'
-                                name='email'
-                                value={registerData.mail}
-                                onChange={handleRegisterChange}
-                                required
-                                placeholder='Email'>
-                            </input>
-                        </div>
-                        <div className='form-group'>
-                            <label htmlFor='password'>Password:</label>
-                            <input className='register-input'
-                                type='password'
-                                id='register-password'
-                                name='password'
-                                value={registerData.password}
-                                onChange={handleRegisterChange}
-                                required
-                                placeholder='Password'>
-                            </input>
-                        </div>
-                        <div className='form-group'>
-                            <label htmlFor='password_confirm'>Confirm Password:</label>
-                            <input className='register-input'
-                                type='password'
-                                id='register-password_confirm'
-                                name='password_confirm'
-                                value={registerData.password_confirm}
-                                onChange={handleRegisterChange}
-                                required
-                                placeholder='Confirm Password'>
-                            </input>
-                        </div>
 
-                        <Button type='submit' className='submit-button btn'>Register</Button>
-                    </form>
-                </div>
+                <ToastContainer />
             </div>
-
-            <ToastContainer />
-        </div>
     );
 }
 
