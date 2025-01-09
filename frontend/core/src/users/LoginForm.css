@@ -1,0 +1,42 @@
+.form-group 
+{
+    display: flex;
+    flex-direction: column;
+    color: black;
+}
+
+.general-coucou
+{
+    font-family: 'Courier New', monospace;
+}
+
+.titre
+{
+    font-size: 125% !important;
+}
+
+.register-input
+{
+    display: flex;
+    flex-direction: column;
+}
+
+.login-input
+{
+    display: flex;
+    flex-direction: column;
+}
+
+.coucou
+{
+    padding-top: 5%;
+    padding-bottom: 5%;
+    color: black;
+    width: 100%;
+}
+
+.register-coucou
+{
+    display: flex;
+    flex-direction: column;
+}

@@ -46,23 +46,6 @@ function NavBar()
           </button>
         </div>
 
-        {!isAuthenticated && (
-          <>
-            <div className='d-flex flex-row'>
-              <div>
-                <button className="buttonLogin">
-                  <Link to="/terminal" className="text-decoration-none text-dark">Terminal</Link>
-                </button>
-              </div>
-              <div>
-                <button className="buttonRegister">
-                  <Link to="/forms" className="text-decoration-none text-dark">Formulaire</Link>
-                </button>
-              </div>
-            </div>
-          </>
-        )}
-
         {isAuthenticated && (
           <>
             <div>
@@ -105,8 +88,6 @@ function App() {
 
             <Routes>
               <Route path="/home" element={<Home />} />
-              <Route path="/forms" element={<LoginForm />} />
-              <Route path="/terminal" element={<TerminalLogin />} />
               <Route path='/logout' element={<ProtectedRoute><Logout /></ProtectedRoute>} />
               <Route path='/chat' element={<Room />} />
               <Route path='/home_game' element={<ProtectedRoute><Home_game /></ProtectedRoute>} />

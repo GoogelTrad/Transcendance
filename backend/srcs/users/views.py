@@ -38,6 +38,7 @@ class LoginView():
             'email': user.email,
             'status': user.status,
             'profile_image_url': profile_image_url,
+            'is_stud': user.is_stud,
         }
 
         token = jwt.encode(payload, 'coucou', 'HS256')

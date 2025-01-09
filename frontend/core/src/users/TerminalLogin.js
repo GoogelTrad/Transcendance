@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 import axiosInstance from '../instance/AxiosInstance';
+import logo from '../assets/user/logo.png'
 import './TerminalLogin.css';
 
 function TerminalLogin()
@@ -19,6 +20,7 @@ function TerminalLogin()
         register: ["Username", "Email", "Password", "Confirm Password"],
         school: [],
         clear: [],
+        forms: [],
     };
 
     const handleClear = () => {
@@ -83,41 +85,48 @@ function TerminalLogin()
         }
 
     const handleInput = async (input) => {
-        if (!currentCommand) 
-        {
+        if (!currentCommand) {
             const [command] = input.split(" ");
-            if (commandSteps[command]) 
-            {
+            if (commandSteps[command]) {
                 setCurrentCommand(command);
                 setCommandArgs([]);
                 setLines((prevLines) => [...prevLines, `> ${input}`, `Step 1: Please enter your ${commandSteps[command][0]}:`]);
-                if (commandSteps[command][0])
-                    setIsPassword(commandSteps[command][0].toLowerCase().includes("password"));
-            } 
-            else
+                setIsPassword(commandSteps[command][0].toLowerCase().includes("password"));
+            } else {
                 setLines((prevLines) => [...prevLines, `> ${input}`, "Command not found."]);
-        } 
-        else 
-        {
+            }
+        } else {
             const step = commandArgs.length;
             const steps = commandSteps[currentCommand];
-            const nextStep = steps[step + 1];
-            setCommandArgs((prevArgs) => [...prevArgs, input]);
-            if (isPassword)
-                setLines((prevLines) => [...prevLines, `> ${"*".repeat(input.length)}`]);
-            else
-                setLines((prevLines) => [...prevLines, `> ${input}`]);
+            const currentStepLabel = steps[step];
+            const nextStepLabel = steps[step + 1];
 
-            if (step + 1 < steps.length)
-            {
+            if (currentStepLabel.toLowerCase().includes("email")) {
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(input)) {
+                    setLines((prevLines) => [
+                        ...prevLines,
+                        `> ${input}`,
+                        "Invalid email format. Please try again:",
+                    ]);
+                    return;
+                }
+            }
+    
+            setCommandArgs((prevArgs) => [...prevArgs, input]);
+            if (isPassword) {
+                setLines((prevLines) => [...prevLines, `> ${"*".repeat(input.length)}`]);
+            } else {
+                setLines((prevLines) => [...prevLines, `> ${input}`]);
+            }
+    
+            if (step + 1 < steps.length) {
                 setLines((prevLines) => [
                     ...prevLines,
-                    `Step ${step + 2}: Please enter your ${steps[step + 1]}:`,
-                    setIsPassword(nextStep.toLowerCase().includes("password")),
+                    `Step ${step + 2}: Please enter your ${nextStepLabel}:`,
                 ]);
-            }
-            else
-            {
+                setIsPassword(nextStepLabel.toLowerCase().includes("password"));
+            } else {
                 const result = await handleCommandExecution(currentCommand, [...commandArgs, input]);
                 setLines((prevLines) => [...prevLines, result]);
                 setCurrentCommand(null);
@@ -142,7 +151,6 @@ function TerminalLogin()
     };
 
     return (
-        <div className='d-flex align-items-center justify-content-center vh-100 general'>
             <div className="terminal-container">
                 <div className="terminal-output">
                     {lines.map((line, index) => (
@@ -175,7 +183,6 @@ function TerminalLogin()
                     </div>
                 )}
             </div>
-        </div>
     );
 }
 
