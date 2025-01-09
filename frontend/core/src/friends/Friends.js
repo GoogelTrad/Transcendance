@@ -5,6 +5,7 @@ import { jwtDecode } from 'jwt-decode';
 import { showToast } from '../instance/ToastsInstance';
 import { ToastContainer } from 'react-toastify';
 import { Link } from 'react-router-dom';
+import useJwt from '../instance/JwtInstance';
 
 function SeeFriendsRequest({ toWhom, type, onResponse }) {
     const handleResponse = async () => {
@@ -43,6 +44,8 @@ function FriendRequests() {
 	const [searchQuery, setSearchQuery] = useState('');
 	const [searchResults, setSearchResults] = useState([]);
 
+	const getJwt = useJwt();
+
     const handleSearch = async () => {
         if (searchQuery.length > 0) {
             try {
@@ -69,14 +72,30 @@ function FriendRequests() {
 
 	const fetchFriendList = async () => {
 		const token = getCookies('token');
-		const decodeToken = jwtDecode(token);
+		const decodeToken = getJwt(token);
 
 		try {
 			const reponse = await axiosInstance.get(`/friends/list/${decodeToken.id}`);
 			setFriendList(reponse.data);
+			console.log(reponse.data)
 		}
 		catch(error) {
 			console.log(error);
+		}
+	}
+
+	const deleteFriends = async (id) => {
+
+		try {
+			const response = await axiosInstance.post(`/friends/delete/${id}`);
+			setFriendList((prevList) => ({
+				...prevList,
+				friends: prevList.friends.filter((friend) => friend.id !== id),
+			}));
+			showToast('success', response.data.message);
+		}
+		catch(error) {
+			showToast('error', error.response.data.error);
 		}
 	}
 
@@ -95,8 +114,15 @@ function FriendRequests() {
     };
 
     useEffect(() => {
+
 		fetchFriendList();
         fetchFriendRequests();
+		const interval = setInterval(() => {
+			fetchFriendList();
+        	fetchFriendRequests();
+		  }, 5000);
+		
+		  return () => clearInterval(interval);
     }, []);
 
     return (
@@ -113,7 +139,20 @@ function FriendRequests() {
                     	style={{ width: '50px', height: '50px', borderRadius: '50%', marginRight: '10px' }}
                 	/>
 					 <Link to={`/profile/${friend.id}`} className="text-decoration-none text-white">{friend.name}</Link>
-                	{/* <span style={{ fontWeight: 'bold' }}>{friend.name}</span> <span style={{ color: 'gray' }}>({friend.email})</span> */}
+					 <button
+                    	onClick={() => deleteFriends(friend.id)}
+                    	style={{
+							backgroundColor: 'red',
+							color: 'white',
+							border: 'none',
+							borderRadius: '50%',
+							width: '20px',
+							height: '20px',
+							cursor: 'pointer',
+							textAlign: 'center',
+						}}
+                ></button>
+					<span> - Status : {friend.status}</span>
             		</li>
         			))}
     				</ul>

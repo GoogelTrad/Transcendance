@@ -1,11 +1,11 @@
 import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min';
-import RegisterForm from './users/RegisterForm';
 import LoginForm from './users/LoginForm';
 import Home from './Home';
 import Friends from './friends/Friends';
 import Logout from './users/Logout';
+import TerminalLogin from './users/TerminalLogin';
 import Room from './chat/index';
 import Home_game from './game/Home_game';
 import Games_pong from './game/Games_pong';
@@ -18,6 +18,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from 'bootstrap/dist/js/bootstrap.bundle.min';
 import ProtectedRoute from './instance/RouteInstance';
 import { jwtDecode } from 'jwt-decode';
+import useTokenValidation from './instance/EventListener';
 
 export function getCookies(name) {
   const value = document.cookie;
@@ -52,12 +53,12 @@ function NavBar()
             <div className='d-flex flex-row'>
               <div>
                 <button className="buttonLogin">
-                  <Link to="/login" className="text-decoration-none text-dark">Login</Link>
+                  <Link to="/terminal" className="text-decoration-none text-dark">Terminal</Link>
                 </button>
               </div>
               <div>
                 <button className="buttonRegister">
-                  <Link to="/register" className="text-decoration-none text-dark">Register</Link>
+                  <Link to="/forms" className="text-decoration-none text-dark">Formulaire</Link>
                 </button>
               </div>
             </div>
@@ -101,30 +102,35 @@ function App() {
   return (
     <AuthProvider>
       <Router>
-        <div className='h-100 d-flex flex-column'>
-          <div className='head'>
-            <NavBar />
-          </div>
+        <TokenValidationWrapper>
+          <div className='h-100'>
+            <div className='head'>
+              <NavBar />
+            </div>
 
-          <Routes>
-            <Route path="/home" element={<Home />} />
-            <Route path="/register" element={<RegisterForm />} />
-            <Route path="/login" element={<LoginForm />} />
-            <Route path='/logout' element={<ProtectedRoute><Logout /></ProtectedRoute>} />
-            <Route path='/chat' element={<Room />} />
-            <Route path='/home_game' element={<ProtectedRoute><Home_game /></ProtectedRoute>} />
-            <Route path='/game/:id' element={<ProtectedRoute><Game /></ProtectedRoute>} />
-            <Route path='/profile/:id' element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-            <Route path='/friends' element={<ProtectedRoute><Friends /></ProtectedRoute>} />
-            <Route path='/games/:id' element={<Games />} />
-            <Route path='/games_pong/:id' element={<Games_pong />} />
-            <Route path='/stats/:id' element={<Games_Stats/>} />
-          </Routes>
-          
-        </div>
+            <Routes>
+              <Route path="/home" element={<Home />} />
+              <Route path="/forms" element={<LoginForm />} />
+              <Route path="/terminal" element={<TerminalLogin />} />
+              <Route path='/logout' element={<ProtectedRoute><Logout /></ProtectedRoute>} />
+              <Route path='/chat' element={<Room />} />
+              <Route path='/home_game' element={<ProtectedRoute><Home_game /></ProtectedRoute>} />
+              <Route path='/game/:id' element={<ProtectedRoute><Game /></ProtectedRoute>} />
+              <Route path='/profile/:id' element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+              <Route path='/friends' element={<ProtectedRoute><Friends /></ProtectedRoute>} />
+              <Route path='/games/:id' element={<Games />} />
+            </Routes>
+            
+          </div>
+        </TokenValidationWrapper>
       </Router>
     </AuthProvider>
   );
+}
+
+function TokenValidationWrapper({ children }) {
+  useTokenValidation();
+  return children;
 }
 
 export default App;

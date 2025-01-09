@@ -87,7 +87,25 @@ def friends_list(request, user_id):
     serializer = UserSerializer(user)
     return Response(serializer.data)
 
+@api_view(['POST'])
+@jwt_auth_required
+def delete_friends(request, id):
     
+	current_user = request.user
+
+	try :
+		to_delete = User.objects.get(id=id)
+	except User.DoesNotExist:
+		return Response({'error': 'User nt found'}, status=404)
+
+	if to_delete not in current_user.friends.all():	
+		return Response({'error': 'User not in your friends list'}, status=404)
+
+	current_user.friends.remove(to_delete)
+	to_delete.friends.remove(current_user)
+
+	return Response({'message': 'Friends succesfully removed!'}, status=200)
+
 @api_view(['GET'])
 @jwt_auth_required    
 def get_friend_requests(request):    

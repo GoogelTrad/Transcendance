@@ -10,7 +10,7 @@ axiosInstance.interceptors.request.use(
   (config) => {
     const token = getCookies('token');
     if (token) {
-		config.headers['Authorization'] = `Bearer ${token}`;
+		  config.headers['Authorization'] = `Bearer ${token}`;
     }
 	  if (!config.headers['Content-Type']) 
 		  config.headers['Content-Type'] = 'application/json';
