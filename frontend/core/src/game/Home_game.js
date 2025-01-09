@@ -8,6 +8,7 @@ import React, { useEffect, useState } from "react";
 import { jwtDecode } from "jwt-decode";
 import { getCookies } from './../App.js';
 import axios from 'axios';
+import Template from '../Template.js';
 
 function Home_game() {
     const [player1, setPlayer1] = useState("");
@@ -37,23 +38,12 @@ function Home_game() {
     };
 
     return (
-        <>
-        <div className="games-container container-fluid">
-            <h1 className='position-absolute title text-center text-white title-overlay w-100'>pong</h1>
-            <div className="d-flex flex-column align-items-center justify-content-center col-12 col-md-5 flex-grow-1">
-                <Button
-                    type='submit'
-                    className='button'
-                    onClick={submitPlayer}
-                >
-                    Play_
-                </Button>
+        <Template>
+            <div className="content">
+                <h1>Bienvenue dans Home Game</h1>
+                <button onClick={submitPlayer}>Lancer le jeu</button>
             </div>
-            <div className="d-flex flex-column align-items-center justify-content-center col-12 col-md-5 flex-grow-1">
-                <Button type='submit' className='button'>Tournement_</Button>
-            </div>
-        </div>
-        </>
+        </Template>
     );
 };
 

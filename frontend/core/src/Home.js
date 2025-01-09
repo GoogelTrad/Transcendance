@@ -3,6 +3,9 @@ import logo from './assets/user/logo.png'
 import TerminalLogin from './users/TerminalLogin';
 import LoginRegister from './users/LoginForm';
 import './Home.css';
+import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
+import Home_game from './game/Home_game';
+
 
 function Home()
 {
@@ -66,8 +69,17 @@ function Home()
     };
 
 	return (
-        <div className='general' onMouseMove={handleDragMove} onMouseUp={handleDragEnd}>
-
+        <div className='general container-fluid' onMouseMove={handleDragMove} onMouseUp={handleDragEnd}>
+			<div className="ico_game">
+				<Link to="/home_game" className="text-decoration-none">
+					<img 
+						src="/ico_game.jpeg" 
+						alt="Game" 
+						className="buttonGame"
+						style={{ cursor: 'pointer', with: '50px', height: '50px' }} 
+					/>
+				</Link>
+			</div>
 			<button ref={buttonRef} className='icon-forms' onClick={() => launching('forms')}>forms</button>
 			<button ref={buttonRef} className='icon-terminal' onClick={() => launching('terminal')}>terminal</button>
 
