@@ -2,7 +2,6 @@ from channels.db import database_sync_to_async
 import json
 from channels.generic.websocket import AsyncWebsocketConsumer
 from .models import Game
-
 class gameConsumer(AsyncWebsocketConsumer):
 
     @database_sync_to_async
@@ -27,21 +26,37 @@ class gameConsumer(AsyncWebsocketConsumer):
     async def disconnect(self, close_code):
         print(f"WebSocket disconnected with close code: {close_code}")
 
-    async def receive(self, text_data=None, bytes_data=None, **kwargs):
+    async def receive(self, text_data):
 
-        game = await self.get_game()
-
-        if game is None:
-            print("No game found!")
+        try:
+            data_dict = json.loads(text_data)
+        except json.JSONDecodeError:
+            print("Error decoding JSON data")
             return
+        game = await self.get_game()
+        keyPress = data_dict.get("isKeyDown")
+        paddle_data = data_dict.get("paddleData")
+        print(keyPress, flush=True)
+        print(paddle_data.items(), flush=True)
+        is_key_down = data_dict['isKeyDown']
 
-        if text_data == "paddle_down":
-            game.player1_paddle_y += 1
-        elif text_data == "paddle_up":
-            game.player1_paddle_y -= 1
-
-        await self.save_game(game)
-
-        await self.send(text_data=json.dumps({
-            'player1_paddle_y': game.player1_paddle_y,
+        for key, is_pressed in is_key_down.items():
+            if is_pressed:
+                print(f"Key {key} is pressed")
+            if key == "ArrowUp":
+                paddle_data.rightY += 1
+                print("cc", flush=True)
+        #     if key == "ArrowDown":
+        #         game.player1_paddle_y += 1
+        #         print("cc", flush=True)
+        #     if key == "z":
+        #         game.player2_paddle_y += 1
+        #         print("cc", flush=True)
+        #     if key == "s":
+        #         game.player2_paddle_y += 1
+        #         print("cc", flush=True)
+            await self.send(text_data=json.dumps({
+                'player1_paddle_y': paddle_data.rightY,
+                'player2_paddle_y': paddle_data.leftY,
         }))
+    

@@ -267,34 +267,66 @@ const Games = () => {
 		contextCanvas.fillRect(paddleRightX, rightY, width, height);
 	};
 
-	const handleKeyPress = (e) => {
-		setPaddleData((prev) => {
-			let { rightY, leftY, height } = prev;
-			switch (e.key) {
-				case 'ArrowUp':
-					rightY = Math.max(0, rightY - 10);
-					break;
-				case 'ArrowDown':
-					rightY = Math.min(backDimensions.height / 1.31 - height, rightY + 10);
-					break;
-				case 'w':
-					leftY = Math.max(0, leftY - 10);
-					break;
-				case 's':
-					leftY = Math.min(backDimensions.height / 1.31 - height, leftY + 10);
-					break;
-				default:
-					break;
-			}
-			return { ...prev, rightY, leftY };
-		});
+	const socketRef = useRef(null);
+
+	if (!socketRef.current) {
+		socketRef.current = new WebSocket(`ws://localhost:8000/ws/game/${id}`);
+	}
+
+	const socket = socketRef.current;
+
+	socket.onopen = () => {
+		console.log("WebSocket connection established.");
 	};
 
+	socket.onclose = () => {
+		console.log("WebSocket connection closed.");
+	};
+
+	socket.onerror = (error) => {
+		console.error("WebSocket error: ", error);
+	};
+
+	socket.onmessage = (event) => {
+		const data = JSON.parse(event.data);
+		console.log("paddle = ", data.player1_paddle_y)
+		setGame((prevState) => ({
+			...prevState,
+			rightY: data.player1_paddle_y,
+			leftY: data.player2_paddle_y,
+		}));
+	};
+
+	const [isKeyDown, setIsKeyDown] = useState({ ArrowUp: false, ArrowDown: false, w: false, s: false });
+
+	const handleKeyPress = (e) => {
+	if (isKeyDown[e.key] === undefined) return;
+
+	
+
+	setIsKeyDown((prev) => {
+		const updatedKeyDown = { ...prev, [e.key]: true };
+		
+		const gameState = { paddleData, isKeyDown: updatedKeyDown };
+		socket.send(JSON.stringify(gameState));
+		
+		return updatedKeyDown;
+	});
+	};
+	
+	const handleKeyUp = (e) => {
+	  setIsKeyDown((prev) => ({ ...prev, [e.key]: false }));
+	};
+	
 	useEffect(() => {
-		const handleKeyDown = (e) => handleKeyPress(e);
-		window.addEventListener('keydown', handleKeyDown);
-		return () => window.removeEventListener('keydown', handleKeyDown);
-	}, [paddleData]);
+	  window.addEventListener('keydown', handleKeyPress);
+	  window.addEventListener('keyup', handleKeyUp);
+	
+	  return () => {
+		window.removeEventListener('keydown', handleKeyPress);
+		window.removeEventListener('keyup', handleKeyUp);
+	  };
+	}, [paddleData]); 
 
 	useEffect(() => {
 		if (startGame) {
