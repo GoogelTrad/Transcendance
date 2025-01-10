@@ -1,0 +1,64 @@
+/* TerminalLogin.css */
+
+.terminal-container 
+{
+    display: flex;
+    width: 100%;
+    height: 100%;
+    background-color: #000;
+    color: #00ff00;
+    padding: 2%;
+    font-family: 'Courier New', monospace;
+    border: 10px solid rgb(0, 78, 78);
+    box-shadow: 0 0 10px rgb(0, 78, 78); 
+    cursor: text;
+    overflow-y: auto;
+    flex-direction: column;
+}
+
+/* Terminal Line */
+.terminal-line 
+{
+    margin: 0;
+    line-height: 1.5;
+}
+
+.terminal-input input {
+    background: none;
+    border: none;
+    color: #00ff00;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 16px;
+    outline: none;
+    caret-color: #00ff00;
+    width: 100%;
+}
+
+.terminal-input span
+{
+    padding-right: 1%;
+}
+.terminal-input 
+{
+    display: flex;
+    align-items: center;
+    color: #00ff00;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 16px;
+}
+
+/* Blinking Cursor */
+.terminal-cursor 
+{
+    display: inline-block;
+    width: 10px;
+    background-color: #00ff00;
+    animation: blink 1s steps(2, start) infinite;
+}
+
+@keyframes blink 
+{
+    50% {
+        opacity: 0;
+    }
+}

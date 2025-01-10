@@ -1,11 +1,11 @@
 import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min';
-import RegisterForm from './users/RegisterForm';
 import LoginForm from './users/LoginForm';
 import Home from './Home';
 import Friends from './friends/Friends';
 import Logout from './users/Logout';
+import TerminalLogin from './users/TerminalLogin';
 import Home_game from './game/Home_game';
 import { Game, Games} from './game/game';
 import { AuthProvider, useAuth } from './users/AuthContext';
@@ -18,6 +18,7 @@ import { jwtDecode } from 'jwt-decode';
 import HomeChat from './chat/index';
 import Room from "./chat/Room";
 import useSocket from './socket';
+import useTokenValidation from './instance/EventListener';
 
 export function getCookies(name) {
   const value = document.cookie;
@@ -46,23 +47,6 @@ function NavBar()
             <Link to="/home" className="text-decoration-none text-dark">Home</Link>
           </button>
         </div>
-
-        {!isAuthenticated && (
-          <>
-            <div className='d-flex flex-row'>
-              <div>
-                <button className="buttonLogin">
-                  <Link to="/login" className="text-decoration-none text-dark">Login</Link>
-                </button>
-              </div>
-              <div>
-                <button className="buttonRegister">
-                  <Link to="/register" className="text-decoration-none text-dark">Register</Link>
-                </button>
-              </div>
-            </div>
-          </>
-        )}
 
         {isAuthenticated && (
           <>
@@ -99,29 +83,34 @@ function App() {
   return (
     <AuthProvider>
       <Router>
-        <div className='h-100'>
-          <div className='head'>
-            <NavBar />
-          </div>
+        <TokenValidationWrapper>
+          <div className='h-100'>
+            <div className='head'>
+              <NavBar />
+            </div>
 
-          <Routes>
-            <Route path="/home" element={<Home />} />
-            <Route path="/register" element={<RegisterForm />} />
-            <Route path="/login" element={<LoginForm />} />
-            <Route path='/logout' element={<ProtectedRoute><Logout /></ProtectedRoute>} />
-            <Route path='/chat' element={<ProtectedRoute><HomeChat socket={socket} /></ProtectedRoute>} />
-            <Route path="/room/:roomName" element={<ProtectedRoute><Room socket={socket} /></ProtectedRoute>} />
-            <Route path='/home_game' element={<ProtectedRoute><Home_game /></ProtectedRoute>} />
-            <Route path='/game/:id' element={<ProtectedRoute><Game /></ProtectedRoute>} />
-            <Route path='/profile/:id' element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-            <Route path='/friends' element={<ProtectedRoute><Friends /></ProtectedRoute>} />
-            <Route path='/games/:id' element={<Games />} />
-          </Routes>
+            <Routes>
+              <Route path="/home" element={<Home />} />
+              <Route path='/logout' element={<ProtectedRoute><Logout /></ProtectedRoute>} />
+              <Route path='/chat' element={<ProtectedRoute><HomeChat socket={socket} /></ProtectedRoute>} />
+              <Route path="/room/:roomName" element={<ProtectedRoute><Room socket={socket} /></ProtectedRoute>} />
+              <Route path='/home_game' element={<ProtectedRoute><Home_game /></ProtectedRoute>} />
+              <Route path='/game/:id' element={<ProtectedRoute><Game /></ProtectedRoute>} />
+              <Route path='/profile/:id' element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+              <Route path='/friends' element={<ProtectedRoute><Friends /></ProtectedRoute>} />
+              <Route path='/games/:id' element={<Games />} />
+            </Routes>
           
-        </div>
+          </div>
+        </TokenValidationWrapper>
       </Router>
     </AuthProvider>
   );
+}
+
+function TokenValidationWrapper({ children }) {
+  useTokenValidation();
+  return children;
 }
 
 export default App;

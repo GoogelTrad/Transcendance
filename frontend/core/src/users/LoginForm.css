@@ -1,41 +1,42 @@
-.login-container
+.form-group 
 {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    margin: 1rem;
+    color: black;
 }
 
-.login-form
+.general-coucou
 {
-    display: flex;
-    align-items: center;
-    flex-direction: column;
-    margin-top: 10rem;
-    border: solid;
-    padding-top: 1.2rem;
-    padding-left: 2rem;
-    padding-right: 2rem;
-    background-color: rgb(158, 0, 0);
-    color: black !important;
-    gap: 1rem;
+    font-family: 'Courier New', monospace;
 }
 
-.title
+.titre
 {
-    font: italic;
+    font-size: 125% !important;
 }
 
-.register-text
+.register-input
 {
     display: flex;
     flex-direction: column;
-    align-items: center;
 }
 
-.register-here 
+.login-input
 {
     display: flex;
-    position: relative;
-    bottom: 1.2rem;
+    flex-direction: column;
+}
+
+.coucou
+{
+    padding-top: 5%;
+    padding-bottom: 5%;
+    color: black;
+    width: 100%;
+}
+
+.register-coucou
+{
+    display: flex;
+    flex-direction: column;
 }

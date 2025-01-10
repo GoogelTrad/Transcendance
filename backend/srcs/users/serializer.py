@@ -9,7 +9,7 @@ class UserSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = User
-        fields = ['id', 'name', 'email', 'password', 'password_confirm', 'profile_image', 'profile_image_url', 'friends']
+        fields = ['id', 'name', 'email', 'status', 'password', 'password_confirm', 'profile_image', 'profile_image_url', 'friends', 'is_stud']
         
     def get_profile_image_url(self, obj):
         if obj.profile_image:
@@ -38,7 +38,7 @@ class UserSerializer(serializers.ModelSerializer):
         return instance
 
     def update(self, instance, validated_data):
-        validated_data.pop('password_confirm', None)  # Supprimer le champ password_confirm
+        validated_data.pop('password_confirm', None)
         password = validated_data.pop('password', None)
 
         # Mettre à jour les autres champs

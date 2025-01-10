@@ -1,101 +1,190 @@
 import React, { useState } from 'react';
 import Button from 'react-bootstrap/Button';
-import './LoginForm.css';
-import {Link} from 'react-router-dom';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from './AuthContext';
-import axiosInstance from '../instance/AxiosInstance';
+import { useNavigate, Link } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import { showToast } from '../instance/ToastsInstance';
+import axiosInstance from '../instance/AxiosInstance';
 import 'react-toastify/dist/ReactToastify.css';
+import './LoginForm.css';
+import { useAuth } from './AuthContext';
 
-function LoginForm()
-{
-    const {isAuthenticated, setIsAuthenticated} = useAuth();
+function LoginRegister() {
     const navigate = useNavigate();
-    const [formData, setFormData] = useState
-    ({
-        name: 'r',
-        password: 'r',
+    const {isAuthenticated, setIsAuthenticated} = useAuth();
+    const [loginData, setLoginData] = useState({
+        name: 'f',
+        password: 'f',
     });
 
-    const handleChange = (e) => 
-    {
-        e.preventDefault();
-        const {name, value} = e.target;
-        setFormData
-        ({
-            ...formData,
-            [name]: value
+    const [registerData, setRegisterData] = useState({
+        name: '',
+        email: '',
+        password: '',
+        password_confirm: '',
+    });
+
+    const handleLoginChange = (e) => {
+        const { name, value } = e.target;
+        setLoginData({
+            ...loginData,
+            [name]: value,
         });
     };
 
-    const handleSubmit = async (e) =>
-    {
+    const handleSchoolLogin = async (e) => {
+        e.preventDefault();
+        try {
+            window.location.href = "http://localhost:8000/auth/code";
+        }
+        catch(error) {
+            return "Error while trying to connect with 42."
+        }
+    }
+
+    const handleRegisterChange = (e) => {
+        const { name, value } = e.target;
+        setRegisterData({
+            ...registerData,
+            [name]: value,
+        });
+    };
+
+    const handleLoginSubmit = async (e) => {
         e.preventDefault();
         const data = new FormData();
-        for (const [key, value] of Object.entries(formData))
+        for (const [key, value] of Object.entries(loginData)) {
             data.append(key, value);
-        try 
-        {
+        }
+        try {
             await axiosInstance.post('api/login', data, {
                 headers: {
-                'Content-Type': 'multipart/form-data',
-            }})
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
             setIsAuthenticated(true);
-            navigate("/home");
-        } 
-        catch (error) {
-            showToast("error", "Incorrect login or password!");
-            console.error(error);
+            navigate('/home');
+        } catch (error) {
+            showToast('error', 'Incorrect login or password!');
+        }
+    };
+
+    const handleRegisterSubmit = async (e) => {
+        e.preventDefault();
+        const data = new FormData();
+        for (const [key, value] of Object.entries(registerData)) {
+            data.append(key, value);
+        }
+        try {
+            await axiosInstance.post('api/user/create', data, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+            setIsAuthenticated(true);
+            navigate('/login');
+        } catch (error) {
+            showToast('error', 'Cannot create the account!');
         }
     };
 
     return (
-        <>
-            <div className='login-container'>
-                <form className='login-form' onSubmit={handleSubmit}>
-                    <h1 className='title'>Please Login</h1>
-                    <div className='form-group'>
-                        <label htmlFor='name'>Username</label>
-                        <input className='input-form'
-                            type='text'
-                            id='name'
-                            name='name'
-                            value={formData.name}
-                            onChange={handleChange}
-                            required
-                            placeholder='Type your username'>    
-                        </input>
-                    </div>
-                    <div className='form-group'>
-                        <label htmlFor='password'>Password</label>
-                        <input className='input-form'
-                            type='password'
-                            id='password'
-                            name='password'
-                            value={formData.password}
-                            onChange={handleChange}
-                            required
-                            placeholder='Type your password'>
-                        </input>
-                    </div>
-
-                    <Button type='submit' className='submit-button btn'>Login</Button>
-                    <div className='register-text'>
-                        <p>Need to create an account ?</p>
-                        
-                        <div className='register-here'>
-                            <Link to='/register'>Register here</Link>
+            <div className="coucou row">
+                <div className="col-md-6 d-flex flex-column align-items-center justify-content-center border-end">
+                    <div className='login-coucou d-flex flex-column align-items-center'>
+                        <h2 className='titre'>Login here</h2>
+                        <form className='w-75 d-flex flex-column align-items-center' onSubmit={handleLoginSubmit}>
+                            <div className='mb-3'>
+                                <label htmlFor='name'>Username:</label>
+                                <input className='login-input'
+                                    type='text'
+                                    id='login-name'
+                                    name='name'
+                                    value={loginData.name}
+                                    onChange={handleLoginChange}
+                                    required
+                                    placeholder='Username'>
+                                </input>
+                            </div>
+                            <div className='mb-3'>
+                                <label htmlFor='password'>Password:</label>
+                                <input className='login-input'
+                                    type='password'
+                                    id='login-password'
+                                    name='password'
+                                    value={loginData.password}
+                                    onChange={handleLoginChange}
+                                    required
+                                    placeholder='Password'>
+                                </input>
+                            </div>
+                            <Button type='submit' className='submit-button btn btn-primary'>Login</Button>
+                        </form>
+                        <div>
+                            <Button type="submit" className='submit-button btn btn-primary' onClick={handleSchoolLogin}>42</Button>
                         </div>
                     </div>
-                    <div>
+                </div>
+                <div className="col-md-6 d-flex flex-column align-items-center justify-content-center">
+                    <div className='register-coucou d-flex flex-column align-items-center'>
+                        <h2 className='titre'>Register here</h2>
+                        <form className='w-75 d-flex flex-column align-items-center' onSubmit={handleRegisterSubmit}>
+                            <div className='mb-3'>
+                                <label htmlFor='name'>Username:</label>
+                                <input className='register-input'
+                                    type='text'
+                                    id='register-name'
+                                    name='name'
+                                    value={registerData.name}
+                                    onChange={handleRegisterChange}
+                                    required
+                                    placeholder='Username'>
+                                </input>
+                            </div>
+                            <div className='mb-3'>
+                                <label htmlFor="email">Mail:</label>
+                                <input className='register-input'
+                                    type='email'
+                                    id='register-email'
+                                    name='email'
+                                    value={registerData.mail}
+                                    onChange={handleRegisterChange}
+                                    required
+                                    placeholder='Email'>
+                                </input>
+                            </div>
+                            <div className='mb-3'>
+                                <label htmlFor='password'>Password:</label>
+                                <input className='register-input'
+                                    type='password'
+                                    id='register-password'
+                                    name='password'
+                                    value={registerData.password}
+                                    onChange={handleRegisterChange}
+                                    required
+                                    placeholder='Password'>
+                                </input>
+                            </div>
+                            <div className=' mb-3'>
+                                <label htmlFor='password_confirm'>Confirm Password:</label>
+                                <input className='register-input'
+                                    type='password'
+                                    id='register-password_confirm'
+                                    name='password_confirm'
+                                    value={registerData.password_confirm}
+                                    onChange={handleRegisterChange}
+                                    required
+                                    placeholder='Confirm Password'>
+                                </input>
+                            </div>
+
+                            <Button type='submit' className='submit-button btn'>Register</Button>
+                        </form>
                     </div>
-                </form>
+                </div>
+
                 <ToastContainer />
             </div>
-        </>
-    )
+    );
 }
 
-export default LoginForm;
+export default LoginRegister;
