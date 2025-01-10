@@ -6,7 +6,6 @@ import LoginForm from './users/LoginForm';
 import Home from './Home';
 import Friends from './friends/Friends';
 import Logout from './users/Logout';
-import Room from './chat/index';
 import Home_game from './game/Home_game';
 import { Game, Games} from './game/game';
 import { AuthProvider, useAuth } from './users/AuthContext';
@@ -16,6 +15,9 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from 'bootstrap/dist/js/bootstrap.bundle.min';
 import ProtectedRoute from './instance/RouteInstance';
 import { jwtDecode } from 'jwt-decode';
+import HomeChat from './chat/index';
+import Room from "./chat/Room";
+import useSocket from './socket';
 
 export function getCookies(name) {
   const value = document.cookie;
@@ -92,7 +94,8 @@ function NavBar()
 }
 
 function App() {
-  
+  const socket = useSocket("chat", "public");
+
   return (
     <AuthProvider>
       <Router>
@@ -106,7 +109,8 @@ function App() {
             <Route path="/register" element={<RegisterForm />} />
             <Route path="/login" element={<LoginForm />} />
             <Route path='/logout' element={<ProtectedRoute><Logout /></ProtectedRoute>} />
-            <Route path='/chat' element={<Room />} />
+            <Route path='/chat' element={<ProtectedRoute><HomeChat socket={socket} /></ProtectedRoute>} />
+            <Route path="/room/:roomName" element={<ProtectedRoute><Room socket={socket} /></ProtectedRoute>} />
             <Route path='/home_game' element={<ProtectedRoute><Home_game /></ProtectedRoute>} />
             <Route path='/game/:id' element={<ProtectedRoute><Game /></ProtectedRoute>} />
             <Route path='/profile/:id' element={<ProtectedRoute><Profile /></ProtectedRoute>} />

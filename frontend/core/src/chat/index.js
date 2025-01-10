@@ -1,78 +1,167 @@
 //import { socket }  from "../socket";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { showToast } from "../instance/ToastsInstance";
+import { ToastContainer } from "react-toastify";
 import useSocket from '../socket'
+
 import "./index.css"
+import Room from './Room'
 
-export default function Room() {
+export default function HomeChat() {
 	const socket = useSocket('chat', 'public');
-	const [message, setMessage] = useState('');
-	const [chat, setChat] = useState('');
-	const handleChange = (e) => setMessage(e.target.value);
-	//const handleChangeChat = (e) =>  setChat(chat + e.target.value)	
+	const [createName, setCreateRoomName] = useState("");
+	const [createpassword, setCreatePassword] = useState("");
+	const [joinpassword, setJoinPassword] = useState("");
+	const [joinName, setJoinRoomName] = useState("");
+	const [createdRoomName, setCreatedRoomName] = useState("");
+	const navigate = useNavigate();
 
-	// const reciveMessage = useCallback((e) => {
-	// 	const data = JSON.parse(e.data);
-	// 	setChat((prevChat) => prevChat + data.message + '\n');
-	// }, []);
-	
+	const [showCreatePrivateRoom, setShowCreatePrivateRoom] = useState(false);
+	const [showCreatePublicRoom, setShowCreatePublicRoom] = useState(false);
+	const [showJoinPrivateRoom, setShowJoinPrivateRoom] = useState(false);
+	const [showJoinPublicRoom, setShowJoinPublicRoom] = useState(false);
+
+	const handleChangeCreateRoom = (e) => setCreateRoomName(e.target.value);
+	const handleChangeJoinRoom = (e) => setJoinRoomName(e.target.value);
+	const handleChangeCreatePassword = (e) => setCreatePassword(e.target.value);
+	const handleChangeJoinPassword = (e) => setJoinPassword(e.target.value);
+
+	const [isSwitchOn, setIsSwitchOn] = useState(false); // État initial : false
+
+	// Fonction pour gérer le changement d'état
+	const handleToggle = () => {
+		setIsSwitchOn(!isSwitchOn); // Inverse l'état actuel
+	};
+
 	useEffect(() => {
 		if (socket.ready) {
-			socket.on('chat_message', (data) => {
-				const newMessage = `${data.username}: ${data.message}\n`; // Ajouter l'username
-				setChat((prevChat) => prevChat + newMessage);
-			});
-
-			socket.on('create_room', (data) => {
+			socket.on("create_room", (data) => {
 				if (data.status) {
-					// ajoute la room
+					console.log("Salle créée :", data.room_name);
+					navigate(`/room/${data.room_name}`);
 				}
-				console.log(data);
+				else {
+					showToast("error", data.error);
+				}
 			});
-	
-			// Nettoyage : réinitialise l'écouteur précédent
-			return () => {};
+			socket.on("join_room", (data) => {
+				if (data.status) {
+					console.log("Salle rejoint :", data.room_name);
+					navigate(`/room/${data.room_name}`);
+				} else {
+					showToast("error", data.error);
+				}
+			});
 		}
-	}, [socket]);
-
-	function createRoom() {
+	}, [socket, navigate]);
+	
+	
+	const createRoom = () => {
+		if (createName.trim() === "") {
+			showToast("error", "Le nom de la salle ne peut pas être vide.");
+			return;
+		}
 		if (socket.ready) {
 			socket.send({
-				type: 'create_room',
-				room_name: 'test',
+				type: "create_room",
+				room_name: createName,
+				password: createpassword,
 			});
 		}
-	}
-	
+	};
 
-	function sendMessage() {
-		if (message.trim() === "") {
-			console.warn("Impossible d'envoyer un message vide."); // Message de débogage
-			return; // Arrête la fonction si le message est vide ou contient uniquement des espaces
+	const joinRoom = () => {
+		if (joinName.trim() === "") {
+			showToast("error", "Le nom de la salle ne peut pas être vide.");
+			return;
 		}
 		if (socket.ready) {
 			socket.send({
-				type: 'send_message',
-				room: 'public',
-				message: message,
+				type: "join_room",
+				room_name: joinName,
+				password: joinpassword,
 			});
-			setMessage(''); // Réinitialisez le champ message après l'envoi
 		}
-	}
-	
+	};
+
 	return (
 		<>
-			<div className="general">
-				<div className="titre">
-					<p>Public Chat</p>
-				</div>
-				<button onClick={() => {createRoom()}}>new</button>
-				<div className="chat">
-					<textarea id="chat-log" cols="100" rows="20" value={chat} readOnly />	{/*onChange={handleChangeChat}*/}
-					<div className="saisi">
-						<input id="chat-message-input" type="text" size="100" value={message} onChange={handleChange}/>
-						<button className="send" onClick={() => sendMessage()}>send</button>
+		<div className="general">
+
+				{showCreatePublicRoom ? (
+					<>
+						<div class="form-check form-switch">
+							<input class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckDefault" checked={isSwitchOn} onChange={handleToggle}/>
+							<label class="form-check-label" for="flexSwitchCheckDefault">{isSwitchOn ? 'Room is private' : 'Room is not private'}</label>
+						</div>
+
+						{!isSwitchOn && (
+							<>
+								<input type="text" placeholder="Nom de la salle" value={createName} onChange={handleChangeCreateRoom}/>
+								<button onClick={() => setShowCreatePublicRoom(false)}>Cancel</button>
+								<button onClick={createRoom}>New Room</button>
+								{socket && createdRoomName && (
+									<Room />
+								)}
+							</>
+						)}
+
+						{isSwitchOn && (
+							<>
+								<input type="text" placeholder="Nom de la salle" value={createName} onChange={handleChangeCreateRoom}/>
+								<input type="password" placeholder="Mdp de la salle" value={createpassword} onChange={handleChangeCreatePassword}/>
+								<button onClick={() => setShowCreatePublicRoom(false)}>Cancel</button>
+								<button onClick={createRoom}>New Room</button>
+								{socket && createdRoomName && (
+									<Room />
+								)}
+							</>
+						)}
+					</>
+				) : (
+					<div className="create-public-room">
+						<button onClick={() => setShowCreatePublicRoom(true)}>New Room</button>
 					</div>
-				</div>
-			</div>
-		</>)
+				)}
+
+				{showJoinPublicRoom ? (
+					<>
+						<div class="form-check form-switch">
+							<input class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckDefault" checked={isSwitchOn} onChange={handleToggle}/>
+							<label class="form-check-label" for="flexSwitchCheckDefault">{isSwitchOn ? 'Room is private' : 'Room is not private'}</label>
+						</div>
+
+						{!isSwitchOn && (
+							<>
+								<input type="text" placeholder="Nom de la salle" value={joinName} onChange={handleChangeJoinRoom}/>
+								<button onClick={() => setShowJoinPublicRoom(false)}>Cancel</button>
+								<button onClick={joinRoom}>Join Room</button>
+								{socket && createdRoomName && (
+									<Room />
+								)}
+							</>
+						)}
+
+						{isSwitchOn && (
+							<>
+								<input type="text" placeholder="Nom de la salle" value={joinName} onChange={handleChangeJoinRoom}/>
+								<input type="password" placeholder="Mdp de la salle" value={joinpassword} onChange={handleChangeJoinPassword}/>
+								<button onClick={() => setShowJoinPrivateRoom(false)}>Cancel</button>
+								<button onClick={joinRoom}>Join Room</button>
+								{socket && createdRoomName && (
+									<Room />
+								)}
+							</>
+						)}
+					</>
+				) : (
+						<div className="join-public-room">
+							<button onClick={() => setShowJoinPublicRoom(true)}>Join Room</button>
+						</div>
+				)}
+		</div>
+		<ToastContainer />
+		</>
+	);
 }
