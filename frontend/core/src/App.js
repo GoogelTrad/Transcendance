@@ -38,7 +38,7 @@ function NavBar()
     decodeToken = jwtDecode(token);
 
   return (
-    <nav className='navbar navbar-expand-md navbar-dark fixed-top bg-dark'>
+    <nav className='navbar navbar-expand-md navbar-dark fixed-top'>
       <div className='container-fluid'>
         <div className='accueil-container'>
           <button className="buttonAccueil">
@@ -59,7 +59,7 @@ function NavBar()
             <div className='d-flex flex-row'>
               <div>
                 <button className="buttonProfile">
-                  <Link to={`/profile/${decodeToken.id}`} className="text-decoration-none text-dark">Profile</Link>
+                  <Link to={`/profile/${decodeToken?.id}`} className="text-decoration-none text-dark">Profile</Link>
                 </button>
               </div>
               <div>
