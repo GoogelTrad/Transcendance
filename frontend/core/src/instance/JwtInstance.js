@@ -20,7 +20,7 @@ function useJwt() {
             if (isAuthenticated) {
                 console.log('Token expired or invalid, redirecting to login...');
                 setIsAuthenticated(false);
-                navigate('/login');
+                navigate('/home');
             }
             return null;
         }
@@ -28,7 +28,7 @@ function useJwt() {
         const decodedToken = decodeToken(token);
         if (!decodedToken) {
             setIsAuthenticated(false);
-            navigate('/login');
+            navigate('/home');
         }
         return decodedToken;
     };
