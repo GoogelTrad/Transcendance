@@ -41,7 +41,7 @@ function Home_game() {
         <Template>
             <div className="content">
                 <Button onClick={handleShow}>Lancer le jeu</Button>
-                    {/* Modal affiché avec show={showModal} */}
+                
                     <Modal show={showModal} onHide={handleClose} centered>
                         <Modal.Header closeButton>
                             <Modal.Title>Coucou</Modal.Title>

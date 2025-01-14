@@ -1,4 +1,4 @@
-/* .custom-modal
+.custom-modal
 {
     position: absolute;
     width: 50%;
@@ -12,6 +12,20 @@
 }
 
 .custom-modal.hide {
-    display: none; 
-} */
+    display: none;
+}
 
+.modal-header {
+    height: 5%;
+    background-color: rgb(0, 78, 78);
+    cursor: grab;
+    user-select: none;
+    font-weight: bold;
+    color: white;
+    padding-top: 1.7%;
+    padding-left: 0.3%;
+}
+
+.close-button {
+    margin-right: 1%;
+}

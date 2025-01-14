@@ -1,7 +1,7 @@
+import React, { useState, useRef } from 'react';
 
-import React from 'react';
-
-function ModalInstance({ children, modalRef, setIsModal, isModal, appName, setDragOffset, dragOffset, removeLaunch }) {
+function ModalInstance({ children, isModal, modalRef, name, onLaunchUpdate, onClose }) {
+    const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
 
     const handleDragStart = (e, modalRef) => {
         const modal = modalRef.current;
@@ -29,18 +29,31 @@ function ModalInstance({ children, modalRef, setIsModal, isModal, appName, setDr
     };
 
     const closeModal = () => {
-        setIsModal(false);
-        removeLaunch(appName);
+        if (onLaunchUpdate) {
+            onLaunchUpdate(name);
+        }
+        if (onClose) {
+            onClose();
+        }
     };
 
     return (
-        <div className={`custom-modal ${isModal ? "show" : "hide"}`} ref={modalRef}
-            style={{ position: "absolute" }} onMouseMove={(e) => handleDragMove(e, modalRef)}
-            onMouseUp={() => handleDragEnd(modalRef)}>
-            <div className="modal-header" onMouseDown={(e) => handleDragStart(e, modalRef)}
-                onMouseUp={() => handleDragEnd(modalRef)}>
-                <button className="close-button" onClick={closeModal}>X</button>
-                <span>{appName}</span>
+        <div
+            className={`custom-modal ${isModal ? "show" : "hide"}`}
+            ref={modalRef}
+            style={{ position: "absolute" }}
+            onMouseMove={(e) => handleDragMove(e, modalRef)}
+            onMouseUp={() => handleDragEnd(modalRef)}
+        >
+            <div
+                className="modal-header"
+                onMouseDown={(e) => handleDragStart(e, modalRef)}
+                onMouseUp={() => handleDragEnd(modalRef)}
+            >
+                <button className="close-button" onClick={closeModal}>
+                    X
+                </button>
+                <span>{name}</span>
             </div>
             <div className="content-area">{children}</div>
         </div>
