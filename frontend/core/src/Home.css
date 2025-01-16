@@ -1,4 +1,3 @@
-/* Centrer les boutons "Forms" et "Terminal" */
 .icon {
     position: absolute;
     left: 50%;
@@ -17,16 +16,38 @@
     top : 40%;
 }
 
-.task-bar button {
+.task-bar-content {
+    background-color: transparent;
+    display: flex;
+	position: relative;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.5%;
+    width: 93%;
+    height: 4%;
+    left: 0%;
+    bottom: 0;
+    z-index: 1049;
+}
+
+.task-bar-content button {
     padding: 0;
     background-color: grey;
     border-top: 1px solid white;
     border-left: 1px solid white;
     border-right: 2px solid black;
     border-bottom: 2px solid black;
+    position: relative;
+    height: 75%;
+    bottom: 3%;
+    width: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box; 
 }
 
-.task-bar button.button-on {
+.task-bar-content button.button-on {
     background-color: rgb(163, 163, 163);
     border-top: 2px solid black;
     border-left: 2px solid black;

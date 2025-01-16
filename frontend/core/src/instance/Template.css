@@ -2,6 +2,8 @@
 {
     max-width: 2.6%;
     height: fit-content;
+    z-index: 10;
+    position: relative;
 }
 
 .task-bar
@@ -18,6 +20,7 @@
     bottom: 0;
     border: solid;
     border-color: rgba(255, 255, 255, 0.196);
+    z-index: 1049;
 }
 
 .general
@@ -34,4 +37,50 @@
     position: relative;
     height: 100%;
     width: 100%;
+}
+
+
+.desktop-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5); 
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2;
+}
+
+.application-desktop {
+    align-items: flex-start;
+    justify-content: flex-start;
+    color: black;
+    font-size: 15px;
+    font-weight: bold;
+}
+
+.application-desktop .bd-highlight {
+    border-bottom: 2px solid rgba(82, 77, 77, 0.473);
+    width: 50%; 
+    display: flex;
+    margin: inherit;
+}
+
+.desktop-content {
+    gap: 0.5%;
+    border: solid;
+    border-color: rgba(255, 255, 255, 0.196);
+    position: absolute;
+    background-color: grey !important;
+    border-color: rgba(255, 255, 255, 0.196);
+    padding: 20px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    max-width: 600px;
+    width: 15%;
+    height: 45%;
+    bottom: 0%;
+    left: 0%;
 }
