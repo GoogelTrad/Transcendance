@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import './ModalInstance.css'
 
 function ModalInstance({ children, isModal, modalRef, name, onLaunchUpdate, onClose }) {
     const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
