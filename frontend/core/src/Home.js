@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom';
 import logo from './assets/user/logo.png';  
 import TerminalLogin from './users/TerminalLogin';
 import LoginRegister from './users/LoginForm';
+import HomeGame from './game/Home_game'
 import './Home.css';
 import Template from './instance/Template';  
 import ModalInstance from './instance/ModalInstance';
@@ -130,7 +131,7 @@ function Home() {
                 onLaunchUpdate={() => removeLaunch("game")}
                 onClose={() => setIsModalGame(false)}
             >
-                <div>Game Content</div>
+                <HomeGame/>
             </ModalInstance>
         </Template>
     );

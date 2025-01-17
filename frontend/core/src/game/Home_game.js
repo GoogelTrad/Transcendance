@@ -10,19 +10,43 @@ import { getCookies } from './../App.js';
 import axiosInstance from "../instance/AxiosInstance";
 import Template from '../instance/Template.js';
 
-function Home_game() {
+function HomeGame() {
     const [player1, setPlayer1] = useState("");
+    const [onClickPlay, setOnClickPlay] = useState(false);
+    const [onClickTournament, setOnClickTournament] = useState(false);
+    const [onClickStats, setOnClickStats] = useState(false);
     const [showModal, setShowModal] = useState(false);
     const navigate = useNavigate();
 
     const token = getCookies('token');
-    const user = jwtDecode(token);
+    let user = null;
 
+    if (token && typeof token === "string") {
+        try {
+            user = jwtDecode(token);
+        } catch (error) {
+            console.error("Error decoding token:", error);
+        }
+    }
     useEffect(() => {
         if (user && user.name) {
             setPlayer1(user.name);
         }
     }, [user]);
+
+    const handleClick = (option) => {
+        setOnClickPlay(false);
+        setOnClickTournament(false);
+        setOnClickStats(false);
+
+        if (option === "play") {
+            setOnClickPlay(true);
+        } else if (option === "tournament") {
+            setOnClickTournament(true);
+        } else if (option === "stats") {
+            setOnClickStats(true);
+        }
+    };
 
     const submitPlayer = async () => {
         try {
@@ -34,34 +58,48 @@ function Home_game() {
         }
     };
 
-    const handleShow = () => setShowModal(true);
-    const handleClose = () => setShowModal(false);
-
     return (
-        <Template>
-            <div className="content">
-                <Button onClick={handleShow}>Lancer le jeu</Button>
-                
-                    <Modal show={showModal} onHide={handleClose} centered>
-                        <Modal.Header closeButton>
-                            <Modal.Title>Coucou</Modal.Title>
-                        </Modal.Header>
-                        <Modal.Body>
-                            <p>Bienvenue dans le jeu !</p>
-                            <Button onClick={() => submitPlayer('1-player')}> 
-                                play
-                            </Button>
-                        </Modal.Body>
-                        <Modal.Footer>
-                            <Button variant="secondary" onClick={handleClose}>
-                                Fermer
-                            </Button>
-                        </Modal.Footer>
-                    </Modal>
-                {/* <button onClick={submitPlayer}>Lancer le jeu</button> */}
+        <div className="game-home">
+            <div className="title-game">PONG</div>
+            <div className="content-wrapper h-100 w-100">
+                <div className="column column-left w-50 h-100">
+                    <div className="d-flex flex-column mb-3 h-100">
+                        <div className="p-2" onClick={() => handleClick("play")}>
+                        <span className="arrow">a</span> PLAY <span className="tilde">_</span>
+                        </div>
+                        <div className="p-2" onClick={() => handleClick("tournament")}>
+                        <span className="arrow">a</span> TOURNAMENT <span className="tilde">_</span>
+                        </div>
+                        <div className="p-2" onClick={() => handleClick("stats")}>
+                        <span className="arrow">a</span> STATS <span className="tilde">_</span>
+                        </div>
+                    </div>
+                </div>
+                <div className="column column-right w-50 h-100">
+                {onClickPlay && (
+                    <div className="content">
+                        <div className="line" onClick={() => submitPlayer('1-player')}> 1 player </div>
+                        <div className="line" onClick={() => submitPlayer('2-players')}> 2 players - Local </div>
+                        <div className="line" onClick={() => submitPlayer('2-players')}> 2 players - Online </div>
+                        <div className="line" onClick={() => submitPlayer('2-players')}> 4 players - Online </div>
+                    </div>
+                )}
+                {onClickTournament && (
+                    <div className="content">
+                    <h3>Tournament Section</h3>
+                    <p>Participate in tournaments and compete with others for the top spot.</p>
+                    </div>
+                )}
+                {onClickStats && (
+                    <div className="content">
+                    <h3>Stats Section</h3>
+                    <p>Check your statistics and improve your gameplay!</p>
+                    </div>
+                )}
+                </div>
             </div>
-        </Template>
+        </div>
     );
 };
 
-export default Home_game;
+export default HomeGame;

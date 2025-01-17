@@ -108,6 +108,7 @@ const Games = () => {
 	return (
 	  <Template>
         <div className="content-1">
+			<div className="dark-background"></div>
                 <canvas
                     className="gamebar"
                     ref={gamebarRef}
