@@ -58,13 +58,13 @@ function NavBar()
                 <Link to="/chat" className="text-decoration-none text-dark">Chat</Link>
               </button>
               <button className="buttonStats">
-                <Link to={`/stats/${decodeToken.id}`} className="text-decoration-none text-dark">Stats</Link>
+                <Link to={`/stats/${decodeToken?.id}`} className="text-decoration-none text-dark">Stats</Link>
               </button>
             </div>
             <div className='d-flex flex-row'>
               <div>
                 <button className="buttonProfile">
-                  <Link to={`/profile/${decodeToken.id}`} className="text-decoration-none text-dark">Profile</Link>
+                  <Link to={`/profile/${decodeToken?.id}`} className="text-decoration-none text-dark">Profile</Link>
                 </button>
               </div>
               <div>
@@ -100,6 +100,7 @@ function App() {
               <Route path='/profile/:id' element={<ProtectedRoute><Profile /></ProtectedRoute>} />
               <Route path='/friends' element={<ProtectedRoute><Friends /></ProtectedRoute>} />
               <Route path='/games/:id' element={<Games />} />
+              <Route path='/stats/:id' element={<Games_Stats />} />
             </Routes>
             
           </div>

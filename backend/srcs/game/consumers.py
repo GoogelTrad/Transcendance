@@ -38,25 +38,28 @@ class gameConsumer(AsyncWebsocketConsumer):
         paddle_data = data_dict.get("paddleData")
         print(keyPress, flush=True)
         print(paddle_data.items(), flush=True)
+        rightY = paddle_data.get("rightY")
+        leftY = paddle_data.get("leftY")
         is_key_down = data_dict['isKeyDown']
 
         for key, is_pressed in is_key_down.items():
             if is_pressed:
                 print(f"Key {key} is pressed")
-            if key == "ArrowUp":
-                paddle_data.rightY += 1
-                print("cc", flush=True)
-        #     if key == "ArrowDown":
-        #         game.player1_paddle_y += 1
-        #         print("cc", flush=True)
-        #     if key == "z":
-        #         game.player2_paddle_y += 1
-        #         print("cc", flush=True)
-        #     if key == "s":
-        #         game.player2_paddle_y += 1
-        #         print("cc", flush=True)
-            await self.send(text_data=json.dumps({
-                'player1_paddle_y': paddle_data.rightY,
-                'player2_paddle_y': paddle_data.leftY,
+                if key == "ArrowDown":
+                    print(f"cc1")
+                    rightY += 1
+                elif key == "ArrowUp":
+                    print(f"cc2")
+                    rightY -= 1
+                elif key == "s":
+                    print(f"cc3")
+                    leftY += 1
+                elif key == "z":
+                    print(f"cc4")
+                    leftY -= 1
+                    
+        await self.send(text_data=json.dumps({
+            'player1_paddle_y': rightY,
+            'player2_paddle_y': leftY,
         }))
-    
+        

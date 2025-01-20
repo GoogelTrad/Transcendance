@@ -289,8 +289,7 @@ const Games = () => {
 
 	socket.onmessage = (event) => {
 		const data = JSON.parse(event.data);
-		console.log("paddle = ", data.player1_paddle_y)
-		setGame((prevState) => ({
+		setPaddleData((prevState) => ({
 			...prevState,
 			rightY: data.player1_paddle_y,
 			leftY: data.player2_paddle_y,
