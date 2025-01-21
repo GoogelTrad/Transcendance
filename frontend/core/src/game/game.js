@@ -29,6 +29,14 @@ const Games = () => {
 	  height: 170,
 	  height_canvas : backDimensions.height,
 	});
+	const [pongData, setpongData] = useState({
+		pos_y: 200,
+		pos_x: 300,
+		width: 20,
+		height_canvas : backDimensions.height,
+		velocity_x: 4,
+    	velocity_y: 4,  
+	});
 	const fetchData = async () => {
 	  try {
 		const response = await axiosInstance.get(`/game/fetch_data/${id}/`);
@@ -117,41 +125,19 @@ const Games = () => {
 		  };
 		}, [paddleData]); 
 	
-
-	// const handleKeyPress = (e) => {
-	//   setPaddleData((prev) => {
-	// 	let { rightY, leftY, height } = prev;
-	// 	switch (e.key) {
-	// 	  case "ArrowUp":
-	// 		rightY = Math.max(0, rightY - 10);
-	// 		break;
-	// 	  case "ArrowDown":
-	// 		rightY = Math.min(backDimensions.height / 1.31 - height, rightY + 10);
-	// 		break;
-	// 	  case "z":
-	// 		leftY = Math.max(0, leftY - 10);
-	// 		break;
-	// 	  case "s":
-	// 		leftY = Math.min(backDimensions.height / 1.31 - height, leftY + 10);
-	// 		break;
-	// 	  default:
-	// 		break;
-	// 	}
-	// 	return { ...prev, rightY, leftY };
-	//   });
-	// };
-  
-	// useEffect(() => {
-	//   const handleKeyDown = (e) => handleKeyPress(e);
-	//   window.addEventListener("keydown", handleKeyDown);
-	//   return () => window.removeEventListener("keydown", handleKeyDown);
-	// }, [paddleData]);
+		const drawBall = (context, pongData) => {
+			context.beginPath();
+			context.arc(pongData.pos_x, pongData.pos_y, pongData.width / 2, 0, Math.PI * 2);
+			context.fillStyle = "white";
+			context.fill();
+			context.closePath();
+		};
 
 	useEffect(() => {
 		if (canvasRef.current) {
 		  const canvas = canvasRef.current;
 		  const context = canvas.getContext("2d");
-	  
+		console.log("W = ", canvas.width, "H = ", canvas.height);
 		  context.clearRect(0, 0, canvas.width, canvas.height);
 	  
 		  const { width, height, rightY, leftY } = paddleData;
@@ -160,6 +146,7 @@ const Games = () => {
 		  context.fillStyle = "white";
 		  context.fillRect(paddleLeftX, leftY, width, height);
 		  context.fillRect(paddleRightX, rightY, width, height);
+		  drawBall(context, pongData);
 		}
 	  }, [paddleData, showModal]);
   
