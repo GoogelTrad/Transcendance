@@ -6,6 +6,7 @@ import Friends from './friends/Friends';
 import Logout from './users/Logout';
 import Room from './chat/index';
 import Home_game from './game/Home_game';
+import Stats from './game/Stats';
 import { Game, Games} from './game/game';
 import { AuthProvider, useAuth } from './users/AuthContext';
 import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
@@ -91,6 +92,7 @@ function App() {
               <Route path='/profile/:id' element={<ProtectedRoute><Profile /></ProtectedRoute>} />
               <Route path='/friends' element={<ProtectedRoute><Friends /></ProtectedRoute>} />
               <Route path='/games/:id' element={<Games />} />
+              <Route path='/games/Stats'  element={<ProtectedRoute><Stats /></ProtectedRoute>} />
             </Routes>
             
           </div>
