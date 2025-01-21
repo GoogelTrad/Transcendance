@@ -158,22 +158,67 @@ function GameInstance ( {children} ) {
 					id="gameCanvas"
 				></canvas>
 			<div
-				className="Show-Rules"
+				className="Show-option Rules"
 				onClick={() => toggleDesktop("rules")}
 			>
 				Rules
 				{showRules && (
-					<div className="show rules">
-						<p>PONG</p>
+					<div className="show-option rules">
+						<div className="explications title d-flex p-2">
+							<p>PONG</p>
+						</div>
+						<div className="explications one d-flex p-2">
+							You have to score points by sending the ball to the opponent's side. The first one to reach 11 points wins !
+						</div>
+						<div className="border-top border-2 border-white w-75 mx-auto"></div>
+						<div className="explications cmd d-flex p-2">
+							<div className="column h-100 w-50">
+								<div className="touch p-2">
+									<div className="touch-style d-flex flex-column">
+										<div className="touch-line">
+											<div className="touch-square center">z</div>
+										</div>
+										<div className="touch-line">
+											<div className="touch-square alpha">q</div>
+											<div className="touch-square alpha">s</div>
+											<div className="touch-square alpha">d</div>
+										</div>
+									</div>	
+								</div>
+								<div className="player-touch p-2 w-100 h-50">
+									Player 1
+								</div>
+						
+							</div>
+							<div className="border-start border-2 border-white border-opacity-25 h-75"></div>
+							<div className="column h-100 w-50">
+								<div className="touch p-2">
+									<div className="touch-style d-flex flex-column">
+										<div className="touch-line">
+											<div className="touch-square arrows center">k</div>
+										</div>
+										<div className="touch-line">
+											<div className="touch-square arrows">j</div>
+											<div className="touch-square arrows">l</div>
+											<div className="touch-square arrows">i</div>
+										</div>
+									</div>	
+								</div>
+								<div className="player-touch p-2 w-100 h-50">
+									Player 2
+								</div>
+						
+							</div>
+						</div>
 					</div>
 				)}
 			</div>
-            <div className="Show-FriendInfos"
+            <div className="Show-option FriendInfos"
 				onClick={() => toggleDesktop("friend")}
 			>
 				STATS
 				{showFriend && (
-					<div className="show friend">
+					<div className="show-option friend">
 
 					</div>
 				)
