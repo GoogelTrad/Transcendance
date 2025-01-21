@@ -93,8 +93,8 @@ function HomeGame() {
                 )}
                 {onClickStats && (
                     <div className="content">
-                    <h3>Stats Section</h3>
-                    <p>Check your statistics and improve your gameplay!</p>
+                    <h3 onClick={() => navigate("/games/Stats")} >Stats</h3>
+                    <p onClick={() => navigate("/games/Stats")} >Global Stats</p>
                     </div>
                 )}
                 </div>

@@ -11,103 +11,108 @@ import { useParams } from 'react-router-dom';
 import axiosInstance from '../instance/AxiosInstance.js';
 import useSocket from '../socket.js';
 import Template from '../instance/Template.js';
+import GameInstance from '../instance/GameInstance.js';
 
 const Games = () => {
-	const canvasRef = useRef(null);
-	const gamebarRef = useRef(null);
-	const [startGame, setStartGame] = useState(false);
-	const [canvasData, setCanvasData] = useState(null);
-	const [showModal, setShowModal] = useState(true);
-	const [paddleData, setPaddleData] = useState({
-	  rightY: 0,
-	  leftY: 0,
-	  width: 17,
-	  height: 170,
-	});
-	const [game, setGame] = useState(null);
-	const { id } = useParams();
-	const [backDimensions, setBackDimensions] = useState({ width: 0, height: 750 });
+	
+	// const canvasRef = useRef(null);
+	// const gamebarRef = useRef(null);
+	// const [startGame, setStartGame] = useState(false);
+	// const [canvasData, setCanvasData] = useState(null);
+	// const [showModal, setShowModal] = useState(true);
+	// const [paddleData, setPaddleData] = useState({
+	// 	rightY: 0,
+	// 	leftY: 0,
+	// 	width: 17,
+	// 	height: 170,
+	// });
+	// const [game, setGame] = useState(null);
+	// const { id } = useParams();
+	// const [backDimensions, setBackDimensions] = useState({ width: 0, height: 750 });
   
-	const fetchData = async () => {
-	  try {
-		const response = await axiosInstance.get(`/game/fetch_data/${id}/`);
-		setGame(response.data);
-	  } catch (error) {
-		console.error("Error fetching game by ID:", error);
-	  }
-	};
+	// const fetchData = async () => {
+	//   try {
+	// 	const response = await axiosInstance.get(`/game/fetch_data/${id}/`);
+	// 	setGame(response.data);
+	//   } catch (error) {
+	// 	console.error("Error fetching game by ID:", error);
+	//   }
+	// };
   
-	useEffect(() => {
-		const width = window.innerWidth;
-		const height = window.innerHeight;
-		setBackDimensions({ width, height });
-	}, []);
+	// useEffect(() => {
+	// 	const width = window.innerWidth;
+	// 	const height = window.innerHeight;
+	// 	setBackDimensions({ width, height });
+	// }, []);
   
-	useEffect(() => {
-		if (canvasRef.current && showModal) {
-			const canvas = canvasRef.current;
-			const modalWidth = backDimensions.width;
-			const modalHeight = backDimensions.height;
+	// useEffect(() => {
+	// 	if (canvasRef.current && showModal) {
+	// 		const canvas = canvasRef.current;
+	// 		const modalWidth = backDimensions.width;
+	// 		const modalHeight = backDimensions.height;
 
-			canvas.width = modalWidth;
-			canvas.height = modalHeight;
-			const context = canvas.getContext("2d");
-		}
+	// 		canvas.width = modalWidth;
+	// 		canvas.height = modalHeight;
+	// 		const context = canvas.getContext("2d");
+	// 	}
         
-	  }, [showModal, backDimensions]);
+	//   }, [showModal, backDimensions]);
 
-	const handleKeyPress = (e) => {
-	  setPaddleData((prev) => {
-		let { rightY, leftY, height } = prev;
-		switch (e.key) {
-		  case "ArrowUp":
-			rightY = Math.max(0, rightY - 10);
-			break;
-		  case "ArrowDown":
-			rightY = Math.min(backDimensions.height / 1.31 - height, rightY + 10);
-			break;
-		  case "z":
-			leftY = Math.max(0, leftY - 10);
-			break;
-		  case "s":
-			leftY = Math.min(backDimensions.height / 1.31 - height, leftY + 10);
-			break;
-		  default:
-			break;
-		}
-		return { ...prev, rightY, leftY };
-	  });
-	};
+	// const handleKeyPress = (e) => {
+	//   setPaddleData((prev) => {
+	// 	let { rightY, leftY, height } = prev;
+	// 	switch (e.key) {
+	// 	  case "ArrowUp":
+	// 		rightY = Math.max(0, rightY - 10);
+	// 		break;
+	// 	  case "ArrowDown":
+	// 		rightY = Math.min(backDimensions.height / 1.31 - height, rightY + 10);
+	// 		break;
+	// 	  case "z":
+	// 		leftY = Math.max(0, leftY - 10);
+	// 		break;
+	// 	  case "s":
+	// 		leftY = Math.min(backDimensions.height / 1.31 - height, leftY + 10);
+	// 		break;
+	// 	  default:
+	// 		break;
+	// 	}
+	// 	return { ...prev, rightY, leftY };
+	//   });
+	// };
   
-	useEffect(() => {
-	  const handleKeyDown = (e) => handleKeyPress(e);
-	  window.addEventListener("keydown", handleKeyDown);
-	  return () => window.removeEventListener("keydown", handleKeyDown);
-	}, [paddleData]);
+	// useEffect(() => {
+	//   const handleKeyDown = (e) => handleKeyPress(e);
+	//   window.addEventListener("keydown", handleKeyDown);
+	//   return () => window.removeEventListener("keydown", handleKeyDown);
+	// }, [paddleData]);
 
-	useEffect(() => {
-		if (canvasRef.current) {
-		  const canvas = canvasRef.current;
-		  const context = canvas.getContext("2d");
+	// useEffect(() => {
+	// 	if (canvasRef.current) {
+	// 	  const canvas = canvasRef.current;
+	// 	  const context = canvas.getContext("2d");
 	  
-		  context.clearRect(0, 0, canvas.width, canvas.height);
+	// 	  context.clearRect(0, 0, canvas.width, canvas.height);
 	  
-		  const { width, height, rightY, leftY } = paddleData;
-		  const paddleRightX = canvas.width - width - canvas.width * 0.05;
-		  const paddleLeftX = canvas.width * 0.05;
-		  context.fillStyle = "white";
-		  context.fillRect(paddleLeftX, leftY, width, height);
-		  context.fillRect(paddleRightX, rightY, width, height);
-		}
-	  }, [paddleData, showModal]);
+	// 	  const { width, height, rightY, leftY } = paddleData;
+	// 	  const paddleRightX = canvas.width - width - canvas.width * 0.05;
+	// 	  const paddleLeftX = canvas.width * 0.05;
+	// 	  context.fillStyle = "white";
+	// 	  context.fillRect(paddleLeftX, leftY, width, height);
+	// 	  context.fillRect(paddleRightX, rightY, width, height);
+	// 	}
+	//   }, [paddleData, showModal]);
   
-	useEffect(() => {
-	  fetchData();
-	}, []);
+	// useEffect(() => {
+	//   fetchData();
+	// }, []);
   
 	return (
 	  <Template>
-        <div className="content-1">
+		<GameInstance>
+
+		</GameInstance>
+        {/* <div className="content-1">
 			<div className="dark-background"></div>
                 <canvas
                     className="gamebar"
@@ -123,7 +128,7 @@ const Games = () => {
                     height: `${backDimensions.height / 10.85}px`,
                     display: "flex",
                     }}
-                >
+                	>
                     <div className="column">
                         <div className="red">PLAYER 1</div>
                         <div className="white">{game?.player1 || "Player 1"}</div>
@@ -150,7 +155,7 @@ const Games = () => {
 					ref={canvasRef}
 					id="gameCanvas"
 				></canvas>
-			</div>
+			</div> */}
 	  </Template>
 	);
   };
