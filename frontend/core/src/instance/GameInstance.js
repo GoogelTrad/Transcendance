@@ -163,7 +163,7 @@ function GameInstance ( {children} ) {
 			>
 				Rules
 				{showRules && (
-					<div className="show rules">
+					<div className="show-rules">
 						<p>PONG</p>
 					</div>
 				)}
