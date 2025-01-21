@@ -64,9 +64,9 @@ services:
     networks: 
       - tdc
     environment:
-      - WATCHPACK_POLLING=true
       - REDIS_HOST=redis
       - REDIS_PORT=6379
+      - WATCHPACK_POLLING=true
   
   redis:
     image: redis:latest
