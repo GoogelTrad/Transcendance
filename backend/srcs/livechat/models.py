@@ -3,7 +3,6 @@ from users.models import User
 from django.core.exceptions import ValidationError
 
 
-
 class Room(models.Model):
     """Modele representant une salle de chat prive"""
     creation = models.DateTimeField(auto_now_add=True)

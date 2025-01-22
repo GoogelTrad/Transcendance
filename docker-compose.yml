@@ -1,5 +1,7 @@
 services:
   nginx:
+    environment:
+      - WATCHPACK_POLLING=true
     env_file: .env
     container_name: nginx
     build: nginx/
@@ -15,6 +17,8 @@ services:
     restart: unless-stopped
       
   db:
+    environment:
+      - WATCHPACK_POLLING=true
     container_name: db
     image: postgres
     restart: unless-stopped
@@ -27,6 +31,8 @@ services:
       - db:/home/db
 
   react:
+    environment:
+      - WATCHPACK_POLLING=true
     container_name: react
     image: front
     restart: unless-stopped
@@ -60,8 +66,11 @@ services:
     environment:
       - REDIS_HOST=redis
       - REDIS_PORT=6379
+      - WATCHPACK_POLLING=true
   
   redis:
+    environment:
+      - WATCHPACK_POLLING=true
     image: redis:latest
     container_name: redis
     ports:

@@ -81,7 +81,7 @@ function LoginRegister() {
                 },
             });
             setIsAuthenticated(true);
-            navigate('/login');
+            navigate('/home');
         } catch (error) {
             showToast('error', 'Cannot create the account!');
         }

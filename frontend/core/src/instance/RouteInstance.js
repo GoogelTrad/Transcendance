@@ -14,7 +14,7 @@ function ProtectedRoute({ children }) {
 		if (!currentToken || typeof currentToken !== 'string') {
 			console.log('Invalid token, redirecting to login...');
 			setIsAuthenticated(false);
-			navigate('/login');
+			navigate('/home');
 		} else {
 			setIsAuthenticated(true);
 		}

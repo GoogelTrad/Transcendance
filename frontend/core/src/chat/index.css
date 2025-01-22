@@ -1,10 +1,10 @@
 /*Style général pour la page*/
- .general {
+.general-chat {
     font-family: Arial, sans-serif;
     margin: 0;
     padding: 0;
     background-color: #000000;
-    color: #333;
+    color: #ffffff;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -13,3 +13,18 @@
     gap: 2%;
 }
 
+.create-public-room {
+    display: flex;
+    flex-direction: column;
+    background-color: #333;
+    height: 40%;
+    width: 20%;
+}
+
+.join-public-room {
+    display: flex;
+    flex-direction: column;
+    background-color: #333;
+    height: 40%;
+    width: 20%;
+}

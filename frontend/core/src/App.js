@@ -17,7 +17,6 @@ import ProtectedRoute from './instance/RouteInstance';
 import { jwtDecode } from 'jwt-decode';
 import HomeChat from './chat/index';
 import Room from "./chat/Room";
-import useSocket from './socket';
 import useTokenValidation from './instance/EventListener';
 
 export function getCookies(name) {
@@ -61,7 +60,7 @@ function NavBar()
             <div className='d-flex flex-row'>
               <div>
                 <button className="buttonProfile">
-                  <Link to={`/profile/${decodeToken.id}`} className="text-decoration-none text-dark">Profile</Link>
+                  <Link to={`/profile/${decodeToken?.id}`} className="text-decoration-none text-dark">Profile</Link>
                 </button>
               </div>
               <div>
@@ -78,7 +77,6 @@ function NavBar()
 }
 
 function App() {
-  const socket = useSocket("chat", "public");
 
   return (
     <AuthProvider>
@@ -92,8 +90,8 @@ function App() {
             <Routes>
               <Route path="/home" element={<Home />} />
               <Route path='/logout' element={<ProtectedRoute><Logout /></ProtectedRoute>} />
-              <Route path='/chat' element={<ProtectedRoute><HomeChat socket={socket} /></ProtectedRoute>} />
-              <Route path="/room/:roomName" element={<ProtectedRoute><Room socket={socket} /></ProtectedRoute>} />
+              <Route path='/chat' element={<ProtectedRoute><HomeChat/></ProtectedRoute>} />
+              <Route path="/room/:roomName" element={<ProtectedRoute><Room/></ProtectedRoute>} />
               <Route path='/home_game' element={<ProtectedRoute><Home_game /></ProtectedRoute>} />
               <Route path='/game/:id' element={<ProtectedRoute><Game /></ProtectedRoute>} />
               <Route path='/profile/:id' element={<ProtectedRoute><Profile /></ProtectedRoute>} />

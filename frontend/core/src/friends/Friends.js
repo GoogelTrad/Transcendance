@@ -103,6 +103,7 @@ function FriendRequests() {
         try {
             const response = await axiosInstance.get('/friends/request');
             setFriendRequests(response.data);
+			console.log("hello:", response);
         } catch (error) {
             console.error('Error fetching friend requests:', error);
         }
@@ -120,9 +121,9 @@ function FriendRequests() {
 		const interval = setInterval(() => {
 			fetchFriendList();
         	fetchFriendRequests();
-		  }, 5000);
+		}, 5000);
 		
-		  return () => clearInterval(interval);
+		return () => clearInterval(interval);
     }, []);
 
     return (
