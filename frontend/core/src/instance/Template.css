@@ -51,6 +51,7 @@
     justify-content: center;
     align-items: center;
     z-index: 2;
+    pointer-events: none;
 }
 
 .application-desktop {
@@ -83,4 +84,5 @@
     height: 45%;
     bottom: 0%;
     left: 0%;
+    pointer-events: auto;
 }
