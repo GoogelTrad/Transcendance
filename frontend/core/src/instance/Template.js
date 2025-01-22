@@ -1,11 +1,9 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useRef, useState } from 'react';
 import logo from '../assets/user/logo.png';
 import './Template.css';
 
-function Template({ children, taskBarContent, onFlexItemClick, appArray }) {
+function Template({ children, taskBarContent, launching, appArray }) {
     const [isDesktop, setIsDesktop] = useState(false);
-    const navigate = useNavigate(); 
     const desktopRef = useRef(null);
 
     const toggleDesktop = () => {
@@ -19,9 +17,16 @@ function Template({ children, taskBarContent, onFlexItemClick, appArray }) {
         }
     };
 
-    const handleClick = (modalName) => {
-        appArray[modalName].setter(!appArray[modalName].value);
-    };
+    const handleClick= (modalName) =>
+    {
+        const app = appArray.find((item) => item.name === modalName);
+
+        if (!app) return;
+        app.setter(prev => !prev);
+
+        launching({newLaunch: modalName, setModal: app.setter});
+        setIsDesktop(false);
+    }
 
     return (
         <div className="general container-fluid">
@@ -45,12 +50,6 @@ function Template({ children, taskBarContent, onFlexItemClick, appArray }) {
                                 onClick={() => handleClick('terminal')} 
                             >
                                 Terminal
-                            </div>
-                            <div
-                                className="p-2 bd-highlight flex-item"
-                                onClick={() => handleClick('forms')}
-                            >
-                                Forms
                             </div>
                             <div
                                 className="p-2 bd-highlight flex-item"
