@@ -13,6 +13,11 @@ function Home() {
     const [isModalForms, setIsModalForms] = useState(false);
     const [isModalGame, setIsModalGame] = useState(false);
     const [isLaunch, setIsLaunch] = useState([]);
+    const [appArray, setAppArray] = useState([
+        {name: "terminal", value: isModalTerminal, setter: setIsModalTerminal},
+        {name: "forms", value: isModalForms, setter: setIsModalForms},
+        {name: "game", value: isModalGame, setter: setIsModalGame},
+    ]);
     const modalTerminalRef = useRef(null);
     const modalFormsRef = useRef(null);
     const modalGameRef = useRef(null);
@@ -45,6 +50,7 @@ function Home() {
 
     return (
         <Template
+            appArray={appArray}
             taskBarContent={
                 <div className="task-bar-content">
                     {isLaunched(isLaunch, "terminal") && (
