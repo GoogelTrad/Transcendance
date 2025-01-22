@@ -13,20 +13,13 @@ function Home() {
     const [isModalForms, setIsModalForms] = useState(false);
     const [isModalGame, setIsModalGame] = useState(false);
     const [isLaunch, setIsLaunch] = useState([]);
+    const setters = [
+        {name: 'terminal', setter: setIsModalTerminal},
+        {name: 'game', setter: setIsModalGame},
+    ]
     const modalTerminalRef = useRef(null);
     const modalFormsRef = useRef(null);
     const modalGameRef = useRef(null);
-
-    const location = useLocation();
-
-    useEffect(() => {
-        const params = new URLSearchParams(location.search);
-        const modal = params.get('modal');
-
-        if (modal === 'terminal') setIsModalTerminal(true);
-        if (modal === 'forms') setIsModalForms(true);
-        if (modal === 'game') setIsModalGame(true);
-    }, [location]); 
 
     const removeLaunch = (appName) => {
         setIsLaunch((prevLaunch) => prevLaunch.filter((app) => app !== appName));
@@ -45,6 +38,8 @@ function Home() {
 
     return (
         <Template
+            appArray={setters}
+            launching={launching}
             taskBarContent={
                 <div className="task-bar-content">
                     {isLaunched(isLaunch, "terminal") && (
@@ -79,18 +74,7 @@ function Home() {
                     )}
                 </div>
             }
-            onFlexItemClick={(modalName) => {
-                if (modalName === "terminal") setIsModalTerminal(true);
-                if (modalName === "forms") setIsModalForms(true);
-                if (modalName === "game") setIsModalGame(true);
-            }}
         >
-            <button
-                className="icon forms"
-                onClick={() => launching({ newLaunch: "forms", setModal: setIsModalForms })}
-            >
-                Forms
-            </button>
             <button
                 className="icon term"
                 onClick={() => launching({ newLaunch: "terminal", setModal: setIsModalTerminal })}
@@ -111,7 +95,7 @@ function Home() {
                 onLaunchUpdate={() => removeLaunch("terminal")}
                 onClose={() => setIsModalTerminal(false)}
             >
-                <TerminalLogin />
+                <TerminalLogin setModal={setIsModalForms} launching={launching} />
             </ModalInstance>
 
             <ModalInstance

@@ -5,7 +5,7 @@ import axiosInstance from '../instance/AxiosInstance';
 import logo from '../assets/user/logo.png'
 import './TerminalLogin.css';
 
-function TerminalLogin()
+function TerminalLogin({setModal, launching})
 {
     const { setIsAuthenticated } = useAuth();
     const navigate = useNavigate();
@@ -15,13 +15,35 @@ function TerminalLogin()
     const [commandArgs, setCommandArgs] = useState([]);
     const [isPassword, setIsPassword] = useState(false);
 
+    const helpLine = [
+        {name: "login", value: "You can log in with username and password!"},
+        {name: "register", value: "You can register with username, email and password!"},
+        {name: "school", value: "You can log in your school login!"},
+        {name: "clear", value: "Clear the terminal!"},
+        {name: "forms", value: "You can use the forms!"},
+        {name: "help", value: "You can have the command list available!"},
+    ];
+
     const commandSteps = {
         login: ["Username", "Password"],
         register: ["Username", "Email", "Password", "Confirm Password"],
         school: [],
         clear: [],
         forms: [],
+        help: [],
     };
+
+    const handleForms = () => {
+        setModal(true);
+        launching({newLaunch: 'forms', setModal: setModal});
+    }
+
+    const handleHelp = () => {
+        setLines((prevLines) => [...prevLines,
+            "Available commands:",
+            ...helpLine.map(line => `- ${line.name}: ${line.value}`)
+        ]);
+    }
 
     const handleClear = () => {
         setLines(["Welcome to the Terminal."]);
@@ -72,6 +94,10 @@ function TerminalLogin()
             return await handleSchoolLogin();
         else if (command == "clear")
             return await handleClear();
+        else if (command == "help")
+            return await handleHelp();
+        else if (command == "forms")
+            return await handleForms();
     };
 
     const handleSchoolLogin = async (e) => 
@@ -141,7 +167,7 @@ function TerminalLogin()
             e.preventDefault();
             if (currentInput.trim().length > 0)
             {
-                if (currentInput == "school" || currentInput == "clear")
+                if (currentInput == "school" || currentInput == "clear" || currentInput == "help" || currentInput == "forms")
                     handleCommandExecution(currentInput, null);
                 else
                     handleInput(currentInput);

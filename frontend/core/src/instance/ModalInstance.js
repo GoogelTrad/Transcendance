@@ -47,6 +47,7 @@ function ModalInstance({ children, isModal, modalRef, name, onLaunchUpdate, onCl
 
     const handleDragEnd = (modalRef) => {
         const modal = modalRef.current;
+        if (!modal || modal.dataset?.dragging !== "true") return;
         modal.dataset.dragging = false;
         window.removeEventListener("mousemove", (event) => handleDragMove(event, modalRef));
         window.removeEventListener("mouseup", () => handleDragEnd(modalRef));
