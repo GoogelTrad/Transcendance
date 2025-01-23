@@ -21,13 +21,14 @@ function HomeGame() {
     const token = getCookies('token');
     let user = null;
 
-    if (token && typeof token === "string") {
+    if (token) {
         try {
             user = jwtDecode(token);
         } catch (error) {
             console.error("Error decoding token:", error);
         }
     }
+
     useEffect(() => {
         if (user && user.name) {
             setPlayer1(user.name);
