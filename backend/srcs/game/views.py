@@ -5,19 +5,34 @@ from rest_framework.viewsets import ViewSet
 from rest_framework.response import Response
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.decorators import api_view, action
+from django.shortcuts import get_object_or_404
 from .serializer import GameSerializer
 from django.http import HttpResponse
 from .models import Game
+from users.models import User
 import jwt
 
 class HomeGameView:
     @api_view(['POST'])
     def create_game(request):
-        serializer = GameSerializer(data=request.data)
+        auth_header = request.headers.get('Authorization')
+        if auth_header:
+            token = auth_header.split(' ')[1]
+        else:
+            token = None
+        print("Token:", token)
+        payload = jwt.decode(jwt=token, key='coucou', algorithms=['HS256'])
+        user = get_object_or_404(User, name=payload.get('name'))
+        request.data['player1'] = payload.get('name')
+        print("User:", payload.get('name'))
+        serializer = GameSerializer(data=request.data, partial=True)
         if serializer.is_valid():
             game_instance = serializer.save()
+            user.games.add(game_instance)
+            user.save()
             return Response({"id": game_instance.id, **serializer.data}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 class GameView:
 
@@ -36,7 +51,6 @@ class GameView:
             serializer = GameSerializer(game, data=request.data, partial=True)
             if serializer.is_valid():
                 serializer.save()
-                # Toujours retourner l'objet complet mis à jour
                 return Response(GameSerializer(game).data, status=status.HTTP_200_OK)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         

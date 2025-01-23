@@ -50,8 +50,7 @@ function HomeGame() {
 
     const submitPlayer = async () => {
         try {
-          const response = await axiosInstance.post(`http://localhost:8000/game/create_game`, { player1 });
-          console.log(response.data);
+        const response = await axiosInstance.post(`http://localhost:8000/game/create_game`, {});
           navigate(`/games/${response.data.id}`);
         } catch (error) {
           console.error("Error submitting Player:", error);

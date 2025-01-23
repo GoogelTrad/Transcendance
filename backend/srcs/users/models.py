@@ -13,6 +13,8 @@ class User(AbstractUser):
     friends = models.ManyToManyField("User", blank=True)
     status = models.CharField(max_length=20, default='offline')
     is_stud = models.BooleanField(max_length=255, default=False)
+    games = models.ManyToManyField("game.Game", related_name="players", blank=True)
+
     username = None
 
     USERNAME_FIELD = 'name'
