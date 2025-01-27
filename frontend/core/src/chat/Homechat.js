@@ -6,7 +6,7 @@ import { ToastContainer } from "react-toastify";
 import useSocket from '../socket'
 import axiosInstance from "../instance/AxiosInstance";
 
-import "./index.css"
+import "./Homechat.css"
 import Room from './Room'
 
 export default function HomeChat() {
@@ -31,6 +31,7 @@ export default function HomeChat() {
 
 	useEffect(() => {
 		if (socket.ready) {
+			console.log("bonjour");
 			socket.on("create_room", (data) => {
 				if (data.status) {
 					console.log("Salle créée :", data.room_name);
@@ -58,6 +59,7 @@ export default function HomeChat() {
 			return;
 		}
 		if (socket.ready) {
+			console.log("bonsoir");
 			socket.send({
 				type: "create_room",
 				room_name: createName,
@@ -68,6 +70,7 @@ export default function HomeChat() {
 
 	const joinRoom = (name, password = null) => {
 		if (socket.ready) {
+			console.log("hello");
 			socket.send({
 				type: "join_room",
 				room_name: name,

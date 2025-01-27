@@ -1,118 +1,124 @@
-import React, { useState, useRef } from 'react';
-import logo from './assets/user/logo.png'
+import React, { useState, useEffect, useRef } from 'react';
+import { useLocation } from 'react-router-dom';
+import logo from './assets/user/logo.png';  
 import TerminalLogin from './users/TerminalLogin';
 import LoginRegister from './users/LoginForm';
+import HomeGame from './game/Home_game'
 import './Home.css';
+import Template from './instance/Template';  
+import ModalInstance from './instance/ModalInstance';
 
-function Home()
-{
-	const [isModalTerminal, setIsModalTerminal] = useState(false);
-	const [isModalForms, setIsModelForms] = useState(false);
-	const [isLaunch, setIsLaunch] = useState([]);
-    const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
-    const modalRef = useRef(null);
-	const buttonRef = useRef(null);
-	
-	function isLaunched(launched, searchApp) {
-		return launched.includes(searchApp);
-	}
+function Home() {
+    const [isModalTerminal, setIsModalTerminal] = useState(false);
+    const [isModalForms, setIsModalForms] = useState(false);
+    const [isModalGame, setIsModalGame] = useState(false);
+    const [isLaunch, setIsLaunch] = useState([]);
+    const setters = [
+        {name: 'terminal', setter: setIsModalTerminal},
+        {name: 'game', setter: setIsModalGame},
+    ]
+    const modalTerminalRef = useRef(null);
+    const modalFormsRef = useRef(null);
+    const modalGameRef = useRef(null);
 
-	const launching = (newLaunch) => {
-		setIsLaunch((prevLaunch) => [...prevLaunch, newLaunch]);
-	};
-
-	const removeLaunch = (indexToRemove) => {
-		setIsLaunch((prevLaunch) =>
-			prevLaunch.filter((_, index) => index !== indexToRemove)
-		);
-	  };
-
-	const handleModal = ({setModal, boolean}) => setModal(boolean);
-
-    const handleAutoClick = () => {
-        if (buttonRef.current) {
-            buttonRef.current.click();
-        }
+    const removeLaunch = (appName) => {
+        setIsLaunch((prevLaunch) => prevLaunch.filter((app) => app !== appName));
     };
 
-    const handleDragStart = (e) => {
-        const modal = modalRef.current;
-        const rect = modal.getBoundingClientRect();
-        setDragOffset({
-            x: e.clientX - rect.left,
-            y: e.clientY - rect.top,
-        });
-        modal.dataset.dragging = true;
+    const handleModal = ({ setModal, boolean }) => setModal(boolean);
+
+    const launching = ({ newLaunch, setModal }) => {
+        setIsLaunch((prevLaunch) => [...prevLaunch, newLaunch]);
+        handleModal({ setModal: setModal, boolean: true });
     };
 
-    const handleDragMove = (e) => {
-        const modal = modalRef.current;
-        if (modal.dataset.dragging === "true") {
-            const newLeft = e.clientX - dragOffset.x;
-            const newTop = e.clientY - dragOffset.y;
+    function isLaunched(launched, searchApp) {
+        return launched.includes(searchApp);
+    }
 
-            modal.style.left = `${newLeft}px`;
-            modal.style.top = `${newTop}px`;
-        }
-    };
+    return (
+        <Template
+            appArray={setters}
+            launching={launching}
+            taskBarContent={
+                <div className="task-bar-content">
+                    {isLaunched(isLaunch, "terminal") && (
+                        <button
+                            className={`${isModalTerminal ? "button-on" : "button-off"}`}
+                            onClick={() => {
+                                handleModal({ setModal: setIsModalTerminal, boolean: !isModalTerminal });
+                            }}
+                        >
+                            Terminal
+                        </button>
+                    )}
+                    {isLaunched(isLaunch, "forms") && (
+                        <button
+                            className={`${isModalForms ? "button-on" : "button-off"}`}
+                            onClick={() => {
+                                handleModal({ setModal: setIsModalForms, boolean: !isModalForms });
+                            }}
+                        >
+                            Form
+                        </button>
+                    )}
+                    {isLaunched(isLaunch, "game") && (
+                        <button
+                            className={`${isModalGame ? "button-on" : "button-off"}`}
+                            onClick={() => {
+                                handleModal({ setModal: setIsModalGame, boolean: !isModalGame });
+                            }}
+                        >
+                            Game
+                        </button>
+                    )}
+                </div>
+            }
+        >
+            <button
+                className="icon term"
+                onClick={() => launching({ newLaunch: "terminal", setModal: setIsModalTerminal })}
+            >
+                Terminal
+            </button>
+            <button
+                className="icon game"
+                onClick={() => launching({ newLaunch: "game", setModal: setIsModalGame })}
+            >
+                Game
+            </button>
 
-    const handleDragEnd = () => {
-        const modal = modalRef.current;
-        modal.dataset.dragging = false;
-    };
+            <ModalInstance
+                isModal={isModalTerminal}
+                modalRef={modalTerminalRef}
+                name="Terminal"
+                onLaunchUpdate={() => removeLaunch("terminal")}
+                onClose={() => setIsModalTerminal(false)}
+            >
+                <TerminalLogin setModal={setIsModalForms} launching={launching} />
+            </ModalInstance>
 
-	const closeModal = ({setIsModal}) => {
-        setIsModal(false);
-    };
-
-	return (
-        <div className='general' onMouseMove={handleDragMove} onMouseUp={handleDragEnd}>
-
-			<button ref={buttonRef} className='icon-forms' onClick={() => launching('forms')}>forms</button>
-			<button ref={buttonRef} className='icon-terminal' onClick={() => launching('terminal')}>terminal</button>
-
-            <div className={`custom-modal ${isModalTerminal ? 'show' : 'hide'}`} ref={modalRef}
-                style={{ position: 'absolute'}}>
-                <div className="modal-header" onMouseDown={handleDragStart} onMouseUp={handleDragEnd}>
-					<button className="close-button" onClick={() => closeModal({setIsModal : setIsModalTerminal})}>X</button>
-					<span>Terminal</span>
-				</div>
-                <TerminalLogin />
-            </div>
-			<div className={`custom-modal-forms ${isModalForms ? 'show' : 'hide'}`} ref={modalRef}
-                style={{ position: 'absolute'}}>
-                <div className="modal-header-forms" onMouseDown={handleDragStart} onMouseUp={handleDragEnd}>
-					<button className="close-button" onClick={() => closeModal({setIsModal : setIsModelForms})}>X</button>
-					<span>Forms</span>
-				</div>
+            <ModalInstance
+                isModal={isModalForms}
+                modalRef={modalFormsRef}
+                name="Forms"
+                onLaunchUpdate={() => removeLaunch("forms")}
+                onClose={() => setIsModalForms(false)}
+            >
                 <LoginRegister />
-            </div>
-			<div className='task-bar'>
-                <img src={logo} alt='logo' className='logo'></img>
-                <div className='border-start border-2 border-black border-opacity-25 h-75'></div>
-				{isLaunched(isLaunch, 'terminal') ? (
-					<button className={`${isModalTerminal ? 'button-on' : 'button-off'}`} 
-					onClick={() => {
-						handleModal({setModal: setIsModalTerminal, boolean: !isModalTerminal});
-						{ isModalForms ? (closeModal({setIsModal : setIsModelForms})) : (<></>)};
-						}}>Terminal
-					</button>
-				) : (
-					<></>
-				)}
-				{isLaunched(isLaunch, 'forms') ? (
-					<button className={`${isModalForms ? 'button-on' : 'button-off'}`} 
-					onClick={() => {
-						handleModal({setModal: setIsModelForms, boolean: !isModalForms});
-						{ isModalTerminal ? (closeModal({setIsModal : setIsModalTerminal})) : (<></>)};
-						}}>Forms
-					</button>
-				) : (
-					<></>
-				)}
-            </div>
-		</div>
-	);
+            </ModalInstance>
+
+            <ModalInstance
+                isModal={isModalGame}
+                modalRef={modalGameRef}
+                name="Game"
+                onLaunchUpdate={() => removeLaunch("game")}
+                onClose={() => setIsModalGame(false)}
+            >
+                <HomeGame/>
+            </ModalInstance>
+        </Template>
+    );
 }
 
-export default Home
+export default Home;

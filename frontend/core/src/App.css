@@ -22,6 +22,11 @@ body
   height: 100%;
 }
 
+.navbar 
+{
+  background-color: transparent;
+}
+
 .welcome-container
 {
   display: flex;

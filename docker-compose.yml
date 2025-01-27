@@ -1,10 +1,10 @@
 services:
   nginx:
-    environment:
-      - WATCHPACK_POLLING=true
     env_file: .env
     container_name: nginx
     build: nginx/
+    environment:
+      - WATCHPACK_POLLING=true
     depends_on:
       - react
     volumes:
@@ -17,12 +17,12 @@ services:
     restart: unless-stopped
       
   db:
-    environment:
-      - WATCHPACK_POLLING=true
     container_name: db
     image: postgres
     restart: unless-stopped
     env_file: .env
+    environment:
+      - WATCHPACK_POLLING=true
     ports:
       - 5432:5432
     networks:
@@ -31,13 +31,13 @@ services:
       - db:/home/db
 
   react:
-    environment:
-      - WATCHPACK_POLLING=true
     container_name: react
     image: front
     restart: unless-stopped
     env_file: .env
     build: ./frontend/
+    environment:
+      - WATCHPACK_POLLING=true
     volumes:
       - project:/home/
     depends_on:
@@ -69,10 +69,10 @@ services:
       - WATCHPACK_POLLING=true
   
   redis:
-    environment:
-      - WATCHPACK_POLLING=true
     image: redis:latest
     container_name: redis
+    environment:
+      - WATCHPACK_POLLING=true
     ports:
       - "6379:6379"
     command: ["redis-server", "--bind", "0.0.0.0"]

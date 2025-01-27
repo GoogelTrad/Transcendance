@@ -1,32 +1,90 @@
-.games-container {
-    height: 100vh;
-    display: flex;
-    flex-direction: row;
-    background-image: url('./utils/fond.jpg');
-    background-size: cover; /* Pour ajuster la taille */
-    background-position: center;
-    background-repeat: no-repeat;
-  }
+/* .content-1 {
+	position: relative;
+	height: 100%;
+	width: 100%;
+	z-index: 2;
+}
+
+canvas.gamebar {
+	position: absolute;
+	background-color: black;
+	opacity: 1;
+	z-index: 1;
+	top: 5%;
+	left: 11%;
+	border-radius: 15px;
+}
+
+.dark-background {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background-color: rgba(0, 0, 0, 0.7);
+	z-index: 1; 
+}
   
-  .games-container h1,
-  .games-container h2,
-  .games-container h3,
-  .games-container p {
-    font-family: 'Press Start 2P', cursive;
-    color: rgb(0, 0, 0) !important;
-  }
-  
-  .games-container h1 {
-    margin-top: 4rem;
-  }
-  
-  .games-container .test {
-    align-items: center;
-    margin-top: 50px;
-    margin-left: 50px;
-  }
-  
-  .games-container .div {
-    margin-top: 150px;
-  }
-  
+.game-bar {
+	position: absolute;
+	display: flex;
+	justify-content: space-around;
+	align-items: center;
+	color: white; 
+	z-index: 2; 
+	font-family: 'Press Start 2P', cursive;
+	font-size: 20px;
+	left: 11%;
+	top: 5%;
+	opacity: 1;
+}
+
+.game-bar .column {
+	text-align: center;
+}
+
+.game-bar .red {
+	color: #FF0000;
+}
+
+.game-bar .white {
+	color: #FFFFFF; 
+}
+
+.gameCanva {
+	display: flex;
+	position: absolute;
+	background-color: rgb(0, 0, 0);
+	height: 70%;
+	padding: 2%;
+	border: 50px solid #2f2e2e;
+	border-radius: 40px;
+	width: 70%;
+	top: 20%;
+	left: 15%;
+	z-index: 2;
+}
+
+@media (min-width: 576px) {
+    .modal-dialog {
+        max-width: 100%;
+		max-height: 100%;
+    }
+	.modal {
+		max-width: 100%;
+		max-height: 100%;
+	}
+	.modal-content {
+		max-width: 100%;
+		max-height: 100%;
+	}
+	.modal-body {
+		max-width: 100%;
+		max-height: 100%;
+	}
+	.custom-modal canvas {
+		max-width: 100%;
+		max-height: 100%;
+	}
+	
+} */

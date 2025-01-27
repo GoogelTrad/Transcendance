@@ -1,21 +1,19 @@
 import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min';
-import LoginForm from './users/LoginForm';
 import Home from './Home';
 import Friends from './friends/Friends';
 import Logout from './users/Logout';
 import TerminalLogin from './users/TerminalLogin';
 import Home_game from './game/Home_game';
+import Stats from './game/Stats';
 import { Game, Games} from './game/game';
 import { AuthProvider, useAuth } from './users/AuthContext';
 import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
 import Profile from './users/Profile';
-import { useNavigate } from 'react-router-dom';
-import { Button } from 'bootstrap/dist/js/bootstrap.bundle.min';
 import ProtectedRoute from './instance/RouteInstance';
 import { jwtDecode } from 'jwt-decode';
-import HomeChat from './chat/index';
+import HomeChat from './chat/Homechat';
 import Room from "./chat/Room";
 import useTokenValidation from './instance/EventListener';
 
@@ -39,7 +37,7 @@ function NavBar()
     decodeToken = jwtDecode(token);
 
   return (
-    <nav className='navbar navbar-expand-md navbar-dark fixed-top bg-dark'>
+    <nav className='navbar navbar-expand-md navbar-dark fixed-top'>
       <div className='container-fluid'>
         <div className='accueil-container'>
           <button className="buttonAccueil">
@@ -97,6 +95,7 @@ function App() {
               <Route path='/profile/:id' element={<ProtectedRoute><Profile /></ProtectedRoute>} />
               <Route path='/friends' element={<ProtectedRoute><Friends /></ProtectedRoute>} />
               <Route path='/games/:id' element={<Games />} />
+              <Route path='/games/Stats'  element={<ProtectedRoute><Stats /></ProtectedRoute>} />
             </Routes>
           
           </div>

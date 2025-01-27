@@ -80,6 +80,17 @@ function LoginRegister() {
                     'Content-Type': 'multipart/form-data',
                 },
             });
+         
+            const login = {
+                name: registerData.name,
+                password: registerData.password,
+            };
+            await axiosInstance.post('api/login', login, {
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+            console.log("coucou");
             setIsAuthenticated(true);
             navigate('/home');
         } catch (error) {
