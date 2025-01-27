@@ -136,7 +136,7 @@ export default function Room() {
 
 	return (
 		<>
-			<div className="general d-flex justify-content-between">
+			<div className="general-room d-flex justify-content-between">
 				<div className="listroom">
 					<h5>Liste des salles</h5>
 					<ul>
