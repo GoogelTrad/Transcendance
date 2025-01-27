@@ -4,7 +4,7 @@ import 'bootstrap/dist/js/bootstrap.bundle.min';
 import Home from './Home';
 import Friends from './friends/Friends';
 import Logout from './users/Logout';
-import Room from './chat/index';
+import TerminalLogin from './users/TerminalLogin';
 import Home_game from './game/Home_game';
 import Stats from './game/Stats';
 import { Game, Games} from './game/game';
@@ -13,6 +13,8 @@ import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
 import Profile from './users/Profile';
 import ProtectedRoute from './instance/RouteInstance';
 import { jwtDecode } from 'jwt-decode';
+import HomeChat from './chat/Homechat';
+import Room from "./chat/Room";
 import useTokenValidation from './instance/EventListener';
 
 export function getCookies(name) {
@@ -73,7 +75,7 @@ function NavBar()
 }
 
 function App() {
-  
+
   return (
     <AuthProvider>
       <Router>
@@ -86,7 +88,8 @@ function App() {
             <Routes>
               <Route path="/home" element={<Home />} />
               <Route path='/logout' element={<ProtectedRoute><Logout /></ProtectedRoute>} />
-              <Route path='/chat' element={<Room />} />
+              <Route path='/chat' element={<ProtectedRoute><HomeChat/></ProtectedRoute>} />
+              <Route path="/room/:roomName" element={<ProtectedRoute><Room/></ProtectedRoute>} />
               <Route path='/home_game' element={<ProtectedRoute><Home_game /></ProtectedRoute>} />
               <Route path='/game/:id' element={<ProtectedRoute><Game /></ProtectedRoute>} />
               <Route path='/profile/:id' element={<ProtectedRoute><Profile /></ProtectedRoute>} />
@@ -94,7 +97,7 @@ function App() {
               <Route path='/games/:id' element={<Games />} />
               <Route path='/games/Stats'  element={<ProtectedRoute><Stats /></ProtectedRoute>} />
             </Routes>
-            
+          
           </div>
         </TokenValidationWrapper>
       </Router>
