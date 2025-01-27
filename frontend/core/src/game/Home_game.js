@@ -26,7 +26,7 @@ function HomeGame() {
     const [isAllGames, setIsAllGames] = useState(false);
     const [isFriends, setIsFriends] = useState(false);
     const [isWin, setIsWin] = useState(false);
-    const [isLoose, setIsLoose] = useState(false);
+    const [isLose, setIsLose] = useState(false);
     const [selectedItem, setSelectedItem] = useState("...");
 
     const items = [
@@ -36,7 +36,7 @@ function HomeGame() {
         { name: 'All games', active: false },
         { name: 'Friends', active: false },
         { name: 'Win', active: false },
-        { name: 'Loose', active: false },
+        { name: 'Lose', active: false },
     ];
 
     const token = getCookies('token');
@@ -75,7 +75,6 @@ function HomeGame() {
             ...item,
             active: item.name === stats || item.name === optionStats,
         }));
-        console.log("item = ", items);
         navigate("/games/Stats", { state: { updatedItems } });
     };
     
@@ -83,7 +82,6 @@ function HomeGame() {
     const submitPlayer = async () => {
         try {
           const response = await axiosInstance.post(`http://localhost:8000/game/create_game`, { player1 });
-          console.log(response.data);
           navigate(`/games/${response.data.id}`);
         } catch (error) {
           console.error("Error submitting Player:", error);
@@ -130,7 +128,7 @@ function HomeGame() {
                         <p onClick={() => handleClickStats('global', 'All games') && <Stats itemsArray={items}/>} >All games</p>
                         <p onClick={() => handleClickStats('global', 'Friends') && <Stats itemsArray={items}/>} >Friends</p>
                         <p onClick={() => handleClickStats('global', 'Win') && <Stats itemsArray={items}/>} >Win</p>
-                        <p onClick={() => handleClickStats('global', 'Loose') && <Stats itemsArray={items}/>} >Loose</p>
+                        <p onClick={() => handleClickStats('global', 'Lose') && <Stats itemsArray={items}/>} >Lose</p>
                     <p onClick={() => handleClickStats('collect', '...') && <Stats itemsArray={items}/>} >Collection</p>
                     </div>
                 )}
