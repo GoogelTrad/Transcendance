@@ -92,7 +92,7 @@ function App() {
               <Route path='/profile/:id' element={<ProtectedRoute><Profile /></ProtectedRoute>} />
               <Route path='/friends' element={<ProtectedRoute><Friends /></ProtectedRoute>} />
               <Route path='/games/:id' element={<Games />} />
-              <Route path='/games/Stats'  element={<ProtectedRoute><Stats /></ProtectedRoute>} />
+              <Route path='/games/Stats'  element={<Stats />} />
             </Routes>
             
           </div>

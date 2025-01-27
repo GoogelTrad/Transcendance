@@ -8,7 +8,9 @@ import React, { useEffect, useState } from "react";
 import { jwtDecode } from "jwt-decode";
 import { getCookies } from './../App.js';
 import axiosInstance from "../instance/AxiosInstance";
+import Stats from './Stats.js';
 import Template from '../instance/Template.js';
+import Profile from '../users/Profile.js';
 
 function HomeGame() {
     const [player1, setPlayer1] = useState("");
@@ -17,6 +19,25 @@ function HomeGame() {
     const [onClickStats, setOnClickStats] = useState(false);
     const [showModal, setShowModal] = useState(false);
     const navigate = useNavigate();
+
+    const [isProfile, setIsProfile] = useState(false);
+    const [isCollect, setIsCollect] = useState(false);
+    const [isGlobal, setIsGlobal] = useState(false);
+    const [isAllGames, setIsAllGames] = useState(false);
+    const [isFriends, setIsFriends] = useState(false);
+    const [isWin, setIsWin] = useState(false);
+    const [isLoose, setIsLoose] = useState(false);
+    const [selectedItem, setSelectedItem] = useState("...");
+
+    const items = [
+        { name: 'profile', active: false },
+        { name: 'collect', active: false },
+        { name: 'global', active: false },
+        { name: 'All games', active: false },
+        { name: 'Friends', active: false },
+        { name: 'Win', active: false },
+        { name: 'Loose', active: false },
+    ];
 
     const token = getCookies('token');
     let user = null;
@@ -48,6 +69,16 @@ function HomeGame() {
             setOnClickStats(true);
         }
     };
+
+    const handleClickStats = (stats, optionStats) => {
+        const updatedItems = items.map(item => ({
+            ...item,
+            active: item.name === stats || item.name === optionStats,
+        }));
+        console.log("item = ", items);
+        navigate("/games/Stats", { state: { updatedItems } });
+    };
+    
 
     const submitPlayer = async () => {
         try {
@@ -94,7 +125,13 @@ function HomeGame() {
                 {onClickStats && (
                     <div className="content">
                     <h3 onClick={() => navigate("/games/Stats")} >Stats</h3>
-                    <p onClick={() => navigate("/games/Stats")} >Global Stats</p>
+                    <p onClick={() => handleClickStats('profile', '...') && <Stats itemsArray={items}/>} >Global Stats</p>
+                    <p onClick={() => handleClickStats('global', '...') && <Stats itemsArray={items}/>} >Stats game</p>
+                        <p onClick={() => handleClickStats('global', 'All games') && <Stats itemsArray={items}/>} >All games</p>
+                        <p onClick={() => handleClickStats('global', 'Friends') && <Stats itemsArray={items}/>} >Friends</p>
+                        <p onClick={() => handleClickStats('global', 'Win') && <Stats itemsArray={items}/>} >Win</p>
+                        <p onClick={() => handleClickStats('global', 'Loose') && <Stats itemsArray={items}/>} >Loose</p>
+                    <p onClick={() => handleClickStats('collect', '...') && <Stats itemsArray={items}/>} >Collection</p>
                     </div>
                 )}
                 </div>

@@ -109,6 +109,9 @@ const Games = () => {
   
 	return (
 	  <Template>
+		{/*appArray={setters}
+		launching={launching}
+		*/}
 		<GameInstance>
 
 		</GameInstance>
