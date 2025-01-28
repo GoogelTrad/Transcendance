@@ -117,22 +117,22 @@ export default function Room() {
 		}
 	}
 
-	// const Users_room_list = async () => {
-	// 	try {
-	// 		const reponse = await axiosInstance.get(`livechat/users_room/${roomName}`);
-	// 		setUsersRoom(reponse.data);
-	// 		console.log("USERS ROOMS :", reponse.data)
-	// 	}
-	// 	catch(error) {
-	// 		console.log(error);
-	// 	}
-	// }
+	const Users_room_list = async () => {
+		try {
+			const reponse = await axiosInstance.get(`livechat/users_room/${roomName}`);
+			setUsersRoom(reponse.data);
+			console.log("USERS ROOMS :", reponse.data)
+		}
+		catch(error) {
+			console.log(error);
+		}
+	}
 
 	useEffect(() => {
 		listroom();
 		FriendList();
-		//Users_room_list();
-	}, []);
+		Users_room_list();
+	}, [roomName]);
 
 	return (
 		<>
@@ -161,7 +161,7 @@ export default function Room() {
 				</div>
 				<div className="friendlist">
 				<h5>Liste des amis</h5>
-				<ul>
+				{/* <ul>
 					{friendList?.friends?.length > 0 ? (
 						friendList.friends.map((friend) => (
 							<li key={friend.id}>
@@ -171,9 +171,15 @@ export default function Room() {
 					) : (
 						<li>Aucun ami trouvé.</li>
 					)}
-				</ul>
+				</ul> */}
 				<ul>
-
+					{users_room.map((user, index) => (
+						<li key={index}>
+						<Link to={`/profile/${user.id}`}>
+							{user.username}
+						</Link>
+						</li>
+					))}
 				</ul>
 				</div>
 			</div>

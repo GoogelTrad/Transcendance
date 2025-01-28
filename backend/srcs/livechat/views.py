@@ -12,6 +12,11 @@ def get_list_rooms(request):
     return Response(serializer.data)
 
 @api_view(['GET'])
-def get_list_users():
-    users = Room.users.all()
-    return users
+def get_list_users(request, name):
+    try:
+        room = Room.objects.get(name=name)
+        users = room.users.all()
+        users_data = [{"id": user.id,"username": user.name} for user in users]
+        return Response(users_data, status=200)
+    except:
+        return Response({"error": "Room introuvable."}, status=404)

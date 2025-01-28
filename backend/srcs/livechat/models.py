@@ -8,7 +8,7 @@ class Room(models.Model):
     creation = models.DateTimeField(auto_now_add=True)
     createur = models.ForeignKey(User, on_delete=models.PROTECT, related_name="rooms_create")
     password = models.CharField(max_length=255, blank=True, null=True)
-    users = models.ManyToManyField(User, related_name="users", blank=False)
+    users = models.ManyToManyField(User, related_name="rooms", blank=False)
     name = models.CharField(max_length=255, blank=False, unique=True)
 
     async def add_members(self, member):
