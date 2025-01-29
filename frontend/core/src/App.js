@@ -14,6 +14,7 @@ import Profile from './users/Profile';
 import ProtectedRoute from './instance/RouteInstance';
 import { jwtDecode } from 'jwt-decode';
 import useTokenValidation from './instance/EventListener';
+import LoginRegister from './users/LoginForm';
 
 export function getCookies(name) {
   const value = document.cookie;
@@ -85,6 +86,7 @@ function App() {
 
             <Routes>
               <Route path="/home" element={<Home />} />
+              <Route path="/login" element={<LoginRegister />} />
               <Route path='/logout' element={<ProtectedRoute><Logout /></ProtectedRoute>} />
               <Route path='/chat' element={<Room />} />
               <Route path='/home_game' element={<ProtectedRoute><Home_game /></ProtectedRoute>} />

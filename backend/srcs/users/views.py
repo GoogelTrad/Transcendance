@@ -8,8 +8,12 @@ from rest_framework.decorators import api_view, action
 from .serializer import UserSerializer
 from django.http import HttpResponse
 from django.contrib.auth import authenticate, login
-from .models import User, ValidToken
+from .models import User, ValidToken, ConfirmationCode
 from users.decorator import jwt_auth_required
+from django.core.mail import send_mail
+from django.conf import settings
+from django.utils.timezone import now
+import random
 import jwt
 
 
@@ -27,12 +31,21 @@ class LoginView():
         if not user.check_password(password):
             raise AuthenticationFailed('Incorrect password!')
         
+        if not user.last_verified or (now() - user.last_verified).days >= 3:
+            user.is_verified = False
+            user.save()
+            send_confirmation_email(user)
+            return Response(
+                {'message': 'Verification required. Check your email for the confirmation code.'},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+
         user.status = 'online'
         user.save()
         
         profile_image_url = user.profile_image.url if user.profile_image else None
         
-        payload = {
+        payload = { 
             'id': user.id,
             'name': user.name,
             'email': user.email,
@@ -49,9 +62,9 @@ class LoginView():
         reponse = Response()
 
         reponse.set_cookie(key='token', value=token, max_age=3600)
-
         reponse.data = {
-            'token': token
+            'token': token,
+            'message': 'Logged in successfully!'
         }
 
         return reponse
@@ -131,3 +144,69 @@ class LogoutView():
             'message': 'success'
         }
         return reponse
+
+
+def generate_confirmation_code():
+	return f"{random.randint(100000, 999999)}"
+
+def send_confirmation_email(user):
+    code = generate_confirmation_code()
+
+    ConfirmationCode.objects.update_or_create(user=user, defaults={"code": code})
+
+    subject = "Votre code de confirmation Transcendance!"
+    message = f"Votre code de confirmation est : {code}"
+    from_email = settings.EMAIL_HOST_USER
+    recipient_list = [user.email]
+    send_mail(subject, message, from_email, recipient_list)
+
+@api_view(['POST'])
+def verify_code(request):
+    name = request.data.get('name')
+    code = request.data.get('code')
+
+    print(f"name = {name}, code = {code}", flush=True)
+
+    if not name or not code:
+        return Response({'message': 'Username and code are required!'}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        user = User.objects.get(name=name)
+    except User.DoesNotExist:
+        return Response({'message': 'User not found!'}, status=status.HTTP_404_NOT_FOUND)
+
+    confirmation = ConfirmationCode.objects.filter(user=user).first()
+
+    if confirmation and confirmation.code == code:
+        user.is_verified = True
+        user.status = 'online'
+        user.last_verified = now()
+        user.save()
+        
+        profile_image_url = user.profile_image.url if user.profile_image else None
+        
+        payload = { 
+            'id': user.id,
+            'name': user.name,
+            'email': user.email,
+            'status': user.status,
+            'profile_image_url': profile_image_url,
+            'is_stud': user.is_stud,
+        }
+
+        token = jwt.encode(payload, 'coucou', 'HS256')
+        if ValidToken.objects.filter(user=user).exists():
+            ValidToken.objects.filter(user=user).delete()
+        ValidToken.objects.create(user=user, token=token)
+
+        reponse = Response()
+
+        reponse.set_cookie(key='token', value=token, max_age=3600)
+        reponse.data = {
+            'token': token,
+            'message': 'Code is valid!'
+        }
+
+        return reponse
+    else:
+        return Response({'message': 'Code is invalid!'}, status=status.HTTP_400_BAD_REQUEST)
