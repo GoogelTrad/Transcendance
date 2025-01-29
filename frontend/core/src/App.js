@@ -16,6 +16,7 @@ import { jwtDecode } from 'jwt-decode';
 import HomeChat from './chat/Homechat';
 import Room from "./chat/Room";
 import useTokenValidation from './instance/EventListener';
+import LoginRegister from './users/LoginForm';
 
 export function getCookies(name) {
   const value = document.cookie;
@@ -87,6 +88,7 @@ function App() {
 
             <Routes>
               <Route path="/home" element={<Home />} />
+              <Route path="/login" element={<LoginRegister />} />
               <Route path='/logout' element={<ProtectedRoute><Logout /></ProtectedRoute>} />
               <Route path='/chat' element={<ProtectedRoute><HomeChat/></ProtectedRoute>} />
               <Route path="/room/:roomName" element={<ProtectedRoute><Room/></ProtectedRoute>} />

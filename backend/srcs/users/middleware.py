@@ -16,7 +16,7 @@ class SimpleMiddleware:
 
     def __call__(self, request):
         
-        if request.path.startswith('/media/') or request.path.startswith('/static/') or request.path.startswith('/auth/'):
+        if request.path.startswith('/media/') or request.path.startswith('/static/') or request.path.startswith('/auth/') or request.path.startswith('/api/code'):
             return self.get_response(request)
         
         if not request.path == '/api/login' and not request.path == '/api/user/create':

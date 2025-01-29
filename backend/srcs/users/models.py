@@ -2,6 +2,9 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.utils.timezone import now
 from datetime import timedelta
+from django.utils import timezone
+import uuid
+import datetime
 
 
 # Create your models here.
@@ -14,6 +17,8 @@ class User(AbstractUser):
     status = models.CharField(max_length=20, default='offline')
     is_stud = models.BooleanField(max_length=255, default=False)
     games = models.ManyToManyField("game.Game", related_name="players", blank=True)
+    is_verified = models.BooleanField(default=False)
+    last_verified = models.DateTimeField(null=True, blank=True)
 
     username = None
 
@@ -30,3 +35,8 @@ class ValidToken(models.Model):
         expiration_time = now() - timedelta(hours=1)
         ValidToken.objects.filter(created_at__lt=expiration_time).delete()
         
+
+class ConfirmationCode(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    code = models.CharField(max_length=6)
+    created_at = models.DateTimeField(auto_now_add=True)

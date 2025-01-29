@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 import axiosInstance from '../instance/AxiosInstance';
@@ -10,10 +10,13 @@ function TerminalLogin({setModal, launching})
     const { setIsAuthenticated } = useAuth();
     const navigate = useNavigate();
     const [lines, setLines] = useState(["Welcome to the Terminal."]);
+    const [isTwoFactorRequired, setIsTwoFactorRequired] = useState(false);
     const [currentInput, setCurrentInput] = useState("");
     const [currentCommand, setCurrentCommand] = useState(null);
+    const currentCommandRef = useRef(null);
     const [commandArgs, setCommandArgs] = useState([]);
     const [isPassword, setIsPassword] = useState(false);
+    const [name, setName] = useState("");
 
     const helpLine = [
         {name: "login", value: "You can log in with username and password!"},
@@ -70,18 +73,46 @@ function TerminalLogin({setModal, launching})
     const handleLogin = async ([username, password]) => {
         const data = new FormData();
         data.append("name", username);
+        setName(username);
         data.append("password", password);
         try {
-            await axiosInstance.post('api/login', data, {
+            const response = await axiosInstance.post('api/login', data, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
             });
-            setIsAuthenticated(true);
-            navigate("/home");
-            return `Login successful! Welcome, ${username}.`;
+
+            if (response.status === 401)
+            {
+                setIsTwoFactorRequired(true);
+                return "2FA required. Please enter the code sent to your email.";
+            }
+            else if (response.status === 200) {
+                setIsAuthenticated(true);
+                navigate('/home');
+            }
         } catch (error) {
+            if (error.response && error.response.status === 401) 
+            {
+                setIsTwoFactorRequired(true);
+                return "2FA required. Please enter the code sent to your email.";
+            }
             return "Login failed. Please check your username and password.";
+        }
+    };
+
+    const handleTwoFactorVerification = async (code, name) => {
+        try {
+            const response = await axiosInstance.post('/api/code', {code: code, name: name});
+            if (response.status === 200) {
+                setIsAuthenticated(true);
+                navigate('/home');
+                return "2FA verification successful! You are now logged in.";
+            } else {
+                return "Invalid 2FA code. Please try again.";
+            }
+        } catch (error) {
+            return "Error during 2FA verification. Please try again.";
         }
     };
 
@@ -90,13 +121,13 @@ function TerminalLogin({setModal, launching})
             return await handleLogin(args);
         else if (command === "register")
             return await handleRegister(args);
-        else if (command == "school")
+        else if (command === "school")
             return await handleSchoolLogin();
-        else if (command == "clear")
+        else if (command === "clear")
             return await handleClear();
-        else if (command == "help")
+        else if (command === "help")
             return await handleHelp();
-        else if (command == "forms")
+        else if (command === "forms")
             return await handleForms();
     };
 
@@ -111,9 +142,21 @@ function TerminalLogin({setModal, launching})
         }
 
     const handleInput = async (input) => {
-        if (!currentCommand) {
+        if (isTwoFactorRequired) {
+            const result = await handleTwoFactorVerification(input, name);
+            setLines((prevLines) => [...prevLines, `> ${input}`, result]);
+
+            if (result.includes("successful"))
+                setIsTwoFactorRequired(false);
+            return;
+        }
+
+        console.log(currentCommandRef.current);
+        if (!currentCommandRef.current) {
             const [command] = input.split(" ");
-            if (commandSteps[command]) {
+
+            if (commandSteps[command] && commandSteps[command].length > 0) {
+                currentCommandRef.current = command;
                 setCurrentCommand(command);
                 setCommandArgs([]);
                 setLines((prevLines) => [...prevLines, `> ${input}`, `Step 1: Please enter your ${commandSteps[command][0]}:`]);
@@ -123,9 +166,10 @@ function TerminalLogin({setModal, launching})
             }
         } else {
             const step = commandArgs.length;
-            const steps = commandSteps[currentCommand];
+            const steps = commandSteps[currentCommandRef.current];
             const currentStepLabel = steps[step];
             const nextStepLabel = steps[step + 1];
+
 
             if (currentStepLabel.toLowerCase().includes("email")) {
                 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -156,6 +200,7 @@ function TerminalLogin({setModal, launching})
                 const result = await handleCommandExecution(currentCommand, [...commandArgs, input]);
                 setLines((prevLines) => [...prevLines, result]);
                 setCurrentCommand(null);
+                currentCommandRef.current = null;
                 setCommandArgs([]);
                 setIsPassword(false);
             }
