@@ -89,9 +89,9 @@ function HomeGame() {
     };
 
     return (
-        <div className="game-home">
-            <div className="title-game">PONG</div>
-            <div className="content-wrapper h-100 w-100">
+        <div className="game-home w-100 h-100">
+            <div className="title-home-game d-flex">PONG</div>
+            <div className="content-wrapper w-100">
                 <div className="column column-left w-50 h-100">
                     <div className="d-flex flex-column mb-3 h-100">
                         <div className="p-2" onClick={() => handleClick("play")}>
@@ -101,7 +101,7 @@ function HomeGame() {
                         <span className="arrow">a</span> TOURNAMENT <span className="tilde">_</span>
                         </div>
                         <div className="p-2" onClick={() => handleClick("stats")}>
-                        <span className="arrow">a</span> STATS <span className="tilde">_</span>
+                        <span className="arrow"></span> STATS <span className="tilde">_</span>
                         </div>
                     </div>
                 </div>
