@@ -1,7 +1,17 @@
 from django.shortcuts import render
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from .models import Room
+from .serializer import RoomSerializer
+from django.http import JsonResponse
 
-def index(request):
-    return render(request, "chat/index.html")
+@api_view(['GET'])
+def get_list_rooms(request):
+    rooms = Room.objects.all()
+    serializer = RoomSerializer(rooms, many=True)
+    return Response(serializer.data)
 
-def room(request, room_name):
-    return render(request, "chat/room.html", {"room_name": room_name})
+@api_view(['GET'])
+def get_list_users():
+    users = Room.users.all()
+    return users

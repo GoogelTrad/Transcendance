@@ -19,15 +19,33 @@ function GameInstance ( {children} ) {
 	const [showModal, setShowModal] = useState(true);
     const [showRules, setShowRules] = useState(false);
 	const [showFriend, setShowFriend] = useState(false);
+	const [game, setGame] = useState(null);
+	const { id } = useParams();
+	const [backDimensions, setBackDimensions] = useState({ width: 0, height: 750 });
 	const [paddleData, setPaddleData] = useState({
 		rightY: 0,
 		leftY: 0,
 		width: 17,
 		height: 170,
+		height_canvas : backDimensions.height,
 	});
-	const [game, setGame] = useState(null);
-	const { id } = useParams();
-	const [backDimensions, setBackDimensions] = useState({ width: 0, height: 750 });
+	const [pongData, setpongData] = useState({
+		pos_x: backDimensions.width / 2,
+		pos_y: backDimensions.height / 2, 
+		width: 20,
+		height_canvas : backDimensions.height,
+		velocity_x: 4,
+    	velocity_y: 4,  
+	});
+	const [score, setScore] = useState(0);
+
+	const paddleDataRef = useRef({
+		rightY: 0,
+		leftY: 0,
+		width: 17,
+		height: 170,
+		height_canvas: backDimensions.height,
+	});
   
 	const fetchData = async () => {
 	  try {
@@ -45,6 +63,9 @@ function GameInstance ( {children} ) {
 			setShowFriend((prev) => !prev);
 	};
   
+
+
+
 	useEffect(() => {
 		const width = window.innerWidth;
 		const height = window.innerHeight;
@@ -56,7 +77,6 @@ function GameInstance ( {children} ) {
 			const canvas = canvasRef.current;
 			const modalWidth = backDimensions.width;
 			const modalHeight = backDimensions.height;
-
 			canvas.width = modalWidth;
 			canvas.height = modalHeight;
 			const context = canvas.getContext("2d");
@@ -64,34 +84,142 @@ function GameInstance ( {children} ) {
         
 	  }, [showModal, backDimensions]);
 
-	const handleKeyPress = (e) => {
-	  setPaddleData((prev) => {
-		let { rightY, leftY, height } = prev;
-		switch (e.key) {
-		  case "ArrowUp":
-			rightY = Math.max(0, rightY - 10);
-			break;
-		  case "ArrowDown":
-			rightY = Math.min(backDimensions.height / 1.31 - height, rightY + 10);
-			break;
-		  case "z":
-			leftY = Math.max(0, leftY - 10);
-			break;
-		  case "s":
-			leftY = Math.min(backDimensions.height / 1.31 - height, leftY + 10);
-			break;
-		  default:
-			break;
-		}
-		return { ...prev, rightY, leftY };
-	  });
-	};
+
+	  const socketRef = useRef(null);
+
+	  if (!socketRef.current) {
+		  socketRef.current = new WebSocket(`ws://localhost:8000/ws/game/${id}`);
+	  }
   
+	  const socket = socketRef.current;
+  
+	  socket.onopen = () => {
+		  console.log("WebSocket connection established.");
+	  };
+  
+	  socket.onclose = () => {
+		  console.log("WebSocket connection closed.");
+	  };
+  
+	  socket.onerror = (error) => {
+		  console.error("WebSocket error: ", error);
+	  };
+  
+	  socket.onmessage = (event) => {
+		  const data = JSON.parse(event.data);
+		  setPaddleData((prevState) => ({
+			  ...prevState,
+			  rightY: data.player1_paddle_y,
+			  leftY: data.player2_paddle_y,
+		  }));
+		  paddleDataRef.current.rightY = data.player1_paddle_y;
+		  paddleDataRef.current.leftY = data.player2_paddle_y;
+	  };
+	  
+	  const [isKeyDown, setIsKeyDown] = useState({ ArrowUp: false, ArrowDown: false, z: false, s: false });
+  
+	  const handleKeyPress = (e) => {
+		  if (isKeyDown[e.key] === undefined) return;
+		  setIsKeyDown((prev) => {
+			  const updatedKeyDown = { ...prev, [e.key]: true };
+			  
+			  const gameState = { paddleData, isKeyDown: updatedKeyDown };
+			  socket.send(JSON.stringify(gameState));
+			  
+			  return updatedKeyDown;
+		  });
+		  };
+		  
+		  const handleKeyUp = (e) => {
+			setIsKeyDown((prev) => ({ ...prev, [e.key]: false }));
+		  };
+		  
+		  useEffect(() => {
+			window.addEventListener('keydown', handleKeyPress);
+			window.addEventListener('keyup', handleKeyUp);
+		  
+			return () => {
+			  window.removeEventListener('keydown', handleKeyPress);
+			  window.removeEventListener('keyup', handleKeyUp);
+			};
+		  }, [paddleData]);
+	
 	useEffect(() => {
 	  const handleKeyDown = (e) => handleKeyPress(e);
 	  window.addEventListener("keydown", handleKeyDown);
 	  return () => window.removeEventListener("keydown", handleKeyDown);
 	}, [paddleData]);
+
+	const drawBall = (context, pongData) => {
+		context.beginPath();
+		context.arc(pongData.pos_x, pongData.pos_y, pongData.width / 2, 0, Math.PI * 2);
+		context.fillStyle = "white";
+		context.fill();
+		context.closePath();
+	};
+
+	useEffect(() => {
+		setpongData(prev => ({
+		  ...prev,
+		  pos_x: backDimensions.width / 2,
+		  pos_y: backDimensions.height / 2,
+		}));
+	  }, [backDimensions]);
+
+
+	useEffect(() => {
+		const updateBallPosition = () => {
+			const canvas = canvasRef.current;
+			const context = canvas.getContext("2d");
+			const paddleRightX = canvas.width - paddleData.width - canvas.width * 0.05;
+			const paddleLeftX = canvas.width * 0.05;
+			
+			setpongData(prev => {
+				console.log("score : ", score);
+				let new_velocity_y = prev.velocity_y;
+				let new_velocity_x = prev.velocity_x;
+				if (prev.pos_y >= canvas.height) 
+				 	new_velocity_y = new_velocity_y * -1;
+				if (prev.pos_y <= 0)
+					new_velocity_y = new_velocity_y * -1;
+				if (prev.pos_x <= paddleLeftX + paddleDataRef.current.width && prev.pos_y >= paddleDataRef.current.leftY && prev.pos_y <= paddleDataRef.current.leftY + paddleDataRef.current.height)
+					new_velocity_x = new_velocity_x * -1;
+				if (prev.pos_x >= paddleRightX && prev.pos_y >= paddleDataRef.current.rightY && prev.pos_y <= paddleDataRef.current.rightY + paddleDataRef.current.height)
+					new_velocity_x = new_velocity_x * -1;
+				if (prev.pos_x <= 0) {
+					setScore(prevScore => prevScore + 1);
+					return {
+					  ...prev,
+					  pos_x: backDimensions.width / 2,
+					  pos_y: backDimensions.height / 2,
+					  velocity_x: 4,
+					  velocity_y: 4,
+					};
+				  }
+			
+				  if (prev.pos_x >= canvas.width) {
+					setScore(prevScore => prevScore + 1);
+					return {
+					  ...prev,
+					  pos_x: backDimensions.width / 2,
+					  pos_y: backDimensions.height / 2,
+					  velocity_x: 4,
+					  velocity_y: 4,
+					};
+				  }
+				return {
+					...prev,
+					pos_x: prev.pos_x + new_velocity_x,
+					pos_y: prev.pos_y + new_velocity_y,
+					velocity_x: new_velocity_x,
+					velocity_y: new_velocity_y,
+				};
+			});
+		};
+		const interval = setInterval(updateBallPosition, 1000 / 60);
+		return () => clearInterval(interval);
+	}, [backDimensions.width]);
+	
 
 	useEffect(() => {
 		if (canvasRef.current) {
@@ -106,10 +234,13 @@ function GameInstance ( {children} ) {
 		  context.fillStyle = "white";
 		  context.fillRect(paddleLeftX, leftY, width, height);
 		  context.fillRect(paddleRightX, rightY, width, height);
+		  drawBall(context, pongData);
+
 		}
-	  }, [paddleData, showModal]);
+	  }, [paddleData, showModal, pongData]);
   
 	useEffect(() => {
+
 	  fetchData();
 	}, []);
   

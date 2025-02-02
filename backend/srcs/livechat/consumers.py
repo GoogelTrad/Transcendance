@@ -64,11 +64,22 @@ class ChatConsumer(AsyncWebsocketConsumer):
             await self.send({
                 "type": "create_room",
                 "status": False,
-                "error": "roomName is required"
+                "error": "RoomName is required"
             })
+        try:
+            room: Room = await Room.objects.aget(name=room_name)
+            await self.send({
+                "type": "create_room",
+                "status": False,
+                "error": f"{room_name} already exist"
+            })
+            return
+        except Room.DoesNotExist:
+            pass
         room = await Room.objects.acreate(
             createur=self.user,
-            password=password
+            password=password,
+            name=room_name
         )
 
         # Ajouter le créateur comme premier membre
@@ -77,14 +88,61 @@ class ChatConsumer(AsyncWebsocketConsumer):
         await self.send({
             "type": "create_room",
             "status": True,
+            "room_name": room.name,
             "message": "Room succesfully created"
         })
 
     async def deleteRoom(self, room_name):
         pass
 
-    async def joinRoom(self, room_name, password):
-        pass
+    async def joinRoom(self, room_name, password=None):
+        # if room_name == '' or room_name is None:
+        #     await self.send({
+        #         "type": "join_room",
+        #         "status": False,
+        #         "error": "roomName is required"
+        #     })
+        #     return
+
+        try:
+            room = await Room.objects.aget(name=room_name)
+        except Room.DoesNotExist:
+            await self.send({
+                "type": "join_room",
+                "status": False,
+                "error": f"Room '{room_name}' does not exist."
+            })
+            return
+
+        try:
+            room = await Room.objects.aget(name=room_name)
+            # Vérifier si un mot de passe est requis
+            if room.password and (not password or password != room.password):
+                await self.send({
+                    "type": "join_room",
+                    "status": False,
+                    "error": "Invalid password"
+                })
+                return
+
+
+            await room.add_members(self.user)
+
+            await self.send({
+                "type": "join_room",
+                "status": True,
+                "room_name": room.name,
+                "message": f"You have successfully joined the room '{room.name}'."
+            })
+
+        
+        except Room.DoesNotExist:
+            await self.send({
+                "type": "join_room",
+                "status": False,
+                "error": f"Room '{room_name}' does not exist."
+            })
+
     
     async def sendMessage(self, message):
         channel_layer = get_channel_layer()

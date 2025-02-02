@@ -9,6 +9,8 @@ import './LoginForm.css';
 import { useAuth } from './AuthContext';
 
 function LoginRegister() {
+    const [step, setStep] = useState(false);
+    const [code, setCode] = useState();
     const navigate = useNavigate();
     const {isAuthenticated, setIsAuthenticated} = useAuth();
     const [loginData, setLoginData] = useState({
@@ -56,17 +58,39 @@ function LoginRegister() {
             data.append(key, value);
         }
         try {
-            await axiosInstance.post('api/login', data, {
+            const response = await axiosInstance.post('api/login', data, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
             });
-            setIsAuthenticated(true);
-            navigate('/home');
+
+            if (response.status === 401)
+                setStep(true);
+            else if (response.status === 200) {
+                setIsAuthenticated(true);
+                navigate('/home');
+            }
         } catch (error) {
-            showToast('error', 'Incorrect login or password!');
+            if (error.response && error.response.status === 401) 
+                setStep(true); 
+            else 
+                showToast('error', 'Incorrect login or password!');
         }
     };
+
+    const handleVerify = async () => {
+        try {
+            const response = await axiosInstance.post('/api/code' , {code, name: loginData.name});
+            if (response.status === 200)
+            {
+                setIsAuthenticated(true);
+                navigate('/home');
+            }
+        }
+        catch(error) {
+            console.log('error');
+        }
+    }
 
     const handleRegisterSubmit = async (e) => {
         e.preventDefault();
@@ -80,19 +104,6 @@ function LoginRegister() {
                     'Content-Type': 'multipart/form-data',
                 },
             });
-         
-            const login = {
-                name: registerData.name,
-                password: registerData.password,
-            };
-            await axiosInstance.post('api/login', login, {
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            });
-            console.log("coucou");
-            setIsAuthenticated(true);
-            navigate('/home');
         } catch (error) {
             showToast('error', 'Cannot create the account!');
         }
@@ -100,41 +111,55 @@ function LoginRegister() {
 
     return (
             <div className="coucou row">
-                <div className="col-md-6 d-flex flex-column align-items-center justify-content-center border-end">
-                    <div className='login-coucou d-flex flex-column align-items-center'>
-                        <h2 className='titre'>Login here</h2>
-                        <form className='w-75 d-flex flex-column align-items-center' onSubmit={handleLoginSubmit}>
-                            <div className='mb-3'>
-                                <label htmlFor='name'>Username:</label>
-                                <input className='login-input'
-                                    type='text'
-                                    id='login-name'
-                                    name='name'
-                                    value={loginData.name}
-                                    onChange={handleLoginChange}
-                                    required
-                                    placeholder='Username'>
-                                </input>
+                {step === false ? (
+                    <div className="col-md-6 d-flex flex-column align-items-center justify-content-center border-end">
+                        <div className='login-coucou d-flex flex-column align-items-center'>
+                            <h2 className='titre'>Login here</h2>
+                            <form className='w-75 d-flex flex-column align-items-center' onSubmit={handleLoginSubmit}>
+                                <div className='mb-3'>
+                                    <label htmlFor='name'>Username:</label>
+                                    <input className='login-input'
+                                        type='text'
+                                        id='login-name'
+                                        name='name'
+                                        value={loginData.name}
+                                        onChange={handleLoginChange}
+                                        required
+                                        placeholder='Username'>
+                                    </input>
+                                </div>
+                                <div className='mb-3'>
+                                    <label htmlFor='password'>Password:</label>
+                                    <input className='login-input'
+                                        type='password'
+                                        id='login-password'
+                                        name='password'
+                                        value={loginData.password}
+                                        onChange={handleLoginChange}
+                                        required
+                                        placeholder='Password'>
+                                    </input>
+                                </div>
+                                <Button type='submit' className='submit-button btn btn-primary'>Login</Button>
+                            </form>
+                            <div>
+                                <Button type="submit" className='submit-button btn btn-primary' onClick={handleSchoolLogin}>42</Button>
                             </div>
-                            <div className='mb-3'>
-                                <label htmlFor='password'>Password:</label>
-                                <input className='login-input'
-                                    type='password'
-                                    id='login-password'
-                                    name='password'
-                                    value={loginData.password}
-                                    onChange={handleLoginChange}
-                                    required
-                                    placeholder='Password'>
-                                </input>
-                            </div>
-                            <Button type='submit' className='submit-button btn btn-primary'>Login</Button>
-                        </form>
-                        <div>
-                            <Button type="submit" className='submit-button btn btn-primary' onClick={handleSchoolLogin}>42</Button>
                         </div>
                     </div>
-                </div>
+                ) : (
+                    <div className="col-md-6 d-flex flex-column align-items-center justify-content-center border-end">
+                        <h2>Enter Confirmation Code</h2>
+                        <input
+                            type="text"
+                            placeholder="Confirmation Code"
+                            value={code}
+                            onChange={(e) => setCode(e.target.value)}
+                        />
+                        <button onClick={handleVerify}>Verify</button>
+                        {/* <button onClick={setStep(false)}>Cancel</button> */}
+                    </div>
+                )}
                 <div className="col-md-6 d-flex flex-column align-items-center justify-content-center">
                     <div className='register-coucou d-flex flex-column align-items-center'>
                         <h2 className='titre'>Register here</h2>
