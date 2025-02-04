@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import './ModalInstance.css'
 
-function ModalInstance({ children, isModal, modalRef, name, onLaunchUpdate, onClose }) {
+function ModalInstance({ children, isModal, modalRef, name, onLaunchUpdate, onClose, height, width }) {
     const dragOffsetRef = useRef({ x: 0, y: 0 });
 
     const handleDragStart = (e, modalRef) => {
@@ -63,12 +63,15 @@ function ModalInstance({ children, isModal, modalRef, name, onLaunchUpdate, onCl
     };
 
     return (
-        <div
+        <div 
             className={`custom-modal ${isModal ? "show" : "hide"}`}
             ref={modalRef}
             style={{
                 position: "absolute",
+                height: height,
+                width: width,  
             }}
+            
             onMouseMove={(e) => handleDragMove(e, modalRef)}
             onMouseUp={() => handleDragEnd(modalRef)}
         >

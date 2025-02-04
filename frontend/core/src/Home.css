@@ -8,12 +8,25 @@
     top: 45%;
 }
 
+.icon.stats {
+    top: 55%;
+}
+
 .term {
     top: 50%;
 }
 
 .game {
     top : 40%;
+}
+
+.tournament {
+    top: 60%;
+}
+
+.custom-modal-stats {
+    height: 100% !important;
+    width : 100% !important;
 }
 
 .task-bar-content {
@@ -61,8 +74,8 @@
     top: 20%;
     left: 50%;
     transform: translateX(-50%);
-    width: 50%;
-    height: 60%;
+    /*width: 50%;
+    height: 60%;*/
     box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
     display: none;
 }

@@ -17,6 +17,7 @@ import HomeChat from './chat/Homechat';
 import Room from "./chat/Room";
 import useTokenValidation from './instance/EventListener';
 import LoginRegister from './users/LoginForm';
+import Tournament from './game/Tournament';
 
 export function getCookies(name) {
   const value = document.cookie;
@@ -97,7 +98,8 @@ function App() {
               <Route path='/profile/:id' element={<ProtectedRoute><Profile /></ProtectedRoute>} />
               <Route path='/friends' element={<ProtectedRoute><Friends /></ProtectedRoute>} />
               <Route path='/games/:id' element={<Games />} />
-              <Route path='/games/Stats'  element={<ProtectedRoute><Stats /></ProtectedRoute>} />
+              <Route path='/games/Stats'  element={<Stats />} />
+              <Route path='/games/Tournament' element={<Tournament />} />
             </Routes>
           
           </div>

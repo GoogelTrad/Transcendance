@@ -1,102 +1,142 @@
 import Template from '../instance/Template';
+import ModalInstance from '../instance/ModalInstance';
 import useSocket from '../socket';
+import HomeGame from './Home_game';
 import './Stats.css';
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 
-function Stats() {
-    const [items, setItems] = useState([
-        { name: "All games", active: false },
-        { name: "Friends", active: false },
-        { name: "Win", active: false },
-        { name: "Loose", active: false }
-    ]);
+function Stats({ itemsArray = [] }) {;
+    //const [items, setItems] = useState(itemsArray);
+    const [option, setOption] = useState([]);
+    const [mode, setMode] = useState([]);
+    const [selectedOption, setSelectedOption] = useState("");
 
-    const [selectedItem, setSelectedItem] = useState("...");
-
-    const handleItemClick = (name) => {
-        const updatedItems = items.map(item =>
-            item.name === name
-                ? { ...item, active: true }
-                : { ...item, active: false }
+    const handleDivClick = (name) => {
+        setMode(prevMode => 
+            prevMode.map(mode => ({
+                ...mode,
+                active: mode.name === name ? !mode.active : false 
+            }))
         );
-        setItems(updatedItems);
-        setSelectedItem(name);
     };
 
+    const handlChoiceOption = (name) => {
+        setOption(prevOption =>
+            prevOption.map(option => ({
+                ...option,
+                active: option.name === name ? !option.active : false
+            }))
+        );
+        setSelectedOption((prevSelected) => (prevSelected === name ? "" : name));
+    };
+    
+
+    useEffect(() => {
+    
+        const filteredModes = itemsArray
+            .filter(itemsArray => ['profile', 'collect', 'global'].includes(itemsArray.name))
+            .map(itemsArray => ({
+                name: itemsArray.name,
+                active: itemsArray.active || false,
+            }));
+        setMode(filteredModes);
+    
+        const filteredOptions = itemsArray
+            .filter(itemsArray => ['All games', 'Friends', 'Win', 'Lose'].includes(itemsArray.name))
+            .map(itemsArray => ({
+                name: itemsArray.name,
+                active: itemsArray.active || false,
+            }));
+        setOption(filteredOptions);
+    }, [itemsArray]);
+
+    useEffect(() => {
+        console.log("items 2 : ", itemsArray);
+    });
+
+    useEffect(() => {
+        const activeOption = option.find(option => option.active);
+        setSelectedOption(activeOption || null);
+    }, [option]);
+    
     function StatsTable({ data }) {
         return (
-            <div className="stats-zone-details">
-                <div className="d-flex flex-row mb-3 h-100 w-100">
-                    <div className="details">Date
-                        <div className="details-composants">{data.date || "N/A"}</div>
-                    </div>
-                    <div className="details">Against
-                        <div className="details-composants">{data.against || "N/A"}</div>
-                    </div>
-                    <div className="details">Time
-                        <div className="details-composants">{data.time || "N/A"}</div>
-                    </div>
-                    <div className="details">Score
-                        <div className="details-composants">{data.score || "N/A"}</div>
-                    </div>
-                    <div className="details result">Result
-                        <div className="details-composants">{data.result || "N/A"}</div>
-                    </div>
-                </div>
+            <div className="stats-zone-table h-100">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Against</th>
+                            <th>Time</th>
+                            <th>Score</th>
+                            <th>Result</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>{data.date || "N/A"}</td>
+                            <td>{data.against || "N/A"}</td>
+                            <td>{data.time || "N/A"}</td>
+                            <td>{data.score || "N/A"}</td>
+                            <td>{data.result || "N/A"}</td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         );
     }
 
     return (
-        <Template>
-            <div className="stats-home d-flex flex-reverse">
+            <div  className="stats-home h-100 w-100 d-flex flex-reverse">
                 <div className="stats-element one h-100 w-50">
-                    <div className="stats-row h-50 w-100">
-                    <div className="stats-zone left d-flex flex-reverse">
-                        <div className="stats-row d-flex left h-100">
-                        <div class="d-flex flex-column mb-3 w-100 h-100">
-                            <div class="p-2 w-100 item-1">Flex item 1
-                                
-                            </div>   
-                        <div class="stats-row-element d-flex flex-column mb-3">
-                            <div class="p-2">Ratio</div>
-                            <div class="counter p-2">0</div>
-                        </div>
-                        </div>
-                        </div>
-                        <div className="stats-row-element h-100 w-100">
-                            <div className="stats-row-element d-flex w-100">
-                                <div class="d-flex flex-column mb-3">
-                                    <div class="p-2">Games played</div>
-                                    <div class="counter p-2">0</div>
-                                </div>
+                <div className="stats-row h-50 w-100" onClick={() => handleDivClick('profile')}>
+                    <div className={`stats-zone ${mode.find(mode => mode.name === 'profile')?.active ? 'expanded left' : ''} left d-flex flex-reverse`}>
+                        <div className="stats-zone-content d-flex flex-row w-100 h-100">
+                        <div className="stats-col d-flex flex-column h-100 w-50">
+                            <div className="stats-row-element empty-row flex-grow-1"></div>
+                            <div className="stats-row-element flex-grow-1">
+                            <div className="text-center">
+                                <div className="stats-text">Ratio</div>
+                                <div className="counter">0</div>
                             </div>
-                            <div className="stats-row-element d-flex w-100">
-                            <div class="d-flex flex-row mb-3 h-100 w-100">
-                                    <div class="p-2 w-50 h-50">Win <p className="counter">0</p></div>
-                                    <div class="p-2 w-50 h-100">Win rate <p className="counter">0</p></div>
-                                </div>
                             </div>
-                            <div className="stats-row-element d-flex w-100">
-                            <div class="d-flex flex-row mb-3 h-100 w-100">
-                                    <div class="p-2 w-50 h-50">Loose <p className="counter">0</p></div>
-                                    <div class="p-2 w-50 h-100">Loose rate <p className="counter">0</p></div>
-                                </div>
+                        </div>
+                        <div className="stats-col d-flex flex-column h-100 w-50">
+                            <div className="stats-row-element flex-grow-1 w-100 h-33">
+                            <div className="text-center">
+                                <div className="stats-text">Games played</div>
+                                <div className="counter">0</div>
                             </div>
+                            </div>
+                            <div className="stats-row-element flex-grow-1 w-100 h-33">
+                            <div className="text-center">
+                                <div className="stats-text">Win</div>
+                                <div className="counter">0</div>
+                            </div>
+                            </div>
+                            <div className="stats-row-element flex-grow-1 w-100 h-33">
+                            <div className="text-center">
+                                <div className="stats-text">Lose</div>
+                                <div className="counter">0</div>
+                            </div>
+                            </div>
+                        </div>
                         </div>
                     </div>
                     </div>
-                    <div className="stats-row h-50 w-100">
-                        <div className="stats-zone left">
+
+                    <div className="stats-row h-50 w-100"  onClick={() => handleDivClick('collect')}>
+                        <div className={`stats-zone ${mode.find(mode => mode.name === 'collect')?.active ? 'expanded left' : ''} left d-flex flex-reverse`}>
                             cc
                         </div>
                     </div>
                 </div>
-                <div className="stats-row two d-flex h-100 w-50">
-                    <div className="stats-zone right">
-                        <div className="dropdown-stats btn-group">
+                <div className="stats-row two d-flex h-100 w-50"  onClick={() => handleDivClick('global')}>
+                    <div 
+                        className={`stats-zone ${mode.find(mode => mode.name === 'global')?.active ? 'expanded right' : ''} right d-flex flex-column`}>
+                        <div className="dropdown-stats btn-group" onClick={(e) => e.stopPropagation()}>
                             <button type="button" className="btn btn-dropdown-stats">
-                                {selectedItem || "..."}
+                                {selectedOption?.name || "..."}
                             </button>
                             <button
                                 type="button"
@@ -107,21 +147,28 @@ function Stats() {
                                 <span className="visually-hidden">Toggle Dropdown</span>
                             </button>
                             <ul
-                                className="dropdown-stats-menu dropdown-menu custom-dropdown-menu">
-                                {items.map((item) => (
-                                    <li key={item.name}>
+                                className="dropdown-stats-menu dropdown-menu custom-dropdown-menu"
+                                onClick={(e) => e.stopPropagation()} 
+                            >
+                                {option.map((option) => (
+                                    <li key={option.name}>
                                         <a
-                                            className={`dropdown-item ${item.active ? "active" : ""}`}
-                                            onClick={() => handleItemClick(item.name)}
+                                            className={`dropdown-item ${option.active ? "active" : ""}`}
                                             href="#"
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                handlChoiceOption(option.name);
+                                                e.target.closest(".dropdown-menu").classList.remove("show");
+                                            }}
                                         >
-                                            {item.name}
+                                            {option.name}
                                         </a>
                                     </li>
                                 ))}
                             </ul>
                         </div>
-                        {selectedItem === "All games" && (
+
+                        {option.find(option => option.name === 'All games')?.active && (
                         <StatsTable
                                 data={{
                                     date: "00/00/00",
@@ -132,14 +179,15 @@ function Stats() {
                                 }}
                             />
                         )}
-                        {selectedItem === "Friends" && (
+                        {option.find(option => option.name === 'Friends')?.active && (
                             <div className="stats-zone-details w-100">
-                                <div class="dropdown-friends d-flex h-100 w-100 ">
-                                    <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <div className="dropdown-friends d-flex h-100 w-100 "
+                                    onClick={(e) => e.stopPropagation()}>
+                                    <button className="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                                         ...
                                     </button>
-                                    <ul class="dropdown-menu">
-                                        <li><a class="dropdown-item d-flex" >Action</a>
+                                    <ul className="dropdown-menu">
+                                        <li><a className="dropdown-item d-flex" >Action</a>
                                             <div className="horizontal-line"></div>
                                         </li>
                                         <li><a class="dropdown-item d-flex" >Another</a>
@@ -151,7 +199,7 @@ function Stats() {
                                 </div>
                             </div>
                         )}
-                       {selectedItem === "Win" && (
+                        {option.find(option => option.name === 'Win')?.active && (
                             <StatsTable
                                 data={{
                                     date: "01/01/01",
@@ -162,21 +210,20 @@ function Stats() {
                                 }}
                             />
                         )}
-                        {selectedItem === "Loose" && (
+                        {option.find(option => option.name === 'Lose')?.active && (
                             <StatsTable
                                 data={{
                                     date: "02/02/02",
                                     against: "bbbbbb.",
                                     time: "02:00",
                                     score: "00-02",
-                                    result: "loose",
+                                    result: "lose",
                                 }}
                             />
                         )}
                     </div>
                 </div>
-            </div>
-        </Template>
+        </div>
     )
 
 }
