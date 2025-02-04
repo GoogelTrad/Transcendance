@@ -7,19 +7,28 @@ import HomeGame from './game/Home_game'
 import './Home.css';
 import Template from './instance/Template';  
 import ModalInstance from './instance/ModalInstance';
+import Stats from './game/Stats';
+import Tournament from './game/Tournament';
 
 function Home() {
     const [isModalTerminal, setIsModalTerminal] = useState(false);
+    const [isModalStats, setIsModalStats] = useState(false);
     const [isModalForms, setIsModalForms] = useState(false);
     const [isModalGame, setIsModalGame] = useState(false);
+    const [isModalTournament, setIsModalTournament] = useState(false);
     const [isLaunch, setIsLaunch] = useState([]);
     const setters = [
         {name: 'terminal', setter: setIsModalTerminal},
         {name: 'game', setter: setIsModalGame},
+        {name: 'stats', setter: setIsModalStats},
     ]
     const modalTerminalRef = useRef(null);
     const modalFormsRef = useRef(null);
     const modalGameRef = useRef(null);
+    const modalStatsRef = useRef (null);
+    const modalTournamentRef = useRef(null);
+
+    const [items, setItems] = useState([]);
 
     const removeLaunch = (appName) => {
         setIsLaunch((prevLaunch) => prevLaunch.filter((app) => app !== appName));
@@ -72,6 +81,26 @@ function Home() {
                             Game
                         </button>
                     )}
+                    {isLaunched(isLaunch, "stats") && (
+                        <button
+                            className={`${isModalStats ? "button-on" : "button-off"}`}
+                            onClick={() => {
+                                handleModal({ setModal: setIsModalStats, boolean: !isModalStats });
+                            }}
+                        >
+                            Stats
+                        </button>
+                    )}
+                    {isLaunched(isLaunch, "tournament") && (
+                        <button
+                            className={`${isModalTournament ? "button-on" : "button-off"}`}
+                            onClick={() => {
+                                handleModal({ setModal: setIsModalTournament, boolean: !isModalTournament });
+                            }}
+                        >
+                            Tournament
+                        </button>
+                    )}
                 </div>
             }
         >
@@ -83,12 +112,24 @@ function Home() {
             </button>
             <button
                 className="icon game"
-                onClick={() => launching({ newLaunch: "game", setModal: setIsModalGame })}
+                onClick={() => launching({ newLaunch: "game", setModal: setIsModalGame})}
             >
                 Game
             </button>
-
+            <button
+                className="icon stats"
+                onClick={() => launching({ newLaunch: "stats", setModal: setIsModalStats})}
+            >
+                Stats
+            </button>
+            <button
+                className="icon tournament"
+                onClick={() => launching({ newLaunch: "tournament", setModal: setIsModalTournament})}
+            >
+            </button>
             <ModalInstance
+                height="60%"
+                width="50%"
                 isModal={isModalTerminal}
                 modalRef={modalTerminalRef}
                 name="Terminal"
@@ -99,6 +140,8 @@ function Home() {
             </ModalInstance>
 
             <ModalInstance
+                height="60%"
+                width="50%"
                 isModal={isModalForms}
                 modalRef={modalFormsRef}
                 name="Forms"
@@ -109,13 +152,39 @@ function Home() {
             </ModalInstance>
 
             <ModalInstance
+                height="60%"
+                width="50%"
                 isModal={isModalGame}
                 modalRef={modalGameRef}
-                name="Game"
+                name="Pong"
                 onLaunchUpdate={() => removeLaunch("game")}
                 onClose={() => setIsModalGame(false)}
             >
-                <HomeGame/>
+                <HomeGame setModalStats={setIsModalStats} setModalTournament={setIsModalTournament} launching={launching} setParentItems={setItems}/>
+            </ModalInstance>
+            <ModalInstance
+                height="85%"
+                width="60%"
+                top="7%"
+                isModal={isModalStats}
+                modalRef={modalStatsRef}
+                name="Stats"
+                onLaunchUpdate={() => removeLaunch("stats")}
+                onClose={() => setIsModalStats(false)}
+            >
+                <Stats itemsArray={items}/>
+            </ModalInstance>
+            <ModalInstance
+                height="85%"
+                width="60%"
+                top="7%"
+                isModal={isModalTournament}
+                modalRef={modalTournamentRef}
+                name="Tournament"
+                onLaunchUpdate={() => removeLaunch("stats")}
+                onClose={() => setIsModalTournament(false)}
+            >
+                <Tournament />
             </ModalInstance>
         </Template>
     );

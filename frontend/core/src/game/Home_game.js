@@ -12,24 +12,18 @@ import Stats from './Stats.js';
 import Template from '../instance/Template.js';
 import Profile from '../users/Profile.js';
 
-function HomeGame() {
+function HomeGame({setModalStats, setModalTournament, launching, setParentItems}) {
     const [player1, setPlayer1] = useState("");
     const [onClickPlay, setOnClickPlay] = useState(false);
     const [onClickTournament, setOnClickTournament] = useState(false);
     const [onClickStats, setOnClickStats] = useState(false);
-    const [showModal, setShowModal] = useState(false);
+    const [onClickJoin, setOnClickJoin] = useState(false);
+    const [onClickCreate, setOnClickCreate] = useState(false);
+    const [gameCode, setGameCode] = useState("");
+    const [numberPlayer, setNumberPlayer] =useState("");
     const navigate = useNavigate();
 
-    const [isProfile, setIsProfile] = useState(false);
-    const [isCollect, setIsCollect] = useState(false);
-    const [isGlobal, setIsGlobal] = useState(false);
-    const [isAllGames, setIsAllGames] = useState(false);
-    const [isFriends, setIsFriends] = useState(false);
-    const [isWin, setIsWin] = useState(false);
-    const [isLose, setIsLose] = useState(false);
-    const [selectedItem, setSelectedItem] = useState("...");
-
-    const items = [
+    const [items, setItems] = useState([
         { name: 'profile', active: false },
         { name: 'collect', active: false },
         { name: 'global', active: false },
@@ -37,7 +31,8 @@ function HomeGame() {
         { name: 'Friends', active: false },
         { name: 'Win', active: false },
         { name: 'Lose', active: false },
-    ];
+    ]);
+    
 
     const token = getCookies('token');
     let user = null;
@@ -54,31 +49,36 @@ function HomeGame() {
         if (user && user.name) {
             setPlayer1(user.name);
         }
+        console.log("gameCode : ", gameCode);
     }, [user]);
 
-    const handleClick = (option) => {
-        setOnClickPlay(false);
-        setOnClickTournament(false);
-        setOnClickStats(false);
-
-        if (option === "play") {
-            setOnClickPlay(true);
-        } else if (option === "tournament") {
-            setOnClickTournament(true);
-        } else if (option === "stats") {
-            setOnClickStats(true);
-        }
+    const handleClickStats = (stats, optionStats) => {
+        const itemsActiv = items.map(items => ({
+            ...items,
+            active: items.name === stats || items.name === optionStats,
+        }));
+        setItems(itemsActiv);
+        setParentItems(itemsActiv);
+        setModalStats(true);
+        launching({ newLaunch: 'stats', setModal: setModalStats });
     };
 
-    const handleClickStats = (stats, optionStats) => {
-        const updatedItems = items.map(item => ({
-            ...item,
-            active: item.name === stats || item.name === optionStats,
-        }));
-        navigate("/games/Stats", { state: { updatedItems } });
+    const handleMenuClick = (menu) => {
+        setOnClickPlay(menu === "play" ? !onClickPlay : false);
+        setOnClickTournament(menu === "tournament" ? !onClickTournament : false);
+        setOnClickStats(menu === "stats" ? !onClickStats : false);
     };
     
 
+    const handleClickTournament = () => {
+        if(numberPlayer || gameCode)
+        {
+            setModalTournament(true);
+            launching({ newLaunch: 'tournament', setModal: setModalTournament});
+        }
+
+    };
+    
     const submitPlayer = async () => {
         try {
           const response = await axiosInstance.post(`http://localhost:8000/game/create_game`, { player1 });
@@ -90,24 +90,24 @@ function HomeGame() {
 
     return (
         <div className="game-home w-100 h-100">
-            <div className="title-home-game d-flex">PONG</div>
-            <div className="content-wrapper w-100">
+            <div className="content-wrapper w-100 h-100">
                 <div className="column column-left w-50 h-100">
                     <div className="d-flex flex-column mb-3 h-100">
-                        <div className="p-2" onClick={() => handleClick("play")}>
-                        <span className="arrow">a</span> PLAY <span className="tilde">_</span>
+                        <div className="p-2"   onClick={() => handleMenuClick("play")}>
+                        <span className="arrow">►</span> PLAY <span className="tilde">_</span>
                         </div>
-                        <div className="p-2" onClick={() => handleClick("tournament")}>
-                        <span className="arrow">a</span> TOURNAMENT <span className="tilde">_</span>
+                        <div className="p-2"   onClick={() => handleMenuClick("tournament")}>
+                        <span className="arrow">►</span> TOURNAMENT <span className="tilde">_</span>
                         </div>
-                        <div className="p-2" onClick={() => handleClick("stats")}>
-                        <span className="arrow"></span> STATS <span className="tilde">_</span>
+                        <div className="p-2"  onClick={() => handleMenuClick("stats")}>
+                        <span className="arrow">►</span> STATS <span className="tilde">_</span>
                         </div>
                     </div>
                 </div>
                 <div className="column column-right w-50 h-100">
                 {onClickPlay && (
                     <div className="content">
+                        <h3 style={{ textAlign: "center" }} onClick={() => handleMenuClick("play")}>Play</h3>
                         <div className="line" onClick={() => submitPlayer('1-player')}> 1 player </div>
                         <div className="line" onClick={() => submitPlayer('2-players')}> 2 players - Local </div>
                         <div className="line" onClick={() => submitPlayer('2-players')}> 2 players - Online </div>
@@ -116,20 +116,57 @@ function HomeGame() {
                 )}
                 {onClickTournament && (
                     <div className="content">
-                    <h3>Tournament Section</h3>
-                    <p>Participate in tournaments and compete with others for the top spot.</p>
+                    <h3  onClick={() => handleMenuClick("tournament")} >Tournament Section</h3>
+                    <div className="section-tournament w-100">
+                        <p className="d-flex flex-direction column w-100 h-70" onClick={() => setOnClickJoin((prev) => !prev)}>Join a game
+                        {onClickJoin && (
+                            <div className="h-100 w-100">
+                                <input 
+                                    type="text"
+                                    className="input-code"
+                                    placeholder="Code" 
+                                    value={gameCode}
+                                    onClick={(e) => e.stopPropagation()}
+                                    onChange={(e) => setGameCode(e.target.value.replace(/\D/g, ""))}
+                                />
+                                <bouton onClick={() => handleClickTournament()}> ✅ </bouton>                           
+                            </div>
+                        )
+                        }
+                        </p>
+                        <p className="d-flex flex-direction column w-100 h-30" onClick={() => setOnClickCreate((prev) => !prev)}>Create game
+                        { onClickCreate && (
+                                <p style={{ fontSize: 12, marginTop: "8%" }}>Number of players:
+                                <input 
+                                    type="number"
+                                    className="input-players"
+                                    placeholder="Players" 
+                                    value={numberPlayer}
+                                    onClick={(e) => e.stopPropagation()}
+                                    onChange={(e) => setNumberPlayer(e.target.value.replace(/\D/g, ""))}
+                                />
+                                <bouton onClick={() => handleClickTournament()}> ✅ </bouton>
+                                </p>
+                            )
+                        }
+                        </p>
+                    </div>
                     </div>
                 )}
                 {onClickStats && (
                     <div className="content">
-                    <h3 onClick={() => navigate("/games/Stats")} >Stats</h3>
-                    <p onClick={() => handleClickStats('profile', '...') && <Stats itemsArray={items}/>} >Global Stats</p>
-                    <p onClick={() => handleClickStats('global', '...') && <Stats itemsArray={items}/>} >Stats game</p>
-                        <p onClick={() => handleClickStats('global', 'All games') && <Stats itemsArray={items}/>} >All games</p>
-                        <p onClick={() => handleClickStats('global', 'Friends') && <Stats itemsArray={items}/>} >Friends</p>
-                        <p onClick={() => handleClickStats('global', 'Win') && <Stats itemsArray={items}/>} >Win</p>
-                        <p onClick={() => handleClickStats('global', 'Lose') && <Stats itemsArray={items}/>} >Lose</p>
-                    <p onClick={() => handleClickStats('collect', '...') && <Stats itemsArray={items}/>} >Collection</p>
+                        <h3 className="game-home-stats-title"  onClick={() => handleMenuClick("stats")} >Stats</h3>
+                        <div className="text-stats">
+                            <p onClick={() => handleClickStats('profile', '...')} >Global Stats</p>
+                            <p onClick={() => handleClickStats('global', '...')} >Stats game</p>
+                                <div className="item">
+                                    <p onClick={() => handleClickStats('global', 'All games')} >► All games</p>
+                                    <p onClick={() => handleClickStats('global', 'Friends')} >► Friends</p>
+                                    <p onClick={() => handleClickStats('global', 'Win')} >► Win</p>
+                                    <p onClick={() => handleClickStats('global', 'Lose')} >► Lose</p>
+                                </div>
+                            <p onClick={() => handleClickStats('collect', '...')} >Collection</p>
+                        </div>
                     </div>
                 )}
                 </div>
