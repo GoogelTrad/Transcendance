@@ -6,13 +6,17 @@ import { jwtDecode } from "jwt-decode";
 import Button from 'react-bootstrap/Button';
 import axiosInstance from "../instance/AxiosInstance";
 import useJwt from "../instance/JwtInstance";
+import edit from "../assets/user/edit.svg";
+import x from "../assets/user/x.svg";
+import check from "../assets/user/check.svg"
+import gear from "../assets/user/gear.svg"
 
-function ChangeDetails({setUser, setValue, toChange})
+function ChangeDetails({setUser, setValue, toChange, value})
 {
 	const navigate = useNavigate();
 	const token = getCookies('token')
 	const user = jwtDecode(token);
-	const [detail, setDetails] = useState('');
+	const [detail, setDetails] = useState(value);
 
 	const handleChange = (e) => {
 		e.preventDefault();
@@ -38,10 +42,7 @@ function ChangeDetails({setUser, setValue, toChange})
 	}
 	return (
 		<>
-			<div>
-			<form className='userchange-form' onSubmit={handleSubmit}>
-                    <div className='form-group'>
-                        <label htmlFor={toChange}>Change here</label>
+			<form className='userchange-form' onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "row", gap: "0.7rem"}}>
                         <input className='input-form'
                             type='text'
                             id={toChange}
@@ -49,27 +50,25 @@ function ChangeDetails({setUser, setValue, toChange})
                             value={detail}
                             onChange={handleChange}
                             required
-                            placeholder='modify your details here'>    
-                        </input>
-                    </div>
-					<Button type="submit" className='btn rounded'>Change</Button>
+                            placeholder='modify your details here'/>
+						<button type="submit" className='check-icon'><img src={check} alt="check"/></button>
                 </form>
-			</div>
 		</>
-	)
+	) 
 }
 
-function Profile()
+function Profile({id})
 {
 	const navigate = useNavigate();
 	const [user, setUser] = useState(null);
 	const [showChangeUsername, setShowChangeUsername] = useState(false);
 	const [showChangePassword, setShowChangePassword] = useState(false);
-	const [showChangeImage, setShowChangeImage] = useState(false)
+	const [showChangeImage, setShowChangeImage] = useState(false);
+	const [editName, setEditName] = useState(false);
+	const [isSettings, setIsSettings] = useState(false);
 	const [isPermitted, setIsPermitted] = useState(false);
 	const [isStud, setIsStud] = useState(false);
 	const token = getCookies('token');
-	const { id } = useParams();
 	const getJwt = useJwt();
 	const decodeToken = getJwt(token);
 
@@ -107,7 +106,6 @@ function Profile()
 			setIsPermitted(false);
 			setIsStud(false);
 		}
-		console.log(isStud, isPermitted);
 		try 
 		{
 			if (token)
@@ -130,66 +128,55 @@ function Profile()
 	return (
 		<>
 			{user ? (
-				<div className="profile">
-					<div className="profile-container">
-						<label htmlFor="profile_image">
-							<img
-								src={user.profile_image ? `http://localhost:8000${user.profile_image}` : '/default.png'}
-								alt="Profile"
-								className="profile-picture"
-								style={{ width: '100px', height: '100px', borderRadius: '50%', cursor: 'pointer',}}
-							/>
-							<input
-								type="file"
-								id="profile_image"
-								accept="image/*"
-								style={{ display: 'none' }}
-								onChange={(e) => handleFileChange(e)}
-							/>
-						</label>
-						<p>Nom : {user.name}</p>
-						<>
-							{isStud ? (
-								<p>Email : {user.email}</p>
-							) : (
-								<></>
-							)}
-						</>
-						<>
-							{isPermitted ? (
-								<>
-									{showChangeUsername ? (
-										<>
-											<ChangeDetails setUser={setUser} setValue={setShowChangeUsername} toChange={'name'} />
-											<Button className="btn rounded" onClick={() => setShowChangeUsername(false)}>Cancel</Button>
-										</>
-									) : (
-										<Button className="btn rounded" onClick={() => setShowChangeUsername(true)}>Change Username</Button>
-									)}
+				<div className="general-profile">
+					<div className="user-general flex flex-column">
+						<div className="profile-general">
+							<label htmlFor="profile_image">
+								<img
+									src={user.profile_image ? `http://localhost:8000${user.profile_image}` : '/default.png'}
+									alt="Profile"
+									className="profile-picture"
+								/>
+								<input
+									type="file"
+									id="profile_image"
+									accept="image/*"
+									style={{ display: 'none' }}
+									onChange={(e) => handleFileChange(e)}
+								/>
+							</label>
 
-									{showChangePassword ? (
-										<>
-											<ChangeDetails setUser={setUser} setValue={setShowChangePassword} toChange={'password'} />
-											<Button className="btn rounded" onClick={() => setShowChangePassword(false)}>Cancel</Button>
-										</>
-									) : (
-										<Button className="btn rounded" onClick={() => setShowChangePassword(true)}>Change Pass</Button>
-									)}
-									<p>Email : {user.email}</p>
-								</>
-							) : (
-								<></>
-							)}
-					</>
+							<div className="general-change">
+								<div className="change">
+									{showChangeUsername ? 
+										<ChangeDetails setUser={setUser} setValue={setShowChangeUsername} toChange={'name'} value={user.name}/> 
+										: 
+										<div style={{ fontSize: "2rem" }}>{user.name}</div>}
+									{isPermitted && !isStud && <button type="button" className="icon-change" onClick={() => setShowChangeUsername(!showChangeUsername)}>{showChangeUsername ? 
+										<img src={x} alt="x"/>
+										: 
+										<img src={edit} alt="edit" className="edit-icon"/>}
+										</button>}
+								</div>
+								{user.email && (
+									<div>{user.email}</div> 
+								)}
+							</div>
+
+							<div className="btn-group dropend">
+								<button type="button" className="bouton-drop dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+									<img
+										src={gear}
+										alt='settings'
+									/>
+								</button>
+								<ul className="dropdown-menu">
+									<li><button className="dropdown-item" type="button">Change password</button></li>
+    								<li><button className="dropdown-item" type="button">Enable 2FA</button></li>
+								</ul>
+							</div>
+						</div>
 					</div>
-					{isPermitted ? (
-					<div className="friends">
-						<button className="buttonFriends">
-						<Link to="/friends" className="text-decoration-none text-dark">Friends</Link>
-						</button>
-					</div> ) :
-					<></>
-				}
 				</div>
 			) : (
 				<p>Aucun utilisateur trouvé.</p>
