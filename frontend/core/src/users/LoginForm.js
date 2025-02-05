@@ -8,7 +8,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import './LoginForm.css';
 import { useAuth } from './AuthContext';
 
-function LoginRegister() {
+function LoginRegister({setModal, setTerminal, removeLaunch}) {
     const [step, setStep] = useState(false);
     const [code, setCode] = useState();
     const navigate = useNavigate();
@@ -35,6 +35,8 @@ function LoginRegister() {
 
     const handleSchoolLogin = async (e) => {
         e.preventDefault();
+        if(isAuthenticated)
+            return showToast('error', 'Alrealdy connected!');
         try {
             window.location.href = "http://localhost:8000/auth/code";
         }
@@ -57,6 +59,8 @@ function LoginRegister() {
         for (const [key, value] of Object.entries(loginData)) {
             data.append(key, value);
         }
+        if(isAuthenticated)
+            return showToast('error', 'Alrealdy connected!');
         try {
             const response = await axiosInstance.post('api/login', data, {
                 headers: {
@@ -68,6 +72,10 @@ function LoginRegister() {
                 setStep(true);
             else if (response.status === 200) {
                 setIsAuthenticated(true);
+                setModal(false);
+                setTerminal(false);
+                removeLaunch("terminal");
+                removeLaunch("forms");
                 navigate('/home');
             }
         } catch (error) {
@@ -84,6 +92,8 @@ function LoginRegister() {
             if (response.status === 200)
             {
                 setIsAuthenticated(true);
+                setModal(false);
+                setTerminal(false);
                 navigate('/home');
             }
         }
@@ -98,12 +108,15 @@ function LoginRegister() {
         for (const [key, value] of Object.entries(registerData)) {
             data.append(key, value);
         }
+        if(isAuthenticated)
+            return showToast('error', 'Cannot create new account while connected!');
         try {
             await axiosInstance.post('api/user/create', data, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
             });
+            showToast('success', 'Account created succesfully!');
         } catch (error) {
             showToast('error', 'Cannot create the account!');
         }
@@ -114,7 +127,7 @@ function LoginRegister() {
                 {step === false ? (
                     <div className="col-md-6 d-flex flex-column align-items-center justify-content-center border-end">
                         <div className='login-coucou d-flex flex-column align-items-center'>
-                            <h2 className='titre'>Login here</h2>
+                            <h2 className='titre-coucou'>Login here</h2>
                             <form className='w-75 d-flex flex-column align-items-center' onSubmit={handleLoginSubmit}>
                                 <div className='mb-3'>
                                     <label htmlFor='name'>Username:</label>
@@ -162,7 +175,7 @@ function LoginRegister() {
                 )}
                 <div className="col-md-6 d-flex flex-column align-items-center justify-content-center">
                     <div className='register-coucou d-flex flex-column align-items-center'>
-                        <h2 className='titre'>Register here</h2>
+                        <h2 className='titre-coucou'>Register here</h2>
                         <form className='w-75 d-flex flex-column align-items-center' onSubmit={handleRegisterSubmit}>
                             <div className='mb-3'>
                                 <label htmlFor='name'>Username:</label>

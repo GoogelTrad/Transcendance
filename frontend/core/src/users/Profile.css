@@ -29,3 +29,111 @@
 	display: flex;
 	justify-content: center;
 }
+
+.general-profile
+{
+	display: flex;
+	flex-direction: row;
+	padding: 15% !important;
+	height: 100%;
+}
+
+.user-general
+{
+	background-color:cadetblue;
+	display: flex;
+	width: 100%;
+	height: 100px;
+}
+
+.profile-general
+{
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	position: relative;
+	gap: 2%;
+}
+
+.profile-picture
+{
+	width: 100px;
+	height: 100px;
+	border-radius: 50%;
+	cursor: pointer;
+	padding: 5%;
+}
+
+.general-change
+{
+	display: flex;
+	flex-direction: column;
+	gap: 0;
+}
+
+.change
+{
+	display: flex;
+	flex-direction: row;
+	gap: 0.3rem;
+}
+
+.icon-change
+{
+	background-color: transparent;
+	border: none;
+	padding: 0;
+	zoom: 150%;
+}
+
+.check-icon
+{
+	background-color: transparent;
+	border: none;
+	zoom: 150%;
+	padding: 0;
+}
+
+.edit-icon
+{
+	zoom: 80%;
+}
+
+.settings-off
+{
+	display: none;
+}
+
+.settings-on
+{
+	display: inline-block;
+}
+
+.option-change
+{
+	position: relative;
+	display: inline-block;
+	height: 80%;
+	padding: 0;
+}
+
+.button-settings
+{
+	position: relative;
+}
+
+.bouton-drop
+{
+	position: relative;
+	top: 0%;
+	right: 0%;
+	background-color: transparent;
+	border: none;
+	padding: 0;
+	zoom: 125%;
+
+}
+
+.bouton-drop::after {
+    display: none !important;
+}

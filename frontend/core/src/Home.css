@@ -16,6 +16,10 @@
     top : 40%;
 }
 
+.profileModal {
+    top: 30%;
+}
+
 .task-bar-content {
     background-color: transparent;
     display: flex;

@@ -6,6 +6,7 @@ import { showToast } from '../instance/ToastsInstance';
 import { ToastContainer } from 'react-toastify';
 import { Link } from 'react-router-dom';
 import useJwt from '../instance/JwtInstance';
+import "./Friends.css"
 
 function SeeFriendsRequest({ toWhom, type, onResponse }) {
     const handleResponse = async () => {
@@ -43,22 +44,25 @@ function FriendRequests() {
 	const [friendList, setFriendList] = useState([]);
 	const [searchQuery, setSearchQuery] = useState('');
 	const [searchResults, setSearchResults] = useState([]);
-
+	
 	const getJwt = useJwt();
 
-    const handleSearch = async () => {
-        if (searchQuery.length > 0) {
+    const handleSearch = async (query) => {
+        setSearchQuery(query);
+        
+        if (query.length > 0) {
             try {
-                const response = await axiosInstance.get(`/friends/search/${searchQuery}`);
-                console.log('Search results:', response.data);
-				setSearchResults(response.data);
+                const response = await axiosInstance.get(`/friends/search/${query}`);
+                setSearchResults(response.data);
             } catch (error) {
-                console.error('Error searching for friends:', error);
+				console.log(error);
+				setSearchResults([])
             }
         } else {
             setSearchResults([]);
         }
     };
+
 
 	const handleAddFriend = async (id) => {
         try {
@@ -66,7 +70,6 @@ function FriendRequests() {
             showToast('success', 'Friend Request sent !')
         } catch (error) {
 			showToast("error", error.response.data.error);
-            console.error('Error sending friend request:', error);
         }
     };
 
@@ -84,7 +87,7 @@ function FriendRequests() {
 		}
 	}
 
-	const deleteFriends = async (id) => {
+	const deleteFriend = async (id) => {
 
 		try {
 			const response = await axiosInstance.post(`/friends/delete/${id}`);
@@ -105,7 +108,7 @@ function FriendRequests() {
             setFriendRequests(response.data);
 			console.log("hello:", response);
         } catch (error) {
-            console.error('Error fetching friend requests:', error);
+            console.log('Error fetching friend requests:', error);
         }
     };
 
@@ -127,103 +130,108 @@ function FriendRequests() {
     }, []);
 
     return (
-		<>
-			<div>
-				<h1>My Friends</h1>
-				{friendList.friends && friendList.friends.length > 0 ? (
-   				<ul>
-        			{friendList.friends.map((friend) => (
-            		<li key={friend.id} style={{ marginBottom: '10px', display: 'flex', alignItems: 'center' }}>
-                	<img 
-						src={friend.profile_image ? `http://localhost:8000${friend.profile_image}` : '/default.png'}
-                    	alt={`${friend.name}'s profile`} 
-                    	style={{ width: '50px', height: '50px', borderRadius: '50%', marginRight: '10px' }}
-                	/>
-					 <Link to={`/profile/${friend.id}`} className="text-decoration-none text-white">{friend.name}</Link>
-					 <button
-                    	onClick={() => deleteFriends(friend.id)}
-                    	style={{
-							backgroundColor: 'red',
-							color: 'white',
-							border: 'none',
-							borderRadius: '50%',
-							width: '20px',
-							height: '20px',
-							cursor: 'pointer',
-							textAlign: 'center',
-						}}
-                ></button>
-					<span> - Status : {friend.status}</span>
-            		</li>
-        			))}
-    				</ul>
-				) : (
-					<p>No friends found.</p>
-				)}
-			</div>
-			<div>
-				<h1>Friend Requests</h1>
+		<div className="general-friend">
+		<div className="search-bar">
+			<input
+				type="text"
+				placeholder="Search for friends..."
+				value={searchQuery}
+				onChange={(e) => handleSearch(e.target.value)}
+				style={{ padding: '5px', width: '100%' }}
+			/>
+		</div>
+
+		<div className="friend-list">
+			<p>My Friends</p>
+			{friendList.friends && friendList.friends.length > 0 ? (
 				<ul>
-					{friendRequests.map((request) => (
-						<li key={request.id}>
-							{request.from_user_name} ({request.from_user_email})
-							<span> - Requested on {new Date(request.created_at).toLocaleDateString()}</span>
-							<div>
-								<SeeFriendsRequest 
-									toWhom={request.id} 
-									type={true} 
-									onResponse={handleRequestResponse} 
+					{friendList.friends
+						.filter(friend => friend.name.toLowerCase().includes(searchQuery.toLowerCase()))
+						.map((friend) => (
+							<li key={friend.id} className="friend-item">
+								<img 
+									src={friend.profile_image ? `http://localhost:8000${friend.profile_image}` : '/default.png'}
+									alt={`${friend.name}'s profile`} 
+									className="friend-avatar"
 								/>
-								<SeeFriendsRequest 
-									toWhom={request.id} 
-									type={false} 
-									onResponse={handleRequestResponse} 
-								/>
-							</div>
+								<Link to={`/profile/${friend.id}`} className="text-decoration-none text-white">
+									{friend.name}
+								</Link>
+								<button
+									onClick={() => deleteFriend(friend.id)}
+									className="delete-friend-btn"
+								>
+									❌
+								</button>
+								<span> - Status: {friend.status}</span>
+							</li>
+						))}
+				</ul>
+			) : (
+				<p>No friends found.</p>
+			)}
+		</div>
+
+
+		<div className="search-results">
+			<p>Search Results</p>
+			{searchResults.length > 0 ? (
+				<ul>
+					{searchResults.map((user) => (
+						<li key={user.id} className="search-user-item">
+							<img 
+								src={user.profile_image ? `http://localhost:8000${user.profile_image}` : '/default.png'}
+								alt={`${user.name}'s profile`} 
+								className="friend-avatar"
+							/>
+							<span className="friend-name">{user.name}</span>
+							<span className="friend-email">({user.email})</span>
+							<button 
+								onClick={() => handleAddFriend(user.id)} 
+								className="add-friend-btn"
+							>
+								➕ Add Friend
+							</button>
 						</li>
 					))}
 				</ul>
-			</div>
-			<div style={{ marginBottom: '10px' }}>
-                    <input
-                        type="text"
-                        placeholder="Search for friends..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        style={{ padding: '5px', width: '80%' }}
-                    />
-                    <button onClick={handleSearch} style={{ marginLeft: '5px', padding: '5px 10px' }}>
-                        Search
-                    </button>
-			</div>
-			<div>
-                <h1>Search Results</h1>
-                {searchResults.length > 0 ? (
+			) : (
+				searchQuery.length > 0 && <p>No users found.</p>
+			)}
+		</div>
+
+		<div className="friend-requests">
+                <p>📥 Demandes d'amis</p>
+                {friendRequests.length > 0 ? (
                     <ul>
-                        {searchResults.map((user) => (
-                            <li key={user.id} style={{ marginBottom: '10px', display: 'flex', alignItems: 'center' }}>
-                                <img 
-                                    src={user.profile_image ? `http://localhost:8000${user.profile_image}` : '/default.png'}
-                                    alt={`${user.name}'s profile`} 
-                                    style={{ width: '50px', height: '50px', borderRadius: '50%', marginRight: '10px' }}
-                                />
-                                <span style={{ fontWeight: 'bold' }}>{user.name}</span> <span style={{ color: 'gray' }}>({user.email})</span>
-                                <button 
-                                    onClick={() => handleAddFriend(user.id)} 
-                                    style={{ marginLeft: '10px', padding: '5px 10px', backgroundColor: 'blue', color: 'white' }}
-                                >
-                                    Add Friend
-                                </button>
+                        {friendRequests.map((request) => (
+                            <li key={request.id} className="request-item">
+                                {request.from_user_name} ({request.from_user_email})
+                                <span> - Envoyée le {new Date(request.created_at).toLocaleDateString()}</span>
+                                <div>
+                                    <SeeFriendsRequest 
+                                        toWhom={request.id} 
+                                        type={true} 
+                                        onResponse={handleRequestResponse} 
+                                    />
+                                    <SeeFriendsRequest 
+                                        toWhom={request.id} 
+                                        type={false} 
+                                        onResponse={handleRequestResponse} 
+                                    />
+                                </div>
                             </li>
                         ))}
                     </ul>
                 ) : (
-                    <p>No search results found.</p>
+                    <p>Aucune demande en attente.</p>
                 )}
             </div>
-			<ToastContainer />
-		</>
-    );
+
+
+		<ToastContainer />
+	</div>
+	);
 }
 
 export default FriendRequests;
