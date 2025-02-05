@@ -50,12 +50,12 @@ function Template({ children, taskBarContent, launching, appArray }) {
                 <div className="desktop-overlay" ref={desktopRef}>
                     <div className="desktop-content">
                         <div className="application-desktop d-flex flex-column bd-highlight mb-3">
-                            <div
+                            {!isAuthenticated && <div
                                 className="p-2 bd-highlight flex-item"
                                 onClick={() => handleClick('terminal')} 
                             >
                                 Terminal
-                            </div>
+                            </div>}
                             {isAuthenticated && <div
                                 className="p-2 bd-highlight flex-item"
                                 onClick={() => handleClick('game')}

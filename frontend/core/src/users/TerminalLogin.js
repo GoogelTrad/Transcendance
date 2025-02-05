@@ -5,7 +5,7 @@ import axiosInstance from '../instance/AxiosInstance';
 import logo from '../assets/user/logo.png'
 import './TerminalLogin.css';
 
-function TerminalLogin({setModal, launching, setTerminal})
+function TerminalLogin({setModal, launching, setTerminal, removeLaunch})
 {
     const { setIsAuthenticated } = useAuth();
     const navigate = useNavigate();
@@ -90,6 +90,8 @@ function TerminalLogin({setModal, launching, setTerminal})
             else if (response.status === 200) {
                 setIsAuthenticated(true);
                 setTerminal(false);
+                removeLaunch('terminal');
+                removeLaunch('forms');
                 navigate('/home');
             }
         } catch (error) {

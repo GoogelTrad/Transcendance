@@ -144,12 +144,12 @@ function Home() {
                 </div>
             }
         >
-            <button
+            {!isAuthenticated && <button
                 className="icon term"
                 onClick={() => launching({ newLaunch: "terminal", setModal: setIsModalTerminal })}
             >
                 Terminal
-            </button>
+            </button>}
             {isAuthenticated && <button
                 className="icon game"
                 onClick={() => launching({ newLaunch: "game", setModal: setIsModalGame})}
@@ -157,17 +157,12 @@ function Home() {
                     Game
                 </button>
             }
-            <button
+            {isAuthenticated && <button
                 className="icon stats"
                 onClick={() => launching({ newLaunch: "stats", setModal: setIsModalStats})}
             >
                 Stats
-            </button>
-            <button
-                className="icon tournament"
-                onClick={() => launching({ newLaunch: "tournament", setModal: setIsModalTournament})}
-            >
-            </button>
+            </button>}
  
             {isAuthenticated && <button
                 className="icon profileModal"
@@ -176,17 +171,19 @@ function Home() {
                 Profile
             </button>}
 
-            {isLaunched(isLaunch, "terminal") && <ModalInstance
+            {!isAuthenticated && isLaunched(isLaunch, "terminal") && <ModalInstance
+                height="60%"
+                width="50%"
                 isModal={isModalTerminal}
                 modalRef={modalTerminalRef}
                 name="Terminal"
                 onLaunchUpdate={() => removeLaunch("terminal")}
                 onClose={() => setIsModalTerminal(false)}
             >
-                <TerminalLogin setModal={setIsModalForms} launching={launching} setTerminal={setIsModalTerminal}/>
+                <TerminalLogin setModal={setIsModalForms} launching={launching} setTerminal={setIsModalTerminal} removeLaunch={removeLaunch} />
             </ModalInstance>}
 
-            <ModalInstance
+            {!isAuthenticated && <ModalInstance
                 height="60%"
                 width="50%"
                 isModal={isModalForms}
@@ -196,9 +193,9 @@ function Home() {
                 onClose={() => setIsModalForms(false)}
             >
                 <LoginRegister setModal={setIsModalForms} setTerminal={setIsModalTerminal} removeLaunch={removeLaunch}/>
-            </ModalInstance>
+            </ModalInstance>}
 
-            <ModalInstance
+            {isAuthenticated && <ModalInstance
                 height="60%"
                 width="50%"
                 isModal={isModalGame}
@@ -208,9 +205,9 @@ function Home() {
                 onClose={() => setIsModalGame(false)}
             >
                 <HomeGame setModalStats={setIsModalStats} setModalTournament={setIsModalTournament} launching={launching} setParentItems={setItems}/>
-            </ModalInstance>
+            </ModalInstance>}
 
-            <ModalInstance
+            {isAuthenticated && <ModalInstance
                 height="85%"
                 width="60%"
                 top="7%"
@@ -221,9 +218,9 @@ function Home() {
                 onClose={() => setIsModalStats(false)}
             >
                 <Stats itemsArray={items}/>
-            </ModalInstance>
+            </ModalInstance>}
 
-            <ModalInstance
+            {isAuthenticated && <ModalInstance
                 height="85%"
                 width="60%"
                 top="7%"
@@ -234,9 +231,11 @@ function Home() {
                 onClose={() => setIsModalTournament(false)}
             >
                 <Tournament />
-            </ModalInstance>
+            </ModalInstance>}
 
             {isAuthenticated && isLaunched(isLaunch, "social") && <ModalInstance
+                height="60%"
+                width="50%"
                 isModal={isModalSocial}
                 modalRef={modalSocial}
                 name="Social"
@@ -247,6 +246,8 @@ function Home() {
             </ModalInstance>}
             
             {isAuthenticated && isLaunched(isLaunch, "profile") && <ModalInstance
+                height="30%"
+                width="40%"
                 isModal={isModalProfile}
                 modalRef={modalProfile}
                 name="Profile"
