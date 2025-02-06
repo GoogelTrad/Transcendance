@@ -13,22 +13,30 @@ import useSocket from '../socket.js';
 
 function GameInstance ( {children} ) {
     const canvasRef = useRef(null);
+	const [isGameOngoing, setisGameOngoing] = useState(true)
+	const prevScoreP1Ref = useRef(null);
+	const prevScoreP2Ref = useRef(null);
+	const prevTimeRef = useRef(null);
+	const [timesUp, settimesUp] = useState(true)
 	const gamebarRef = useRef(null);
 	const lastSentTimeRef = useRef(0);
 	const [showModal, setShowModal] = useState(true);
     const [showRules, setShowRules] = useState(false);
 	const [showFriend, setShowFriend] = useState(false);
 	const [game, setGame] = useState(null);
-	const [timer, setTimer] = useState(0);
+	const [timer, setTimer] = useState(() => ({
+		seconds: 59,
+		minutes: 2,
+	}));
 	const { id } = useParams();
 	const FPS = 1000 / 60;
 	const [backDimensions, setBackDimensions] = useState(() => ({
 		width: 0,
 		height: 750,
 	}));
-	const [paddleData, setPaddleData] = useState({rightY: 0,leftY: 0,width: 17,height: 170, height_canvas : backDimensions.height,
+	const [paddleData, setPaddleData] = useState({rightY: backDimensions.height / 2 - 170 / 3, leftY: backDimensions.height / 2 - 170 / 3, width: 17,height: 170, height_canvas : backDimensions.height,
 	});
-	const [pongData, setpongData] = useState({pos_x: backDimensions.width / 2, pos_y: backDimensions.height / 2, width: 20, velocity_x: 4,velocity_y: 4});
+	const [pongData, setpongData] = useState({pos_x: backDimensions.width / 2, pos_y: backDimensions.height / 2, width: 20, velocity_x: 8,velocity_y: 8});
 	const [score, setScore] = useState(() => ({
 		score_P1: 0,
 		score_P2: 0,
@@ -60,7 +68,8 @@ function GameInstance ( {children} ) {
 	const updateTime = async () => {
 		try {
 			const response = await axiosInstance.patch(`/game/fetch_data/${id}/`, {
-			time: timer,
+			timeSeconds: timer.seconds,
+			timeMinutes: timer.minutes,
 		  });
 		  setGame(response.data);
 		} catch (error) {
@@ -137,8 +146,12 @@ function GameInstance ( {children} ) {
 				score_P2 : data.score_P2,
 			}));
 		}
-		if(data.new_timer !== undefined) {
-			setTimer(data.new_timer);
+		if(data.seconds !== undefined) {
+			setTimer((prevState) => ({
+				...prevState,
+				seconds : data.seconds,
+				minutes : data.minutes,
+			}));
 		}
 	};
 	  
@@ -201,6 +214,7 @@ function GameInstance ( {children} ) {
 
 	useEffect(() => {
 		const updateBallPosition = () => {
+			if (isGameOngoing && canvasRef.current) {
 			const canvas = canvasRef.current;
 			const paddleRightX = canvas.width - paddleData.width - canvas.width * 0.05;
 			const paddleLeftX = canvas.width * 0.05;
@@ -210,6 +224,8 @@ function GameInstance ( {children} ) {
 			if (socket.readyState === WebSocket.OPEN) {
 				socket.send(JSON.stringify(gameState));
 			 }
+		}
+;
 		};
 		const interval = setInterval(updateBallPosition, FPS);
 		return () => clearInterval(interval);
@@ -230,16 +246,45 @@ function GameInstance ( {children} ) {
 
 	useEffect(() => {
 		if (canvasRef.current) {
-		  const canvas = canvasRef.current;
-		  const context = canvas.getContext("2d");
-		  context.clearRect(0, 0, canvas.width, canvas.height);
-		  const { width, height, rightY, leftY } = paddleData;
-		  const paddleRightX = canvas.width - width - canvas.width * 0.05;
-		  const paddleLeftX = canvas.width * 0.05;
-		  context.fillStyle = "white";
-		  context.fillRect(paddleLeftX, leftY, width, height);
-		  context.fillRect(paddleRightX, rightY, width, height);
-		  drawBall(context, pongData);
+			const canvas = canvasRef.current;
+			const context = canvas.getContext("2d");
+			context.clearRect(0, 0, canvas.width, canvas.height);
+			const { width, height, rightY, leftY } = paddleData;
+			const paddleRightX = canvas.width - width - canvas.width * 0.05;
+			const paddleLeftX = canvas.width * 0.05;
+			context.fillStyle = "white";
+			context.fillRect(paddleLeftX, leftY, width, height);
+			context.fillRect(paddleRightX, rightY, width, height);
+			drawBall(context, pongData);
+			if (game && (prevScoreP1Ref.current !== game.score_player_1 || prevScoreP2Ref.current !== game.score_player_2)){
+				if (game.score_player_1 === 11){
+					socket.close();
+					context.clearRect(0, 0, canvas.width, canvas.height);
+					setisGameOngoing(false);
+					return
+				}
+				if (game.score_player_2 === 11){
+					socket.close();
+					context.clearRect(0, 0, canvas.width, canvas.height);
+					setisGameOngoing(false);
+					return
+				}
+				if(!timesUp)
+				{
+					socket.close();
+					context.clearRect(0, 0, canvas.width, canvas.height);
+					setisGameOngoing(false);
+					return
+				}
+				prevScoreP1Ref.current = game.score_player_1;
+				prevScoreP2Ref.current = game.score_player_2;
+			}
+			if (game && prevTimeRef.current !== game.timeSeconds) {
+				if (game.timeMinutes === 0 && game.timeSeconds === 0){
+					settimesUp(false);
+				}
+				prevTimeRef.current = game.timeSeconds;
+			}
 		}
 	  }, [paddleData, showModal, pongData]);
 	
@@ -248,119 +293,129 @@ function GameInstance ( {children} ) {
 	}, []);
   
 	return (
-        <div className="content-1">
-			<div className="dark-background"></div>
-                <canvas
-                    className="gamebar"
-                    ref={gamebarRef}
-                    style={{
-                    width: `${backDimensions.width / 1.292}px`,
-                    height: `${backDimensions.height / 10.85}px`,
-                    }}
-                ></canvas>
-                <div className="game-bar"
-                    style={{
-                    width: `${backDimensions.width / 1.292}px`,
-                    height: `${backDimensions.height / 10.85}px`,
-                    display: "flex",
-                    }}
-                	>
-                    <div className="column">
-                        <div className="red">PLAYER 1</div>
-                        <div className="white">{game?.player1 || "Player 1"}</div>
-                    </div>
-                    <div className="column">
-                        <div className="red">SCORE</div>
-                        <div className="white">{game?.score_player_1 || "0"}</div>
-                    </div>
-                    <div className="column">
-                        <div className="red">TIME</div>
-                        <div className="white">{game?.time || "0"}</div>
-                    </div>
-                    <div className="column">
-                        <div className="red">SCORE</div>
-                        <div className="white">{game?.score_player_2 || "0"}</div>
-                    </div>
-                    <div className="column">
-                        <div className="red">PLAYER 2</div>
-                        <div className="white">{game?.player2 || "Player 2"}</div>
-                    </div>
-            </div>
-				<canvas
-					className="gameCanva"
-					ref={canvasRef}
-					id="gameCanvas"
-				></canvas>
-			<div
+		<div className="content-1">
+
+	  		{isGameOngoing ? (
+			<>
+					 <div className="dark-background"></div>
+			  <canvas
+				className="gamebar"
+				ref={gamebarRef}
+				style={{
+				  width: `${backDimensions.width / 1.292}px`,
+				  height: `${backDimensions.height / 10.85}px`,
+				}}
+			  ></canvas>
+	  
+			  <div
+				className="game-bar"
+				style={{
+				  width: `${backDimensions.width / 1.292}px`,
+				  height: `${backDimensions.height / 10.85}px`,
+				  display: "flex",
+				}}
+			  >
+				<div className="column">
+				  <div className="red">PLAYER 1</div>
+				  <div className="white">{game?.player1 || "Player 1"}</div>
+				</div>
+				<div className="column">
+				  <div className="red">SCORE</div>
+				  <div className="white">{game?.score_player_1 || "0"}</div>
+				</div>
+				<div className="column">
+  				<div className="red">TIME</div>
+  				{timesUp ? (
+    				game?.timeMinutes != undefined && game?.timeSeconds != undefined
+      				? `${game.timeMinutes}:${game.timeSeconds.toString().padStart(2, '0')}`: "3:00"
+ 				) : (
+    			<span>Time's up</span>
+  				)}
+				</div>
+				<div className="column">
+				  <div className="red">SCORE</div>
+				  <div className="white">{game?.score_player_2 || "0"}</div>
+				</div>
+				<div className="column">
+				  <div className="red">PLAYER 2</div>
+				  <div className="white">{game?.player2 || "Player 2"}</div>
+				</div>
+			  </div>
+	  
+			  <canvas
+				className="gameCanva"
+				ref={canvasRef}
+				id="gameCanvas"
+			  ></canvas>
+			  <div
 				className="Show-option Rules"
 				onClick={() => toggleDesktop("rules")}
-			>
+			  >
 				Rules
 				{showRules && (
-					<div className="show-option rules">
-						<div className="explications title d-flex p-2">
-							<p>PONG</p>
-						</div>
-						<div className="explications one d-flex p-2">
-							You have to score points by sending the ball to the opponent's side. The first one to reach 11 points wins !
-						</div>
-						<div className="border-top border-2 border-white w-75 mx-auto"></div>
-						<div className="explications cmd d-flex p-2">
-							<div className="column h-100 w-50">
-								<div className="touch p-2">
-									<div className="touch-style d-flex flex-column">
-										<div className="touch-line">
-											<div className="touch-square center">z</div>
-										</div>
-										<div className="touch-line">
-											<div className="touch-square alpha">q</div>
-											<div className="touch-square alpha">s</div>
-											<div className="touch-square alpha">d</div>
-										</div>
-									</div>	
-								</div>
-								<div className="player-touch p-2 w-100 h-50">
-									Player 1
-								</div>
-						
-							</div>
-							<div className="border-start border-2 border-white border-opacity-25 h-75"></div>
-							<div className="column h-100 w-50">
-								<div className="touch p-2">
-									<div className="touch-style d-flex flex-column">
-										<div className="touch-line">
-											<div className="touch-square arrows center">k</div>
-										</div>
-										<div className="touch-line">
-											<div className="touch-square arrows">j</div>
-											<div className="touch-square arrows">l</div>
-											<div className="touch-square arrows">i</div>
-										</div>
-									</div>	
-								</div>
-								<div className="player-touch p-2 w-100 h-50">
-									Player 2
-								</div>
-						
-							</div>
-						</div>
+				  <div className="show-option rules">
+					<div className="explications title d-flex p-2">
+					  <p>PONG</p>
 					</div>
+					<div className="explications one d-flex p-2">
+					  You have to score points by sending the ball to the opponent's side. The first one to reach 11 points wins!
+					</div>
+					<div className="border-top border-2 border-white w-75 mx-auto"></div>
+					<div className="explications cmd d-flex p-2">
+					  <div className="column h-100 w-50">
+						<div className="touch p-2">
+						  <div className="touch-style d-flex flex-column">
+							<div className="touch-line">
+							  <div className="touch-square center">z</div>
+							</div>
+							<div className="touch-line">
+							  <div className="touch-square alpha">q</div>
+							  <div className="touch-square alpha">s</div>
+							  <div className="touch-square alpha">d</div>
+							</div>
+						  </div>
+						</div>
+						<div className="player-touch p-2 w-100 h-50">Player 1</div>
+					  </div>
+					  <div className="border-start border-2 border-white border-opacity-25 h-75"></div>
+					  <div className="column h-100 w-50">
+						<div className="touch p-2">
+						  <div className="touch-style d-flex flex-column">
+							<div className="touch-line">
+							  <div className="touch-square arrows center">k</div>
+							</div>
+							<div className="touch-line">
+							  <div className="touch-square arrows">j</div>
+							  <div className="touch-square arrows">l</div>
+							  <div className="touch-square arrows">i</div>
+							</div>
+						  </div>
+						</div>
+						<div className="player-touch p-2 w-100 h-50">Player 2</div>
+					  </div>
+					</div>
+				  </div>
 				)}
-			</div>
-            <div className="Show-option FriendInfos"
+			  </div>
+	  
+			  <div
+				className="Show-option FriendInfos"
 				onClick={() => toggleDesktop("friend")}
-			>
+			  >
 				STATS
-				{showFriend && (
-					<div className="show-option friend">
-
-					</div>
-				)
-
-				}
-            </div>
-
-            </div>
-	);
-  };
+				{showFriend && <div className="show-option friend"></div>}
+			  </div>
+			</>
+		  ) : (
+			<div className="game-over">
+			  <h1>Game Over!</h1>
+			  <div className="final-scores">
+				<p>Player 1: {game?.score_player_1 || "0"}</p>
+				<p>Player 2: {game?.score_player_2 || "0"}</p>
+			  </div>
+			</div>
+		  )}
+		</div>
+	  );
+}
 export default GameInstance;

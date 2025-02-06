@@ -37,10 +37,20 @@ class gameConsumer(AsyncWebsocketConsumer):
         game = await self.get_game()
         if "timer" in data_dict:
             time = data_dict.get("timer")
-            await self.send(text_data=json.dumps({
-                'new_timer': time + 1,
-        }))
-            return
+            seconds = time.get("seconds")
+            minutes = time.get("minutes")
+            if seconds == 0:
+                await self.send(text_data=json.dumps({
+                'seconds': 59,
+                'minutes': minutes - 1,
+            }))
+                return
+            else :
+                await self.send(text_data=json.dumps({
+                'seconds': seconds - 1,
+                'minutes': minutes,
+            }))
+                return
         if "pongData" in data_dict:
             pong = data_dict.get("pongData")
             new_velocity_y = pong.get("velocity_y")
@@ -65,14 +75,16 @@ class gameConsumer(AsyncWebsocketConsumer):
                 new_velocity_y = new_velocity_y * -1
             if old_pos_x > paddleLeftX and old_pos_x <= paddleLeftX + paddle_width and old_pos_y >= leftY and old_pos_y <= leftY + paddle_height:
                 new_velocity_x = -new_velocity_x
-                new_velocity_x *= 1.3
+                if new_velocity_x < 12:
+                    new_velocity_x *= 1.1
                 # if old_pos_y <= leftY + paddle_height / 2:
                 #     new_velocity_y = 0
                 # if old_pos_y > leftY + paddle_height / 2:
                 #     new_velocity_y = 20
             if old_pos_x < paddleRightX + paddle_width and old_pos_x >= paddleRightX and old_pos_y >= rightY and old_pos_y <= rightY + paddle_height:
                 new_velocity_x = -new_velocity_x
-                new_velocity_x *= 1.3
+                if new_velocity_x > -12 :
+                    new_velocity_x *= 1.1
                 # if old_pos_y <= rightY + paddle_height / 2:
                 #     new_velocity_y = 0
                 # if old_pos_y > rightY + paddle_height / 2:
