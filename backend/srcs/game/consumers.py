@@ -2,6 +2,7 @@ from channels.db import database_sync_to_async
 import json
 from channels.generic.websocket import AsyncWebsocketConsumer
 from .models import Game
+import random
 class gameConsumer(AsyncWebsocketConsumer):
 
     @database_sync_to_async
@@ -34,8 +35,24 @@ class gameConsumer(AsyncWebsocketConsumer):
             print("Error decoding JSON data")
             return
         game = await self.get_game()
+        if "timer" in data_dict:
+            time = data_dict.get("timer")
+            seconds = time.get("seconds")
+            minutes = time.get("minutes")
+            if seconds == 0:
+                await self.send(text_data=json.dumps({
+                'seconds': 59,
+                'minutes': minutes - 1,
+            }))
+                return
+            else :
+                await self.send(text_data=json.dumps({
+                'seconds': seconds - 1,
+                'minutes': minutes,
+            }))
+                return
         if "pongData" in data_dict:
-            pong = data_dict.get("pongData", {})
+            pong = data_dict.get("pongData")
             new_velocity_y = pong.get("velocity_y")
             new_velocity_x = pong.get("velocity_x")
             old_pos_y = pong.get("pos_y")
@@ -49,30 +66,57 @@ class gameConsumer(AsyncWebsocketConsumer):
             paddle_height = paddle_data.get("height")
             paddleLeftX = data_dict.get("paddleLeftX")
             paddleRightX = data_dict.get("paddleRightX")
+            score = data_dict.get("score")
+            score_P1 = score.get("score_P1")
+            score_P2 = score.get("score_P2")
             if old_pos_y >= canvas_height :
                 new_velocity_y = new_velocity_y * -1
             if old_pos_y <= 0 :
                 new_velocity_y = new_velocity_y * -1
-            if old_pos_x <= paddleLeftX + paddle_width and old_pos_y >= leftY and old_pos_y <= leftY + paddle_height :
-                new_velocity_x = new_velocity_x * -1
-            if old_pos_x >= paddleRightX and old_pos_y >= rightY and old_pos_y <= rightY + paddle_height :
-                new_velocity_x = new_velocity_x * -1
-            if old_pos_x <= 0 :
+            if old_pos_x > paddleLeftX and old_pos_x <= paddleLeftX + paddle_width and old_pos_y >= leftY and old_pos_y <= leftY + paddle_height:
+                new_velocity_x = -new_velocity_x
+                if new_velocity_x < 12:
+                    new_velocity_x *= 1.1
+                # if old_pos_y <= leftY + paddle_height / 2:
+                #     new_velocity_y = 0
+                # if old_pos_y > leftY + paddle_height / 2:
+                #     new_velocity_y = 20
+            if old_pos_x < paddleRightX + paddle_width and old_pos_x >= paddleRightX and old_pos_y >= rightY and old_pos_y <= rightY + paddle_height:
+                new_velocity_x = -new_velocity_x
+                if new_velocity_x > -12 :
+                    new_velocity_x *= 1.1
+                # if old_pos_y <= rightY + paddle_height / 2:
+                #     new_velocity_y = 0
+                # if old_pos_y > rightY + paddle_height / 2:
+                #     new_velocity_y = 20
+            if old_pos_x < 0 :
+                random_number = random.randint(1, 100)
+                if random_number % 2 == 0:
+                    new_velocity_y = -4
+                else:
+                    new_velocity_y = 4
                 await self.send(text_data=json.dumps({
                 'new_pos_x': canvas_width / 2,
                 'new_pos_y': canvas_height / 2,
                 'new_velocity_x' : 4,
-                'new_velocity_y' : 4,
-                'score' : 1,
+                'new_velocity_y' : new_velocity_y,
+                'score_P1' : score_P1,
+                'score_P2' : score_P2 + 1,
             }))
                 return
-            if old_pos_x >= canvas_width :
+            if old_pos_x > canvas_width :
+                random_number = random.randint(1, 100)
+                if random_number % 2 == 0:
+                    new_velocity_y = -4
+                else:
+                    new_velocity_y = 4
                 await self.send(text_data=json.dumps({
                 'new_pos_x': canvas_width / 2,
                 'new_pos_y': canvas_height / 2,
                 'new_velocity_x' : 4,
-                'new_velocity_y' : 4,
-                'score' : 1,
+                'new_velocity_y' : new_velocity_y,
+                'score_P1' : score_P1 + 1,
+                'score_P2' : score_P2,
             }))
                 return
             new_pos_x = old_pos_x + new_velocity_x
@@ -94,13 +138,13 @@ class gameConsumer(AsyncWebsocketConsumer):
             for key, is_pressed in is_key_down.items():
                 if is_pressed:
                     if key == "ArrowDown":
-                        rightY = min(height - 100, rightY + 10)
+                        rightY = min(height - 100, rightY + 20)
                     elif key == "ArrowUp":
-                        rightY = max(0, rightY - 10)
+                        rightY = max(0, rightY - 20)
                     elif key == "z":
-                        leftY = max(0, leftY - 10)
+                        leftY = max(0, leftY - 20)
                     elif key == "s":
-                        leftY = min(height - 100, leftY + 10)
+                        leftY = min(height - 100, leftY + 20)
                         
             await self.send(text_data=json.dumps({
                 'player1_paddle_y': rightY,

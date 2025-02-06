@@ -208,6 +208,16 @@ canvas.gamebar {
 	text-align: center;
 }
 
+.game-over {
+	color: #FFFFFF;
+	justify-content: center;
+    align-items: center;
+	text-align: center;
+	font-family: 'Arrows', sans-serif;
+	font-size: 20px;
+	padding: 100px;
+}
+
 
 @media (min-width: 576px) {
     .modal-dialog {
