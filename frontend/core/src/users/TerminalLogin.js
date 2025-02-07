@@ -5,7 +5,7 @@ import axiosInstance from '../instance/AxiosInstance';
 import logo from '../assets/user/logo.png'
 import './TerminalLogin.css';
 
-function TerminalLogin({setModal, launching})
+function TerminalLogin({setModal, launching, setTerminal, removeLaunch})
 {
     const { setIsAuthenticated } = useAuth();
     const navigate = useNavigate();
@@ -89,6 +89,9 @@ function TerminalLogin({setModal, launching})
             }
             else if (response.status === 200) {
                 setIsAuthenticated(true);
+                setTerminal(false);
+                removeLaunch('terminal');
+                removeLaunch('forms');
                 navigate('/home');
             }
         } catch (error) {
@@ -106,6 +109,7 @@ function TerminalLogin({setModal, launching})
             const response = await axiosInstance.post('/api/code', {code: code, name: name});
             if (response.status === 200) {
                 setIsAuthenticated(true);
+                setTerminal(false);
                 navigate('/home');
                 return "2FA verification successful! You are now logged in.";
             } else {

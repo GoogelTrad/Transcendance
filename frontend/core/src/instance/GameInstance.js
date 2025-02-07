@@ -13,40 +13,34 @@ import useSocket from '../socket.js';
 
 function GameInstance ( {children} ) {
     const canvasRef = useRef(null);
+	const [isGameOngoing, setisGameOngoing] = useState(true)
+	const prevScoreP1Ref = useRef(null);
+	const prevScoreP2Ref = useRef(null);
+	const prevTimeRef = useRef(null);
+	const [timesUp, settimesUp] = useState(true)
 	const gamebarRef = useRef(null);
-	const [startGame, setStartGame] = useState(false);
-	const [canvasData, setCanvasData] = useState(null);
+	const lastSentTimeRef = useRef(0);
 	const [showModal, setShowModal] = useState(true);
     const [showRules, setShowRules] = useState(false);
 	const [showFriend, setShowFriend] = useState(false);
 	const [game, setGame] = useState(null);
+	const [timer, setTimer] = useState(() => ({
+		seconds: 59,
+		minutes: 2,
+	}));
 	const { id } = useParams();
-	const [backDimensions, setBackDimensions] = useState({ width: 0, height: 750 });
-	const [paddleData, setPaddleData] = useState({
-		rightY: 0,
-		leftY: 0,
-		width: 17,
-		height: 170,
-		height_canvas : backDimensions.height,
+	const FPS = 1000 / 60;
+	const [backDimensions, setBackDimensions] = useState(() => ({
+		width: 0,
+		height: 750,
+	}));
+	const [paddleData, setPaddleData] = useState({rightY: backDimensions.height / 2 - 170 / 3, leftY: backDimensions.height / 2 - 170 / 3, width: 17,height: 170, height_canvas : backDimensions.height,
 	});
-	const [pongData, setpongData] = useState({
-		pos_x: backDimensions.width / 2,
-		pos_y: backDimensions.height / 2, 
-		width: 20,
-		height_canvas : backDimensions.height,
-		velocity_x: 4,
-    	velocity_y: 4,  
-	});
-	const [score, setScore] = useState(0);
-
-	const paddleDataRef = useRef({
-		rightY: 0,
-		leftY: 0,
-		width: 17,
-		height: 170,
-		height_canvas: backDimensions.height,
-	});
-  
+	const [pongData, setpongData] = useState({pos_x: backDimensions.width / 2, pos_y: backDimensions.height / 2, width: 20, velocity_x: 8,velocity_y: 8});
+	const [score, setScore] = useState(() => ({
+		score_P1: 0,
+		score_P2: 0,
+	}));
 	const fetchData = async () => {
 	  try {
 		const response = await axiosInstance.get(`/game/fetch_data/${id}/`);
@@ -56,15 +50,42 @@ function GameInstance ( {children} ) {
 	  }
 	};
 
+	const updateScore = async () => {
+		  try {
+			const response = await axiosInstance.patch(`/game/fetch_data/${id}/`, {
+			  score_player_1: score.score_P1,
+			  score_player_2: score.score_P2,
+			});
+			setGame(response.data);
+		  } catch (error) {
+			console.error("Error updating game:", error);
+		  }
+	  };
+	useEffect(() => {
+		updateScore();
+	}, [score]);
+
+	const updateTime = async () => {
+		try {
+			const response = await axiosInstance.patch(`/game/fetch_data/${id}/`, {
+			timeSeconds: timer.seconds,
+			timeMinutes: timer.minutes,
+		  });
+		  setGame(response.data);
+		} catch (error) {
+		  console.error("Error updating game:", error);
+		}
+	};
+  	useEffect(() => {
+	  updateTime();
+  }, [timer]);
+
 	const toggleDesktop = (name) => {
 		if (name === "rules")
 			setShowRules((prev) => !prev);
 		if (name === "friend")
 			setShowFriend((prev) => !prev);
 	};
-  
-
-
 
 	useEffect(() => {
 		const width = window.innerWidth;
@@ -79,18 +100,13 @@ function GameInstance ( {children} ) {
 			const modalHeight = backDimensions.height;
 			canvas.width = modalWidth;
 			canvas.height = modalHeight;
-			const context = canvas.getContext("2d");
 		}
-        
 	  }, [showModal, backDimensions]);
 
-
 	  const socketRef = useRef(null);
-
 	  if (!socketRef.current) {
 		  socketRef.current = new WebSocket(`ws://localhost:8000/ws/game/${id}`);
 	  }
-  
 	  const socket = socketRef.current;
   
 	  socket.onopen = () => {
@@ -106,27 +122,56 @@ function GameInstance ( {children} ) {
 	  };
   
 	  socket.onmessage = (event) => {
-		  const data = JSON.parse(event.data);
-		  setPaddleData((prevState) => ({
-			  ...prevState,
-			  rightY: data.player1_paddle_y,
-			  leftY: data.player2_paddle_y,
-		  }));
-		  paddleDataRef.current.rightY = data.player1_paddle_y;
-		  paddleDataRef.current.leftY = data.player2_paddle_y;
-	  };
+		const data = JSON.parse(event.data);
+		if (data.player1_paddle_y !== undefined && data.player2_paddle_y !== undefined) {
+			setPaddleData((prevState) => ({
+				...prevState,
+				rightY: data.player1_paddle_y,
+				leftY: data.player2_paddle_y,
+			}));
+		}
+		if (data.new_pos_x !== undefined) {
+			setpongData((prevState) => ({
+				...prevState,
+				pos_x: data.new_pos_x,
+				pos_y: data.new_pos_y,
+				velocity_x: data.new_velocity_x,
+				velocity_y: data.new_velocity_y,
+			}));
+		}
+		if(data.score_P1 !== undefined) {
+			setScore((prevState) => ({
+				...prevState,
+				score_P1 : data.score_P1,
+				score_P2 : data.score_P2,
+			}));
+		}
+		if(data.seconds !== undefined) {
+			setTimer((prevState) => ({
+				...prevState,
+				seconds : data.seconds,
+				minutes : data.minutes,
+			}));
+		}
+	};
 	  
 	  const [isKeyDown, setIsKeyDown] = useState({ ArrowUp: false, ArrowDown: false, z: false, s: false });
-  
 	  const handleKeyPress = (e) => {
+		const currentTime = Date.now();
 		  if (isKeyDown[e.key] === undefined) return;
+		  if (currentTime - lastSentTimeRef.current >= FPS){
+			lastSentTimeRef.current = currentTime;
+			return ;
+		  }
 		  setIsKeyDown((prev) => {
-			  const updatedKeyDown = { ...prev, [e.key]: true };
+			const updatedKeyDown = { ...prev, [e.key]: true };
 			  
-			  const gameState = { paddleData, isKeyDown: updatedKeyDown };
-			  socket.send(JSON.stringify(gameState));
-			  
-			  return updatedKeyDown;
+			const gameState = {paddleData, isKeyDown: updatedKeyDown };
+			if (socket.readyState === WebSocket.OPEN) {
+				socket.send(JSON.stringify(gameState));
+			}
+			lastSentTimeRef.current = currentTime;
+			return updatedKeyDown;
 		  });
 		  };
 		  
@@ -134,15 +179,15 @@ function GameInstance ( {children} ) {
 			setIsKeyDown((prev) => ({ ...prev, [e.key]: false }));
 		  };
 		  
-		  useEffect(() => {
-			window.addEventListener('keydown', handleKeyPress);
-			window.addEventListener('keyup', handleKeyUp);
+	useEffect(() => {
+		window.addEventListener('keydown', handleKeyPress);
+		window.addEventListener('keyup', handleKeyUp);
 		  
-			return () => {
-			  window.removeEventListener('keydown', handleKeyPress);
-			  window.removeEventListener('keyup', handleKeyUp);
-			};
-		  }, [paddleData]);
+		return () => {
+			window.removeEventListener('keydown', handleKeyPress);
+			window.removeEventListener('keyup', handleKeyUp);
+		};
+	}, [paddleData]);
 	
 	useEffect(() => {
 	  const handleKeyDown = (e) => handleKeyPress(e);
@@ -169,195 +214,208 @@ function GameInstance ( {children} ) {
 
 	useEffect(() => {
 		const updateBallPosition = () => {
+			if (isGameOngoing && canvasRef.current) {
 			const canvas = canvasRef.current;
-			const context = canvas.getContext("2d");
 			const paddleRightX = canvas.width - paddleData.width - canvas.width * 0.05;
 			const paddleLeftX = canvas.width * 0.05;
-			
-			setpongData(prev => {
-				console.log("score : ", score);
-				let new_velocity_y = prev.velocity_y;
-				let new_velocity_x = prev.velocity_x;
-				if (prev.pos_y >= canvas.height) 
-				 	new_velocity_y = new_velocity_y * -1;
-				if (prev.pos_y <= 0)
-					new_velocity_y = new_velocity_y * -1;
-				if (prev.pos_x <= paddleLeftX + paddleDataRef.current.width && prev.pos_y >= paddleDataRef.current.leftY && prev.pos_y <= paddleDataRef.current.leftY + paddleDataRef.current.height)
-					new_velocity_x = new_velocity_x * -1;
-				if (prev.pos_x >= paddleRightX && prev.pos_y >= paddleDataRef.current.rightY && prev.pos_y <= paddleDataRef.current.rightY + paddleDataRef.current.height)
-					new_velocity_x = new_velocity_x * -1;
-				if (prev.pos_x <= 0) {
-					setScore(prevScore => prevScore + 1);
-					return {
-					  ...prev,
-					  pos_x: backDimensions.width / 2,
-					  pos_y: backDimensions.height / 2,
-					  velocity_x: 4,
-					  velocity_y: 4,
-					};
-				  }
-			
-				  if (prev.pos_x >= canvas.width) {
-					setScore(prevScore => prevScore + 1);
-					return {
-					  ...prev,
-					  pos_x: backDimensions.width / 2,
-					  pos_y: backDimensions.height / 2,
-					  velocity_x: 4,
-					  velocity_y: 4,
-					};
-				  }
-				return {
-					...prev,
-					pos_x: prev.pos_x + new_velocity_x,
-					pos_y: prev.pos_y + new_velocity_y,
-					velocity_x: new_velocity_x,
-					velocity_y: new_velocity_y,
-				};
-			});
+			const width_to_send = canvas.width;
+			const height_to_send = canvas.height;
+			const gameState = {pongData, paddleData, paddleLeftX, paddleRightX, width_to_send, height_to_send, score};
+			if (socket.readyState === WebSocket.OPEN) {
+				socket.send(JSON.stringify(gameState));
+			 }
+		}
+;
 		};
-		const interval = setInterval(updateBallPosition, 1000 / 60);
+		const interval = setInterval(updateBallPosition, FPS);
 		return () => clearInterval(interval);
-	}, [backDimensions.width]);
+	}, [backDimensions.width, pongData]);
+
+	useEffect(() => {
+		const updateTimer = () => {
+		  const GameInstance = { timer };
+	  
+		  if (socket.readyState === WebSocket.OPEN) {
+			socket.send(JSON.stringify(GameInstance));
+		  }
+		};
+		const interval = setInterval(updateTimer, 1000);
+		return () => clearInterval(interval);
+	  }, [timer]);
 	
 
 	useEffect(() => {
 		if (canvasRef.current) {
-		  const canvas = canvasRef.current;
-		  const context = canvas.getContext("2d");
-	  
-		  context.clearRect(0, 0, canvas.width, canvas.height);
-	  
-		  const { width, height, rightY, leftY } = paddleData;
-		  const paddleRightX = canvas.width - width - canvas.width * 0.05;
-		  const paddleLeftX = canvas.width * 0.05;
-		  context.fillStyle = "white";
-		  context.fillRect(paddleLeftX, leftY, width, height);
-		  context.fillRect(paddleRightX, rightY, width, height);
-		  drawBall(context, pongData);
-
+			const canvas = canvasRef.current;
+			const context = canvas.getContext("2d");
+			context.clearRect(0, 0, canvas.width, canvas.height);
+			const { width, height, rightY, leftY } = paddleData;
+			const paddleRightX = canvas.width - width - canvas.width * 0.05;
+			const paddleLeftX = canvas.width * 0.05;
+			context.fillStyle = "white";
+			context.fillRect(paddleLeftX, leftY, width, height);
+			context.fillRect(paddleRightX, rightY, width, height);
+			drawBall(context, pongData);
+			if (game && (prevScoreP1Ref.current !== game.score_player_1 || prevScoreP2Ref.current !== game.score_player_2)){
+				if (game.score_player_1 === 11){
+					socket.close();
+					context.clearRect(0, 0, canvas.width, canvas.height);
+					setisGameOngoing(false);
+					return
+				}
+				if (game.score_player_2 === 11){
+					socket.close();
+					context.clearRect(0, 0, canvas.width, canvas.height);
+					setisGameOngoing(false);
+					return
+				}
+				if(!timesUp)
+				{
+					socket.close();
+					context.clearRect(0, 0, canvas.width, canvas.height);
+					setisGameOngoing(false);
+					return
+				}
+				prevScoreP1Ref.current = game.score_player_1;
+				prevScoreP2Ref.current = game.score_player_2;
+			}
+			if (game && prevTimeRef.current !== game.timeSeconds) {
+				if (game.timeMinutes === 0 && game.timeSeconds === 0){
+					settimesUp(false);
+				}
+				prevTimeRef.current = game.timeSeconds;
+			}
 		}
 	  }, [paddleData, showModal, pongData]);
-  
+	
 	useEffect(() => {
-
 	  fetchData();
 	}, []);
   
 	return (
-        <div className="content-1">
-			<div className="dark-background"></div>
-                <canvas
-                    className="gamebar"
-                    ref={gamebarRef}
-                    style={{
-                    width: `${backDimensions.width / 1.292}px`,
-                    height: `${backDimensions.height / 10.85}px`,
-                    }}
-                ></canvas>
-                <div className="game-bar"
-                    style={{
-                    width: `${backDimensions.width / 1.292}px`,
-                    height: `${backDimensions.height / 10.85}px`,
-                    display: "flex",
-                    }}
-                	>
-                    <div className="column">
-                        <div className="red">PLAYER 1</div>
-                        <div className="white">{game?.player1 || "Player 1"}</div>
-                    </div>
-                    <div className="column">
-                        <div className="red">SCORE</div>
-                        <div className="white">{game?.score1 || "00000"}</div>
-                    </div>
-                    <div className="column">
-                        <div className="red">TIME</div>
-                        <div className="white">000</div>
-                    </div>
-                    <div className="column">
-                        <div className="red">SCORE</div>
-                        <div className="white">{game?.score2 || "00000"}</div>
-                    </div>
-                    <div className="column">
-                        <div className="red">PLAYER 2</div>
-                        <div className="white">{game?.player2 || "Player 2"}</div>
-                    </div>
-            </div>
-				<canvas
-					className="gameCanva"
-					ref={canvasRef}
-					id="gameCanvas"
-				></canvas>
-			<div
+		<div className="content-1">
+
+	  		{isGameOngoing ? (
+			<>
+					 <div className="dark-background"></div>
+			  <canvas
+				className="gamebar"
+				ref={gamebarRef}
+				style={{
+				  width: `${backDimensions.width / 1.292}px`,
+				  height: `${backDimensions.height / 10.85}px`,
+				}}
+			  ></canvas>
+	  
+			  <div
+				className="game-bar"
+				style={{
+				  width: `${backDimensions.width / 1.292}px`,
+				  height: `${backDimensions.height / 10.85}px`,
+				  display: "flex",
+				}}
+			  >
+				<div className="column">
+				  <div className="red">PLAYER 1</div>
+				  <div className="white">{game?.player1 || "Player 1"}</div>
+				</div>
+				<div className="column">
+				  <div className="red">SCORE</div>
+				  <div className="white">{game?.score_player_1 || "0"}</div>
+				</div>
+				<div className="column">
+  				<div className="red">TIME</div>
+  				{timesUp ? (
+    				game?.timeMinutes != undefined && game?.timeSeconds != undefined
+      				? `${game.timeMinutes}:${game.timeSeconds.toString().padStart(2, '0')}`: "3:00"
+ 				) : (
+    			<span>Time's up</span>
+  				)}
+				</div>
+				<div className="column">
+				  <div className="red">SCORE</div>
+				  <div className="white">{game?.score_player_2 || "0"}</div>
+				</div>
+				<div className="column">
+				  <div className="red">PLAYER 2</div>
+				  <div className="white">{game?.player2 || "Player 2"}</div>
+				</div>
+			  </div>
+	  
+			  <canvas
+				className="gameCanva"
+				ref={canvasRef}
+				id="gameCanvas"
+			  ></canvas>
+			  <div
 				className="Show-option Rules"
 				onClick={() => toggleDesktop("rules")}
-			>
+			  >
 				Rules
 				{showRules && (
-					<div className="show-option rules">
-						<div className="explications title d-flex p-2">
-							<p>PONG</p>
-						</div>
-						<div className="explications one d-flex p-2">
-							You have to score points by sending the ball to the opponent's side. The first one to reach 11 points wins !
-						</div>
-						<div className="border-top border-2 border-white w-75 mx-auto"></div>
-						<div className="explications cmd d-flex p-2">
-							<div className="column h-100 w-50">
-								<div className="touch p-2">
-									<div className="touch-style d-flex flex-column">
-										<div className="touch-line">
-											<div className="touch-square center">z</div>
-										</div>
-										<div className="touch-line">
-											<div className="touch-square alpha">q</div>
-											<div className="touch-square alpha">s</div>
-											<div className="touch-square alpha">d</div>
-										</div>
-									</div>	
-								</div>
-								<div className="player-touch p-2 w-100 h-50">
-									Player 1
-								</div>
-						
-							</div>
-							<div className="border-start border-2 border-white border-opacity-25 h-75"></div>
-							<div className="column h-100 w-50">
-								<div className="touch p-2">
-									<div className="touch-style d-flex flex-column">
-										<div className="touch-line">
-											<div className="touch-square arrows center">k</div>
-										</div>
-										<div className="touch-line">
-											<div className="touch-square arrows">j</div>
-											<div className="touch-square arrows">l</div>
-											<div className="touch-square arrows">i</div>
-										</div>
-									</div>	
-								</div>
-								<div className="player-touch p-2 w-100 h-50">
-									Player 2
-								</div>
-						
-							</div>
-						</div>
+				  <div className="show-option rules">
+					<div className="explications title d-flex p-2">
+					  <p>PONG</p>
 					</div>
+					<div className="explications one d-flex p-2">
+					  You have to score points by sending the ball to the opponent's side. The first one to reach 11 points wins!
+					</div>
+					<div className="border-top border-2 border-white w-75 mx-auto"></div>
+					<div className="explications cmd d-flex p-2">
+					  <div className="column h-100 w-50">
+						<div className="touch p-2">
+						  <div className="touch-style d-flex flex-column">
+							<div className="touch-line">
+							  <div className="touch-square center">z</div>
+							</div>
+							<div className="touch-line">
+							  <div className="touch-square alpha">q</div>
+							  <div className="touch-square alpha">s</div>
+							  <div className="touch-square alpha">d</div>
+							</div>
+						  </div>
+						</div>
+						<div className="player-touch p-2 w-100 h-50">Player 1</div>
+					  </div>
+					  <div className="border-start border-2 border-white border-opacity-25 h-75"></div>
+					  <div className="column h-100 w-50">
+						<div className="touch p-2">
+						  <div className="touch-style d-flex flex-column">
+							<div className="touch-line">
+							  <div className="touch-square arrows center">k</div>
+							</div>
+							<div className="touch-line">
+							  <div className="touch-square arrows">j</div>
+							  <div className="touch-square arrows">l</div>
+							  <div className="touch-square arrows">i</div>
+							</div>
+						  </div>
+						</div>
+						<div className="player-touch p-2 w-100 h-50">Player 2</div>
+					  </div>
+					</div>
+				  </div>
 				)}
-			</div>
-            <div className="Show-option FriendInfos"
+			  </div>
+	  
+			  <div
+				className="Show-option FriendInfos"
 				onClick={() => toggleDesktop("friend")}
-			>
+			  >
 				STATS
-				{showFriend && (
-					<div className="show-option friend">
-
-					</div>
-				)
-
-				}
-            </div>
-
-            </div>
-	);
-  };
+				{showFriend && <div className="show-option friend"></div>}
+			  </div>
+			</>
+		  ) : (
+			<div className="game-over">
+			  <h1>Game Over!</h1>
+			  <div className="final-scores">
+				<p>Player 1: {game?.score_player_1 || "0"}</p>
+				<p>Player 2: {game?.score_player_2 || "0"}</p>
+			  </div>
+			</div>
+		  )}
+		</div>
+	  );
+}
 export default GameInstance;

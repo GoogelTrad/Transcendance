@@ -1,9 +1,14 @@
 import React, { useRef, useState } from 'react';
 import logo from '../assets/user/logo.png';
 import './Template.css';
+import { isDataWithResponseInit } from '@remix-run/router';
+import ModalInstance from './ModalInstance';
+import { useAuth } from '../users/AuthContext';
 
 function Template({ children, taskBarContent, launching, appArray }) {
     const [isDesktop, setIsDesktop] = useState(false);
+    const [isSocial, setIsSocial] = useState(false);
+    const { isAuthenticated } = useAuth();
     const desktopRef = useRef(null);
 
     const toggleDesktop = () => {
@@ -45,18 +50,18 @@ function Template({ children, taskBarContent, launching, appArray }) {
                 <div className="desktop-overlay" ref={desktopRef}>
                     <div className="desktop-content">
                         <div className="application-desktop d-flex flex-column bd-highlight mb-3">
-                            <div
+                            {!isAuthenticated && <div
                                 className="p-2 bd-highlight flex-item"
                                 onClick={() => handleClick('terminal')} 
                             >
                                 Terminal
-                            </div>
-                            <div
+                            </div>}
+                            {isAuthenticated && <div
                                 className="p-2 bd-highlight flex-item"
                                 onClick={() => handleClick('game')}
                             >
                                 Game
-                            </div>
+                            </div>}
                         </div>
                     </div>
                 </div>
