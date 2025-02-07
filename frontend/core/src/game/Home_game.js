@@ -12,7 +12,7 @@ import Stats from './Stats.js';
 import Template from '../instance/Template.js';
 import Profile from '../users/Profile.js';
 
-function HomeGame({setModalStats, setModalTournament, launching, setParentItems}) {
+function HomeGame({setModalStats, setModalCreateTournament, setModalTournament, launching, setParentItems, setParentNumberPlayer}) {
     const [player1, setPlayer1] = useState("");
     const [onClickPlay, setOnClickPlay] = useState(false);
     const [onClickTournament, setOnClickTournament] = useState(false);
@@ -70,15 +70,20 @@ function HomeGame({setModalStats, setModalTournament, launching, setParentItems}
     };
     
 
-    const handleClickTournament = () => {
-        if(numberPlayer || gameCode)
+    const handleClickTournament = (name) => {
+        if(name === "create")
+        {
+            setParentNumberPlayer(numberPlayer);
+            setModalCreateTournament(true);
+            launching({ newLaunch: 'createTournament', setModal: setModalCreateTournament});
+        }
+        else if (name === "join")
         {
             setModalTournament(true);
             launching({ newLaunch: 'tournament', setModal: setModalTournament});
         }
-
     };
-    
+
     const submitPlayer = async () => {
         try {
           const response = await axiosInstance.post(`http://localhost:8000/game/create_game`, { player1 });
@@ -129,23 +134,26 @@ function HomeGame({setModalStats, setModalTournament, launching, setParentItems}
                                     onClick={(e) => e.stopPropagation()}
                                     onChange={(e) => setGameCode(e.target.value.replace(/\D/g, ""))}
                                 />
-                                <bouton onClick={() => handleClickTournament()}> ✅ </bouton>                           
+                                <bouton onClick={() => handleClickTournament("join")}> ✅ </bouton>                           
                             </div>
                         )
                         }
                         </p>
                         <p className="d-flex flex-direction column w-100 h-30" onClick={() => setOnClickCreate((prev) => !prev)}>Create game
                         { onClickCreate && (
-                                <p style={{ fontSize: 12, marginTop: "8%" }}>Number of players:
-                                <input 
-                                    type="number"
-                                    className="input-players"
-                                    placeholder="Players" 
-                                    value={numberPlayer}
-                                    onClick={(e) => e.stopPropagation()}
-                                    onChange={(e) => setNumberPlayer(e.target.value.replace(/\D/g, ""))}
-                                />
-                                <bouton onClick={() => handleClickTournament()}> ✅ </bouton>
+                               <p style={{ fontSize: 12, marginTop: "8%" }}>
+                                    Number of players:
+                                    <select 
+                                        className="input-players" 
+                                        value={numberPlayer}
+                                        onClick={(e) => e.stopPropagation()}
+                                        onChange={(e) => setNumberPlayer(e.target.value)}  
+                                    >
+                                        <option value="2">2 players</option>
+                                        <option value="4">4 players</option>
+                                        <option value="8">8 players</option>
+                                    </select>
+                                    <button onClick={() => handleClickTournament("create")}> ✅ </button>
                                 </p>
                             )
                         }
