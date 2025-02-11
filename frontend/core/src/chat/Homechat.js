@@ -12,14 +12,14 @@ import Room from './Room'
 export default function HomeChat() {
 
 	const socket = useSocket('chat', 'public');
-	
+
 	const [createName, setCreateRoomName] = useState("");
 	const [createpassword, setCreatePassword] = useState("");
 	const [createdRoomName, setCreatedRoomName] = useState("");
 	const [showCreatePublicRoom, setShowCreatePublicRoom] = useState(false);
 	const [isCreateSwitchOn, setIsCreateSwitchOn] = useState(false);
 	const [listrooms, setlistrooms] = useState([]);
-	
+
 	const navigate = useNavigate();
 
 	const handleChangeCreateRoom = (e) => setCreateRoomName(e.target.value);
@@ -78,7 +78,7 @@ export default function HomeChat() {
 			});
 		}
 	};
-	
+
 	useEffect(() => {
 		const listroom = async () => {
 			try {

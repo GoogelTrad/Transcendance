@@ -8,7 +8,7 @@ class Room(models.Model):
     creation = models.DateTimeField(auto_now_add=True)
     createur = models.ForeignKey(User, on_delete=models.PROTECT, related_name="rooms_create")
     password = models.CharField(max_length=255, blank=True, null=True)
-    users = models.ManyToManyField(User, related_name="users", blank=False)
+    users = models.ManyToManyField(User, related_name="rooms", blank=False)
     name = models.CharField(max_length=255, blank=False, unique=True)
 
     async def add_members(self, member):
@@ -24,8 +24,8 @@ class Room(models.Model):
 class Message(models.Model):
     """Modèle représentant un message de chat."""
     room = models.ForeignKey(Room, on_delete=models.DO_NOTHING, related_name='messages')
-    username = models.CharField(max_length=255)  # Peut être remplacé par un ForeignKey vers User
-    content = models.TextField()
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='messages', default="0")
+    content = models.TextField(max_length=300)
     timestamp = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
