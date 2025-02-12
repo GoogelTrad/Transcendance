@@ -1,20 +1,35 @@
-import React, { useState, useRef } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import './ModalInstance.css'
 
-function ModalInstance({ children, isModal, modalRef, name, onLaunchUpdate, onClose, height, width }) {
+function ModalInstance(props) {
+    const { children, isModal, modalRef, name, onLaunchUpdate, onClose, height, width } = props;
+    const rect = modalRef?.current?.getBoundingClientRect();
+    console.log(rect);
     const dragOffsetRef = useRef({ x: 0, y: 0 });
+
+    useEffect(() => {
+        const modal = modalRef.current;
+        const rect = modal.getBoundingClientRect();
+            dragOffsetRef.current = {
+                x: rect.left,
+                y: rect.top,
+            };
+        // console.log(rect);
+      }, []); 
 
     const handleDragStart = (e, modalRef) => {
         const modal = modalRef.current;
     
         if (!modal) return;
         if (!modal.style.left || !modal.style.top) {
+            // console.log("passe", e);
             const rect = modal.getBoundingClientRect();
             dragOffsetRef.current = {
                 x: e.clientX - rect.left,
                 y: e.clientY - rect.top,
             };
         } else {
+            // console.log("passe 2");
             dragOffsetRef.current = {
                 x: e.clientX - parseFloat(modal.style.left),
                 y: e.clientY - parseFloat(modal.style.top),
@@ -85,7 +100,7 @@ function ModalInstance({ children, isModal, modalRef, name, onLaunchUpdate, onCl
                 </button>
                 <span>{name}</span>
             </div>
-            <div className="content-area">{children}</div>
+            <div className="content-area custom">{children}</div>
         </div>
     );
 }

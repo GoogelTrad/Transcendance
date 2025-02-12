@@ -85,7 +85,7 @@ function Profile({id})
 				},
 			})
 			setUser(response.data);
-			console.log(user.profile_image)
+			console.log(response);
 		} 
 		catch (error) {
 			console.error("Error uploading profile image:", error);
@@ -129,7 +129,7 @@ function Profile({id})
 		<>
 			{user ? (
 				<div className="general-profile">
-					<div className="user-general flex flex-column">
+					<div className="user-general">
 						<div className="profile-general">
 							<label htmlFor="profile_image">
 								<img
@@ -162,20 +162,22 @@ function Profile({id})
 									<div>{user.email}</div> 
 								)}
 							</div>
-
-							<div className="btn-group dropend">
-								<button type="button" className="bouton-drop dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-									<img
-										src={gear}
-										alt='settings'
-									/>
-								</button>
-								<ul className="dropdown-menu">
-									<li><button className="dropdown-item" type="button">Change password</button></li>
-    								<li><button className="dropdown-item" type="button">Enable 2FA</button></li>
-								</ul>
-							</div>
 						</div>
+
+						{isPermitted && <div className="btn-group dropend">
+							<button type="button" className="bouton-drop dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+								<img
+									src={gear}
+									alt='settings'
+								/>
+							</button>
+							<ul className="dropdown-menu">
+								<li><button className="dropdown-item" type="button" onClick={() => (console.log("coucou"), setShowChangePassword(true))}>Change password</button></li>
+								<li><button className="dropdown-item" type="button">Enable 2FA</button></li>
+							</ul>
+							{showChangePassword && <ChangeDetails setUser={setUser} setValue={setShowChangePassword} toChange={'password'} value={'****'}/>}
+							{isPermitted && !isStud && showChangePassword && <img src={x} className="x-icon" alt="x" onClick={() => setShowChangePassword(false)}/>}
+						</div>}
 					</div>
 				</div>
 			) : (

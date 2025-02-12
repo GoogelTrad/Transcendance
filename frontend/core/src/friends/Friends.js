@@ -6,6 +6,9 @@ import { showToast } from '../instance/ToastsInstance';
 import { ToastContainer } from 'react-toastify';
 import { Link } from 'react-router-dom';
 import useJwt from '../instance/JwtInstance';
+import ModalInstance from '../instance/ModalInstance';
+import { useAuth } from '../users/AuthContext'; 
+import Profile from '../users/Profile';
 import "./Friends.css"
 
 function SeeFriendsRequest({ toWhom, type, onResponse }) {
@@ -39,8 +42,9 @@ function SeeFriendsRequest({ toWhom, type, onResponse }) {
     );
 }
 
-function FriendRequests() {
-    const [friendRequests, setFriendRequests] = useState([]);
+function FriendRequests({setModal, setIsFriends, launching}) {
+    
+	const [friendRequests, setFriendRequests] = useState([]);
 	const [friendList, setFriendList] = useState([]);
 	const [searchQuery, setSearchQuery] = useState('');
 	const [searchResults, setSearchResults] = useState([]);
@@ -153,10 +157,10 @@ function FriendRequests() {
 									src={friend.profile_image ? `http://localhost:8000${friend.profile_image}` : '/default.png'}
 									alt={`${friend.name}'s profile`} 
 									className="friend-avatar"
-								/>
-								<Link to={`/profile/${friend.id}`} className="text-decoration-none text-white">
-									{friend.name}
-								</Link>
+									onClick={() => {
+										launching({ newLaunch: "friend", setModal: setModal });
+										setIsFriends(friend);
+									}}								/>
 								<button
 									onClick={() => deleteFriend(friend.id)}
 									className="delete-friend-btn"
@@ -164,7 +168,7 @@ function FriendRequests() {
 									❌
 								</button>
 								<span> - Status: {friend.status}</span>
-							</li>
+								</li>
 						))}
 				</ul>
 			) : (
@@ -228,6 +232,17 @@ function FriendRequests() {
                 )}
             </div>
 
+			{/* {isAuthenticated && isLaunched(isLaunch, "friend") && <ModalInstance
+				height="13%"
+				width="40%"
+				isModal={isModal}
+				modalRef={modalRef}
+				name="Friend Profile"
+				onLaunchUpdate={() => removeLaunch("friend")}
+				onClose={() => setModal(false)}
+			>
+				<Profile id={isFriends.id}/>
+			</ModalInstance>} */}
 
 		<ToastContainer />
 	</div>

@@ -78,6 +78,7 @@ class UserView():
                 user = User.objects.get(pk=pk)
             except:
                 raise AuthenticationFailed('User not found!')
+            
 
             if request.method == 'GET':
                 serializer = UserSerializer(user)
@@ -102,10 +103,16 @@ class UserView():
                         'is_stud': user.is_stud,
                     }
                     reponse = Response()
+                    new_token = jwt.encode(payload, 'coucou', 'HS256')
+                    
+                    print(f'newtoken = {new_token}', flush=True)
+                    
+                    ValidToken.objects.filter(user_id=user.id).delete()
+                    ValidToken.objects.create(user=user, token=new_token)
+                    
                     reponse.delete_cookie('token')
-                    token = jwt.encode(payload, 'coucou', 'HS256')
-                    reponse.set_cookie(key='token', value=token, max_age=3600)
-                    reponse.data = serializer.data;
+                    reponse.set_cookie(key='token', value=new_token, max_age=3600)
+                    reponse.data = serializer.data
                     
                     return reponse
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -165,8 +172,6 @@ def verify_code(request):
     name = request.data.get('name')
     code = request.data.get('code')
 
-    print(f"name = {name}, code = {code}", flush=True)
-
     if not name or not code:
         return Response({'message': 'Username and code are required!'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -210,3 +215,15 @@ def verify_code(request):
         return reponse
     else:
         return Response({'message': 'Code is invalid!'}, status=status.HTTP_400_BAD_REQUEST)
+
+def refresh_token(user, old_token):
+    try:
+        payload = jwt.decode(old_token, 'coucou', algorithms=['HS256'])
+        new_token = jwt.encode(payload, 'coucou', 'HS256')
+
+        ValidToken.objects.filter(user=user).delete()
+        ValidToken.objects.create(user=user, token=new_token)
+
+        return new_token
+    except jwt.ExpiredSignatureError:
+        return None 

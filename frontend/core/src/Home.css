@@ -55,7 +55,7 @@
     border-right: 2px solid black;
     border-bottom: 2px solid black;
     position: relative;
-    height: 75%;
+    height: max-content;
     bottom: 3%;
     width: auto;
     display: flex;
