@@ -2,7 +2,7 @@ import './GameInstance.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min';
 import axios from 'axios';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Modal, Button } from 'react-bootstrap';
 import { jwtDecode } from "jwt-decode";
 import { getCookies } from './../App.js';
@@ -10,6 +10,8 @@ import { BrowserRouter as Router, Route, Routes, Link, useNavigate } from 'react
 import { useParams } from 'react-router-dom';
 import axiosInstance from '../instance/AxiosInstance.js';
 import useSocket from '../socket.js';
+import { throttle } from 'lodash';
+
 
 
 function GameInstance ( {children} ) {
@@ -26,10 +28,10 @@ function GameInstance ( {children} ) {
     const [showRules, setShowRules] = useState(false);
 	const [showFriend, setShowFriend] = useState(false);
 	const [game, setGame] = useState(null);
-	const [timer, setTimer] = useState(() => ({
+	const timer = useRef({
 		seconds: 0,
 		minutes: 3,
-	}));
+	});
 	const { id } = useParams();
 	const FPS = 1000 / 60;
 	const [backDimensions, setBackDimensions] = useState(() => ({
@@ -67,20 +69,31 @@ function GameInstance ( {children} ) {
 		updateScore();
 	}, [score]);
 
+	const finishGame = async () => {
+		try {
+			const response = await axiosInstance.patch(`/game/fetch_data/${id}/`, {
+				status: 'FINISHED',
+		  });
+		  setGame(response.data);
+		} catch (error) {
+		  console.error("Error updating game:", error);
+		}
+	}
+
 	const updateTime = async () => {
 		try {
 			const response = await axiosInstance.patch(`/game/fetch_data/${id}/`, {
-			timeSeconds: timer.seconds,
-			timeMinutes: timer.minutes,
+			timeSeconds: timer.current.seconds,
+			timeMinutes: timer.current.minutes,
 		  });
 		  setGame(response.data);
 		} catch (error) {
 		  console.error("Error updating game:", error);
 		}
 	};
-  	useEffect(() => {
-	  updateTime();
-  }, [timer]);
+	useEffect(() => {
+		updateTime();
+	  }, [timer.current.seconds])
 
 	const toggleDesktop = (name) => {
 		if (name === "rules")
@@ -148,13 +161,11 @@ function GameInstance ( {children} ) {
 				score_P2 : data.score_P2,
 			}));
 		}
+		
 		if(data.seconds !== undefined) {
-			setTimer((prevState) => ({
-				...prevState,
-				seconds : data.seconds,
-				minutes : data.minutes,
-			}));
-		}
+			timer.current.seconds = data.seconds;
+			timer.current.minutes = data.minutes;
+		};
 	};
 	  
 	  const [isKeyDown, setIsKeyDown] = useState({ ArrowUp: false, ArrowDown: false, z: false, s: false });
@@ -224,10 +235,9 @@ function GameInstance ( {children} ) {
 			const height_to_send = canvas.height;
 			const gameState = {pongData, paddleData, paddleLeftX, paddleRightX, width_to_send, height_to_send, score};
 			if (socket.readyState === WebSocket.OPEN) {
-				socket.send(JSON.stringify(gameState));
+				throttledSend(gameState);
 			 }
-		}
-;
+		};
 		};
 		const interval = setInterval(updateBallPosition, FPS);
 		return () => clearInterval(interval);
@@ -236,11 +246,11 @@ function GameInstance ( {children} ) {
 	useEffect(() => {
 		if (!waitingForPlayer) {
 		const updateTimer = () => {
-		  const GameInstance = { timer };
-	  
-		  if (socket.readyState === WebSocket.OPEN) {
-			socket.send(JSON.stringify(GameInstance));
-		  }
+			if (timer.current.seconds === 0 && timer.current.minutes === 0) return;
+			const GameInstance = timer.current;
+			if (socket.readyState === WebSocket.OPEN) {
+				socket.send(JSON.stringify(GameInstance));
+			}
 		};
 		const interval = setInterval(updateTimer, 1000);
 		return () => clearInterval(interval);
@@ -248,49 +258,61 @@ function GameInstance ( {children} ) {
 	  }, [timer]);
 	
 
-	useEffect(() => {
-		if (!waitingForPlayer && canvasRef.current) {
-			const canvas = canvasRef.current;
-			const context = canvas.getContext("2d");
-			context.clearRect(0, 0, canvas.width, canvas.height);
-			const { width, height, rightY, leftY } = paddleData;
-			const paddleRightX = canvas.width - width - canvas.width * 0.05;
-			const paddleLeftX = canvas.width * 0.05;
-			context.fillStyle = "white";
-			context.fillRect(paddleLeftX, leftY, width, height);
-			context.fillRect(paddleRightX, rightY, width, height);
-			drawBall(context, pongData);
-			if (game && (prevScoreP1Ref.current !== game.score_player_1 || prevScoreP2Ref.current !== game.score_player_2)){
-				if (game.score_player_1 === 11){
-					socket.close();
-					context.clearRect(0, 0, canvas.width, canvas.height);
-					setisGameOngoing(false);
-					return
-				}
-				if (game.score_player_2 === 11){
-					socket.close();
-					context.clearRect(0, 0, canvas.width, canvas.height);
-					setisGameOngoing(false);
-					return
-				}
-				if(!timesUp)
-				{
-					socket.close();
-					context.clearRect(0, 0, canvas.width, canvas.height);
-					setisGameOngoing(false);
-					return
-				}
-				prevScoreP1Ref.current = game.score_player_1;
-				prevScoreP2Ref.current = game.score_player_2;
-			}
-			if (game && prevTimeRef.current !== game.timeSeconds) {
-				if (game.timeMinutes === 0 && game.timeSeconds === 0){
-					settimesUp(false);
-				}
-				prevTimeRef.current = game.timeSeconds;
-			}
+	  const sendGameState = (gameState) => {
+		if (socket.readyState === WebSocket.OPEN) {
+		  socket.send(JSON.stringify(gameState));
 		}
-	  }, [paddleData, showModal, pongData]);
+	  };
+	  
+	  const throttledSend = useCallback(
+		throttle(sendGameState, 60),
+		[]
+	  );
+  
+	  useEffect(() => {
+		if (!waitingForPlayer && canvasRef.current) {
+		  const canvas = canvasRef.current;
+		  const context = canvas.getContext("2d");
+	  
+		  const { width, height, rightY, leftY } = paddleData;
+		  const paddleRightX = canvas.width - width - canvas.width * 0.05;
+		  const paddleLeftX = canvas.width * 0.05;
+	  
+		  context.clearRect(0, 0, canvas.width, canvas.height);
+	  
+		  context.fillStyle = "white";
+		  context.fillRect(paddleLeftX, leftY, width, height);
+		  context.fillRect(paddleRightX, rightY, width, height);
+		  drawBall(context, pongData);
+	  
+		  if (game) {
+			const { score_player_1, score_player_2, timeMinutes, timeSeconds } = game;
+	  
+			const isScoreChanged = prevScoreP1Ref.current !== score_player_1 || prevScoreP2Ref.current !== score_player_2;
+			const isGameOver = score_player_1 === 11 || score_player_2 === 11 || !timesUp;
+	  
+			if (isScoreChanged || isGameOver) {
+			  if (score_player_1 === 11 || score_player_2 === 11 || !timesUp) {
+				finishGame();
+				socket.close();
+				context.clearRect(0, 0, canvas.width, canvas.height);
+				setisGameOngoing(false);
+				return;
+			  }
+	  			prevScoreP1Ref.current = score_player_1;
+				prevScoreP2Ref.current = score_player_2;
+			}
+	  
+			if (prevTimeRef.current !== timeSeconds) {
+			  if (timeMinutes === 0 && timeSeconds === 0) {
+				settimesUp(false);
+			  }
+			  prevTimeRef.current = timeSeconds;
+			}
+		  }
+		}
+	  }, [paddleData, showModal, pongData, game, timesUp]);
+	  
 	
 	useEffect(() => {
 	  fetchData();

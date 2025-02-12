@@ -30,6 +30,8 @@ class HomeGameView:
             user.save()
             return Response({"id": game_instance.id, **serializer.data}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
     @api_view(['POST'])
     def create_game_multi(request):
         auth_header = request.headers.get('Authorization')
@@ -42,6 +44,10 @@ class HomeGameView:
         user.is_waiting = True
         user.save()
         waiting_players = User.objects.filter(is_waiting=True)
+        is_InGame = Game.objects.filter(player2=user, status='STARTED')
+        print("hey : ",is_InGame.count(), flush=True)
+        if is_InGame.count() == 1:
+            return Response({"id": is_InGame.first().id})
         if waiting_players.count() < 2:
             return Response({"message": "Waiting for another player..."}, status=200)
         player1 = waiting_players[0]

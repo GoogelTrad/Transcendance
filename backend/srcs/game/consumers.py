@@ -21,11 +21,23 @@ class gameConsumer(AsyncWebsocketConsumer):
             print(f"Error saving game: {e}")
 
     async def connect(self):
-        print("WebSocket connected!")
+        self.game_id = self.scope['url_route']['kwargs']['game_id']
+        self.group_name = f"game_{self.game_id}"
+        
+        await self.channel_layer.group_add(
+            self.group_name,
+            self.channel_name
+        )
+        
+        print(f"WebSocket connected to game {self.game_id}!", flush=True)
         await self.accept()
 
     async def disconnect(self, close_code):
-        print(f"WebSocket disconnected with close code: {close_code}")
+        await self.channel_layer.group_discard(
+            self.group_name,
+            self.channel_name
+        )
+        print(f"WebSocket disconnected from game {self.game_id} with close code: {close_code}")
 
     async def receive(self, text_data):
 
@@ -35,21 +47,24 @@ class gameConsumer(AsyncWebsocketConsumer):
             print("Error decoding JSON data")
             return
         game = await self.get_game()
-        if "timer" in data_dict:
-            time = data_dict.get("timer")
-            seconds = time.get("seconds")
-            minutes = time.get("minutes")
+        if "seconds" in data_dict:
+            seconds = data_dict.get("seconds")
+            minutes = data_dict.get("minutes")
             if seconds == 0:
-                await self.send(text_data=json.dumps({
+                await self.channel_layer.group_send(
+                self.group_name,{
+                "type": "game_update",
                 'seconds': 59,
                 'minutes': minutes - 1,
-            }))
+            })
                 return
             else :
-                await self.send(text_data=json.dumps({
+                await self.channel_layer.group_send(
+                self.group_name,{
+                "type": "game_update",
                 'seconds': seconds - 1,
                 'minutes': minutes,
-            }))
+            })
                 return
         if "pongData" in data_dict:
             pong = data_dict.get("pongData")
@@ -79,32 +94,27 @@ class gameConsumer(AsyncWebsocketConsumer):
                 new_velocity_x = -new_velocity_x
                 if new_velocity_x < 20:
                     new_velocity_x *= 1.1
-                # if new_pos_y <= leftY + paddle_height / 2:
-                #     new_velocity_y = 0
-                # if new_pos_y > leftY + paddle_height / 2:
-                #     new_velocity_y = 20
             if new_pos_x < paddleRightX + paddle_width and new_pos_x >= paddleRightX and new_pos_y >= rightY and new_pos_y <= rightY + paddle_height:
                 new_velocity_x = -new_velocity_x
                 if new_velocity_x > -20 :
                     new_velocity_x *= 1.1
-                # if new_pos_y <= rightY + paddle_height / 2:
-                #     new_velocity_y = 0
-                # if new_pos_y > rightY + paddle_height / 2:
-                #     new_velocity_y = 20
             if new_pos_x < 0 :
                 random_number = random.randint(1, 100)
                 if random_number % 2 == 0:
                     new_velocity_y = -4
                 else:
                     new_velocity_y = 4
-                await self.send(text_data=json.dumps({
-                'new_pos_x': canvas_width / 2,
-                'new_pos_y': canvas_height / 2,
-                'new_velocity_x' : 4,
-                'new_velocity_y' : new_velocity_y,
-                'score_P1' : score_P1,
-                'score_P2' : score_P2 + 1,
-            }))
+                await self.channel_layer.group_send(
+                self.group_name,
+                {
+                    "type": "game_update",
+                    'new_pos_x': canvas_width / 2,
+                    'new_pos_y': canvas_height / 2,
+                    'new_velocity_x' : -8,
+                    'new_velocity_y' : new_velocity_y,
+                    'score_P1' : score_P1,
+                    'score_P2' : score_P2 + 1,
+                })
                 return
             if new_pos_x > canvas_width :
                 random_number = random.randint(1, 100)
@@ -112,21 +122,27 @@ class gameConsumer(AsyncWebsocketConsumer):
                     new_velocity_y = -4
                 else:
                     new_velocity_y = 4
-                await self.send(text_data=json.dumps({
-                'new_pos_x': canvas_width / 2,
-                'new_pos_y': canvas_height / 2,
-                'new_velocity_x' : 4,
-                'new_velocity_y' : new_velocity_y,
-                'score_P1' : score_P1 + 1,
-                'score_P2' : score_P2,
-            }))
+                await self.channel_layer.group_send(
+                self.group_name,
+                {
+                    "type": "game_update",
+                    'new_pos_x': canvas_width / 2,
+                    'new_pos_y': canvas_height / 2,
+                    'new_velocity_x' : 8,
+                    'new_velocity_y' : new_velocity_y,
+                    'score_P1' : score_P1 + 1,
+                    'score_P2' : score_P2,
+                })
                 return
-            await self.send(text_data=json.dumps({
+            await self.channel_layer.group_send(
+                self.group_name,
+            {
+                "type": "game_update",
                 'new_pos_x': new_pos_x,
                 'new_pos_y': new_pos_y,
                 'new_velocity_x' : new_velocity_x,
                 'new_velocity_y' : new_velocity_y,
-            }))
+            })
         elif "paddleData" in data_dict :
             keyPress = data_dict.get("isKeyDown")
             paddle_data = data_dict.get("paddleData")
@@ -138,16 +154,21 @@ class gameConsumer(AsyncWebsocketConsumer):
             for key, is_pressed in is_key_down.items():
                 if is_pressed:
                     if key == "ArrowDown":
-                        rightY = min(height - 100, rightY + 20)
+                        rightY = min(height -17, rightY + 20)
                     elif key == "ArrowUp":
                         rightY = max(0, rightY - 20)
                     elif key == "z":
                         leftY = max(0, leftY - 20)
                     elif key == "s":
-                        leftY = min(height - 100, leftY + 20)
+                        leftY = min(height - 17, leftY + 20)
                         
-            await self.send(text_data=json.dumps({
+            await self.channel_layer.group_send(
+                self.group_name,
+            {
+                "type": "game_update",
                 'player1_paddle_y': rightY,
                 'player2_paddle_y': leftY,
-            }))
+            })
         
+    async def game_update(self, event):
+        await self.send(text_data=json.dumps(event))
