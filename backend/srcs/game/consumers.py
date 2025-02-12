@@ -69,27 +69,29 @@ class gameConsumer(AsyncWebsocketConsumer):
             score = data_dict.get("score")
             score_P1 = score.get("score_P1")
             score_P2 = score.get("score_P2")
-            if old_pos_y >= canvas_height :
+            new_pos_x = old_pos_x + new_velocity_x
+            new_pos_y = old_pos_y + new_velocity_y
+            if new_pos_y >= canvas_height :
                 new_velocity_y = new_velocity_y * -1
-            if old_pos_y <= 0 :
+            if new_pos_y <= 0 :
                 new_velocity_y = new_velocity_y * -1
-            if old_pos_x > paddleLeftX and old_pos_x <= paddleLeftX + paddle_width and old_pos_y >= leftY and old_pos_y <= leftY + paddle_height:
+            if new_pos_x > paddleLeftX and new_pos_x <= paddleLeftX + paddle_width and new_pos_y >= leftY and new_pos_y <= leftY + paddle_height:
                 new_velocity_x = -new_velocity_x
-                if new_velocity_x < 12:
+                if new_velocity_x < 20:
                     new_velocity_x *= 1.1
-                # if old_pos_y <= leftY + paddle_height / 2:
+                # if new_pos_y <= leftY + paddle_height / 2:
                 #     new_velocity_y = 0
-                # if old_pos_y > leftY + paddle_height / 2:
+                # if new_pos_y > leftY + paddle_height / 2:
                 #     new_velocity_y = 20
-            if old_pos_x < paddleRightX + paddle_width and old_pos_x >= paddleRightX and old_pos_y >= rightY and old_pos_y <= rightY + paddle_height:
+            if new_pos_x < paddleRightX + paddle_width and new_pos_x >= paddleRightX and new_pos_y >= rightY and new_pos_y <= rightY + paddle_height:
                 new_velocity_x = -new_velocity_x
-                if new_velocity_x > -12 :
+                if new_velocity_x > -20 :
                     new_velocity_x *= 1.1
-                # if old_pos_y <= rightY + paddle_height / 2:
+                # if new_pos_y <= rightY + paddle_height / 2:
                 #     new_velocity_y = 0
-                # if old_pos_y > rightY + paddle_height / 2:
+                # if new_pos_y > rightY + paddle_height / 2:
                 #     new_velocity_y = 20
-            if old_pos_x < 0 :
+            if new_pos_x < 0 :
                 random_number = random.randint(1, 100)
                 if random_number % 2 == 0:
                     new_velocity_y = -4
@@ -104,7 +106,7 @@ class gameConsumer(AsyncWebsocketConsumer):
                 'score_P2' : score_P2 + 1,
             }))
                 return
-            if old_pos_x > canvas_width :
+            if new_pos_x > canvas_width :
                 random_number = random.randint(1, 100)
                 if random_number % 2 == 0:
                     new_velocity_y = -4
@@ -119,8 +121,6 @@ class gameConsumer(AsyncWebsocketConsumer):
                 'score_P2' : score_P2,
             }))
                 return
-            new_pos_x = old_pos_x + new_velocity_x
-            new_pos_y = old_pos_y + new_velocity_y
             await self.send(text_data=json.dumps({
                 'new_pos_x': new_pos_x,
                 'new_pos_y': new_pos_y,

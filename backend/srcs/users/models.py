@@ -19,6 +19,7 @@ class User(AbstractUser):
     games = models.ManyToManyField("game.Game", related_name="players", blank=True)
     is_verified = models.BooleanField(default=False)
     last_verified = models.DateTimeField(null=True, blank=True)
+    is_waiting = models.BooleanField(default=False)
 
     username = None
 

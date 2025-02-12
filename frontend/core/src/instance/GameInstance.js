@@ -11,9 +11,11 @@ import { useParams } from 'react-router-dom';
 import axiosInstance from '../instance/AxiosInstance.js';
 import useSocket from '../socket.js';
 
+
 function GameInstance ( {children} ) {
     const canvasRef = useRef(null);
-	const [isGameOngoing, setisGameOngoing] = useState(true)
+	const [isGameOngoing, setisGameOngoing] = useState(true);
+	const [waitingForPlayer, setwaitingForPlayer] = useState(false);
 	const prevScoreP1Ref = useRef(null);
 	const prevScoreP2Ref = useRef(null);
 	const prevTimeRef = useRef(null);
@@ -25,8 +27,8 @@ function GameInstance ( {children} ) {
 	const [showFriend, setShowFriend] = useState(false);
 	const [game, setGame] = useState(null);
 	const [timer, setTimer] = useState(() => ({
-		seconds: 59,
-		minutes: 2,
+		seconds: 0,
+		minutes: 3,
 	}));
 	const { id } = useParams();
 	const FPS = 1000 / 60;
@@ -214,7 +216,7 @@ function GameInstance ( {children} ) {
 
 	useEffect(() => {
 		const updateBallPosition = () => {
-			if (isGameOngoing && canvasRef.current) {
+			if (!waitingForPlayer && isGameOngoing && canvasRef.current) {
 			const canvas = canvasRef.current;
 			const paddleRightX = canvas.width - paddleData.width - canvas.width * 0.05;
 			const paddleLeftX = canvas.width * 0.05;
@@ -232,6 +234,7 @@ function GameInstance ( {children} ) {
 	}, [backDimensions.width, pongData]);
 
 	useEffect(() => {
+		if (!waitingForPlayer) {
 		const updateTimer = () => {
 		  const GameInstance = { timer };
 	  
@@ -241,11 +244,12 @@ function GameInstance ( {children} ) {
 		};
 		const interval = setInterval(updateTimer, 1000);
 		return () => clearInterval(interval);
+	}
 	  }, [timer]);
 	
 
 	useEffect(() => {
-		if (canvasRef.current) {
+		if (!waitingForPlayer && canvasRef.current) {
 			const canvas = canvasRef.current;
 			const context = canvas.getContext("2d");
 			context.clearRect(0, 0, canvas.width, canvas.height);
@@ -291,13 +295,16 @@ function GameInstance ( {children} ) {
 	useEffect(() => {
 	  fetchData();
 	}, []);
+
+	useEffect(() => {
+	}, [waitingForPlayer])
   
 	return (
 		<div className="content-1">
 
 	  		{isGameOngoing ? (
 			<>
-					 <div className="dark-background"></div>
+				<div className="dark-background"></div>
 			  <canvas
 				className="gamebar"
 				ref={gamebarRef}
@@ -347,7 +354,11 @@ function GameInstance ( {children} ) {
 				ref={canvasRef}
 				id="gameCanvas"
 			  ></canvas>
-			  <div
+			  {waitingForPlayer && (
+					<div className="waiting">
+					Waiting For Player
+					</div>)}
+				<div
 				className="Show-option Rules"
 				onClick={() => toggleDesktop("rules")}
 			  >
@@ -409,8 +420,10 @@ function GameInstance ( {children} ) {
 		  ) : (
 			<div className="game-over">
 			  <h1>Game Over!</h1>
+			  
 			  <div className="final-scores">
 				<p>Player 1: {game?.score_player_1 || "0"}</p>
+				
 				<p>Player 2: {game?.score_player_2 || "0"}</p>
 			  </div>
 			</div>
