@@ -232,18 +232,6 @@ function FriendRequests({setModal, setIsFriends, launching}) {
                 )}
             </div>
 
-			{/* {isAuthenticated && isLaunched(isLaunch, "friend") && <ModalInstance
-				height="13%"
-				width="40%"
-				isModal={isModal}
-				modalRef={modalRef}
-				name="Friend Profile"
-				onLaunchUpdate={() => removeLaunch("friend")}
-				onClose={() => setModal(false)}
-			>
-				<Profile id={isFriends.id}/>
-			</ModalInstance>} */}
-
 		<ToastContainer />
 	</div>
 	);

@@ -11,6 +11,7 @@ from django.contrib.auth import authenticate, login
 from .models import User, ValidToken, ConfirmationCode
 from users.decorator import jwt_auth_required
 from django.core.mail import send_mail
+from ipware import get_client_ip
 from django.conf import settings
 from django.utils.timezone import now
 import random
@@ -31,15 +32,26 @@ class LoginView():
         if not user.check_password(password):
             raise AuthenticationFailed('Incorrect password!')
         
-        if not user.last_verified or (now() - user.last_verified).days >= 3:
-            user.is_verified = False
+        
+        ip, routable = get_client_ip(request)
+        print(f"old = {user.ip_user}, new = {ip}", flush=True)
+        
+        if user.ip_user is not ip and not user.enable_verified:
+            print("coucou, l'adresse ip est pas la meme.", flush=True)
+            user.last_verified = None
             user.save()
-            send_confirmation_email(user)
-            return Response(
-                {'message': 'Verification required. Check your email for the confirmation code.'},
-                status=status.HTTP_401_UNAUTHORIZED
-            )
-
+            
+        if user.enable_verified is True:
+            if not user.last_verified or (now() - user.last_verified).days >= 3:
+                user.ip_user = ip
+                user.is_verified = False
+                user.save()
+                send_confirmation_email(user)
+                return Response(
+                    {'message': 'Verification required. Check your email for the confirmation code.'},
+                    status=status.HTTP_401_UNAUTHORIZED
+                )
+        user.ip_user = ip
         user.status = 'online'
         user.save()
         
@@ -227,3 +239,21 @@ def refresh_token(user, old_token):
         return new_token
     except jwt.ExpiredSignatureError:
         return None 
+    
+@api_view(['POST'])
+def permission_verif(request, id):
+    user = User.objects.filter(id=id).first()
+    if not user:
+        AuthenticationFailed('User not found!')
+    
+    user.enable_verified = not user.enable_verified
+    user.last_verified = None
+    user.save()
+
+    result = "enable!" if user.enable_verified else "disable!"
+    message = f"2fa has been {result}"
+    response = Response(message)
+    
+    return response
+
+    

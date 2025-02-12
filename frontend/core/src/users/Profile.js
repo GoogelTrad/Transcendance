@@ -11,7 +11,7 @@ import x from "../assets/user/x.svg";
 import check from "../assets/user/check.svg"
 import gear from "../assets/user/gear.svg"
 
-function ChangeDetails({setUser, setValue, toChange, value})
+function ChangeDetails({setUser, setValue, toChange, value, toType})
 {
 	const navigate = useNavigate();
 	const token = getCookies('token')
@@ -44,7 +44,7 @@ function ChangeDetails({setUser, setValue, toChange, value})
 		<>
 			<form className='userchange-form' onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "row", gap: "0.7rem"}}>
                         <input className='input-form'
-                            type='text'
+                            type={toType}
                             id={toChange}
                             name={toChange}
                             value={detail}
@@ -91,6 +91,16 @@ function Profile({id})
 			console.error("Error uploading profile image:", error);
 		}
 	};
+
+	const handleConfirm = async () => 
+	{
+		try {
+			axiosInstance.post(`/api/perms/${decodeToken.id}`);
+		}
+		catch(error){
+			console.log("Error while changing perms on 2FA!");
+		}
+	}
 
 	const fetchUserData = async () => 
 	{
@@ -149,7 +159,7 @@ function Profile({id})
 							<div className="general-change">
 								<div className="change">
 									{showChangeUsername ? 
-										<ChangeDetails setUser={setUser} setValue={setShowChangeUsername} toChange={'name'} value={user.name}/> 
+										<ChangeDetails setUser={setUser} setValue={setShowChangeUsername} toChange={'name'} value={user.name} toType={'text'}/> 
 										: 
 										<div style={{ fontSize: "2rem" }}>{user.name}</div>}
 									{isPermitted && !isStud && <button type="button" className="icon-change" onClick={() => setShowChangeUsername(!showChangeUsername)}>{showChangeUsername ? 
@@ -172,10 +182,10 @@ function Profile({id})
 								/>
 							</button>
 							<ul className="dropdown-menu">
-								<li><button className="dropdown-item" type="button" onClick={() => (console.log("coucou"), setShowChangePassword(true))}>Change password</button></li>
-								<li><button className="dropdown-item" type="button">Enable 2FA</button></li>
+								<li><button className="dropdown-item" type="button" onClick={() => setShowChangePassword(true)}>Change password</button></li>
+								<li><button className="dropdown-item" type="button" onClick={handleConfirm}>Enable 2FA</button></li>
 							</ul>
-							{showChangePassword && <ChangeDetails setUser={setUser} setValue={setShowChangePassword} toChange={'password'} value={'****'}/>}
+							{showChangePassword && <ChangeDetails setUser={setUser} setValue={setShowChangePassword} toChange={'password'} value={null} toType={'password'}/>}
 							{isPermitted && !isStud && showChangePassword && <img src={x} className="x-icon" alt="x" onClick={() => setShowChangePassword(false)}/>}
 						</div>}
 					</div>
