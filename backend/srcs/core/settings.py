@@ -176,3 +176,8 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'cmicheztdc@gmail.com'
 EMAIL_HOST_PASSWORD = 'fqrj jmoh xlak ovrs'
 USE_TZ = True
+
+
+# USE_X_FORWARDED_HOST = True
+# SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+# Pour NGINX et le 2FA

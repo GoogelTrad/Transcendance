@@ -9,6 +9,7 @@ from django.utils.timezone import now
 from datetime import timedelta
 from .views import refresh_token
 import jwt
+from ipware import get_client_ip
 from django.utils.deprecation import MiddlewareMixin
 
 class ExposeAuthorizationHeaderMiddleware(MiddlewareMixin):

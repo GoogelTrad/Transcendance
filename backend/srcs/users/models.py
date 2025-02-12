@@ -18,6 +18,8 @@ class User(AbstractUser):
     games = models.ManyToManyField("game.Game", related_name="players", blank=True)
     is_verified = models.BooleanField(default=False)
     last_verified = models.DateTimeField(null=True, blank=True)
+    enable_verified = models.BooleanField(default=False)
+    ip_user = models.CharField(max_length=255, default="")
 
     username = None
 
