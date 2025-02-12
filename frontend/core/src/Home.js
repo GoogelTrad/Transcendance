@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import logo from './assets/user/logo.png';  
-import social from './assets/user/friends.svg'; 
 import TerminalLogin from './users/TerminalLogin';
 import LoginRegister from './users/LoginForm';
 import HomeGame from './game/Home_game'
@@ -18,6 +17,7 @@ import { getCookies } from "./App";
 
 
 function Home() {
+    const [isFriends, setIsFriends] = useState([]);
     const [isModalStats, setIsModalStats] = useState(false);
     const [isModalTournament, setIsModalTournament] = useState(false);
     const [isModalTerminal, setIsModalTerminal] = useState(false);
@@ -25,24 +25,27 @@ function Home() {
     const [isModalForms, setIsModalForms] = useState(false);
     const [isModalGame, setIsModalGame] = useState(false);
     const [isModalProfile, setIsModalProfile] = useState(false);
+    const [isModalFriendProfile, setIsModalFriendProfile] = useState(false);
     const [isLaunch, setIsLaunch] = useState([]);
     const { isAuthenticated } = useAuth();
     const setters = [
         {name: 'terminal', setter: setIsModalTerminal},
         {name: 'game', setter: setIsModalGame},
         {name: 'stats', setter: setIsModalStats},
-        {name: 'social', setter:setIsModalSocial},
-        {name: 'profile', setter:setIsModalProfile},
+        {name: 'social', setter: setIsModalSocial},
+        {name: 'profile', setter: setIsModalProfile},
+        {name: 'friend', setter: setIsModalFriendProfile},
     ]
     const modalTerminalRef = useRef(null);
     const modalFormsRef = useRef(null);
     const modalGameRef = useRef(null);
     const modalStatsRef = useRef (null);
     const modalTournamentRef = useRef(null);
-
-    const [items, setItems] = useState([]);
+    const modalFriendProfileRef = useRef(null);
     const modalSocial = useRef(null);
     const modalProfile = useRef(null);
+
+    const [items, setItems] = useState([]);
 
     const token = getCookies('token');
     let decodeToken = null;
@@ -64,10 +67,6 @@ function Home() {
         return launched.includes(searchApp);
     }
 
-    const toggleSocial = () => {
-        setIsModalSocial(((prev) => !prev));
-        launching({ newLaunch: "social", setModal: setIsModalSocial })
-    }
 
     return (
         <Template
@@ -75,12 +74,6 @@ function Home() {
             launching={launching}
             taskBarContent={
                 <div className="task-bar-content">
-                    {isAuthenticated && <img
-                        src={social}
-                        alt="social"
-                        className="social-icon"
-                        onClick={toggleSocial}
-                    />}
                     {isLaunched(isLaunch, "terminal") && (
                         <button
                             className={`${isModalTerminal ? "button-on" : "button-off"}`}
@@ -139,6 +132,16 @@ function Home() {
                             }}
                         >
                             Profile
+                        </button>
+                    )}
+                    {isLaunched(isLaunch, "friend") && (
+                        <button
+                            className={`${isModalFriendProfile ? "button-on" : "button-off"}`}
+                            onClick={() => {
+                                handleModal({ setModal: setIsModalFriendProfile, boolean: !isModalFriendProfile });
+                            }}
+                        >
+                            Friend
                         </button>
                     )}
                 </div>
@@ -242,11 +245,11 @@ function Home() {
                 onLaunchUpdate={() => removeLaunch("social")}
                 onClose={() => setIsModalSocial(false)}
             >
-                <FriendRequests/>
+                <FriendRequests setModal={setIsModalFriendProfile} launching={launching} setIsFriends={setIsFriends}/>
             </ModalInstance>}
             
             {isAuthenticated && isLaunched(isLaunch, "profile") && <ModalInstance
-                height="30%"
+                height="13%"
                 width="40%"
                 isModal={isModalProfile}
                 modalRef={modalProfile}
@@ -256,6 +259,18 @@ function Home() {
             >
                 <Profile id={decodeToken.id}/>
             </ModalInstance>}
+
+            {isAuthenticated && isLaunched(isLaunch, "friend") && <ModalInstance
+				height="13%"
+				width="40%"
+				isModal={isModalFriendProfile}
+				modalRef={modalFriendProfileRef}
+				name="Friend Profile"
+				onLaunchUpdate={() => removeLaunch("friend")}
+				onClose={() => setIsModalFriendProfile(false)}
+			>
+				<Profile id={isFriends.id}/>
+			</ModalInstance>}
         </Template>
     );
 }
