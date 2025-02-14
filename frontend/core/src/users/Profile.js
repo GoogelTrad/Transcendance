@@ -10,6 +10,7 @@ import edit from "../assets/user/edit.svg";
 import x from "../assets/user/x.svg";
 import check from "../assets/user/check.svg"
 import gear from "../assets/user/gear.svg"
+import { AddFriend } from "../friends/Friends"
 
 function ChangeDetails({setUser, setValue, toChange, value, toType})
 {
@@ -188,6 +189,11 @@ function Profile({id})
 							{showChangePassword && <ChangeDetails setUser={setUser} setValue={setShowChangePassword} toChange={'password'} value={null} toType={'password'}/>}
 							{isPermitted && !isStud && showChangePassword && <img src={x} className="x-icon" alt="x" onClick={() => setShowChangePassword(false)}/>}
 						</div>}
+
+						{!isPermitted && 
+							<div>
+								<AddFriend id={user.id}/>
+							</div>}
 					</div>
 				</div>
 			) : (

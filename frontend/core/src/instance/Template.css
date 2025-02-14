@@ -1,6 +1,6 @@
 .logo
 {
-    max-width: 2.6%;
+    max-width: 100%;
     height: fit-content;
     z-index: 10;
     position: relative;
@@ -21,6 +21,31 @@
     border: solid;
     border-color: rgba(255, 255, 255, 0.196);
     z-index: 1049;
+}
+
+.left-task
+{
+    position: relative;
+    width: 3%;
+}
+
+.right-task
+{
+    position: relative;
+    width: fit-content;
+    display: flex;
+    flex-direction: row;
+    gap: 5%;
+}
+
+.date-task
+{
+    display: flex;
+    flex-direction: column;
+    gap: 0%;
+    padding: 0;
+    margin: 0;
+    font-size: 12px;
 }
 
 .general {
