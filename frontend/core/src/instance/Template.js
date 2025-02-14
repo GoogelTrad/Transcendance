@@ -4,6 +4,7 @@ import './Template.css';
 import { isDataWithResponseInit } from '@remix-run/router';
 import ModalInstance from './ModalInstance';
 import { useAuth } from '../users/AuthContext';
+import LiveDateTime from './DateInstance';
 import social from '../assets/user/friends.svg'; 
 
 function Template({ children, taskBarContent, launching, appArray }) {
@@ -45,22 +46,15 @@ function Template({ children, taskBarContent, launching, appArray }) {
         <div className="general container-fluid">
             <div className="content-area" onClick={handleClickOutside}>{children}</div>
             <div className="task-bar">
-                <img
-                    src={logo}
-                    alt="logo"
-                    className="logo"
-                    onClick={toggleDesktop}
-                />
-                <div className="border-start border-2 border-black border-opacity-25 h-75"></div>
-                <div>
+                <div className='left-task'>
                     <img
-                        src={social}
-                        alt="social"
-                        className="social-icon"
-                        onClick={toggleSocial}
+                        src={logo}
+                        alt="logo"
+                        className="logo"
+                        onClick={toggleDesktop}
                     />
                 </div>
-            
+                <div className="border-start border-2 border-black border-opacity-25 h-75"></div>          
 
                 {isDesktop && (
                     <div className="desktop-overlay" ref={desktopRef}>
@@ -84,6 +78,17 @@ function Template({ children, taskBarContent, launching, appArray }) {
                 )}
 
                 {taskBarContent}
+                <div className='right-task'>
+                    {<img
+                        src={social}
+                        alt="social"
+                        className="social-icon"
+                        onClick={toggleSocial}
+                    />}
+                    <div className='date-task'>
+                        <LiveDateTime />
+                    </div>
+                </div>  
             </div>
         </div>
     );
