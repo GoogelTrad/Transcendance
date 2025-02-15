@@ -4,34 +4,18 @@ body, html {
     padding: 0;
 }
 
-
-.custom-modal-stats {
-    height: 100% !important;
-    width: 100% !important;
-}
-
 .stats-home {
     position: relative;
     max-width: 100%;
     background-color: black;
-    display: flex
-;
     flex-wrap: wrap;
     justify-content: center;
     align-items: flex-start;
     z-index: 5;
 }
 
-.stats-zone-content img, 
-.stats-zone-content .item-1 {
-    width: 100%;
-    height: auto; 
-    max-width: 100%; 
-}
 .stats-zone {
     position: relative;
-    width: 90%;
-    left: 5%;
     border: 2px solid rgba(0, 150, 255, 0.5);
     background: radial-gradient(circle at center, #001133 20%, #000000 80%);
     box-shadow: 
@@ -47,6 +31,56 @@ body, html {
     box-sizing: border-box;
 }
 
+.stats-zone-table {
+    width: 100%;
+    padding: 10px;
+    box-sizing: border-box;
+    overflow-x: auto;
+}
+
+.stats-zone-table table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: center;
+    color: #ffffff;
+    table-layout: fixed;
+}
+
+.stats-zone-table th, 
+.stats-zone-table td {
+    padding: 6px;
+    width: 20%;
+    border: 1px solid rgba(0, 150, 255, 0.5);
+    background-color: rgba(0, 0, 0, 0.7);
+    text-shadow: 0 0 3px rgba(0, 102, 255, 0.7);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+
+.stats-zone-table table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: center;
+    color: #ffffff;
+    font-family: "Courier New", Courier, monospace;
+}
+
+
+.stats-zone-table th {
+    font-size: 90%;
+    text-transform: uppercase;
+    background-color: rgba(0, 150, 255, 0.2);
+    animation: scan-blue 3s infinite;
+}
+
+.stats-zone-table td {
+    font-size: 90%;
+    background-color: rgba(0, 0, 0, 0.5);
+    font-family: "Digital-7", monospace;
+    color: #0096ff;
+}
 
 .stats-zone.right {
     display: flex;
@@ -56,8 +90,8 @@ body, html {
     height: 86%;
     padding: 27px;
     top: 7%;
-    left: 15%;
-    width: 70%;
+    left: 10%;
+    width: 80%;
 }
 
 .stats-zone.left {
@@ -172,20 +206,12 @@ body, html {
     top: -3% !important;
 }
 .stats-zone-content {
-    display: flex;
     justify-content: space-between;
     align-items: center;
-    height: 100%;
     padding: 10px;
     box-sizing: border-box;
     transform: scale(1);
     transition: transform 0.3s ease;
-}
-
-
-.stats-col {
-    justify-content: space-between;
-    align-items: center;
 }
 
 .stats-row-element {
@@ -210,13 +236,6 @@ body, html {
     text-transform: uppercase;
 }
 
-.counter {
-    font-family: "Digital-7", monospace;
-    font-size: 1.5rem;
-    color: #0096ff;
-    text-shadow: 0 0 5px rgba(0, 150, 255, 0.8);
-}
-
 .stats-zone-content p {
     font-size: 1rem;
     margin: 0.5em;
@@ -235,57 +254,6 @@ body, html {
     width: 80%;
 }
 
-
-.background-blur {
-    background-color: rgba(0, 0, 0, 0.8) !important;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 10 !important;
-    transition: background-color 0.3s ease !important;
-}
-
-
-.stats-zone-table {
-    width: 100%;
-    padding: 10px;
-    box-sizing: border-box;
-}
-
-.stats-zone-table table {
-    width: 100%;
-    border-collapse: collapse;
-    text-align: center;
-    color: #ffffff;
-    font-family: "Courier New", Courier, monospace;
-}
-
-.stats-zone-table th, 
-.stats-zone-table td {
-    padding: 10px;
-    border: 1px solid rgba(0, 150, 255, 0.5);
-    background-color: rgba(0, 0, 0, 0.7);
-    text-shadow: 0 0 3px rgba(0, 255, 0, 0.7);
-}
-
-.stats-zone-table th {
-    font-size: 1.1rem;
-    text-transform: uppercase;
-    background-color: rgba(0, 150, 255, 0.2);
-}
-
-.stats-zone-table td {
-    font-size: 0.9rem;
-    background-color: rgba(0, 0, 0, 0.5);
-    font-family: "Digital-7", monospace;
-    color: #0096ff;
-}
-
-.stats-zone-table tr:nth-child(even) td {
-    background-color: rgba(0, 0, 0, 0.6);
-}
 
 @keyframes scan-blue {
     0% {
@@ -313,6 +281,21 @@ body, html {
 }
 
 @media (max-width: 768px) {
+    .stats-zone-table {
+        overflow-x: auto;
+    }
+
+    .stats-zone-table table {
+        min-width: 100%; 
+        display: block;
+        overflow-x: auto;
+    }
+
+    .stats-zone-table th, .stats-zone-table td {
+        font-size: 0.9rem;
+        padding: 6px;
+    }    
+    
     .stats-home {
         flex-direction: column;
         height: auto;

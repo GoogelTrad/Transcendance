@@ -61,38 +61,40 @@ function Stats({ itemsArray = [] }) {;
     
     function StatsTable({ data }) {
         return (
-            <div className="stats-zone-table h-100">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Date</th>
-                            <th>Against</th>
-                            <th>Time</th>
-                            <th>Score</th>
-                            <th>Result</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>{data.date || "N/A"}</td>
-                            <td>{data.against || "N/A"}</td>
-                            <td>{data.time || "N/A"}</td>
-                            <td>{data.score || "N/A"}</td>
-                            <td>{data.result || "N/A"}</td>
-                        </tr>
-                    </tbody>
-                </table>
+            <div className="stats-zone-table w-100 h-100">
+                <div className="w-100 d-flex">
+                    <table style={{ width: "100%", tableLayout: "relative", overflow: "hidden" }}>
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Against</th>
+                                <th>Time</th>
+                                <th>Score</th>
+                                <th>Result</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>{data.date || "N/A"}</td>
+                                <td>{data.against || "N/A"}</td>
+                                <td>{data.time || "N/A"}</td>
+                                <td>{data.score || "N/A"}</td>
+                                <td>{data.result || "N/A"}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         );
     }
-
+    
     return (
             <div  className="stats-home h-100 w-100 d-flex flex-reverse">
                 <div className="stats-element one h-100 w-50">
                 <div className="stats-row h-50 w-100" onClick={() => handleDivClick('profile')}>
                     <div className={`stats-zone ${mode.find(mode => mode.name === 'profile')?.active ? 'expanded left' : ''} left d-flex flex-reverse`}>
                         <div className="stats-zone-content d-flex flex-row w-100 h-100">
-                        <div className="stats-col d-flex flex-column h-100 w-50">
+                        <div className="stats-col d-flex flex-column h-100 w-50" style={{ justifyContent:'space-between', alignItems:'center'}}>
                             <div className="stats-row-element empty-row flex-grow-1"></div>
                             <div className="stats-row-element flex-grow-1">
                             <div className="text-center">
@@ -101,7 +103,7 @@ function Stats({ itemsArray = [] }) {;
                             </div>
                             </div>
                         </div>
-                        <div className="stats-col d-flex flex-column h-100 w-50">
+                        <div className="stats-col d-flex flex-column h-100 w-50" style={{ justifyContent:'space-between', alignItems:'center'}}>
                             <div className="stats-row-element flex-grow-1 w-100 h-33">
                             <div className="text-center">
                                 <div className="stats-text">Games played</div>

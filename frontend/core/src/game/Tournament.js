@@ -19,95 +19,101 @@ function Tournament({ setSettings, tournamentSettings, modalCreateTournament, se
     const [columnBracket, setColumnBracket] = useState(0);
     const lineRef = useRef(null);
     const [errorMessage, setErrorMessage] = useState("");
-    const [ghostPosition, setGhostPosition] = useState(85); // Fantôme commence à droite
-    const [dots, setDots] = useState([]); // Liste des points générés
-    const [isGhostMoving, setIsGhostMoving] = useState(false); // Déplacement du fantôme
-    const [isPacmanEating, setIsPacmanEating] = useState(false); // Pac-Man commence à manger
-    const [pacmanPosition, setPacmanPosition] = useState(110); // Pac-Man démarre hors écran à droite
-    const [gameOver, setGameOver] = useState(false); // Fin du jeu
-    const [isGhostBefore, setIsGhostBefore] = useState(true); // Nouvelle variable pour garder le fantôme visible
-    const [isGhostAfter, setIsGhostAfter] = useState(false);
+    const [pacmanData, setPacmanData] = useState ({
+        ghostPosition: 85,
+        dots: [],
+        isGhostMoving: false,
+        isPacmanEating: false,
+        pacmanPosition: 110,
+        gameOver: false,
+        isGhostBefore: true,
+        isGhostAfter: false
+    });
     const [isMarioOff, setIsMarioOff] = useState(true);
     const [isMarioOn, setIsMarioOn] = useState(false);
 
     const handleClickMario = () => {
-        if (isMarioOn) {
-            setIsMarioOn(false);
-            setIsMarioOff(true);
-        }
-        else {
-            setIsMarioOff(false);
-            setIsMarioOn(true);
-        }
-    }
-
+        setIsMarioOn(prevState => {
+            const newState = !prevState;
+            setIsMarioOff(!newState);
+            return newState;
+        });
+    }    
 
     const handleClickGhost = () => {
-        if (gameOver)
-            setGameOver(false);
-        else
-        {
-            setIsGhostBefore(false);
-            setIsGhostAfter(true);
-            setIsGhostMoving(true);
-            setIsPacmanEating(false);
-            setDots([]);
-            console.log("dots", dots);     
+        if (pacmanData.gameOver) {
+            setPacmanData(prevState => ({
+                ...prevState,
+                gameOver: false
+            }));
+        } else {
+            setPacmanData(prevState => ({
+                ...prevState,
+                isGhostBefore: !prevState.isGhostBefore,
+                isGhostAfter: !prevState.isGhostAfter,
+                isGhostMoving: !prevState.isGhostMoving,
+                isPacmanEating: !prevState.isPacmanEating,
+                dots: []
+            }));
         }
     };
 
-    // Déplacement du fantôme vers la gauche avec des points derrière
     useEffect(() => {
-
-        if (isGhostMoving) {
+        if (pacmanData.isGhostMoving) {
             const moveInterval = setInterval(() => {
-                setGhostPosition(prev => {
-                    if (prev > 20) {
-                        setDots(dots => [...dots, prev]); // Ajoute un point derrière le fantôme
-                        return prev - 10; // Déplace le fantôme vers la gauche
+                setPacmanData(prevState => {
+                    if (prevState.ghostPosition > 20) {
+                        return {
+                            ...prevState,
+                            ghostPosition: prevState.ghostPosition - 10,
+                            dots: [...prevState.dots, prevState.ghostPosition]
+                        };
                     } else {
                         clearInterval(moveInterval);
                         setTimeout(() => {
-                            setIsPacmanEating(true); // Pac-Man commence à manger
+                            setPacmanData(prevState => ({
+                                ...prevState,
+                                isPacmanEating: true
+                            }));
                         }, 500);
-                        setIsGhostMoving(false);
-                        return prev;
+                        return { ...prevState, isGhostMoving: false };
                     }
                 });
             }, 300);
-
             return () => clearInterval(moveInterval);
         }
-    }, [isGhostMoving]);
+    }, [pacmanData.isGhostMoving]);
 
-    // Pac-Man mange les points de droite à gauche
     useEffect(() => {
-        if (isPacmanEating) {
+        if (pacmanData.isPacmanEating) {
             const eatInterval = setInterval(() => {
-                setPacmanPosition(prev => {
-                    if (prev > 90)
-                        return(prev - 10);
-                    else if (prev > 20) {
-                        console.log("prev = ", prev);
-                        setDots(prevDots => prevDots.slice(1));
-                        return prev - 10;
+                setPacmanData(prevState => {
+                    if (prevState.pacmanPosition > 90) {
+                        return { ...prevState, pacmanPosition: prevState.pacmanPosition - 10 };
+                    } else if (prevState.pacmanPosition > 20) {
+                        return {
+                            ...prevState,
+                            pacmanPosition: prevState.pacmanPosition - 10,
+                            dots: prevState.dots.slice(1)
+                        };
                     } else {
                         clearInterval(eatInterval);
-                        setIsPacmanEating(false);
-                        setGameOver(true);
-                        setIsGhostAfter(false);
-                        setGhostPosition(85);
-                        setPacmanPosition(110);
-                        setIsGhostBefore(true);
-                        return prev;
+                        setPacmanData(prevState => ({
+                            ...prevState,
+                            isPacmanEating: false,
+                            gameOver: true,
+                            isGhostAfter: false,
+                            ghostPosition: 85,
+                            pacmanPosition: 110,
+                            isGhostBefore: true
+                        }));
+                        return prevState;
                     }
                 });
             }, 300);
-
             return () => clearInterval(eatInterval);
         }
-    }, [isPacmanEating]);
-
+    }, [pacmanData.isPacmanEating]);
 
     function createCodeTournament() {
         return Math.floor(Math.random() * (999 - 100 + 1)) + 100;
@@ -179,6 +185,21 @@ function Tournament({ setSettings, tournamentSettings, modalCreateTournament, se
         console.log("columnBracket mis à jour:", columnBracket);
     }, [columnBracket]);
 
+    const renderImageWithClick = (src, alt, position, onClick) => (
+        <img
+            src={src}
+            alt={alt}
+            style={position}
+            onClick={onClick}
+        />
+    );
+    
+    const renderPlayerImages = (numberPlayer) => (
+        Array.from({ length: numberPlayer }).map((_, index) => (
+            <img key={index} src={person} alt={`Player ${index + 1}`} className="player-icon" />
+        ))
+    );
+
 
     return (
         <div className="tournament background h-100 w-100">
@@ -226,117 +247,72 @@ function Tournament({ setSettings, tournamentSettings, modalCreateTournament, se
                 </div>
             ) : (
                 <div className="h-100 w-100">
-                     {isMarioOn && (
-                        <img
-                            src={piece}
-                            alt="piece"
-                            style={{ position: 'absolute', height: '4%', left: '3%', top:'10%' }}
-                        />
-                     )}
+                    {isMarioOn && renderImageWithClick(piece, "piece", { position: 'absolute', height: '4%', left: '3%', top:'10%' }, () => handleClickMario())}
                     <div style={{ position: 'absolute', height: '50%', top: '15%', left: '0%', width: '23%', overflow: "hidden" }}>
                         <div className="w-100 h-100" style={{ position: 'relative'}}>
-                        {isMarioOff && (
-                            <>
-                                <img
-                                    src={block}
-                                    alt="block"
-                                    style={{ position: 'absolute', height: '8%', left: '5%'}}
-                                />
-                              <img
-                                src={mario}
-                                alt="mario"
-                                style={{ position: 'absolute', height: '9%', top: '10%', left: '4%', cursor: 'pointer', zIndex: 10 }}
-                                onClick={() => handleClickMario()}
-                            />
-                            </>
-                        )}
-                        {isMarioOn && (
-                            <>
-                                <img
-                                    src={blockAfter}
-                                    alt="blockAfter"
-                                    style={{ position: 'absolute', height: '8%', left: '12%' }}
-                                />
-                                <img
-                                    src={marioBreak}
-                                    alt="marioAfter"
-                                    style={{ position: 'absolute', height: '10%', top: '8%', left: '7%', cursor: 'pointer', zIndex: 10  }}
-                                    onClick={() => handleClickMario()}
-                                />
-                                <div  className="d-flex tournament-text" style={{ width:'80%', marginLeft:'20%', height: '20%', textAlign: 'center', alignItems: 'center', justifyContent:'center' }}> ••• settings ••• </div>
-                            </>
-                        )}
+                            {isMarioOff && (
+                                <>
+                                    {renderImageWithClick(block, "block", { position: 'absolute', height: '8%', left: '5%' })}
+                                    {renderImageWithClick(mario, "mario", { position: 'absolute', height: '9%', top: '10%', left: '4%', cursor: 'pointer', zIndex: 10 }, () => handleClickMario())}
+                                </>
+                            )}
+                            {isMarioOn && (
+                                <>
+                                    {renderImageWithClick(blockAfter, "blockAfter", { position: 'absolute', height: '8%', left: '12%' })}
+                                    {renderImageWithClick(marioBreak, "marioAfter", { position: 'absolute', height: '10%', top: '8%', left: '7%', cursor: 'pointer', zIndex: 10 }, () => handleClickMario())}
+                                    <div className="d-flex tournament-text" style={{ width:'80%', marginLeft:'20%', height: '20%', textAlign: 'center', alignItems: 'center', justifyContent:'center' }}> ••• settings ••• </div>
+                                </>
+                            )}
                         </div>
                     </div>
                     <div style={{ position: 'absolute', height: '50%', top: '15%', right: '0%', width: '23%', overflow: "hidden" }}>
                         <div className="w-100 h-100" style={{ position: 'relative'}}>
-                            {dots.map((dot, index) => ( 
-                                <span key={index} style={{ position: 'absolute', top: '6%', left: `${dot}%`, color: 'white', zIndex: 10  }}>•</span>
+                            {pacmanData.dots.map((dot, index) => (
+                                <span key={index} style={{ position: 'absolute', top: '6%', left: `${dot}%`, color: 'white', zIndex: 10 }}>•</span>
                             ))}
-                            {isGhostBefore && (
-                                <img
-                                src={ghost}
-                                alt="Ghost"
-                                style={{ position: 'absolute', height: '8%', top: '6%', left: `${ghostPosition}%`, cursor: 'pointer', zIndex: 10  }}    
-                                onClick={() => handleClickGhost()}
-                                />
-                            )}
-                            {isGhostAfter && (
-                                <img
-                                    src={ghostAfter}
-                                    alt="Ghost After"
-                                    style={{ position: 'absolute', top: '6%', height: '8%', left: `${ghostPosition}%`, cursor: 'pointer', zIndex: 10  }}
-                                />
-                            )}
-                            {isPacmanEating && (
-                                <img
-                                    src={pacman}
-                                    alt="Pac-Man"
-                                    style={{ position: 'absolute', top: '6%', height: '30px', left: `${pacmanPosition}%`, zIndex: 10 }}
-                                />
-                            )}
-                            {gameOver && (
+                            {pacmanData.isGhostBefore && renderImageWithClick(ghost, "Ghost", { position: 'absolute', height: '8%', top: '6%', left: `${pacmanData.ghostPosition}%`, cursor: 'pointer', zIndex: 10 }, () => handleClickGhost())}
+                            {pacmanData.isGhostAfter && renderImageWithClick(ghostAfter, "Ghost After", { position: 'absolute', top: '6%', height: '8%', left: `${pacmanData.ghostPosition}%`, cursor: 'pointer', zIndex: 10 })}
+                            {pacmanData.isPacmanEating && renderImageWithClick(pacman, "Pac-Man", { position: 'absolute', top: '6%', height: '30px', left: `${pacmanData.pacmanPosition}%`, zIndex: 10 })}
+                            {pacmanData.gameOver && (
                                 <>
-                                    <div className="tournament-text d-flex w-100" style={{ justifyContent: 'center', height: '20%', alignItems: 'center', textAlign: 'center'}}> 
-                                        ••• RULES ••• 
-                                    </div>
+                                    <div className="tournament-text d-flex w-100" style={{ justifyContent: 'center', height: '20%', alignItems: 'center', textAlign: 'center'}}> ••• RULES ••• </div>
                                     <div className="w-100 h-100 tournament-text" style={{ fontWeight:'none', position: 'absolute', top: '16%', right: '0%'}}>
                                         <div className="explications title d-flex p-2">
                                             <p>Tournament PONG</p>
-                                            </div>
-                                            <div className="explications one d-flex p-2" style={{fontSize: '50%', height: '25%', width:'96%', marginLeft:'2%'}}>
-                                                The {numberPlayer} players compete 2 against 2. The first to reach {tournamentSettings.maxScore} points or the one who has the most points at the end of the defined time ({tournamentSettings.maxTimeMinutes} : {tournamentSettings.maxTimeSecondes}) qualifies for the next phase until there are 2 players left who will compete for victory.
-                                            </div>
-                                            <div className="border-top border-2 border-white w-75 mx-auto"></div>
-                                            <div className="explications cmd d-flex p-2">
+                                        </div>
+                                        <div className="explications one d-flex p-2" style={{fontSize: '50%', height: '25%', width:'96%', marginLeft:'2%'}}>
+                                            The {numberPlayer} players compete 2 against 2. The first to reach {tournamentSettings.maxScore} points or the one who has the most points at the end of the defined time ({tournamentSettings.maxTimeMinutes} : {tournamentSettings.maxTimeSecondes}) qualifies for the next phase until there are 2 players left who will compete for victory.
+                                        </div>
+                                        <div className="border-top border-2 border-white w-75 mx-auto"></div>
+                                        <div className="explications cmd d-flex p-2">
                                             <div className="column h-100 w-50">
                                                 <div className="touch p-2">
-                                                <div className="touch-style d-flex flex-column">
-                                                    <div className="touch-line">
-                                                    <div className="touch-square center">z</div>
+                                                    <div className="touch-style d-flex flex-column">
+                                                        <div className="touch-line">
+                                                            <div className="touch-square center">z</div>
+                                                        </div>
+                                                        <div className="touch-line">
+                                                            <div className="touch-square alpha">q</div>
+                                                            <div className="touch-square alpha">s</div>
+                                                            <div className="touch-square alpha">d</div>
+                                                        </div>
                                                     </div>
-                                                    <div className="touch-line">
-                                                    <div className="touch-square alpha">q</div>
-                                                    <div className="touch-square alpha">s</div>
-                                                    <div className="touch-square alpha">d</div>
-                                                    </div>
-                                                </div>
                                                 </div>
                                                 <div className="player-touch p-2 w-100 h-50">Player 1</div>
                                             </div>
                                             <div className="border-start border-2 border-white border-opacity-25 h-75"></div>
                                             <div className="column h-100 w-50">
                                                 <div className="touch p-2">
-                                                <div className="touch-style d-flex flex-column">
-                                                    <div className="touch-line">
-                                                    <div className="touch-square arrows center">k</div>
+                                                    <div className="touch-style d-flex flex-column">
+                                                        <div className="touch-line">
+                                                            <div className="touch-square arrows center">k</div>
+                                                        </div>
+                                                        <div className="touch-line">
+                                                            <div className="touch-square arrows">j</div>
+                                                            <div className="touch-square arrows">l</div>
+                                                            <div className="touch-square arrows">i</div>
+                                                        </div>
                                                     </div>
-                                                    <div className="touch-line">
-                                                    <div className="touch-square arrows">j</div>
-                                                    <div className="touch-square arrows">l</div>
-                                                    <div className="touch-square arrows">i</div>
-                                                    </div>
-                                                </div>
                                                 </div>
                                                 <div className="player-touch p-2 w-100 h-50">Player 2</div>
                                             </div>
@@ -364,12 +340,9 @@ function Tournament({ setSettings, tournamentSettings, modalCreateTournament, se
                     </div>
                     <div className="players-container d-flex flex-row w-100 " style={{ position: "absolute", height: "12%", marginTop: "11%", textAlign: `center`, alignItems: `center`, justifyContent: `center` }}>
                         <div className="players-co">
-                            {Array.from({ length: numberPlayer }).map((_, index) => (
-                                <img key={index} src={person} alt={`Player ${index + 1}`} className="player-icon" />
-                            ))}
+                            {renderPlayerImages(numberPlayer)}
                         </div>
                     </div>
-                    
                     <div className="tree-tournament" style={{ height: `70%` }}>
                         <TournamentBracket numberPlayer={numberPlayer} />
                     </div>

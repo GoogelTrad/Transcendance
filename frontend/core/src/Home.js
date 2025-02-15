@@ -208,7 +208,7 @@ function Home() {
             {isAuthenticated && <ModalInstance
                 height="85%"
                 width="60%"
-                top="7%"
+                top="5%"
                 isModal={isModalStats}
                 modalRef={modalStatsRef}
                 name="Stats"
