@@ -4,8 +4,10 @@ import './Template.css';
 import { isDataWithResponseInit } from '@remix-run/router';
 import ModalInstance from './ModalInstance';
 import { useAuth } from '../users/AuthContext';
+import { useLocation, useNavigate, Link } from 'react-router-dom';
 
 function Template({ children, taskBarContent, launching, appArray }) {
+    const navigate = useNavigate();
     const [isDesktop, setIsDesktop] = useState(false);
     const [isSocial, setIsSocial] = useState(false);
     const { isAuthenticated } = useAuth();
@@ -32,6 +34,8 @@ function Template({ children, taskBarContent, launching, appArray }) {
         launching({newLaunch: modalName, setModal: app.setter});
         setIsDesktop(false);
     }
+
+    
 
     return (
         <div className="general container-fluid">
@@ -61,6 +65,12 @@ function Template({ children, taskBarContent, launching, appArray }) {
                                 onClick={() => handleClick('game')}
                             >
                                 Game
+                            </div>}
+                            {isAuthenticated && <div
+                                className="p-2 bd-highlight flex-item"
+                                onClick={() =>  navigate("/Home") }
+                            >
+                                Home
                             </div>}
                         </div>
                     </div>

@@ -23,20 +23,22 @@
     text-transform: uppercase;
     font-weight: bold;
 }
-
-.tournament .brackets {
-    height: 70%;
+.tournament .tree-tournament {
     position: absolute;
     top: 30%;
+    left: 5%;
+    right: 5%; 
+    width: 90%;
 }
 
-.tournament .brackets-4 {
-    position: absolute;
-    width: 80%;
-    left: 10%;
-    top: 30%;
-    height: 65%;
+.tournament .brackets .brackets-settings {
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
 }
+
+
 
 .tournament .cell-left {
     font-family: "Courier New", Courier, monospace;
@@ -45,12 +47,13 @@
     text-shadow: 0 0 5px rgba(255, 0, 0, 0.8);
     font-weight: bold;
     text-transform: uppercase;
+    border: 0px;
 }
 
 .tournament .cell-right {
     font-family: "Digital-7", monospace;
     font-size: 1.2rem;
-    color: #ffffff;
+    color: #0096ff;
     text-shadow: 0 0 5px rgba(0, 150, 255, 0.8);
 }
 
@@ -77,12 +80,12 @@
     height: 100%;
 }
 .players-co {
-    position: absolute;
     background-color: rgba(255, 255, 255, 0.527);
     border-radius: 15px;
     height:50%;
-    left: 50%;  
-    transform: translate(-50%, -50%);
+    justify-content: center;
+    align-items: center;
+    text-align: center;
 }
 .tournament .cell {
     background-color: transparent;
@@ -95,3 +98,68 @@
         0 0 50px rgba(0, 150, 255, 0.3);
     color: #0096ff;
 }
+
+.tournament .brackets .elements-tab {
+    border : 2px solid white;
+    border-radius: 5px;
+    padding-top: 10%;
+    padding-left: 15%;
+    padding-right: 15%;
+    padding-bottom: 10%;
+    color: white !important;
+}
+
+.tournament .brackets .elements-tab.eight {
+    border: 2px solid white;
+    border-radius: 5px;
+    padding: 5px;
+    text-align: center;
+    justify-content: center;
+    align-items: center;
+    display: flex
+;
+    padding-right: 4%;
+    padding-left: 4%;
+    padding-bottom: 2%;
+    padding-top: 2%;
+}
+
+.bracket-line {
+    position: absolute;
+    width: 100px; /* Longueur de la ligne (ajuste selon besoin) */
+    height: 2px; /* Épaisseur de la ligne */
+    background-color: white; /* Couleur de la ligne */
+    transform: rotate(70deg); /* Inclinaison à 70° */
+    transform-origin: left center; /* Fait pivoter depuis le point de départ */
+}
+
+
+.tournament .bracket-col {
+    text-align: center;
+    justify-content: center;
+    align-items: center;
+}
+
+.tournament .name-bracket {
+    position: absolute;
+    color: white !important;
+    font-family: "Courier New", Courier, monospace;
+    text-transform: uppercase; 
+    top: -2%;
+}
+
+.tournament .name-bracket.lose {
+    left: 5%;
+}
+
+.tournament .name-bracket.win {
+    right: 5%;
+}
+
+.tournament .error-message-time-score {
+    position: absolute;
+    bottom: 17%;
+    left: 30%;
+    font-style: italic;
+}
+

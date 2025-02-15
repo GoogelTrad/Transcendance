@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, Link } from 'react-router-dom';
 import logo from './assets/user/logo.png';  
 import social from './assets/user/friends.svg'; 
 import TerminalLogin from './users/TerminalLogin';
@@ -161,12 +161,6 @@ function Home() {
                     Game
                 </button>
             }
-            {isAuthenticated && <button
-                className="icon stats"
-                onClick={() => launching({ newLaunch: "stats", setModal: setIsModalStats})}
-            >
-                Stats
-            </button>}
  
             {isAuthenticated && <button
                 className="icon profileModal"
@@ -249,7 +243,7 @@ function Home() {
             {isAuthenticated && <ModalInstance
                height="85%"
                width="60%"
-               top="7%"
+               top="5%"
                isModal={isModalTournament}
                modalRef={modalTournamentRef}
                name="Tournament"
