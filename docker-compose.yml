@@ -74,7 +74,7 @@ services:
     environment:
       - WATCHPACK_POLLING=true
     ports:
-      - "6000:6000"
+      - "6379:6379"
     command: ["redis-server", "--bind", "0.0.0.0"]
     networks:
       - tdc
