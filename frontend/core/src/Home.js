@@ -12,6 +12,7 @@ import Stats from './game/Stats';
 import Tournament from './game/Tournament';
 import FriendRequests from './friends/Friends';
 import Profile from './users/Profile';
+import HomeChat from './chat/Homechat';
 import { useAuth } from './users/AuthContext';
 import { jwtDecode } from "jwt-decode";
 import { getCookies } from "./App";
@@ -25,6 +26,7 @@ function Home() {
     const [isModalForms, setIsModalForms] = useState(false);
     const [isModalGame, setIsModalGame] = useState(false);
     const [isModalProfile, setIsModalProfile] = useState(false);
+    const [isModalChat, setIsModalChat] = useState(false);
     const [isLaunch, setIsLaunch] = useState([]);
     const { isAuthenticated } = useAuth();
     const setters = [
@@ -33,12 +35,14 @@ function Home() {
         {name: 'stats', setter: setIsModalStats},
         {name: 'social', setter:setIsModalSocial},
         {name: 'profile', setter:setIsModalProfile},
+        {name: 'chat', setter: setIsModalChat},
     ]
     const modalTerminalRef = useRef(null);
     const modalFormsRef = useRef(null);
     const modalGameRef = useRef(null);
     const modalStatsRef = useRef (null);
     const modalTournamentRef = useRef(null);
+    const modalChatRef = useRef(null);
 
     const [items, setItems] = useState([]);
     const modalSocial = useRef(null);
@@ -141,6 +145,11 @@ function Home() {
                             Profile
                         </button>
                     )}
+                    {isLaunched(isLaunch, "chat") && (
+                        <button className='button-chat' onClick={() => { handleModal({ setModal: setIsModalChat, boolean: !isModalChat })}}>
+                            Chat
+                        </button>
+                    )}
                 </div>
             }
         >
@@ -166,9 +175,13 @@ function Home() {
  
             {isAuthenticated && <button
                 className="icon profileModal"
-                onClick={() => {launching({ newLaunch: "profile", setModal: setIsModalProfile });}}
+                onClick={() => {launching({ newLaunch: "profile", setModal: setIsModalProfile })}}
             >
                 Profile
+            </button>}
+
+            {isAuthenticated && <button className="icon chatModal" onClick={() => {launching({ newLaunch: "chat", setModal: setIsModalChat})}}>
+                Chat
             </button>}
 
             {!isAuthenticated && isLaunched(isLaunch, "terminal") && <ModalInstance
@@ -255,6 +268,18 @@ function Home() {
                 onClose={() => setIsModalProfile(false)}
             >
                 <Profile id={decodeToken.id}/>
+            </ModalInstance>}
+
+            {isAuthenticated && isLaunched(isLaunch, "chat") && <ModalInstance
+                height="30%"
+                width="40%"
+                isModal={isModalChat}
+                modalRef={modalChatRef}
+                name="Chat"
+                onLaunchUpdate={() => removeLaunch("chat")}
+                onClose={() => setIsModalProfile(false)}
+            >
+                <HomeChat/>
             </ModalInstance>}
         </Template>
     );

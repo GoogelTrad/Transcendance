@@ -1,13 +1,19 @@
-//import { socket }  from "../socket";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { showToast } from "../instance/ToastsInstance";
 import { ToastContainer } from "react-toastify";
 import useSocket from '../socket'
 import axiosInstance from "../instance/AxiosInstance";
+import ModalInstance from "../instance/ModalInstance";
+import Profile from "../users/Profile";
 
 import "./Homechat.css"
 import Room from './Room'
+
+import useJwt from '../instance/JwtInstance';
+import { getCookies } from '../App';
+
+import usePrivateChat from "../SocketPrivateMessage";
 
 export default function HomeChat() {
 
@@ -19,15 +25,27 @@ export default function HomeChat() {
 	const [showCreatePublicRoom, setShowCreatePublicRoom] = useState(false);
 	const [isCreateSwitchOn, setIsCreateSwitchOn] = useState(false);
 	const [listrooms, setlistrooms] = useState([]);
+	const [usersconnected, setusersconnected] = useState([]);
+	const [isModalProfile, setIsModalProfile] = useState(false);
+	const [profileId, setProfileId] = useState(1);
+	const modalProfile = useRef(null);
 
+	
+	const [message, setMessage] = useState("");
 	const navigate = useNavigate();
 
 	const handleChangeCreateRoom = (e) => setCreateRoomName(e.target.value);
 	const handleChangeCreatePassword = (e) => setCreatePassword(e.target.value);
 
-	const handleCreateToggle = () => {
-		setIsCreateSwitchOn(!isCreateSwitchOn);
-	};
+	const handleCreateToggle = () => { setIsCreateSwitchOn(!isCreateSwitchOn) };
+
+	const getJwt = useJwt();
+
+	const token = getCookies('token');
+	const decodedToken = getJwt(token);
+	const userId = decodedToken.id;
+	
+	const { invitations, sendInvitation, acceptInvitation, messages, sendMessage, currentChat } = usePrivateChat(userId);
 
 	useEffect(() => {
 		if (socket.ready) {
@@ -79,18 +97,33 @@ export default function HomeChat() {
 		}
 	};
 
-	useEffect(() => {
-		const listroom = async () => {
-			try {
-				const response = await axiosInstance.get('/livechat/listroom/');
-				console.log("Données reçues:", response.data);
-				setlistrooms(response.data);
-			} catch (error) {
-				console.error("Erreur lors de la récupération des salles", error);
-			}
-		};
+	const listroom = async () => {
+		try {
+			const response = await axiosInstance.get('/livechat/listroom/');
+			console.log("Données reçues:", response.data);
+			setlistrooms(response.data);
+		} catch (error) {
+			console.error("Erreur lors de la récupération des salles", error);
+		}
+	};
 
+	const users_connected = async () => {
+		try {
+			const response = await axiosInstance.get('/livechat/users_connected/');
+			console.log("Données Users:", response.data);
+			setusersconnected(response.data);
+		} catch (error) {
+			console.error("Erreur lors de la récupération des utilisateurs", error);
+		}
+	};
+
+	useEffect(() => {
 		listroom();
+		users_connected();
+
+		const interval = setInterval(() => {users_connected()}, 10000);
+
+		return () => clearInterval(interval);
 	}, []);
 
 	const handleRoomClick = (e, room) => {
@@ -114,6 +147,11 @@ export default function HomeChat() {
 		}
 	}
 
+	const handleProfile = (user_id) => {
+		setIsModalProfile(!isModalProfile);
+		setProfileId(user_id);
+	}
+
 	return (
 		<>
 			<div className="general-chat d-flex justify-content-between">
@@ -130,7 +168,7 @@ export default function HomeChat() {
 									<input type="text" placeholder="Nom de la salle" value={createName} onChange={handleChangeCreateRoom} />
 									<button onClick={() => setShowCreatePublicRoom(false)}>Cancel</button>
 									<button onClick={createRoom}>New Room</button>
-									{socket && createdRoomName && (<Room />)}
+									{socket && createdRoomName && <Room/>}
 								</>
 							)}
 
@@ -140,7 +178,7 @@ export default function HomeChat() {
 									<input type="password" placeholder="Mdp de la salle" value={createpassword} onChange={handleChangeCreatePassword} />
 									<button onClick={() => setShowCreatePublicRoom(false)}>Cancel</button>
 									<button onClick={createRoom}>New Room</button>
-									{socket && createdRoomName && (<Room />)}
+									{socket && createdRoomName && <Room/>}
 								</>
 							)}
 						</>
@@ -158,6 +196,59 @@ export default function HomeChat() {
 							</li>
 						))}
 					</ul>
+				</div>
+				<div>
+					<h5>Liste des utilisateurs</h5>
+					<div className="btn-group dropend">
+						<ul>
+							{usersconnected.map((user, index) => (
+								<li key={index}>
+									<button type="button" className="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+										{user.name}
+									</button>
+									<ul className="dropdown-menu">
+										<button className="dropdown-item" onClick={() => handleProfile(user.id)}> Profile </button>
+										<button onClick={() => sendInvitation(user.id)}>Inviter {user.name} en privé</button>
+									</ul>
+								</li>
+							))}
+						</ul>
+					</div>
+					<ModalInstance
+						height="30%"
+						width="40%"
+						isModal={isModalProfile}
+						modalRef={modalProfile}
+						name="Profile"
+						onLaunchUpdate={null}
+						onClose={() => setIsModalProfile(false)}
+					>
+						<Profile id={profileId}/>
+					</ModalInstance>
+					<div>
+						<h5>Invitations</h5>
+							<ul>
+								{invitations.map((inv, index) => (
+									<li key={index}>
+										{inv.message}
+										<button onClick={() => acceptInvitation(inv.room_id)}>Accepter ✅</button>
+									</li>
+								))}
+							</ul>
+					</div>
+
+					{currentChat && (
+						<div>
+							<h4>Chat Privé</h4>
+							<div>
+								{messages.map((msg, i) => (
+									<p key={i}><strong>{msg.sender}:</strong> {msg.text}</p>
+								))}
+							</div>
+							<input value={message} onChange={(e) => setMessage(e.target.value)} />
+							<button onClick={sendMessage}>Envoyer</button>
+						</div>
+					)}
 				</div>
 			</div>
 			<ToastContainer />

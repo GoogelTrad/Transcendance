@@ -30,3 +30,13 @@ class Message(models.Model):
 
     def __str__(self):
         return f'[{self.timestamp}] {self.username}: {self.content}'
+
+class DirectMessage(models.Model):
+    """Modele representant une discussion privee entre deux utilisateurs"""
+    createur = models.ForeignKey(User, on_delete=models.PROTECT, related_name="rooms_createur")
+    invite = models.ForeignKey(User, on_delete=models.PROTECT, related_name="rooms_invite")
+    accepte = models.BooleanField(default=False)
+    creation = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Room privée créée par {self.createur.username} - {self.creation}"

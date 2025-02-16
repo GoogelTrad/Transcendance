@@ -14,12 +14,9 @@ export default function Room() {
 	const socket = useSocket('chat', roomName);
 	const [message, setMessage] = useState('');
 	const [chat, setChat] = useState('');
-	// const [nameRoom, setNameRoom] = useState('');
 	const [listrooms, setlistrooms] = useState([]);
 	const [friendList, setFriendList] = useState([]);
 	const [users_room, setUsersRoom] = useState([]);
-	const [chat_message, setChatMessage] = useState([]);
-	const [invitations, setInvitations] = useState([]);
 	const [clickedNotifications, setClickedNotifications] = useState({});
 	const maxLength = 10;
 	const [caracteresRestants, setCaracteresRestants] = useState(maxLength);
@@ -38,10 +35,10 @@ export default function Room() {
 	const handleChange = (event) => {
 		let texte = event.target.value;
 		if (texte.length <= maxLength) {
-		  setMessage(texte);
-		  setCaracteresRestants(maxLength - texte.length);
+			setMessage(texte);
+			setCaracteresRestants(maxLength - texte.length);
 		}
-	  };
+	};
 
 	useEffect(() => {
 		if (socket.ready) {
@@ -86,6 +83,15 @@ export default function Room() {
 		}
 	};
 
+	const clearRoom = async () => {
+		try {
+			const response = await axiosInstance.post('/livechat/exit-room/', {room_name: roomName});
+			console.log(response.data);
+		} catch (error) {
+			console.error("Erreur lors du clean de la room", error);
+		}
+	};
+
 	const joinRoom = (name, password = null) => {
 		if (socket.ready) {
 			socket.send({
@@ -108,11 +114,13 @@ export default function Room() {
 		if (room.password) {
 			const enteredPassword = prompt(`Mot de passe requis pour "${room.name}" :`);
 			if (enteredPassword) {
+				clearRoom();
 				joinRoom(room.name, enteredPassword);
 			} else {
 				alert("Mot de passe requis !");
 			}
 		} else {
+			clearRoom();
 			joinRoom(room.name);
 		}
 	}
@@ -156,6 +164,14 @@ export default function Room() {
 		listroom();
 		FriendList();
 		Users_room_list();
+
+		// Rafraîchir toutes les 5 secondes
+		const interval = setInterval(() => {
+			Users_room_list();
+		}, 10000);
+
+		// Nettoyer l'intervalle quand le composant est démonté
+		return () => clearInterval(interval);
 	}, [roomName]);
 
 	const handleResponse = (notifId, response, senderId) => {

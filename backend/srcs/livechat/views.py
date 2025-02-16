@@ -1,8 +1,8 @@
 from django.shortcuts import render
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from .models import Room, Message
-from .serializer import RoomSerializer
+from .models import Room
+from .serializer import RoomSerializer, UserConnectedSerializer
 from django.http import JsonResponse
 import json
 from users.decorator import jwt_auth_required
@@ -87,3 +87,12 @@ def send_notification(user, message):
     )
 
     return JsonResponse({"status": "Notification envoyée"})
+
+@api_view(['GET'])
+def get_users_connected(request):
+    try:
+        users = User.objects.all()
+        serializer = UserConnectedSerializer(users, many=True)
+        return Response(serializer.data)
+    except:
+        return Response({"error": "Users connected not found."}, status=404)

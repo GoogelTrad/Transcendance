@@ -2,7 +2,7 @@ import json
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.layers import get_channel_layer
 from users.models import User
-from .models import Room, Message
+from .models import Room, Message, DirectMessage
 import jwt
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
@@ -10,6 +10,8 @@ from django.core.exceptions import ValidationError
 
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
+from asgiref.sync import database_sync_to_async
+
 
 class ChatConsumer(AsyncWebsocketConsumer):
 
@@ -18,16 +20,11 @@ class ChatConsumer(AsyncWebsocketConsumer):
         return await User.objects.aget(id=token['id'])
     
     async def connect(self):
-        # print(self.scope, flush=True)  # Déboguer les données de connexion
-        # print(self.scope['cookies'], flush=True)
         if not self.scope['cookies']['token']:
             await self.close()
         self.user = await self.getUsers()
         self.room_name = self.scope['url_route']['kwargs']['room']
         self.room = None
-        # get room from database
-        # check if room is private or protected by password
-        # if condition is true accept connection else not
 
         self.room_group_name = f"chat_{self.room_name}"
 
@@ -43,18 +40,17 @@ class ChatConsumer(AsyncWebsocketConsumer):
         # Leave the chat room group
         channel_layer = get_channel_layer()
         await channel_layer.group_discard(
-            self.room_group_name,  # The group to leave
-            self.channel_name  # The connection to remove from the group
+            self.room_group_name,
+            self.channel_name
         )
 
     async def receive(self, text_data):
         data: dict = json.loads(text_data)
         message_type = data['type']
         if message_type == 'send_message':
-            # Envoyer le message au groupe
             await self.sendMessage(data.get('message'))
         elif message_type == 'create_room':
-            await self.createRoom(data.get('room_name'), data.get('password'), data.get('limit'))
+            await self.createRoom(data.get('room_name'), data.get('password'))
         elif message_type == 'join_room':
             await self.joinRoom(data.get('room_name'), data.get('password'))
 
@@ -63,7 +59,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         await super().send(text_data, bytes_data, close)
         
     
-    async def createRoom(self, room_name, password = None, limit = None):
+    async def createRoom(self, room_name, password = None):
         if room_name == '' or room_name is None:
             await self.send({
                 "type": "create_room",
@@ -83,14 +79,12 @@ class ChatConsumer(AsyncWebsocketConsumer):
         room = await Room.objects.acreate(
             createur=self.user,
             password=password,
-            name=room_name
+            name=room_name,
         )
         await room.asave()
 
-        # Ajouter le créateur comme premier membre
-        # await self.room.add_members(self.user)
         await room.add_members(self.user)
-        # create room, add room to db and link to user
+
         await self.send({
             "type": "create_room",
             "status": True,
@@ -102,14 +96,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
         pass
 
     async def joinRoom(self, room_name, password=None):
-        # if room_name == '' or room_name is None:
-        #     await self.send({
-        #         "type": "join_room",
-        #         "status": False,
-        #         "error": "roomName is required"
-        #     })
-        #     return
-
         try:
             room = await Room.objects.aget(name=room_name)
         except Room.DoesNotExist:
@@ -188,99 +174,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
         print()
 
 
-# class NotificationConsumer(AsyncWebsocketConsumer):
-
-#     async def getUsers(self):
-#         token = jwt.decode(self.scope['cookies']['token'], 'coucou', algorithms=['HS256'])
-#         return await User.objects.aget(id=token['id'])
-    
-#     async def connect(self):
-#         self.user = await self.getUsers()
-#         self.room_group_name = f"notifications_{self.user.id}"
-
-#          # Ajoute un log lors de la connexion
-#         print(f"✅ {self.user} connecté au WebSocket !", flush=True)
-
-
-#         await self.channel_layer.group_add(self.room_group_name, self.channel_name)
-#         await self.accept()
-
-#     async def disconnect(self, close_code):
-#         print(f"❌ {self.user} déconnecté du WebSocket !", flush=True)
-#         await self.channel_layer.group_discard(self.room_group_name, self.channel_name)
-
-#     # async def receive_json(self, content):
-#     #     message_type = content.get("type")
-
-#     #     if message_type == "send_notification":
-#     #         target_id = content.get("target_id")
-#     #         sender_id = content.get("sender_id")  # L'expéditeur
-#     #         message = content.get("message")
-
-#     #         await self.channel_layer.group_send(
-#     #             f"notifications_{target_id}",
-#     #             {
-#     #                 "type": "send_notification",
-#     #                 "message": message,
-#     #                 "sender_id": sender_id  # On envoie aussi l’expéditeur au destinataire
-#     #             }
-#     #         )
-
-#     #     elif message_type == "respond_notification":
-#     #         notification_id = content.get("notification_id")
-#     #         response = content.get("response")
-#     #         sender_id = content.get("sender_id")  # Récupérer l'expéditeur
-
-#     #         # Envoyer la réponse à l'expéditeur
-#     #         await self.channel_layer.group_send(
-#     #             f"notifications_{sender_id}",
-#     #             {
-#     #                 "type": "receive_response",
-#     #                 "response": response,
-#     #                 "notification_id": notification_id
-#     #             }
-#     #         )
-        
-#     async def receive(self, text_data):
-#         data = json.loads(text_data)
-#         print(f"📩 Message reçu : {data}")  # Log pour voir si Django reçoit le message
-
-#         if data["type"] == "send_notification":
-#             print(f"🔔 Notification envoyée à {data['target_id']}")
-#             await self.channel_layer.group_send(
-#                 f"user_{data['target_id']}",
-#                 {
-#                     "type": "send_notification",
-#                     "message": data["message"],
-#                     "sender_id": data["sender_id"],
-#                 }
-#             )
-
-#     # async def send_notification(self, event):
-#     #     print("SEND_NOTIFICATION!!!", flush=True)
-#     #     await self.send_json({
-#     #         "type": "send_notification",
-#     #         "message": event["message"],
-#     #         "sender_id": event["sender_id"]
-#     #     })
-            
-#     # async def send_invitation(self, event):
-#     #     message = event["message"]
-#     #     sender_id = event["sender_id"]
-#     #     target_id = event["target_id"]
-
-#     #     print(f"📨 Envoi de l'invitation à {target_id} : {message}", flush=True)  # Ajoute ce log
-
-#     #     await self.send(text_data=json.dumps({
-#     #         "type": "send_notification",
-#     #         "message": message,
-#     #         "sender_id": sender_id,
-#     #     }))
-            
-#     async def send_notification(self, event):
-#         print(f"📤 Envoi de la notification à l'utilisateur {event['sender_id']}")
-#         await self.send(text_data=json.dumps(event))
-
 class NotificationConsumer(AsyncWebsocketConsumer):
 
     async def getUsers(self):
@@ -311,46 +204,6 @@ class NotificationConsumer(AsyncWebsocketConsumer):
             self.room_group_name,
             self.channel_name
         )
-
-    # async def receive(self, text_data):
-    #     data = json.loads(text_data)
-    #     print("📩 Message reçu :", data, flush=True)
-
-    #     if data["type"] == "send_notification":
-    #         target_id = data["target_id"]
-    #         sender_id = data["sender_id"]
-    #         message = data["message"]
-
-    #         print(f"🔔 Notification envoyée à {target_id}", flush=True)
-
-    #         await self.channel_layer.group_send(
-    #             f"user_{target_id}",
-    #             {
-    #                 "type": "send_notification",
-    #                 "id": target_id,
-    #                 "message": message,
-    #                 "sender_id": sender_id,
-    #             }
-    #         )
-    #     elif data["type"] == "receive_response":
-    #         if "target_id" not in data:
-    #             print("⚠️ 'target_id' manquant dans la réponse.", flush=True)
-    #             return
-
-    #         target_id = data["target_id"]
-    #         response = data["response"]
-    #         sender_id = data["sender_id"]
-
-    #         print(f"🔄 Réponse reçue : {response} pour la notification {target_id}", flush=True)
-
-    #         await self.channel_layer.group_send(
-    #             f"user_{sender_id}",
-    #             {
-    #                 "type": "receive_response",
-    #                 "target_id": target_id,
-    #                 "response": response,
-    #             }
-    #         )
 
     async def receive(self, text_data):
         data = json.loads(text_data)
@@ -398,8 +251,6 @@ class NotificationConsumer(AsyncWebsocketConsumer):
                 }
             )
 
-
-
     async def send_notification(self, event):
         print(f"📤 Envoi de la notification à {self.user.id} :", event, flush=True)
 
@@ -414,4 +265,88 @@ class NotificationConsumer(AsyncWebsocketConsumer):
             "sender_id": event["sender_id"],
             "target_id": event["target_id"],
             "response": event["response"],
+        }))
+
+
+class DirectMessageConsumer(AsyncWebsocketConsumer):
+
+    async def getUsers(self):
+        token = jwt.decode(self.scope['cookies']['token'], 'coucou', algorithms=['HS256'])
+        return await User.objects.aget(id=token['id'])
+    
+    async def connect(self):
+        if not self.scope['cookies']['token']:
+            await self.close()
+        self.user = await self.getUsers()
+        self.room_name = None
+        await self.accept()
+
+    async def receive(self, text_data):
+        data = json.loads(text_data)
+        message = data['type']
+        if message == "invite_user":
+            await self.invite_user(data["target_id"])
+
+        elif message == "accept_invite":
+            await self.accept_invite(data["room_id"])
+
+        elif message == "send_private_message":
+            await self.send_private_message(data["room_id"], data["message"])
+    
+    async def invite_user(self, target_id):
+        """Envoyer une demande d'invitation à un utilisateur"""
+        target_user = await self.getUsers(target_id)
+
+        if target_user:
+            print(f"👥 Invitation envoyée à {target_user.username}")
+            await self.send(text_data=json.dumps({
+                "type": "invitation_sent",
+                "message": f"Invitation envoyée à {target_user.username}"
+            }))
+
+        room, created = await DirectMessage.objects.get_or_create(
+            createur=self.user, invite=target_user
+        )
+
+        if created:
+            await self.channel_layer.group_add(f"user_{target_id}", self.channel_name)
+            await self.send(text_data=json.dumps({
+                "type": "notification",
+                "message": f"{self.user.username} vous invite à un chat privé",
+                "room_id": room.id
+            }))
+
+    async def accept_invite(self, room_id):
+        """Accepter l'invitation et rejoindre le chat"""
+        room = await DirectMessage.objects.get(id=room_id)
+        room.accepted = True
+        await room.save()
+
+        self.room_name = f"chat_{room.id}"
+        await self.channel_layer.group_add(self.room_name, self.channel_name)
+
+        await self.send(text_data=json.dumps({
+            "type": "chat_started",
+            "room_id": room.id
+        }))
+
+    async def send_private_message(self, room_id, message):
+        """Envoyer un message dans une discussion privee"""
+        room = await DirectMessage.objects.get(id=room_id)
+        if room.accepted:
+            await self.channel_layer.group_send(
+                f"chat_{room_id}",
+                {
+                    "type": "receive_message",
+                    "message": message,
+                    "sender": self.user.username
+                }
+            )
+
+    async def receive_message(self, event):
+        """Recevoir un message"""
+        await self.send(text_data=json.dumps({
+            "type": "new_message",
+            "message": event["message"],
+            "sender": event["sender"]
         }))
