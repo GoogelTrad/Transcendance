@@ -11,6 +11,7 @@ from django.contrib.auth import authenticate, login
 from .models import User, ValidToken, ConfirmationCode
 from users.decorator import jwt_auth_required
 from django.core.mail import send_mail
+from ipware import get_client_ip
 from django.conf import settings
 from django.utils.timezone import now
 import random
@@ -31,15 +32,26 @@ class LoginView():
         if not user.check_password(password):
             raise AuthenticationFailed('Incorrect password!')
         
-        if not user.last_verified or (now() - user.last_verified).days >= 3:
-            user.is_verified = False
+        
+        ip, routable = get_client_ip(request)
+        print(f"old = {user.ip_user}, new = {ip}", flush=True)
+        
+        if user.ip_user is not ip and not user.enable_verified:
+            print("coucou, l'adresse ip est pas la meme.", flush=True)
+            user.last_verified = None
             user.save()
-            send_confirmation_email(user)
-            return Response(
-                {'message': 'Verification required. Check your email for the confirmation code.'},
-                status=status.HTTP_401_UNAUTHORIZED
-            )
-
+            
+        if user.enable_verified is True:
+            if not user.last_verified or (now() - user.last_verified).days >= 3:
+                user.ip_user = ip
+                user.is_verified = False
+                user.save()
+                send_confirmation_email(user)
+                return Response(
+                    {'message': 'Verification required. Check your email for the confirmation code.'},
+                    status=status.HTTP_401_UNAUTHORIZED
+                )
+        user.ip_user = ip
         user.status = 'online'
         user.save()
         
@@ -77,6 +89,7 @@ class UserView():
                 user = User.objects.get(pk=pk)
             except:
                 raise AuthenticationFailed('User not found!')
+            
 
             if request.method == 'GET':
                 serializer = UserSerializer(user)
@@ -101,9 +114,15 @@ class UserView():
                         'is_stud': user.is_stud,
                     }
                     reponse = Response()
+                    new_token = jwt.encode(payload, 'coucou', 'HS256')
+                    
+                    print(f'newtoken = {new_token}', flush=True)
+                    
+                    ValidToken.objects.filter(user_id=user.id).delete()
+                    ValidToken.objects.create(user=user, token=new_token)
+                    
                     reponse.delete_cookie('token')
-                    token = jwt.encode(payload, 'coucou', 'HS256')
-                    reponse.set_cookie(key='token', value=token, max_age=3600)
+                    reponse.set_cookie(key='token', value=new_token, max_age=3600)
                     reponse.data = serializer.data
                     
                     return reponse
@@ -172,8 +191,6 @@ def verify_code(request):
     name = request.data.get('name')
     code = request.data.get('code')
 
-    print(f"name = {name}, code = {code}", flush=True)
-
     if not name or not code:
         return Response({'message': 'Username and code are required!'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -217,3 +234,33 @@ def verify_code(request):
         return reponse
     else:
         return Response({'message': 'Code is invalid!'}, status=status.HTTP_400_BAD_REQUEST)
+
+def refresh_token(user, old_token):
+    try:
+        payload = jwt.decode(old_token, 'coucou', algorithms=['HS256'])
+        new_token = jwt.encode(payload, 'coucou', 'HS256')
+
+        ValidToken.objects.filter(user=user).delete()
+        ValidToken.objects.create(user=user, token=new_token)
+
+        return new_token
+    except jwt.ExpiredSignatureError:
+        return None 
+    
+@api_view(['POST'])
+def permission_verif(request, id):
+    user = User.objects.filter(id=id).first()
+    if not user:
+        AuthenticationFailed('User not found!')
+    
+    user.enable_verified = not user.enable_verified
+    user.last_verified = None
+    user.save()
+
+    result = "enable!" if user.enable_verified else "disable!"
+    message = f"2fa has been {result}"
+    response = Response(message)
+    
+    return response
+
+    

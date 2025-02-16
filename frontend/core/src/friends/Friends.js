@@ -6,7 +6,32 @@ import { showToast } from '../instance/ToastsInstance';
 import { ToastContainer } from 'react-toastify';
 import { Link } from 'react-router-dom';
 import useJwt from '../instance/JwtInstance';
+import ModalInstance from '../instance/ModalInstance';
+import { useAuth } from '../users/AuthContext'; 
+import Profile from '../users/Profile';
 import "./Friends.css"
+
+
+export function AddFriend({id})
+{
+	const handleAddFriend = async (id) => {
+		try {
+			await axiosInstance.post(`/friends/send/${id}`);
+			showToast('success', 'Friend Request sent !')
+		} catch (error) {
+			showToast("error", error.response.data.error);
+		}
+	};
+
+	return (
+		<button 
+			onClick={() => handleAddFriend(id)} 
+			className="add-friend-btn"
+		>
+			➕ Add Friend
+		</button>
+	)
+}
 
 function SeeFriendsRequest({ toWhom, type, onResponse }) {
     const handleResponse = async () => {
@@ -39,8 +64,9 @@ function SeeFriendsRequest({ toWhom, type, onResponse }) {
     );
 }
 
-function FriendRequests() {
-    const [friendRequests, setFriendRequests] = useState([]);
+function FriendRequests({setModal, setIsFriends, launching}) {
+    
+	const [friendRequests, setFriendRequests] = useState([]);
 	const [friendList, setFriendList] = useState([]);
 	const [searchQuery, setSearchQuery] = useState('');
 	const [searchResults, setSearchResults] = useState([]);
@@ -60,16 +86,6 @@ function FriendRequests() {
             }
         } else {
             setSearchResults([]);
-        }
-    };
-
-
-	const handleAddFriend = async (id) => {
-        try {
-            await axiosInstance.post(`/friends/send/${id}`);
-            showToast('success', 'Friend Request sent !')
-        } catch (error) {
-			showToast("error", error.response.data.error);
         }
     };
 
@@ -153,10 +169,12 @@ function FriendRequests() {
 									src={friend.profile_image ? `http://localhost:8000${friend.profile_image}` : '/default.png'}
 									alt={`${friend.name}'s profile`} 
 									className="friend-avatar"
+									onClick={() => {
+										launching({ newLaunch: "friend", setModal: setModal });
+										setIsFriends(friend);
+									}}
 								/>
-								<Link to={`/profile/${friend.id}`} className="text-decoration-none text-white">
-									{friend.name}
-								</Link>
+								<span className="friend-name">{friend.name}</span>
 								<button
 									onClick={() => deleteFriend(friend.id)}
 									className="delete-friend-btn"
@@ -164,7 +182,7 @@ function FriendRequests() {
 									❌
 								</button>
 								<span> - Status: {friend.status}</span>
-							</li>
+								</li>
 						))}
 				</ul>
 			) : (
@@ -183,15 +201,14 @@ function FriendRequests() {
 								src={user.profile_image ? `http://localhost:8000${user.profile_image}` : '/default.png'}
 								alt={`${user.name}'s profile`} 
 								className="friend-avatar"
+								onClick={() => {
+									launching({ newLaunch: "friend", setModal: setModal });
+									setIsFriends(user);
+								}}	
 							/>
 							<span className="friend-name">{user.name}</span>
-							<span className="friend-email">({user.email})</span>
-							<button 
-								onClick={() => handleAddFriend(user.id)} 
-								className="add-friend-btn"
-							>
-								➕ Add Friend
-							</button>
+							{/* <span className="friend-email">({user.email})</span> */}
+							<AddFriend id={user.id}/>
 						</li>
 					))}
 				</ul>
@@ -227,7 +244,6 @@ function FriendRequests() {
                     <p>Aucune demande en attente.</p>
                 )}
             </div>
-
 
 		<ToastContainer />
 	</div>
