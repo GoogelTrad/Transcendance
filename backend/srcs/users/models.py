@@ -7,7 +7,6 @@ import uuid
 import datetime
 
 
-# Create your models here.
 class User(AbstractUser):
     name = models.CharField(max_length=255, unique=True)
     email = models.CharField(max_length=255, unique=True)
@@ -20,6 +19,8 @@ class User(AbstractUser):
     is_verified = models.BooleanField(default=False)
     last_verified = models.DateTimeField(null=True, blank=True)
     is_waiting = models.BooleanField(default=False)
+    enable_verified = models.BooleanField(default=False)
+    ip_user = models.CharField(max_length=255, default="")
 
     username = None
 

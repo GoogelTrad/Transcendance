@@ -1,6 +1,6 @@
 .logo
 {
-    max-width: 2.6%;
+    max-width: 100%;
     height: fit-content;
     z-index: 10;
     position: relative;
@@ -23,6 +23,31 @@
     z-index: 1049;
 }
 
+.left-task
+{
+    position: relative;
+    width: 3%;
+}
+
+.right-task
+{
+    position: relative;
+    width: fit-content;
+    display: flex;
+    flex-direction: row;
+    gap: 5%;
+}
+
+.date-task
+{
+    display: flex;
+    flex-direction: column;
+    gap: 0%;
+    padding: 0;
+    margin: 0;
+    font-size: 12px;
+}
+
 .general {
     font-family: Arial, sans-serif;
     margin: 0;
@@ -39,10 +64,19 @@
     z-index: 1;
 }
 
+.social-icon {
+    position: relative;
+    z-index: 2000;
+}
+
 .content-area {
     position: relative;
     height: 100%;
     width: 100%;
+}
+
+.custom {
+    display: flex;
 }
 
 .desktop-overlay {
