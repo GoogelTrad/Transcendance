@@ -78,7 +78,6 @@ class LoginView():
             'token': token,
             'message': 'Logged in successfully!'
         }
-
         return reponse
 
 class UserView():
@@ -123,6 +122,7 @@ class UserView():
                     ValidToken.objects.create(user=user, token=new_token)
                     
                     reponse.delete_cookie('token')
+                    token = jwt.encode(payload, 'coucou', 'HS256')
                     reponse.set_cookie(key='token', value=new_token, max_age=3600)
                     reponse.data = serializer.data
                     
@@ -140,6 +140,14 @@ class UserView():
         serializer.save()
 
         return Response(serializer.data)
+
+    @api_view(['GET'])
+    def count_users(request):
+        try :
+            user_count = User.objects.count()
+            return Response({'count': user_count})
+        except Exception as e:
+            return Response({'error': str(e)}, status=500)
 
 
 class LogoutView():

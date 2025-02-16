@@ -188,3 +188,18 @@ html, body, #root {
 .input-players {
   width: 60%;
 }
+
+.waiting {
+  position: absolute;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  color: white; 
+  z-index: 2; 
+  font-family: 'Press Start 2P', cursive;
+  font-size: 20px;
+  left: 28%;
+  top: 50%;
+  opacity: 1;
+
+}
