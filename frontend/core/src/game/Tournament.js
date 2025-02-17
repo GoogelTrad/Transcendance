@@ -7,8 +7,10 @@ import pacman from '../assets/game/pacman.png';
 import ghostAfter from '../assets/game/ghost3.png';
 import piece from '../assets/game/piece.png';
 import block from '../assets/game/block.png';
-import mario from '../assets/game/mario.png';
-import marioBreak from '../assets/game/mario-break.png';
+import marioInit from '../assets/game/mario-init.png';
+import marioRun1 from '../assets/game/mario-run-1.png';
+import marioRun2 from '../assets/game/mario-run-2.png';
+import marioJump from '../assets/game/mario-jump.png';
 import blockAfter from '../assets/game/blockAfter.png';
 
 function Tournament({ setSettings, tournamentSettings, modalCreateTournament, setModalCreateTournament, setModalTournament, launching, numberPlayer, removeLaunch }) {
@@ -19,6 +21,16 @@ function Tournament({ setSettings, tournamentSettings, modalCreateTournament, se
     const [columnBracket, setColumnBracket] = useState(0);
     const lineRef = useRef(null);
     const [errorMessage, setErrorMessage] = useState("");
+    const [titlePositionSetting, setTitlePositionSetting] = useState(-20);
+    const [titlePositionRules, setTitlePositionRules] = useState(-20);    
+    const [marioData, setMarioData] = useState ({
+        marioPosition: 4,
+        isMarioInit: true,
+        isMarioRun1: false,
+        isMarioRun2: false,
+        isMarioJump: false, 
+    });
+    
     const [pacmanData, setPacmanData] = useState ({
         ghostPosition: 85,
         dots: [],
@@ -29,18 +41,9 @@ function Tournament({ setSettings, tournamentSettings, modalCreateTournament, se
         isGhostBefore: true,
         isGhostAfter: false
     });
-    const [isMarioOff, setIsMarioOff] = useState(true);
-    const [isMarioOn, setIsMarioOn] = useState(false);
-
-    const handleClickMario = () => {
-        setIsMarioOn(prevState => {
-            const newState = !prevState;
-            setIsMarioOff(!newState);
-            return newState;
-        });
-    }    
 
     const handleClickGhost = () => {
+
         if (pacmanData.gameOver) {
             setPacmanData(prevState => ({
                 ...prevState,
@@ -98,16 +101,15 @@ function Tournament({ setSettings, tournamentSettings, modalCreateTournament, se
                         };
                     } else {
                         clearInterval(eatInterval);
-                        setPacmanData(prevState => ({
+                        return {
                             ...prevState,
                             isPacmanEating: false,
                             gameOver: true,
                             isGhostAfter: false,
                             ghostPosition: 85,
                             pacmanPosition: 110,
-                            isGhostBefore: true
-                        }));
-                        return prevState;
+                            isGhostBefore: true,
+                        };
                     }
                 });
             }, 300);
@@ -115,6 +117,59 @@ function Tournament({ setSettings, tournamentSettings, modalCreateTournament, se
         }
     }, [pacmanData.isPacmanEating]);
 
+    const handleClickMario = () => {
+        if (marioData.isMarioInit) {
+                setMarioData(prevState => ({
+                ...prevState,
+                isMarioInit: false,
+                isMarioRun1: true,
+            }));
+        }
+        else {
+            setMarioData(prevState => ({
+                ...prevState,
+                isMarioJump: false,
+                isMarioInit: true,
+            }));
+        }
+
+    }    
+
+    useEffect(() => {
+        if (marioData.marioPosition < 68) {
+            const interval = setInterval(() => {
+                setMarioData(prevState => {
+                    if (prevState.isMarioRun1) {
+                        return {
+                            ...prevState,
+                            isMarioRun1: false,
+                            isMarioRun2: true,
+                            marioPosition: prevState.marioPosition + 8,
+                        };
+                    } else if (prevState.isMarioRun2) {
+                        return {
+                            ...prevState,
+                            isMarioRun2: false,
+                            isMarioRun1: true,
+                            marioPosition: prevState.marioPosition + 8,
+                        };
+                    }
+                    return prevState;
+                });
+            }, 200);
+    
+            return () => clearInterval(interval);
+        } else {
+            setMarioData(prevState => ({
+                ...prevState,
+                isMarioRun1: false,
+                isMarioRun2: false,
+                isMarioJump: true,
+                marioPosition: 4,
+            }));
+        }
+    }, [marioData.marioPosition]);
+    
     function createCodeTournament() {
         return Math.floor(Math.random() * (999 - 100 + 1)) + 100;
     }
@@ -166,8 +221,6 @@ function Tournament({ setSettings, tournamentSettings, modalCreateTournament, se
     };
 
     useEffect(() => {
-        console.log("tournamentSettings.numberPlayer", tournamentSettings.numberPlayer);
-
         let calculatedColumnBracket = 5;
         if (tournamentSettings.numberPlayer === "2") {
             calculatedColumnBracket -= 2;
@@ -177,13 +230,8 @@ function Tournament({ setSettings, tournamentSettings, modalCreateTournament, se
             calculatedColumnBracket -= 1;
         }
         setColumnBracket(calculatedColumnBracket);
-
-        console.log("cb", calculatedColumnBracket);
     }, [tournamentSettings.numberPlayer]);
 
-    useEffect(() => {
-        console.log("columnBracket mis à jour:", columnBracket);
-    }, [columnBracket]);
 
     const renderImageWithClick = (src, alt, position, onClick) => (
         <img
@@ -247,20 +295,35 @@ function Tournament({ setSettings, tournamentSettings, modalCreateTournament, se
                 </div>
             ) : (
                 <div className="h-100 w-100">
-                    {isMarioOn && renderImageWithClick(piece, "piece", { position: 'absolute', height: '4%', left: '3%', top:'10%' }, () => handleClickMario())}
+                    {marioData.isMarioJump && renderImageWithClick(piece, "piece", { position: 'absolute', height: '4%', left: '17%', top:'10%' }, () => handleClickMario())}
                     <div style={{ position: 'absolute', height: '50%', top: '15%', left: '0%', width: '23%', overflow: "hidden" }}>
                         <div className="w-100 h-100" style={{ position: 'relative'}}>
-                            {isMarioOff && (
+                            {marioData.isMarioInit && (
                                 <>
-                                    {renderImageWithClick(block, "block", { position: 'absolute', height: '8%', left: '5%' })}
-                                    {renderImageWithClick(mario, "mario", { position: 'absolute', height: '9%', top: '10%', left: '4%', cursor: 'pointer', zIndex: 10 }, () => handleClickMario())}
+                                    {renderImageWithClick(block, "block", { position: 'absolute', height: '8%', right: '15%' })}
+                                    {renderImageWithClick(marioInit, "mario", { position: 'absolute', height: '9%', top: '10%', left: '4%', cursor: 'pointer', zIndex: 10 }, () => handleClickMario())}
                                 </>
                             )}
-                            {isMarioOn && (
+                           {marioData.isMarioRun1 &&  (
                                 <>
-                                    {renderImageWithClick(blockAfter, "blockAfter", { position: 'absolute', height: '8%', left: '12%' })}
-                                    {renderImageWithClick(marioBreak, "marioAfter", { position: 'absolute', height: '10%', top: '8%', left: '7%', cursor: 'pointer', zIndex: 10 }, () => handleClickMario())}
-                                    <div className="d-flex tournament-text" style={{ width:'80%', marginLeft:'20%', height: '20%', textAlign: 'center', alignItems: 'center', justifyContent:'center' }}> ••• settings ••• </div>
+                                    {renderImageWithClick(block, "block", { position: 'absolute', height: '8%', right: '15%' })}
+                                    {renderImageWithClick(marioRun1, "marioRun1", { position: 'absolute', height: '9%', top: '10%', left: `${marioData.marioPosition}%`, cursor: 'pointer', zIndex: 10 })}
+                                    <div className="d-flex tournament-text" style={{ width:'80%', height: '20%', right: `${titlePositionSetting}%` }}>
+                                        ••• settings •••
+                                    </div>
+                                </>
+                            )}
+
+                            {marioData.isMarioRun2 &&  (
+                                <>
+                                    {renderImageWithClick(block, "block", { position: 'absolute', height: '8%', right: '15%' })}
+                                    {renderImageWithClick(marioRun2, "marioRun2", { position: 'absolute', height: '9%', top: '10%', left: `${marioData.marioPosition}%`, cursor: 'pointer', zIndex: 10})}
+                                </>
+                            )}
+                            {marioData.isMarioJump && (
+                                <>
+                                    {renderImageWithClick(blockAfter, "blockAfter", { position: 'absolute', height: '8%', right: '15%' })}
+                                    {renderImageWithClick(marioJump, "marioAfter", { position: 'absolute', height: '8%', top: '8%', left: '67%', cursor: 'pointer', zIndex: 10 }, () => handleClickMario())}
                                 </>
                             )}
                         </div>
@@ -275,7 +338,9 @@ function Tournament({ setSettings, tournamentSettings, modalCreateTournament, se
                             {pacmanData.isPacmanEating && renderImageWithClick(pacman, "Pac-Man", { position: 'absolute', top: '6%', height: '30px', left: `${pacmanData.pacmanPosition}%`, zIndex: 10 })}
                             {pacmanData.gameOver && (
                                 <>
-                                    <div className="tournament-text d-flex w-100" style={{ justifyContent: 'center', height: '20%', alignItems: 'center', textAlign: 'center'}}> ••• RULES ••• </div>
+                                    <div className="tournament-text d-flex w-100" style={{ height: '20%', left: `${titlePositionRules}%` }}>
+                                        ••• RULES •••
+                                    </div>
                                     <div className="w-100 h-100 tournament-text" style={{ fontWeight:'none', position: 'absolute', top: '16%', right: '0%'}}>
                                         <div className="explications title d-flex p-2">
                                             <p>Tournament PONG</p>

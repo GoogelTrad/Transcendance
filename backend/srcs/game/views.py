@@ -53,6 +53,20 @@ class GameView:
                 serializer.save()
                 return Response(GameSerializer(game).data, status=status.HTTP_200_OK)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    @api_view(['GET'])
+    def fetch_data_user(request, user_id):
+        try:
+            user = User.objects.get(id=user_id)
+
+            games = user.games.all().order_by('-player1')
+        
+            game_serializer = GameSerializer(games, many=True)
+
+            return Response(game_serializer.data, status=status.HTTP_200_OK)
+    
+        except User.DoesNotExist:
+            return Response({"detail": "User not found."}, status=status.HTTP_404_NOT_FOUND)
         
     @api_view(['POST'])
     def GameDetails(request):

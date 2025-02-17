@@ -1,15 +1,37 @@
-import Template from '../instance/Template';
-import ModalInstance from '../instance/ModalInstance';
-import useSocket from '../socket';
-import HomeGame from './Home_game';
+import axiosInstance from "../instance/AxiosInstance";
 import './Stats.css';
-import React, { useState, useEffect } from "react";
+import '../Home';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import 'bootstrap/dist/js/bootstrap.bundle.min';
+import Button from 'react-bootstrap/Button';
+import { BrowserRouter as Router, Route, Routes, Link, useNavigate, useParams} from 'react-router-dom';
+import React, { useEffect, useState, useRef} from "react";
+import { jwtDecode } from "jwt-decode";
+import { getCookies } from './../App.js';
 
-function Stats({ itemsArray = [] }) {;
-    //const [items, setItems] = useState(itemsArray);
+function Stats({ itemsArray = [] }) {
     const [option, setOption] = useState([]);
     const [mode, setMode] = useState([]);
     const [selectedOption, setSelectedOption] = useState("");
+    const [winGames, setWinGames] = useState([]);
+    const [looseGames, setLooseGames] = useState([]);
+    const [friendName, setFriendsNames] = useState([]);
+    const friendSearchFriend = useState("");
+    const { id } = useParams();
+    const [games, setGames] = useState([]);
+
+    useEffect(() => {
+        if (games.length > 0) {
+
+            const winGamesFiltered = games.filter(game => game.winner === game.player1);
+            const looseGamesFiltered = games.filter(game => game.loser === game.player1);
+            const friendGamesFiltered = games.filter(game => game.player2 === friendSearchFriend);
+            
+            setWinGames(winGamesFiltered);
+            setLooseGames(looseGamesFiltered);
+            setFriendsNames(friendGamesFiltered);
+        }
+    }, [games]);
 
     const handleDivClick = (name) => {
         setMode(prevMode => 
@@ -30,7 +52,6 @@ function Stats({ itemsArray = [] }) {;
         setSelectedOption((prevSelected) => (prevSelected === name ? "" : name));
     };
     
-
     useEffect(() => {
     
         const filteredModes = itemsArray
@@ -51,13 +72,26 @@ function Stats({ itemsArray = [] }) {;
     }, [itemsArray]);
 
     useEffect(() => {
-        console.log("items 2 : ", itemsArray);
-    });
-
-    useEffect(() => {
         const activeOption = option.find(option => option.active);
         setSelectedOption(activeOption || null);
     }, [option]);
+
+
+    useEffect(() => {
+        const fetchStats = async () => {
+          try {
+            const token = getCookies('token');
+            let decodeToken = jwtDecode(token);
+            const response = await axiosInstance.get(`http://localhost:8000/game/fetch_data_user/${decodeToken.id}/`, {});
+            setGames(response.data);
+            console.log("games:", games);
+          } catch (error) {
+            console.error('Error fetching user stats:', error);
+          }
+        };
+    
+        fetchStats();
+      }, [id]);
     
     function StatsTable({ data }) {
         return (
@@ -72,15 +106,17 @@ function Stats({ itemsArray = [] }) {;
                                 <th>Score</th>
                                 <th>Result</th>
                             </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>{data.date || "N/A"}</td>
-                                <td>{data.against || "N/A"}</td>
-                                <td>{data.time || "N/A"}</td>
-                                <td>{data.score || "N/A"}</td>
-                                <td>{data.result || "N/A"}</td>
-                            </tr>
+                        </thead>  
+                            <tbody>
+                                {data.map((data) => (
+                                    <tr key={data.id}>
+                                        <td>{data.date || "N/A"}</td>
+                                        <td>{data.player2  || "N/A"}</td>
+                                        <td>{data.timeMinutes} : {data.timeSeconds}</td>
+                                        <td>{data.score_player_1} - {data.score_player_2}</td>
+                                        <td>{data.result || "N/A"}</td>
+                                    </tr>
+                                ))}
                         </tbody>
                     </table>
                 </div>
@@ -171,17 +207,9 @@ function Stats({ itemsArray = [] }) {;
                         </div>
 
                         {option.find(option => option.name === 'All games')?.active && (
-                        <StatsTable
-                                data={{
-                                    date: "00/00/00",
-                                    against: "cccccc.",
-                                    time: "00:00",
-                                    score: "00-00",
-                                    result: "win/loose",
-                                }}
-                            />
+                            <StatsTable data={games} />
                         )}
-                        {option.find(option => option.name === 'Friends')?.active && (
+                        {/*{option.find(option => option.name === 'Friends')?.active && (
                             <div className="stats-zone-details w-100">
                                 <div className="dropdown-friends d-flex h-100 w-100 "
                                     onClick={(e) => e.stopPropagation()}>
@@ -200,28 +228,15 @@ function Stats({ itemsArray = [] }) {;
                                     </ul>
                                 </div>
                             </div>
+                        )}*/}
+                        {option.find(option => option.name === 'Friends')?.active && (
+                            <StatsTable data={friendName} />
                         )}
                         {option.find(option => option.name === 'Win')?.active && (
-                            <StatsTable
-                                data={{
-                                    date: "01/01/01",
-                                    against: "aaaaaa.",
-                                    time: "01:00",
-                                    score: "01-00",
-                                    result: "win",
-                                }}
-                            />
+                            <StatsTable data={winGames} />
                         )}
                         {option.find(option => option.name === 'Lose')?.active && (
-                            <StatsTable
-                                data={{
-                                    date: "02/02/02",
-                                    against: "bbbbbb.",
-                                    time: "02:00",
-                                    score: "00-02",
-                                    result: "lose",
-                                }}
-                            />
+                            <StatsTable data={looseGames} />
                         )}
                     </div>
                 </div>
