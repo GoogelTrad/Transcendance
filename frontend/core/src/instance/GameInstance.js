@@ -103,6 +103,8 @@ function GameInstance ( {children} ) {
 			const response = await axiosInstance.patch(`/game/fetch_data/${id}/`, {
 				score_player_1: gameData.Score_P1,
 				score_player_2: gameData.Score_P2,
+				winner: gameData.Winner,
+				loser: gameData.Loser,
 				status: 'finished',
 		  });
 		  setGame(response.data);

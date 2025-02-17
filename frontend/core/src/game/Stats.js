@@ -13,25 +13,47 @@ function Stats({ itemsArray = [] }) {
     const [option, setOption] = useState([]);
     const [mode, setMode] = useState([]);
     const [selectedOption, setSelectedOption] = useState("");
+    const token = getCookies('token');
+    let decodeToken = jwtDecode(token);
     const [winGames, setWinGames] = useState([]);
-    const [looseGames, setLooseGames] = useState([]);
+    const [looseGames, setLoseGames] = useState([]);
     const [friendName, setFriendsNames] = useState([]);
     const friendSearchFriend = useState("");
     const { id } = useParams();
     const [games, setGames] = useState([]);
 
     useEffect(() => {
-        if (games.length > 0) {
+        console.log("games start : ", games);
+    });
 
-            const winGamesFiltered = games.filter(game => game.winner === game.player1);
-            const looseGamesFiltered = games.filter(game => game.loser === game.player1);
-            const friendGamesFiltered = games.filter(game => game.player2 === friendSearchFriend);
+    //useEffect(() => {
+    //    if (games.length > 0) {
             
-            setWinGames(winGamesFiltered);
-            setLooseGames(looseGamesFiltered);
-            setFriendsNames(friendGamesFiltered);
-        }
-    }, [games]);
+    //        const winGamesFiltered = games.filter(game => game.Winner === decodeToken.name);
+    //        const loseGamesFiltered = games.filter(game => game.Loser === decodeToken.name);
+    //        const friendGamesFiltered = games.filter(game => game.player2 === friendSearchFriend);
+
+    //        if (winGamesFiltered)
+    //        {
+    //            const updatedGames = games.map(game => {
+    //                if (game.Winner === decodeToken.name) {
+    //                    return { ...game, Winner: 'win' };
+    //                }
+    //                return game;
+    //            });
+    //            setGames(updatedGames);
+    //            setWinGames(winGamesFiltered); 
+
+    //        } 
+    //        else if (loseGamesFiltered)
+    //        {
+    //            setLoseGames(winGamesFiltered);
+    //        }
+    //        if (friendSearchFriend)
+    //            setFriendsNames(friendGamesFiltered);
+
+    //    }
+    //}, [games, decodeToken.name, friendSearchFriend]);
 
     const handleDivClick = (name) => {
         setMode(prevMode => 
@@ -80,8 +102,6 @@ function Stats({ itemsArray = [] }) {
     useEffect(() => {
         const fetchStats = async () => {
           try {
-            const token = getCookies('token');
-            let decodeToken = jwtDecode(token);
             const response = await axiosInstance.get(`http://localhost:8000/game/fetch_data_user/${decodeToken.id}/`, {});
             setGames(response.data);
             console.log("games:", games);
@@ -135,7 +155,7 @@ function Stats({ itemsArray = [] }) {
                             <div className="stats-row-element flex-grow-1">
                             <div className="text-center">
                                 <div className="stats-text">Ratio</div>
-                                <div className="counter">0</div>
+                                <div className="counter">{(games?.length != 0 / winGames?.length != 0) || "0"}% </div>
                             </div>
                             </div>
                         </div>
@@ -143,19 +163,19 @@ function Stats({ itemsArray = [] }) {
                             <div className="stats-row-element flex-grow-1 w-100 h-33">
                             <div className="text-center">
                                 <div className="stats-text">Games played</div>
-                                <div className="counter">0</div>
+                                <div className="counter">{games?.length || "0"}</div>
                             </div>
                             </div>
                             <div className="stats-row-element flex-grow-1 w-100 h-33">
                             <div className="text-center">
                                 <div className="stats-text">Win</div>
-                                <div className="counter">0</div>
+                                <div className="counter">{winGames?.length || "0"}</div>
                             </div>
                             </div>
                             <div className="stats-row-element flex-grow-1 w-100 h-33">
                             <div className="text-center">
                                 <div className="stats-text">Lose</div>
-                                <div className="counter">0</div>
+                                <div className="counter">{looseGames?.length || "0"} </div>
                             </div>
                             </div>
                         </div>

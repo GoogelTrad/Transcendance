@@ -19,6 +19,7 @@ class Game(models.Model):
     player2 = models.CharField(max_length=255, blank=True)
     winner = models.CharField(max_length=255, blank=True)
     loser = models.CharField(max_length=255, blank=True)
+    date = models.DateField(auto_now=True)
 
     status = models.CharField(
         max_length=10,
