@@ -190,16 +190,18 @@ html, body, #root {
 }
 
 .waiting {
-  position: absolute;
-  display: flex;
   justify-content: space-around;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  background-color: rgba(60, 60, 60, 0.438);
   align-items: center;
-  color: white; 
   z-index: 2; 
   font-family: 'Press Start 2P', cursive;
   font-size: 20px;
-  left: 28%;
-  top: 50%;
   opacity: 1;
+}
 
+.wait_text{
+  color:red;
+  margin-top: 20%;
+  margin-left: 5%;
 }
