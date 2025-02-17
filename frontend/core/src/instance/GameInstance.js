@@ -48,6 +48,7 @@ function GameInstance ( {children} ) {
 		Winner : "",
 		Loser : "",
 	}));
+
 	
 	const socketRef = useRef(null);
 	  if (!socketRef.current) {
@@ -87,6 +88,8 @@ function GameInstance ( {children} ) {
 			Winner: data.winner,
 			Loser: data.loser,
 		}));
+		if (data.winner)
+			setisGameOngoing(false);
 	};
 
 	const fetchData = async () => {
@@ -157,11 +160,6 @@ function GameInstance ( {children} ) {
 		context.fillStyle = "white";
 		context.fill();
 		context.closePath();
-		if (gameData.Score_P1 === 11 || gameData.Score_P2 === 11 || (gameData.Minutes === 0 && gameData.Seconds === 0)){
-			setisGameOngoing(false);
-			finishGame();
-			socket.close();
-		}
 	  }, [gameData]);
 	  
 	  useEffect(() => {
@@ -170,6 +168,13 @@ function GameInstance ( {children} ) {
 		  drawCanvas(context);
 		}
 	  }, [gameData, drawCanvas]);
+
+	useEffect(() => {
+		if (isGameOngoing === false){
+			finishGame();
+			socket.close();
+		}
+	}, [isGameOngoing])
 	  
 	
 	useEffect(() => {
@@ -177,7 +182,6 @@ function GameInstance ( {children} ) {
 	
 		const sendGameInstance = () => {
 			if (socket.readyState === WebSocket.OPEN) {
-			  console.log(GameInstance);
 			  socket.send(JSON.stringify(GameInstance));
 			  return true;
 			}
@@ -368,6 +372,8 @@ function GameInstance ( {children} ) {
 				<p>Player 1: {game?.score_player_1 || "0"}</p>
 				
 				<p>Player 2: {game?.score_player_2 || "0"}</p>
+				<p>Winner: {game?.winner || "No Player"}</p>
+				<p>Loser: {game?.loser || "No Player"}</p>
 			  </div>
 			</div>
 		  )}
