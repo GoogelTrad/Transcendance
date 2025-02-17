@@ -18,6 +18,7 @@ import Room from "./chat/Room";
 import useTokenValidation from './instance/EventListener';
 import LoginRegister from './users/LoginForm';
 import Tournament from './game/Tournament';
+import { AuthSuccess } from './users/AuthSchool';
 
 export function getCookies(name) {
   const value = document.cookie;
@@ -100,6 +101,7 @@ function App() {
               <Route path='/games/:id' element={<Games />} />
               <Route path='/games/Stats'  element={<Stats />} />
               <Route path='/games/Tournament' element={<Tournament />} />
+              <Route path="/auth-success" element={<AuthSuccess />} />
             </Routes>
           
           </div>

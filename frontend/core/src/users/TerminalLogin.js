@@ -4,6 +4,7 @@ import { useAuth } from './AuthContext';
 import axiosInstance from '../instance/AxiosInstance';
 import logo from '../assets/user/logo.png'
 import './TerminalLogin.css';
+// import { AuthSchool } from './AuthSchool';
 
 function TerminalLogin({setModal, launching, setTerminal, removeLaunch})
 {
@@ -136,15 +137,21 @@ function TerminalLogin({setModal, launching, setTerminal, removeLaunch})
             return await handleForms();
     };
 
-    const handleSchoolLogin = async (e) => 
-        {
-            try {
-                window.location.href = "http://localhost:8000/auth/code";
-            }
-            catch(error) {
-                return "Error while trying to connect with 42."
-            }
-        }
+    const handleSchoolLogin = () => 
+    {
+        // try {
+        //     window.location.href = "http://localhost:8000/auth/code";
+        // }
+        // catch(error) {
+        //     if (error.response && error.response.status === 401) 
+        //     {
+        //         setIsTwoFactorRequired(true);
+        //         return "2FA required. Please enter the code sent to your email.";
+        //     }
+        //     return "Error while trying to connect with 42."
+        // }
+        // AuthSchool
+    }
 
     const handleInput = async (input) => {
         if (isTwoFactorRequired) {

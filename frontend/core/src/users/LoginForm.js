@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Button from 'react-bootstrap/Button';
 import { useNavigate, Link } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
@@ -7,6 +7,7 @@ import axiosInstance from '../instance/AxiosInstance';
 import 'react-toastify/dist/ReactToastify.css';
 import './LoginForm.css';
 import { useAuth } from './AuthContext';
+import AuthSchool from './AuthSchool';
 
 function LoginRegister({setModal, setTerminal, removeLaunch}) {
     const [step, setStep] = useState(false);
@@ -33,16 +34,8 @@ function LoginRegister({setModal, setTerminal, removeLaunch}) {
         });
     };
 
-    const handleSchoolLogin = async (e) => {
-        e.preventDefault();
-        if(isAuthenticated)
-            return showToast('error', 'Alrealdy connected!');
-        try {
-            window.location.href = "http://localhost:8000/auth/code";
-        }
-        catch(error) {
-            return "Error while trying to connect with 42."
-        }
+    const handleSchoolLogin = () => {    
+        AuthSchool();  
     }
 
     const handleRegisterChange = (e) => {
@@ -121,6 +114,29 @@ function LoginRegister({setModal, setTerminal, removeLaunch}) {
             showToast('error', 'Cannot create the account!');
         }
     };
+
+    useEffect(() => {
+        const receiveMessage = (event) => {
+          if (event.origin !== "http://localhost:3000") return; // Sécurité
+    
+          const { status, token, email } = event.data;
+          
+          console.log("Message reçu dans LoginForm:", event.data); // Afficher les données reçues
+    
+          if (status === "SUCCESS" && token) {
+            localStorage.setItem("token", token);
+          }
+    
+          window.removeEventListener("message", receiveMessage);
+        };
+    
+        window.addEventListener("message", receiveMessage);
+    
+        // Nettoyage de l'écouteur d'événement lors du démontage du composant
+        return () => {
+          window.removeEventListener("message", receiveMessage);
+        };
+      }, []);
 
     return (
             <div className="coucou row">
