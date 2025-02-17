@@ -9,7 +9,7 @@ from channels.layers import get_channel_layer
 
 
 class GameState:
-    def __init__(self, back_dimensions):
+    def __init__(self, back_dimensions, game):
         self.timer = {
             "seconds": 0,
             "minutes": 3
@@ -40,23 +40,25 @@ class GameState:
         }
         self.winner = None
         self.loser = None
+        self.player1 = game.player1
+        self.player2 = game.player2
 
     def is_game_over(self):
         if self.score["score_P1"] >= 11:
-            self.winner = "Player_1"
-            self.loser = "Player_2"
+            self.winner = self.player1
+            self.loser = self.player2
             return True
         elif self.score["score_P2"] >= 11:
-            self.winner = "Player_2"
-            self.loser = "Player_1"
+            self.winner = self.player2
+            self.loser = self.player1
             return True
         if self.timer["minutes"] == 0 and self.timer["seconds"] == 0:
             if self.score["score_P1"] > self.score["score_P2"]:
-                self.winner = "Player_1"
-                self.loser = "Player_2"
+                self.winner = self.player1
+                self.loser = self.player2
             else:
-                self.winner = "Player_2"
-                self.loser = "Player_1"
+                self.winner = self.player2
+                self.loser = self.player1
             return True
         return False
 
@@ -151,10 +153,11 @@ class gameConsumer(AsyncWebsocketConsumer):
             return
 
         if "width" in data_dict and not self.game_running:
+            game = await self.get_game()
             width = data_dict.get("width")
             height = data_dict.get("height")
             back_dimensions = {"width": width, "height": height}
-            self.game_state = GameState(back_dimensions)
+            self.game_state = GameState(back_dimensions, game)
             print(f"WebSocket connected to game {self.game_id}!", flush=True)
             self.game_running = True
             asyncio.create_task(self.run_game_loop(self.game_state))

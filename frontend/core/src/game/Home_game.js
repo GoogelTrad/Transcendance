@@ -15,6 +15,7 @@ import Profile from '../users/Profile.js';
 function HomeGame({setModalStats, setModalTournament, launching, setParentItems}) {
     const [player1, setPlayer1] = useState("");
     const [waitingForPlayer, setwaitingForPlayer] = useState(false);
+    const [onClickWait, setonClickWait] = useState(false);
     const [onClickPlay, setOnClickPlay] = useState(false);
     const [onClickTournament, setOnClickTournament] = useState(false);
     const [onClickStats, setOnClickStats] = useState(false);
@@ -35,7 +36,6 @@ function HomeGame({setModalStats, setModalTournament, launching, setParentItems}
         { name: 'Lose', active: false },
     ]);
     
-
     const token = getCookies('token');
     let user = null;
 
@@ -71,14 +71,12 @@ function HomeGame({setModalStats, setModalTournament, launching, setParentItems}
         setOnClickStats(menu === "stats" ? !onClickStats : false);
     };
     
-
     const handleClickTournament = () => {
         if(numberPlayer || gameCode)
         {
             setModalTournament(true);
             launching({ newLaunch: 'tournament', setModal: setModalTournament});
         }
-
     };
 
     const exitWait = () => {
@@ -131,7 +129,6 @@ function HomeGame({setModalStats, setModalTournament, launching, setParentItems}
     
         return () => clearInterval(interval);
     }, [waitingForPlayer, gameId]);
-    
     
     const WaitingPlayer = () => {
         setwaitingForPlayer(true);
@@ -221,10 +218,9 @@ return (
         </div>
         </div>
     ) : (
-        <div className="waiting">
-        <h2>Waiting for Player...</h2>
-        <div className="line" onClick={() => exitWait('2-players')}> EXIT </div>
-
+        <div className="waiting h-100 w-100">
+            <h2 className="wait_text" > Waiting for Player...</h2>
+            <div className="line" onClick={() => exitWait('2-players')}> EXIT </div>
         </div>
     )
     );
