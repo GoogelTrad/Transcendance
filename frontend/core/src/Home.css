@@ -40,8 +40,8 @@
     flex-direction: row;
     align-items: center;
     gap: 0.5%;
-    width: 93%;
-    height: 4%;
+    width: 85%;
+    height: 100%;
     left: 0%;
     bottom: 0;
     z-index: 1049;
@@ -55,7 +55,7 @@
     border-right: 2px solid black;
     border-bottom: 2px solid black;
     position: relative;
-    height: 75%;
+    height: max-content;
     bottom: 3%;
     width: auto;
     display: flex;

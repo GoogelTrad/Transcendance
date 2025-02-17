@@ -110,6 +110,7 @@ function TerminalLogin({setModal, launching, setTerminal, removeLaunch})
             if (response.status === 200) {
                 setIsAuthenticated(true);
                 setTerminal(false);
+                removeLaunch('terminal');
                 navigate('/home');
                 return "2FA verification successful! You are now logged in.";
             } else {

@@ -4,7 +4,7 @@
     margin: 0;
     padding: 0;
     background-color: #000000;
-    color: #333;
+    color: #8b8787;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -13,6 +13,11 @@
 }
 
 .listroom {
+    display: flex;
+    flex-direction: column;
+}
+
+.List {
     display: flex;
     flex-direction: column;
 }
@@ -68,6 +73,18 @@
 
 /*Bouton pour envoyer le message*/
 .send {
+    width: 60px;
+    padding: 10px;
+    background-color: #000000;
+    color: rgb(83, 81, 81);
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s;
+}
+
+.exit {
     width: 60px;
     padding: 10px;
     background-color: #000000;
