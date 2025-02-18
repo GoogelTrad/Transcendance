@@ -67,7 +67,7 @@ def oauth_login(request):
 					user.is_verified = False
 					user.save()
 					send_confirmation_email(user)
-					params = urlencode({'status': '2FA_REQUIRED', 'email': user.email})
+					params = urlencode({'status': '2FA_REQUIRED', 'name': user.name})
 					return HttpResponseRedirect(f"http://localhost:3000/auth-success?{params}")
 
 			user.ip_user = ip

@@ -139,17 +139,17 @@ function TerminalLogin({setModal, launching, setTerminal, removeLaunch})
 
     const handleSchoolLogin = () => 
     {
-        // try {
-        //     window.location.href = "http://localhost:8000/auth/code";
-        // }
-        // catch(error) {
-        //     if (error.response && error.response.status === 401) 
-        //     {
-        //         setIsTwoFactorRequired(true);
-        //         return "2FA required. Please enter the code sent to your email.";
-        //     }
-        //     return "Error while trying to connect with 42."
-        // }
+        try {
+            window.location.href = "http://localhost:8000/auth/code";
+        }
+        catch(error) {
+            if (error.response && error.response.status === 401) 
+            {
+                setIsTwoFactorRequired(true);
+                return "2FA required. Please enter the code sent to your email.";
+            }
+            return "Error while trying to connect with 42."
+        }
         // AuthSchool
     }
 
@@ -162,8 +162,7 @@ function TerminalLogin({setModal, launching, setTerminal, removeLaunch})
                 setIsTwoFactorRequired(false);
             return;
         }
-
-        console.log(currentCommandRef.current);
+        
         if (!currentCommandRef.current) {
             const [command] = input.split(" ");
 

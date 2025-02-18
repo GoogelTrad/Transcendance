@@ -116,28 +116,25 @@ function LoginRegister({setModal, setTerminal, removeLaunch}) {
     };
 
     useEffect(() => {
-        const receiveMessage = (event) => {
-          if (event.origin !== "http://localhost:3000") return; // Sécurité
-    
-          const { status, token, email } = event.data;
-          
-          console.log("Message reçu dans LoginForm:", event.data); // Afficher les données reçues
-    
-          if (status === "SUCCESS" && token) {
-            localStorage.setItem("token", token);
-          }
-    
-          window.removeEventListener("message", receiveMessage);
+        const handleMessage = (event) => {
+            if (event.origin === "http://localhost:3000") {
+                const { token } = event.data;
+                if (token) {
+                    console.log("Token reçu sur la page principale :", token);
+                    localStorage.setItem("token", token);
+                    setIsAuthenticated(true);
+                    navigate("/home");
+                }
+            }
         };
     
-        window.addEventListener("message", receiveMessage);
+        window.addEventListener("message", handleMessage);
     
-        // Nettoyage de l'écouteur d'événement lors du démontage du composant
         return () => {
-          window.removeEventListener("message", receiveMessage);
+            window.removeEventListener("message", handleMessage);
         };
-      }, []);
-
+    }, []);
+    
     return (
             <div className="coucou row">
                 {step === false ? (
@@ -172,7 +169,8 @@ function LoginRegister({setModal, setTerminal, removeLaunch}) {
                                 <Button type='submit' className='submit-button btn btn-primary'>Login</Button>
                             </form>
                             <div>
-                                <Button type="submit" className='submit-button btn btn-primary' onClick={handleSchoolLogin}>42</Button>
+                                <AuthSchool/>
+                                {/* <Button type="submit" className='submit-button btn btn-primary' onClick={AuthSchool}>42</Button> */}
                             </div>
                         </div>
                     </div>

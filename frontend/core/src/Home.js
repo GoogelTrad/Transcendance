@@ -29,7 +29,7 @@ function Home() {
     const [isModalFriendProfile, setIsModalFriendProfile] = useState(false);
     const [isModalCode, setIsModalCode] = useState(false);
     const [isLaunch, setIsLaunch] = useState([]);
-    const { isAuthenticated } = useAuth();
+    const { isAuthenticated, setIsAuthenticated } = useAuth();
     const setters = [
         {name: 'terminal', setter: setIsModalTerminal},
         {name: 'game', setter: setIsModalGame},
@@ -70,6 +70,24 @@ function Home() {
         return launched.includes(searchApp);
     }
 
+    useEffect(() => {
+        const handleMessage = (event) => {
+            if (event.origin === "http://localhost:8000") {
+                const { token } = event.data;
+                if (token) {
+                    console.log("Token reçu sur la page principale :", token);
+                    localStorage.setItem("token", token);
+                    setIsAuthenticated(true);
+                }
+            }
+        };
+    
+        window.addEventListener("message", handleMessage);
+    
+        return () => {
+            window.removeEventListener("message", handleMessage);
+        };
+    }, []);
 
     return (
         <Template

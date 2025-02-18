@@ -4,7 +4,7 @@ import './ModalInstance.css'
 function ModalInstance(props) {
     const { children, isModal, modalRef, name, onLaunchUpdate, onClose, height, width } = props;
     const rect = modalRef?.current?.getBoundingClientRect();
-    console.log(rect);
+    // console.log(rect);
     const dragOffsetRef = useRef({ x: 0, y: 0 });
 
     useEffect(() => {

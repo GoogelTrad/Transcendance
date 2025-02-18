@@ -19,6 +19,7 @@ import useTokenValidation from './instance/EventListener';
 import LoginRegister from './users/LoginForm';
 import Tournament from './game/Tournament';
 import { AuthSuccess } from './users/AuthSchool';
+import { useEffect } from 'react';
 
 export function getCookies(name) {
   const value = document.cookie;
