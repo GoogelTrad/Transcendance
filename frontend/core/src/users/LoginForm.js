@@ -123,7 +123,6 @@ function LoginRegister({setModal, setTerminal, removeLaunch}) {
                     console.log("Token reçu sur la page principale :", token);
                     localStorage.setItem("token", token);
                     setIsAuthenticated(true);
-                    navigate("/home");
                 }
             }
         };

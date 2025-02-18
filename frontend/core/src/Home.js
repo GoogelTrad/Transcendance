@@ -72,7 +72,7 @@ function Home() {
 
     useEffect(() => {
         const handleMessage = (event) => {
-            if (event.origin === "http://localhost:8000") {
+            if (event.origin === "http://localhost:3000") {
                 const { token } = event.data;
                 if (token) {
                     console.log("Token reçu sur la page principale :", token);
