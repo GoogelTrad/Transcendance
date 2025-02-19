@@ -157,12 +157,15 @@ body, html {
     position: relative;
     justify-content: flex-start !important;
     align-items: flex-start  !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .dropdown-friends .btn {
     background-color: transparent;
-    color: black;
-    border: 2px solid  rgba(0, 0, 0, 0.801);
+    color: rgb(240, 240, 240);
+    border: 2px solid  rgba(255, 255, 255, 0.801);
     border-radius: 0%;
 }
 
@@ -255,6 +258,14 @@ body, html {
 }
 
 
+.stats-zone-table .expanded-cell {
+    white-space: normal; 
+    width: auto;
+    max-width: none;
+}
+
+
+
 @keyframes scan-blue {
     0% {
         left: -100%;
@@ -311,3 +322,4 @@ body, html {
         width: 100%;
     }
 }
+

@@ -76,6 +76,12 @@ function Template({ children, taskBarContent, launching, appArray }) {
                                 >
                                     Game
                                 </div>}
+                                {isAuthenticated && <div
+                                className="p-2 bd-highlight flex-item"
+                                onClick={() =>  navigate("/Home") }
+                            >
+                                Home
+                            </div>}
                             </div>
                         </div>
                     </div>

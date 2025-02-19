@@ -12,8 +12,6 @@ import axiosInstance from '../instance/AxiosInstance.js';
 import useSocket from '../socket.js';
 import { throttle } from 'lodash';
 
-
-
 function GameInstance ( {children} ) {
     const canvasRef = useRef(null);
 	const [isGameOngoing, setisGameOngoing] = useState(true);
@@ -88,7 +86,7 @@ function GameInstance ( {children} ) {
 			Winner: data.winner,
 			Loser: data.loser,
 		}));
-		if (data.winner)
+		if (data.winner || data.loser)
 			setisGameOngoing(false);
 	};
 
@@ -108,9 +106,12 @@ function GameInstance ( {children} ) {
 				score_player_2: gameData.Score_P2,
 				winner: gameData.Winner,
 				loser: gameData.Loser,
+				timeSeconds: gameData.Seconds,
+				timeMinutes: gameData.Minutes,
 				status: 'finished',
 		  });
 		  setGame(response.data);
+		  console.log(game);
 		} catch (error) {
 		  console.error("Error updating game:", error);
 		}
@@ -170,7 +171,9 @@ function GameInstance ( {children} ) {
 	  }, [gameData, drawCanvas]);
 
 	useEffect(() => {
+
 		if (isGameOngoing === false){
+			console.log("pass");
 			finishGame();
 			socket.close();
 		}

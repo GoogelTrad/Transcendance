@@ -21,7 +21,6 @@ function Tournament({ setSettings, tournamentSettings, modalCreateTournament, se
     const [columnBracket, setColumnBracket] = useState(0);
     const lineRef = useRef(null);
     const [errorMessage, setErrorMessage] = useState("");
-    const [titlePositionSetting, setTitlePositionSetting] = useState(-20);
     const [titlePositionRules, setTitlePositionRules] = useState(-20);    
     const [marioData, setMarioData] = useState ({
         marioPosition: 4,
@@ -29,6 +28,8 @@ function Tournament({ setSettings, tournamentSettings, modalCreateTournament, se
         isMarioRun1: false,
         isMarioRun2: false,
         isMarioJump: false, 
+        left: -80,
+        title: false,
     });
     
     const [pacmanData, setPacmanData] = useState ({
@@ -39,15 +40,41 @@ function Tournament({ setSettings, tournamentSettings, modalCreateTournament, se
         pacmanPosition: 110,
         gameOver: false,
         isGhostBefore: true,
-        isGhostAfter: false
+        isGhostAfter: false,
+        right: -100,
+        title: false,
     });
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setMarioData((prev) => ({
+                ...prev,
+                left: prev.left < 0 ? prev.left + 22 : prev.left
+            }));
+        }, 500);
+    
+        return () => clearInterval(interval);
+    }, []);
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setPacmanData((prev) => ({
+                ...prev,
+                right: prev.right < 0 ? prev.right + 20 : prev.right
+            }));
+        }, 500);
+    
+        return () => clearInterval(interval);
+    }, []);
+    
 
     const handleClickGhost = () => {
 
         if (pacmanData.gameOver) {
             setPacmanData(prevState => ({
                 ...prevState,
-                gameOver: false
+                gameOver: false,
+                title: false,
             }));
         } else {
             setPacmanData(prevState => ({
@@ -56,7 +83,9 @@ function Tournament({ setSettings, tournamentSettings, modalCreateTournament, se
                 isGhostAfter: !prevState.isGhostAfter,
                 isGhostMoving: !prevState.isGhostMoving,
                 isPacmanEating: !prevState.isPacmanEating,
-                dots: []
+                dots: [],
+                title: true,
+                right: -100,
             }));
         }
     };
@@ -123,6 +152,8 @@ function Tournament({ setSettings, tournamentSettings, modalCreateTournament, se
                 ...prevState,
                 isMarioInit: false,
                 isMarioRun1: true,
+                title: true, 
+                left: -80,
             }));
         }
         else {
@@ -130,6 +161,7 @@ function Tournament({ setSettings, tournamentSettings, modalCreateTournament, se
                 ...prevState,
                 isMarioJump: false,
                 isMarioInit: true,
+                title: false,
             }));
         }
 
@@ -174,20 +206,6 @@ function Tournament({ setSettings, tournamentSettings, modalCreateTournament, se
         return Math.floor(Math.random() * (999 - 100 + 1)) + 100;
     }
     
-    function drawLine(x1, y1, x2, y2) {
-        const canvas = lineRef.current;
-        if (canvas) {
-            const ctx = canvas.getContext("2d");
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.beginPath();
-            ctx.moveTo(x1, y1);
-            ctx.lineTo(x2, y2);
-            ctx.strokeStyle = "black";
-            ctx.lineWidth = 2;
-            ctx.stroke();
-        }
-    }
-
     const handleClick = () => {
         if (maxScore === 0 || maxTimeMinutes === "00") {
             setErrorMessage("Please enter a score and time!");
@@ -302,15 +320,13 @@ function Tournament({ setSettings, tournamentSettings, modalCreateTournament, se
                                 <>
                                     {renderImageWithClick(block, "block", { position: 'absolute', height: '8%', right: '15%' })}
                                     {renderImageWithClick(marioInit, "mario", { position: 'absolute', height: '9%', top: '10%', left: '4%', cursor: 'pointer', zIndex: 10 }, () => handleClickMario())}
+                                    
                                 </>
                             )}
                            {marioData.isMarioRun1 &&  (
                                 <>
                                     {renderImageWithClick(block, "block", { position: 'absolute', height: '8%', right: '15%' })}
                                     {renderImageWithClick(marioRun1, "marioRun1", { position: 'absolute', height: '9%', top: '10%', left: `${marioData.marioPosition}%`, cursor: 'pointer', zIndex: 10 })}
-                                    <div className="d-flex tournament-text" style={{ width:'80%', height: '20%', right: `${titlePositionSetting}%` }}>
-                                        ••• settings •••
-                                    </div>
                                 </>
                             )}
 
@@ -326,6 +342,22 @@ function Tournament({ setSettings, tournamentSettings, modalCreateTournament, se
                                     {renderImageWithClick(marioJump, "marioAfter", { position: 'absolute', height: '8%', top: '8%', left: '67%', cursor: 'pointer', zIndex: 10 }, () => handleClickMario())}
                                 </>
                             )}
+                            {marioData.title && (
+                                <div
+                                    className="d-flex tournament-text"
+                                    style={{
+                                        width: "80%",
+                                        height: "20%",
+                                        left: `${marioData.left}%`,
+                                        position: "absolute",
+                                        transition: "left 0.5s ease-in-out",
+                                        overflow: "none",
+                                         color: '#9632ab',
+                                    }}
+                                >
+                                    ••• settings •••
+                                </div>
+                            )}
                         </div>
                     </div>
                     <div style={{ position: 'absolute', height: '50%', top: '15%', right: '0%', width: '23%', overflow: "hidden" }}>
@@ -338,10 +370,7 @@ function Tournament({ setSettings, tournamentSettings, modalCreateTournament, se
                             {pacmanData.isPacmanEating && renderImageWithClick(pacman, "Pac-Man", { position: 'absolute', top: '6%', height: '30px', left: `${pacmanData.pacmanPosition}%`, zIndex: 10 })}
                             {pacmanData.gameOver && (
                                 <>
-                                    <div className="tournament-text d-flex w-100" style={{ height: '20%', left: `${titlePositionRules}%` }}>
-                                        ••• RULES •••
-                                    </div>
-                                    <div className="w-100 h-100 tournament-text" style={{ fontWeight:'none', position: 'absolute', top: '16%', right: '0%'}}>
+                                    <div className="w-100 h-100 tournament-text" style={{ color:  '#0079bf',fontWeight:'none', position: 'absolute', top: '16%', right: '0%'}}>
                                         <div className="explications title d-flex p-2">
                                             <p>Tournament PONG</p>
                                         </div>
@@ -385,6 +414,24 @@ function Tournament({ setSettings, tournamentSettings, modalCreateTournament, se
                                     </div> 
                                 </>
                             )}
+                            {pacmanData.title && (
+                                <div
+                                    className="d-flex tournament-text"
+                                    style={{
+                                        width: "80%",
+                                        height: "20%",
+                                        right: `${pacmanData.right}%`,
+                                        position: "absolute",
+                                        transition: "right 0.5s ease-in-out",
+                                        overflow: "none",
+                                        top: '6%',
+                                        color: '#9632ab',
+                                    }}
+                                >
+                                    ••• Rules •••
+                                </div>
+                            )
+                            }
                         </div>
                     </div>
                     <div className="w-100" style={{ position: "absolute", height: "10%", marginTop: "3%" }}>

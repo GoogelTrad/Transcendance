@@ -25,9 +25,6 @@ const TournamentBracket = ({ numberPlayer }) => {
       currentRound = nextRound;
     }
     rounds.unshift(currentRound);
-    console.log(numberPlayer);
-    
-    
     return rounds;
   };
 
