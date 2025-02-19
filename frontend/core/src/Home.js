@@ -14,6 +14,7 @@ import Profile from './users/Profile';
 import { useAuth } from './users/AuthContext';
 import { jwtDecode } from "jwt-decode";
 import { getCookies } from "./App";
+import AuthSchool from './users/AuthSchool';
 
 
 function Home() {
@@ -26,8 +27,9 @@ function Home() {
     const [isModalGame, setIsModalGame] = useState(false);
     const [isModalProfile, setIsModalProfile] = useState(false);
     const [isModalFriendProfile, setIsModalFriendProfile] = useState(false);
+    const [isModalCode, setIsModalCode] = useState(false);
     const [isLaunch, setIsLaunch] = useState([]);
-    const { isAuthenticated } = useAuth();
+    const { isAuthenticated, setIsAuthenticated } = useAuth();
     const setters = [
         {name: 'terminal', setter: setIsModalTerminal},
         {name: 'game', setter: setIsModalGame},
@@ -44,6 +46,7 @@ function Home() {
     const modalFriendProfileRef = useRef(null);
     const modalSocial = useRef(null);
     const modalProfile = useRef(null);
+    const modalCode = useRef(null);
 
     const [items, setItems] = useState([]);
 
@@ -67,6 +70,24 @@ function Home() {
         return launched.includes(searchApp);
     }
 
+    useEffect(() => {
+        const handleMessage = (event) => {
+            if (event.origin === "http://localhost:3000") {
+                const { token } = event.data;
+                if (token) {
+                    console.log("Token reçu sur la page principale :", token);
+                    localStorage.setItem("token", token);
+                    setIsAuthenticated(true);
+                }
+            }
+        };
+    
+        window.addEventListener("message", handleMessage);
+    
+        return () => {
+            window.removeEventListener("message", handleMessage);
+        };
+    }, []);
 
     return (
         <Template
@@ -195,7 +216,7 @@ function Home() {
                 onLaunchUpdate={() => removeLaunch("forms")}
                 onClose={() => setIsModalForms(false)}
             >
-                <LoginRegister setModal={setIsModalForms} setTerminal={setIsModalTerminal} removeLaunch={removeLaunch}/>
+                <LoginRegister setModal={setIsModalForms} setTerminal={setIsModalTerminal} removeLaunch={removeLaunch} setModalCode={setIsModalCode} launching={launching}/>
             </ModalInstance>}
 
             {isAuthenticated && <ModalInstance

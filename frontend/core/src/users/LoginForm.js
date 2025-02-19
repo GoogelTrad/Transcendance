@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Button from 'react-bootstrap/Button';
 import { useNavigate, Link } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
@@ -7,11 +7,13 @@ import axiosInstance from '../instance/AxiosInstance';
 import 'react-toastify/dist/ReactToastify.css';
 import './LoginForm.css';
 import { useAuth } from './AuthContext';
+import AuthSchool from './AuthSchool';
 
 function LoginRegister({setModal, setTerminal, removeLaunch}) {
     const [step, setStep] = useState(false);
     const [code, setCode] = useState();
     const navigate = useNavigate();
+    const authChannel = new BroadcastChannel("auth_channel");
     const {isAuthenticated, setIsAuthenticated} = useAuth();
     const [loginData, setLoginData] = useState({
         name: 'f',
@@ -33,16 +35,8 @@ function LoginRegister({setModal, setTerminal, removeLaunch}) {
         });
     };
 
-    const handleSchoolLogin = async (e) => {
-        e.preventDefault();
-        if(isAuthenticated)
-            return showToast('error', 'Alrealdy connected!');
-        try {
-            window.location.href = "http://localhost:8000/auth/code";
-        }
-        catch(error) {
-            return "Error while trying to connect with 42."
-        }
+    const handleSchoolLogin = () => {    
+        AuthSchool();  
     }
 
     const handleRegisterChange = (e) => {
@@ -122,6 +116,27 @@ function LoginRegister({setModal, setTerminal, removeLaunch}) {
         }
     };
 
+    useEffect(() => {
+        authChannel.onmessage = (event) => {
+            const { token } = event.data;
+            if (token) {
+                console.log("✅ Token reçu :", token);
+                document.cookie = `token=${token}`;
+                console.log('coucou');
+                setIsAuthenticated(true);
+                setModal(false);
+                setTerminal(false);
+                removeLaunch("terminal");
+                removeLaunch("forms");
+                navigate('/');
+            }
+        };
+
+        return () => {
+            authChannel.close();
+        };
+    }, []);
+    
     return (
             <div className="coucou row">
                 {step === false ? (
@@ -156,7 +171,8 @@ function LoginRegister({setModal, setTerminal, removeLaunch}) {
                                 <Button type='submit' className='submit-button btn btn-primary'>Login</Button>
                             </form>
                             <div>
-                                <Button type="submit" className='submit-button btn btn-primary' onClick={handleSchoolLogin}>42</Button>
+                                <AuthSchool/>
+                                {/* <Button type="submit" className='submit-button btn btn-primary' onClick={AuthSchool}>42</Button> */}
                             </div>
                         </div>
                     </div>
