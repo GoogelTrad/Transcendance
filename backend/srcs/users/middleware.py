@@ -24,7 +24,7 @@ class SimpleMiddleware:
 
     def __call__(self, request):
         
-        if request.path.startswith(('/media/', '/static/', '/auth/', '/api/code')):
+        if request.path.startswith(('/media/', '/static/', '/auth/', '/api/code', '/api/token')):
             return self.get_response(request)
         
         new_token = None

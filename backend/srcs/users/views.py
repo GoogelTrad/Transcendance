@@ -263,3 +263,11 @@ def permission_verif(request, id):
     return response
 
     
+    
+@api_view(['GET'])
+def is_token_valid(request, token):
+    
+    if ValidToken.objects.filter(token=token).exists():
+        return Response(status=status.HTTP_200_OK)
+    else:
+        return Response(status=status.HTTP_404_NOT_FOUND)

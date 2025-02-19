@@ -70,23 +70,10 @@ function Home() {
         return launched.includes(searchApp);
     }
 
+    // const isTokenValid
+
     useEffect(() => {
-        const handleMessage = (event) => {
-            if (event.origin === "http://localhost:3000") {
-                const { token } = event.data;
-                if (token) {
-                    console.log("Token reçu sur la page principale :", token);
-                    localStorage.setItem("token", token);
-                    setIsAuthenticated(true);
-                }
-            }
-        };
-    
-        window.addEventListener("message", handleMessage);
-    
-        return () => {
-            window.removeEventListener("message", handleMessage);
-        };
+
     }, []);
 
     return (
