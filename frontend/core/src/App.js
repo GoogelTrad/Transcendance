@@ -9,7 +9,7 @@ import Home_game from './game/Home_game';
 import Stats from './game/Stats';
 import { Game, Games} from './game/game';
 import { AuthProvider, useAuth } from './users/AuthContext';
-import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Link, Navigate } from 'react-router-dom';
 import Profile from './users/Profile';
 import ProtectedRoute from './instance/RouteInstance';
 import { jwtDecode } from 'jwt-decode';
@@ -90,6 +90,7 @@ function App() {
             </div>
 
             <Routes>
+              <Route path="/" element={<Navigate to="/home" replace />} />
               <Route path="/home" element={<Home />} />
               <Route path="/login" element={<LoginRegister />} />
               <Route path='/logout' element={<ProtectedRoute><Logout /></ProtectedRoute>} />

@@ -121,11 +121,14 @@ function LoginRegister({setModal, setTerminal, removeLaunch}) {
             const { token } = event.data;
             if (token) {
                 console.log("✅ Token reçu :", token);
-                localStorage.setItem("token", token); 
+                document.cookie = `token=${token}`;
+                console.log('coucou');
                 setIsAuthenticated(true);
                 setModal(false);
                 setTerminal(false);
-                navigate('/home');
+                removeLaunch("terminal");
+                removeLaunch("forms");
+                navigate('/');
             }
         };
 

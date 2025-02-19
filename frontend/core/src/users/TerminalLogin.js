@@ -4,7 +4,7 @@ import { useAuth } from './AuthContext';
 import axiosInstance from '../instance/AxiosInstance';
 import logo from '../assets/user/logo.png'
 import './TerminalLogin.css';
-// import { AuthSchool } from './AuthSchool';
+import { HandleAuth } from './AuthSchool';
 
 function TerminalLogin({setModal, launching, setTerminal, removeLaunch})
 {
@@ -18,6 +18,7 @@ function TerminalLogin({setModal, launching, setTerminal, removeLaunch})
     const [commandArgs, setCommandArgs] = useState([]);
     const [isPassword, setIsPassword] = useState(false);
     const [name, setName] = useState("");
+    const [isSchool, setIsSchool] = useState(false);
 
     const helpLine = [
         {name: "login", value: "You can log in with username and password!"},
@@ -128,7 +129,7 @@ function TerminalLogin({setModal, launching, setTerminal, removeLaunch})
         else if (command === "register")
             return await handleRegister(args);
         else if (command === "school")
-            return await handleSchoolLogin();
+            return handleSchoolLogin();
         else if (command === "clear")
             return await handleClear();
         else if (command === "help")
@@ -139,18 +140,7 @@ function TerminalLogin({setModal, launching, setTerminal, removeLaunch})
 
     const handleSchoolLogin = () => 
     {
-        try {
-            window.location.href = "http://localhost:8000/auth/code";
-        }
-        catch(error) {
-            if (error.response && error.response.status === 401) 
-            {
-                setIsTwoFactorRequired(true);
-                return "2FA required. Please enter the code sent to your email.";
-            }
-            return "Error while trying to connect with 42."
-        }
-        // AuthSchool
+        setIsSchool(true);
     }
 
     const handleInput = async (input) => {
@@ -264,6 +254,8 @@ function TerminalLogin({setModal, launching, setTerminal, removeLaunch})
                     />
                     </div>
                 )}
+
+                {isSchool ? (<HandleAuth />) : (null)}
             </div>
     );
 }

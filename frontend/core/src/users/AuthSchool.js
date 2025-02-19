@@ -3,27 +3,29 @@ import { useEffect, useState } from "react";
 import axiosInstance from "../instance/AxiosInstance";
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from './AuthContext';
+import { getCookies } from "../App";
 
-function AuthSchool() 
+export function HandleAuth() 
 {
-    const handleAuth = () => 
-	{
-        const popup = window.open("http://localhost:8000/auth/code", "42Auth", "width=600,height=800");
-		
-		console.log(popup.opener);
+	const popup = window.open("http://localhost:8000/auth/code", "42Auth", "width=600,height=800");
+	
+	console.log(popup.opener);
 
-		if (popup) 
-			console.log("✅ window.opener défini manuellement !");
-		else
-			alert("Veuillez autoriser les pop-ups !");
-    };
+	if (popup) 
+		console.log("✅ window.opener défini manuellement !");
+	else
+		alert("Veuillez autoriser les pop-ups !");
+};
 
+
+export default function AuthSchool() 
+{
     return (
 		<>
 			<button 
 				type="button" 
 				className='submit-button btn btn-primary' 
-				onClick={handleAuth}
+				onClick={HandleAuth}
 			>
 				42
 			</button>
@@ -37,7 +39,7 @@ export function AuthSuccess()
 	const [isSchoolAuth, setIsSchoolAuth] = useState(false);
 	const [isPop, setIsPop] = useState(false);
 	const [code, setCode] = useState("");
-	const [isAuthenticated, setIsAuthenticated] = useAuth();
+	const {isAuthenticated, setIsAuthenticated} = useAuth();
 	const [name, setName] = useState("");
 
 
@@ -46,8 +48,11 @@ export function AuthSuccess()
 		try {
 			const response = await axiosInstance.post('/api/code' , {code, name: name});
 			if (response.status === 200) {
-				setIsAuthenticated(true);
-				setIsSchoolAuth(false);
+				const authChannel = new BroadcastChannel("auth_channel");
+				const token = getCookies('token');
+				authChannel.postMessage({ token });
+           	 	authChannel.close();
+            	window.close();
 			}
 		}
 		catch(error) {
@@ -62,20 +67,19 @@ export function AuthSuccess()
 		const status = urlParams.get("status");
 		setName(urlParams.get("name"));
 
-		if (status === "2FA_REQUIRED")
+		if (status === "2FA_REQUIRED" && isSchoolAuth === false)
 			setIsSchoolAuth(true);
-
-        else if (token || isAuthenticated) 
+        else if (token && status !== "2FA_REQUIRED") 
 		{
             const authChannel = new BroadcastChannel("auth_channel");
             authChannel.postMessage({ token });
             authChannel.close();
             window.close();
         }
+
     }, []);
 
-	return 
-	(
+	return (
 		<>
 			{isSchoolAuth ? 
 			(
@@ -93,5 +97,4 @@ export function AuthSuccess()
 		</>
 	);
 }
-export default AuthSchool;
 
