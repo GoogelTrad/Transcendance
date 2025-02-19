@@ -13,6 +13,7 @@ function LoginRegister({setModal, setTerminal, removeLaunch}) {
     const [step, setStep] = useState(false);
     const [code, setCode] = useState();
     const navigate = useNavigate();
+    const authChannel = new BroadcastChannel("auth_channel");
     const {isAuthenticated, setIsAuthenticated} = useAuth();
     const [loginData, setLoginData] = useState({
         name: 'f',
@@ -116,21 +117,20 @@ function LoginRegister({setModal, setTerminal, removeLaunch}) {
     };
 
     useEffect(() => {
-        const handleMessage = (event) => {
-            if (event.origin === "http://localhost:3000") {
-                const { token } = event.data;
-                if (token) {
-                    console.log("Token reçu sur la page principale :", token);
-                    localStorage.setItem("token", token);
-                    setIsAuthenticated(true);
-                }
+        authChannel.onmessage = (event) => {
+            const { token } = event.data;
+            if (token) {
+                console.log("✅ Token reçu :", token);
+                localStorage.setItem("token", token); 
+                setIsAuthenticated(true);
+                setModal(false);
+                setTerminal(false);
+                navigate('/home');
             }
         };
-    
-        window.addEventListener("message", handleMessage);
-    
+
         return () => {
-            window.removeEventListener("message", handleMessage);
+            authChannel.close();
         };
     }, []);
     

@@ -18,7 +18,7 @@ import Room from "./chat/Room";
 import useTokenValidation from './instance/EventListener';
 import LoginRegister from './users/LoginForm';
 import Tournament from './game/Tournament';
-import AuthSchool from './users/AuthSchool';
+import AuthSchool, { AuthSuccess } from './users/AuthSchool';
 import { useEffect } from 'react';
 
 export function getCookies(name) {
@@ -102,7 +102,7 @@ function App() {
               <Route path='/games/:id' element={<Games />} />
               <Route path='/games/Stats'  element={<Stats />} />
               <Route path='/games/Tournament' element={<Tournament />} />
-              <Route path="/auth-success" element={<AuthSchool />} />
+              <Route path="/auth-success" element={<AuthSuccess />} />
             </Routes>
           
           </div>
