@@ -7,6 +7,7 @@ export default function useNotifications() {
   const [notifications, setNotifications] = useState([]);
 
   useEffect(() => {
+    
     const ws = new WebSocket(BASE_URL_NOTIF);
 
     ws.onopen = () => console.log("WebSocket connecté !");
@@ -19,7 +20,7 @@ export default function useNotifications() {
         console.log("Notification reçue: ", data);
         setNotifications((prev) => [
           ...prev,
-          { target_id: data.targetId, message: data.message, sender_id: data.sender_id, response: null },
+          { target_id: data.targetId, message: data.message, sender_id: data.sender_id, room_name: data.room_name, response: null },
         ]);
       } 
       else if (data.type === "receive_response") {
@@ -31,7 +32,6 @@ export default function useNotifications() {
         //console.log("Notifications après mise à jour : ", prevNotifications);
       }
     };    
-	  
 
     ws.onclose = () => console.log("WebSocket déconnecté");
 
@@ -47,27 +47,14 @@ export default function useNotifications() {
 	console.log("Notifications mises à jour : ", notifications);
   }, [notifications]); // Ce useEffect s'exécute dès que notifications change
   
-
-//   const sendNotification = (targetId, message, userId) => {
-//     if (socket && socket.readyState === WebSocket.OPEN) {
-//       socket.send(
-//         JSON.stringify({
-//           type: "send_notification",
-//           target_id: targetId,
-//           sender_id: userId,
-//           message: message,
-//         })
-//       );
-//     }
-//   };
-
-	const sendNotification = (targetId, message, userId) => {
+	const sendNotification = (targetId, message, userId, room_name = undefined) => {
 		if (socket && socket.readyState === WebSocket.OPEN) {
 		  const notificationData = {
         type: "send_notification",
         target_id: targetId,
         sender_id: userId,
         message: message,
+        room_name
 		  };
 		  console.log("Envoi de la notification : ", notificationData); // Ajout d'un log
 		  socket.send(JSON.stringify(notificationData));

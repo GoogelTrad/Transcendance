@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
 
-const BASE_URL = 'ws://localhost:8000/ws/'
-
 export default function useSocket(name, param = '') {
 	const [ready, setReady] = useState(false);
 	const [socket, setSocket] = useState();
 	const handlers = new Map();
-  
+	const BASE_URL = 'ws://localhost:8000/ws/'
+
 	useEffect(() => {
+
 		let socket = new WebSocket(`${BASE_URL}${name}/${String(param)}`)
 
 		socket.onopen = () => {
@@ -36,7 +36,7 @@ export default function useSocket(name, param = '') {
 				setReady(false);
 			}
 		};
-	}, [name, ready]);
+	}, [name, ready, param]);
 
 	const send = (data) => {
 		if (socket) {

@@ -9,13 +9,20 @@ from users.decorator import jwt_auth_required
 from users.models import User
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
-
+from django.shortcuts import get_object_or_404
 
 @api_view(['GET'])
+@jwt_auth_required
 def get_list_rooms(request):
+    print(request.user.id, flush=True)
     rooms = Room.objects.all()
-    serializer = RoomSerializer(rooms, many=True)
-    return Response(serializer.data)
+    for room in rooms:
+        room.users.all()
+    dmRooms = rooms.filter(dm=True)
+    rooms = rooms.filter(dm=False)
+    roomSerializer = RoomSerializer(rooms, many=True)
+    dmSerializer = RoomSerializer(dmRooms, many=True)
+    return Response({"publicRooms": roomSerializer.data, "dmRooms": dmSerializer.data})
 
 @api_view(['GET'])
 def get_list_users(request, name):
@@ -96,3 +103,17 @@ def get_users_connected(request):
         return Response(serializer.data)
     except:
         return Response({"error": "Users connected not found."}, status=404)
+    
+# @api_view(["POST"])
+# def invite_user(request):
+#     room_name = request.data.get("room_name")
+#     user_id = request.data.get("user_id")
+
+#     room = get_object_or_404(Room, name=room_name)
+#     user = get_object_or_404(User, id=user_id)
+
+#     if room.invitation_required:
+#         room.invited_users.add(user)
+#         return Response({"message": f"{user.username} a été invité à la room {room.name}"})
+
+#     return Response({"error": "Cette salle ne nécessite pas d'invitation."}, status=400)

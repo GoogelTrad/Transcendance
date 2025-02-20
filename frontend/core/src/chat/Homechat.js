@@ -13,11 +13,12 @@ import Room from './Room'
 import useJwt from '../instance/JwtInstance';
 import { getCookies } from '../App';
 
-import usePrivateChat from "../SocketPrivateMessage";
+import useNotifications from "../SocketNotif"
 
 export default function HomeChat() {
 
 	const socket = useSocket('chat', 'public');
+	console.log("🛠️ Hook useSocket appelé !");
 
 	const [createName, setCreateRoomName] = useState("");
 	const [createpassword, setCreatePassword] = useState("");
@@ -25,16 +26,19 @@ export default function HomeChat() {
 	const [showCreatePublicRoom, setShowCreatePublicRoom] = useState(false);
 	const [isCreateSwitchOn, setIsCreateSwitchOn] = useState(false);
 	const [listrooms, setlistrooms] = useState([]);
+	const [dmrooms, setdmrooms] = useState([]);
 	const [usersconnected, setusersconnected] = useState([]);
 	const [isModalProfile, setIsModalProfile] = useState(false);
 	const [profileId, setProfileId] = useState(1);
 	const modalProfile = useRef(null);
+	const [clickedNotifications, setClickedNotifications] = useState({});
 
-	
-	const [message, setMessage] = useState("");
 	const navigate = useNavigate();
 
-	const handleChangeCreateRoom = (e) => setCreateRoomName(e.target.value);
+	const handleChangeCreateRoom = (e) => {
+		setCreateRoomName(e.target.value);
+		console.log("Valeur entrée :", e.target.value);
+	};	
 	const handleChangeCreatePassword = (e) => setCreatePassword(e.target.value);
 
 	const handleCreateToggle = () => { setIsCreateSwitchOn(!isCreateSwitchOn) };
@@ -45,7 +49,7 @@ export default function HomeChat() {
 	const decodedToken = getJwt(token);
 	const userId = decodedToken.id;
 	
-	const { invitations, sendInvitation, acceptInvitation, messages, sendMessage, currentChat } = usePrivateChat(userId);
+	const { notifications, sendNotification, respondNotification } = useNotifications();
 
 	useEffect(() => {
 		if (socket.ready) {
@@ -69,24 +73,29 @@ export default function HomeChat() {
 				}
 			});
 		}
-	}, [socket, navigate]);
+	}, [socket]);
 
-	const createRoom = () => {
-		if (createName.trim() === "") {
+	const createRoom = (roomName, invited_user_id = undefined) => {
+		console.log("HYYYYYY");
+		if (roomName === "") {
 			showToast("error", "Le nom de la salle ne peut pas être vide.");
 			return;
 		}
+		console.log("invited_user_id:", invited_user_id);
 		if (socket.ready) {
 			console.log("bonsoir");
 			socket.send({
 				type: "create_room",
-				room_name: createName,
+				room_name: roomName,
 				password: createpassword,
+				invited_user_id,
+				invitation_required: true
 			});
 		}
 	};
 
 	const joinRoom = (name, password = null) => {
+		console.log("joinRoom name:", name);
 		if (socket.ready) {
 			console.log("hello");
 			socket.send({
@@ -101,7 +110,17 @@ export default function HomeChat() {
 		try {
 			const response = await axiosInstance.get('/livechat/listroom/');
 			console.log("Données reçues:", response.data);
-			setlistrooms(response.data);
+
+			const dmRooms = response.data.dmRooms.map((value) => {
+				value.dmname = value.users.filter((v) => {
+					if (v.id !== userId) return true;
+					return false;
+				})[0]?.name + ' dm' ?? value.name;
+				return value;
+			});
+
+			setlistrooms(response.data.publicRooms);
+			setdmrooms(dmRooms);
 		} catch (error) {
 			console.error("Erreur lors de la récupération des salles", error);
 		}
@@ -111,7 +130,7 @@ export default function HomeChat() {
 		try {
 			const response = await axiosInstance.get('/livechat/users_connected/');
 			console.log("Données Users:", response.data);
-			setusersconnected(response.data);
+			setusersconnected(response.data.filter((v) => v.id !== userId));
 		} catch (error) {
 			console.error("Erreur lors de la récupération des utilisateurs", error);
 		}
@@ -121,12 +140,15 @@ export default function HomeChat() {
 		listroom();
 		users_connected();
 
-		const interval = setInterval(() => {users_connected()}, 10000);
+		const interval = setInterval(() => {
+			users_connected();
+			listroom();
+		}, 10000);
 
 		return () => clearInterval(interval);
 	}, []);
 
-	const handleRoomClick = (e, room) => {
+	const handleRoomClick = async (e, room) => {
 		e.preventDefault();
 		console.log("name:", room.name);
 
@@ -152,6 +174,29 @@ export default function HomeChat() {
 		setProfileId(user_id);
 	}
 
+	const handleResponse = (notifId, response, senderId, createName) => {
+		if (!clickedNotifications[notifId]) {
+			respondNotification(userId, response, senderId);
+			setClickedNotifications((prev) => ({ ...prev, [notifId]: true }));
+			if (response == "accepté") {
+				console.log("createName dans handleResponse:", createName);
+				joinRoom(createName);
+			}
+		}
+	};
+
+	function makeName(length) {
+		let result = '';
+		const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+		const charactersLength = characters.length;
+		let counter = 0;
+		while (counter < length) {
+			result += characters.charAt(Math.floor(Math.random() * charactersLength));
+			counter += 1;
+		}
+		return result;
+	}
+
 	return (
 		<>
 			<div className="general-chat d-flex justify-content-between">
@@ -167,7 +212,7 @@ export default function HomeChat() {
 								<>
 									<input type="text" placeholder="Nom de la salle" value={createName} onChange={handleChangeCreateRoom} />
 									<button onClick={() => setShowCreatePublicRoom(false)}>Cancel</button>
-									<button onClick={createRoom}>New Room</button>
+									<button onClick={() => createRoom(createName)}>New Room</button>
 									{socket && createdRoomName && <Room/>}
 								</>
 							)}
@@ -177,7 +222,7 @@ export default function HomeChat() {
 									<input type="text" placeholder="Nom de la salle" value={createName} onChange={handleChangeCreateRoom} />
 									<input type="password" placeholder="Mdp de la salle" value={createpassword} onChange={handleChangeCreatePassword} />
 									<button onClick={() => setShowCreatePublicRoom(false)}>Cancel</button>
-									<button onClick={createRoom}>New Room</button>
+									<button onClick={() => createRoom(createName)}>New Room</button>
 									{socket && createdRoomName && <Room/>}
 								</>
 							)}
@@ -187,11 +232,21 @@ export default function HomeChat() {
 					)}
 
 					<h5>Liste des salles</h5>
-					<ul>
-						{listrooms.map((room, index) => (
+					<ul className="liste_salles">
+						{listrooms && listrooms.map((room, index) => (
 							<li key={index}>
 								<Link to={`/room/${room.name}`} onClick={(e) => handleRoomClick(e, room)}>
 									{room.name} {room.password && "🔒"}
+								</Link>
+							</li>
+						))}
+					</ul>
+					<h5>Liste des dms</h5>
+					<ul className="liste_dms">
+						{dmrooms && dmrooms.map((room, index) => (
+							<li key={index}>
+								<Link to={`/room/${room.name}`} onClick={(e) => handleRoomClick(e, room)}>
+									{room.dmname}
 								</Link>
 							</li>
 						))}
@@ -208,7 +263,10 @@ export default function HomeChat() {
 									</button>
 									<ul className="dropdown-menu">
 										<button className="dropdown-item" onClick={() => handleProfile(user.id)}> Profile </button>
-										<button onClick={() => sendInvitation(user.id)}>Inviter {user.name} en privé</button>
+										<button className="dropdown-item" onClick={() => {
+											const randomRoomName = makeName(8);
+											sendNotification(user.id, `${user.name} veut demarrer une discussion avec vous.`, userId, randomRoomName); 
+											createRoom(randomRoomName, user.id);}}> Envoyer une invitation </button>
 									</ul>
 								</li>
 							))}
@@ -226,18 +284,35 @@ export default function HomeChat() {
 						<Profile id={profileId}/>
 					</ModalInstance>
 					<div>
-						<h5>Invitations</h5>
-							<ul>
-								{invitations.map((inv, index) => (
-									<li key={index}>
-										{inv.message}
-										<button onClick={() => acceptInvitation(inv.room_id)}>Accepter ✅</button>
-									</li>
-								))}
-							</ul>
+						<h3>Notifications en temps réel</h3>
+						<ul>
+							{notifications.map((notif, index) => (
+								<li key={index}>
+									{notif.response ? (
+										<p>Réponse : {notif.response}</p>
+									) : (
+										<>
+											{notif.message}
+											{/* <button
+												onClick={() => handleResponse(notif.id, "accepté", notif.sender_id, notif.room_name)}
+												disabled={clickedNotifications[notif.id]}
+											>
+												✅ Accepter
+											</button>
+											<button
+												onClick={() => handleResponse(notif.id, "refusé", notif.sender_id, null)}
+												disabled={clickedNotifications[notif.id]}
+											>
+												❌ Refuser
+											</button> */}
+										</>
+									)}
+								</li>
+							))}
+						</ul>
 					</div>
 
-					{currentChat && (
+					{/* {currentChat && (
 						<div>
 							<h4>Chat Privé</h4>
 							<div>
@@ -248,7 +323,7 @@ export default function HomeChat() {
 							<input value={message} onChange={(e) => setMessage(e.target.value)} />
 							<button onClick={sendMessage}>Envoyer</button>
 						</div>
-					)}
+					)} */}
 				</div>
 			</div>
 			<ToastContainer />

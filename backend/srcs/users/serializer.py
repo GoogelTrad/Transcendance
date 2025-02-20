@@ -52,4 +52,7 @@ class UserSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
         
-        
+class BasicUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'name', 'email']

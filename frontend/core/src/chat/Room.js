@@ -73,15 +73,15 @@ export default function Room() {
 		}
 	}
 
-	const exitRoom = async () => {
-		try {
-			const response = await axiosInstance.post('/livechat/exit-room/', {room_name: roomName});
-			console.log(response.data);
-			navigate(`/chat/`);
-		} catch (error) {
-			console.error("Erreur lors de la sortie de la room", error);
-		}
-	};
+	// const exitRoom = async () => {
+	// 	try {
+	// 		const response = await axiosInstance.post('/livechat/exit-room/', {room_name: roomName});
+	// 		console.log(response.data);
+	// 		navigate(`/chat/`);
+	// 	} catch (error) {
+	// 		console.error("Erreur lors de la sortie de la room", error);
+	// 	}
+	// };
 
 	const clearRoom = async () => {
 		try {
@@ -129,7 +129,7 @@ export default function Room() {
 		try {
 			const response = await axiosInstance.get('/livechat/listroom/');
 			//console.log("DONNEES RECUES:", response.data);
-			setlistrooms(response.data);
+			setlistrooms(response.data.publicRooms);
 		} catch (error) {
 			console.error("Erreur lors de la récupération des salles", error);
 		}
@@ -152,7 +152,7 @@ export default function Room() {
 	const Users_room_list = async () => {
 		try {
 			const reponse = await axiosInstance.get(`livechat/users_room/${roomName}`);
-			setUsersRoom(reponse.data);
+			setUsersRoom(reponse.data.filter((value) => value.id !== userId));
 			console.log("USERS ROOMS :", reponse.data)
 		}
 		catch(error) {
@@ -205,7 +205,7 @@ export default function Room() {
 						<input id="chat-message-input" type="text" size="100" maxLength={maxLength} value={message} onChange={handleChange}/>
 						<p>Caractères restants : {caracteresRestants}</p>
 						<button className="send" onClick={sendMessage}> Send </button>
-						<button className="exit" onClick={exitRoom}> Exit </button>
+						<button className="exit" onClick={() => navigate(`/chat/`)}> Exit </button>
 					</div>
 				</div>
 				<div className="List">
