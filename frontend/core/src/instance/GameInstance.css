@@ -216,6 +216,13 @@ canvas.gamebar {
 	font-family: 'Arrows', sans-serif;
 	font-size: 20px;
 	padding: 100px;
+	position: absolute;
+	display: flex;
+	justify-content: space-around;
+	align-items: center;
+	z-index: 2; 
+	font-family: 'Press Start 2P', cursive;
+	font-size: 20px;
 }
 
 
@@ -240,5 +247,4 @@ canvas.gamebar {
 		max-width: 100%;
 		max-height: 100%;
 	}
-	
 }

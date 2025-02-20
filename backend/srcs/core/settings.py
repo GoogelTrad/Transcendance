@@ -50,6 +50,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'users.middleware.ExposeAuthorizationHeaderMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -159,7 +160,15 @@ REST_FRAMEWORK = {
 AUTH_USER_MODEL = 'users.User'
 
 CORS_ORIGIN_ALLOW_ALL = True
+SECURE_CROSS_ORIGIN_OPENER_POLICY = None
 CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_HEADERS = [
+    "authorization",
+    "content-type",
+]
+CORS_EXPOSE_HEADERS = [
+    "Authorization",
+]
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
@@ -168,3 +177,8 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'cmicheztdc@gmail.com'
 EMAIL_HOST_PASSWORD = 'fqrj jmoh xlak ovrs'
 USE_TZ = True
+
+
+# USE_X_FORWARDED_HOST = True
+# SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+# Pour NGINX et le 2FA

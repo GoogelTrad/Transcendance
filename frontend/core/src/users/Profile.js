@@ -10,8 +10,9 @@ import edit from "../assets/user/edit.svg";
 import x from "../assets/user/x.svg";
 import check from "../assets/user/check.svg"
 import gear from "../assets/user/gear.svg"
+import { AddFriend } from "../friends/Friends"
 
-function ChangeDetails({setUser, setValue, toChange, value})
+function ChangeDetails({setUser, setValue, toChange, value, toType})
 {
 	const navigate = useNavigate();
 	const token = getCookies('token')
@@ -44,7 +45,7 @@ function ChangeDetails({setUser, setValue, toChange, value})
 		<>
 			<form className='userchange-form' onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "row", gap: "0.7rem"}}>
                         <input className='input-form'
-                            type='text'
+                            type={toType}
                             id={toChange}
                             name={toChange}
                             value={detail}
@@ -85,12 +86,22 @@ function Profile({id})
 				},
 			})
 			setUser(response.data);
-			console.log(user.profile_image)
+			console.log(response);
 		} 
 		catch (error) {
 			console.error("Error uploading profile image:", error);
 		}
 	};
+
+	const handleConfirm = async () => 
+	{
+		try {
+			axiosInstance.post(`/api/perms/${decodeToken.id}`);
+		}
+		catch(error){
+			console.log("Error while changing perms on 2FA!");
+		}
+	}
 
 	const fetchUserData = async () => 
 	{
@@ -129,7 +140,7 @@ function Profile({id})
 		<>
 			{user ? (
 				<div className="general-profile">
-					<div className="user-general flex flex-column">
+					<div className="user-general">
 						<div className="profile-general">
 							<label htmlFor="profile_image">
 								<img
@@ -149,7 +160,7 @@ function Profile({id})
 							<div className="general-change">
 								<div className="change">
 									{showChangeUsername ? 
-										<ChangeDetails setUser={setUser} setValue={setShowChangeUsername} toChange={'name'} value={user.name}/> 
+										<ChangeDetails setUser={setUser} setValue={setShowChangeUsername} toChange={'name'} value={user.name} toType={'text'}/> 
 										: 
 										<div style={{ fontSize: "2rem" }}>{user.name}</div>}
 									{isPermitted && !isStud && <button type="button" className="icon-change" onClick={() => setShowChangeUsername(!showChangeUsername)}>{showChangeUsername ? 
@@ -162,20 +173,26 @@ function Profile({id})
 									<div>{user.email}</div> 
 								)}
 							</div>
-
-							<div className="btn-group dropend">
-								<button type="button" className="bouton-drop dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-									<img
-										src={gear}
-										alt='settings'
-									/>
-								</button>
-								<ul className="dropdown-menu">
-									<li><button className="dropdown-item" type="button">Change password</button></li>
-    								<li><button className="dropdown-item" type="button">Enable 2FA</button></li>
-								</ul>
-							</div>
 						</div>
+
+						{isPermitted || isStud ? (<div className="btn-group dropend">
+							<button type="button" className="bouton-drop dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+								<img
+									src={gear}
+									alt='settings'
+								/>
+							</button>
+							<ul className="dropdown-menu">
+								<li><button className="dropdown-item" type="button" onClick={() => setShowChangePassword(true)}>Change password</button></li>
+								<li><button className="dropdown-item" type="button" onClick={handleConfirm}>Enable 2FA</button></li>
+							</ul>
+							{showChangePassword && <ChangeDetails setUser={setUser} setValue={setShowChangePassword} toChange={'password'} value={null} toType={'password'}/>}
+							{isPermitted && !isStud && showChangePassword && <img src={x} className="x-icon" alt="x" onClick={() => setShowChangePassword(false)}/>}
+						</div>)
+						:
+						(<div>
+							<AddFriend id={user.id}/>
+						</div>)}
 					</div>
 				</div>
 			) : (
