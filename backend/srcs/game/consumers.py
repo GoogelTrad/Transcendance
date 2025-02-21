@@ -224,16 +224,16 @@ class GameState:
 
 class gameConsumer(AsyncWebsocketConsumer):
 
-    game_state = None
+    game_states = {}
 
     def __init__(self):  
         self.game_running = False
         self.groups = []
         
     @database_sync_to_async
-    def get_game(self):
+    def get_game(self, game_id):
         try:
-            return Game.objects.first()
+            return Game.objects.get(id=game_id)
         except Exception as e:
             print(f"Error fetching game: {e}")
             return None
@@ -248,11 +248,11 @@ class gameConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.game_id = self.scope['url_route']['kwargs']['game_id']
         self.group_name = f"game_{self.game_id}"
-        if not gameConsumer.game_state:
-            game = await self.get_game()
-            gameConsumer.game_state = GameState(game)
+        if self.game_id not in gameConsumer.game_states:
+            game = await self.get_game(self.game_id)
+            gameConsumer.game_states[self.game_id] = GameState(game)
 
-        self.game_state = gameConsumer.game_state
+        self.game_state = gameConsumer.game_states[self.game_id]
 
         await self.channel_layer.group_add(
             self.group_name,
@@ -266,7 +266,8 @@ class gameConsumer(AsyncWebsocketConsumer):
             self.group_name,
             self.channel_name
         )
-        gameConsumer.game_state = None
+        if self.game_id in gameConsumer.game_states:
+            del gameConsumer.game_states[self.game_id]
         print(f"WebSocket disconnected from game {self.game_id} with close code: {close_code}")
 
     async def receive(self, text_data):
@@ -278,7 +279,7 @@ class gameConsumer(AsyncWebsocketConsumer):
         if "message" in data_dict:
             print(f"WebSocket connected to game {self.game_id}!", flush=True)
             self.game_running = True
-            asyncio.create_task(self.run_game_loop(gameConsumer.game_state))
+            asyncio.create_task(self.run_game_loop(self.game_state))
         if "isKeyDown" in data_dict: 
             key_states = {
                 "isKeyDown": data_dict["isKeyDown"],
@@ -350,10 +351,10 @@ class gameConsumer(AsyncWebsocketConsumer):
     def handle_key_press(self, key_states):
         self.current_key_states = key_states.get("isKeyDown")
         player = key_states.get("player", "P1")
-        self.process_key_states(self.current_key_states, gameConsumer.game_state, player)
+        self.process_key_states(self.current_key_states, self.game_state, player)
 
     def process_key_states(self, key_states, game_state, player):
-        paddle_speed = 10
+        paddle_speed = 20
         if player == "P1":
             if key_states.get("ArrowUp", False):
                 game_state.paddle_data["paddleLeftY"] = max(

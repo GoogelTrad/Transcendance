@@ -218,7 +218,7 @@ function GameInstance ( {children} ) {
 	
 	
 	let keyUpdateTimeout = null;
-	const throttleRate = 50;
+	const throttleRate = 30;
 	
 	const handleKeyPress = (e) => {
 		if (isKeyDown[e.key] === undefined) return;
