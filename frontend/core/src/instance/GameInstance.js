@@ -64,7 +64,7 @@ function GameInstance ( {children} ) {
 	
 	const socketRef = useRef(null);
 	  if (!socketRef.current) {
-		  socketRef.current = new WebSocket(`ws://localhost:8000/ws/game/${id}`);
+		  socketRef.current = new WebSocket(`ws://${window.location.hostname}:8000/ws/game/${id}`);
 	  }
 	  const socket = socketRef.current;
   
@@ -229,7 +229,7 @@ function GameInstance ( {children} ) {
 			const gameState = { isKeyDown: updatedKeyDown, player: player };
 			
 			if (socket.readyState === WebSocket.OPEN && !keyUpdateTimeout) {
-				console.log(gameState);
+				// console.log(gameState);
 				keyUpdateTimeout = setTimeout(() => {
 					socket.send(JSON.stringify(gameState));
 					keyUpdateTimeout = null;

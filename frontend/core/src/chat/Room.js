@@ -14,12 +14,9 @@ export default function Room() {
 	const socket = useSocket('chat', roomName);
 	const [message, setMessage] = useState('');
 	const [chat, setChat] = useState('');
-	// const [nameRoom, setNameRoom] = useState('');
 	const [listrooms, setlistrooms] = useState([]);
 	const [friendList, setFriendList] = useState([]);
 	const [users_room, setUsersRoom] = useState([]);
-	const [chat_message, setChatMessage] = useState([]);
-	const [invitations, setInvitations] = useState([]);
 	const [clickedNotifications, setClickedNotifications] = useState({});
 	const maxLength = 10;
 	const [caracteresRestants, setCaracteresRestants] = useState(maxLength);
@@ -38,10 +35,10 @@ export default function Room() {
 	const handleChange = (event) => {
 		let texte = event.target.value;
 		if (texte.length <= maxLength) {
-		  setMessage(texte);
-		  setCaracteresRestants(maxLength - texte.length);
+			setMessage(texte);
+			setCaracteresRestants(maxLength - texte.length);
 		}
-	  };
+	};
 
 	useEffect(() => {
 		if (socket.ready) {
@@ -76,13 +73,22 @@ export default function Room() {
 		}
 	}
 
-	const exitRoom = async () => {
+	// const exitRoom = async () => {
+	// 	try {
+	// 		const response = await axiosInstance.post('/livechat/exit-room/', {room_name: roomName});
+	// 		console.log(response.data);
+	// 		navigate(`/chat/`);
+	// 	} catch (error) {
+	// 		console.error("Erreur lors de la sortie de la room", error);
+	// 	}
+	// };
+
+	const clearRoom = async () => {
 		try {
 			const response = await axiosInstance.post('/livechat/exit-room/', {room_name: roomName});
 			console.log(response.data);
-			navigate(`/chat/`);
 		} catch (error) {
-			console.error("Erreur lors de la sortie de la room", error);
+			console.error("Erreur lors du clean de la room", error);
 		}
 	};
 
@@ -108,11 +114,13 @@ export default function Room() {
 		if (room.password) {
 			const enteredPassword = prompt(`Mot de passe requis pour "${room.name}" :`);
 			if (enteredPassword) {
+				clearRoom();
 				joinRoom(room.name, enteredPassword);
 			} else {
 				alert("Mot de passe requis !");
 			}
 		} else {
+			clearRoom();
 			joinRoom(room.name);
 		}
 	}
@@ -121,7 +129,7 @@ export default function Room() {
 		try {
 			const response = await axiosInstance.get('/livechat/listroom/');
 			//console.log("DONNEES RECUES:", response.data);
-			setlistrooms(response.data);
+			setlistrooms(response.data.publicRooms);
 		} catch (error) {
 			console.error("Erreur lors de la récupération des salles", error);
 		}
@@ -144,7 +152,7 @@ export default function Room() {
 	const Users_room_list = async () => {
 		try {
 			const reponse = await axiosInstance.get(`livechat/users_room/${roomName}`);
-			setUsersRoom(reponse.data);
+			setUsersRoom(reponse.data.filter((value) => value.id !== userId));
 			console.log("USERS ROOMS :", reponse.data)
 		}
 		catch(error) {
@@ -156,6 +164,14 @@ export default function Room() {
 		listroom();
 		FriendList();
 		Users_room_list();
+
+		// Rafraîchir toutes les 5 secondes
+		const interval = setInterval(() => {
+			Users_room_list();
+		}, 10000);
+
+		// Nettoyer l'intervalle quand le composant est démonté
+		return () => clearInterval(interval);
 	}, [roomName]);
 
 	const handleResponse = (notifId, response, senderId) => {
@@ -189,7 +205,7 @@ export default function Room() {
 						<input id="chat-message-input" type="text" size="100" maxLength={maxLength} value={message} onChange={handleChange}/>
 						<p>Caractères restants : {caracteresRestants}</p>
 						<button className="send" onClick={sendMessage}> Send </button>
-						<button className="exit" onClick={exitRoom}> Exit </button>
+						<button className="exit" onClick={() => navigate(`/chat/`)}> Exit </button>
 					</div>
 				</div>
 				<div className="List">

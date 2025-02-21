@@ -33,6 +33,10 @@
     top: 30%;
 }
 
+.chatModal {
+    top: 47%;
+}
+
 .task-bar-content {
     background-color: transparent;
     display: flex;

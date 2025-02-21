@@ -47,7 +47,7 @@ function HomeGame({setModalStats, setModalTournament, launching, setParentItems}
 
     useEffect(() => {
         if (!socket && waitingForPlayer) {
-            const newSocket = new WebSocket(`ws://localhost:8000/ws/matchmaking/?token=${token}`);
+            const newSocket = new WebSocket(`ws://${window.location.hostname}:8000/ws/matchmaking/?token=${token}`);
             setSocket(newSocket);
         
             newSocket.onmessage = (event) => {
@@ -110,7 +110,7 @@ function HomeGame({setModalStats, setModalTournament, launching, setParentItems}
 
     const submitPlayer = async () => {
         try {
-          const response = await axiosInstance.post(`http://localhost:8000/game/create_game`, { player1 });
+          const response = await axiosInstance.post(`/game/create_game`, { player1 });
           navigate(`/games/${response.data.id}`);
         } catch (error) {
           console.error("Error submitting Player:", error);

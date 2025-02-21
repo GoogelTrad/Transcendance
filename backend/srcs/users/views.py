@@ -32,12 +32,10 @@ class LoginView():
         if not user.check_password(password):
             raise AuthenticationFailed('Incorrect password!')
         
-        
+    
         ip, routable = get_client_ip(request)
-        print(f"old = {user.ip_user}, new = {ip}", flush=True)
         
         if user.ip_user is not ip and not user.enable_verified:
-            print("coucou, l'adresse ip est pas la meme.", flush=True)
             user.last_verified = None
             user.save()
             
@@ -265,3 +263,11 @@ def permission_verif(request, id):
     return response
 
     
+    
+@api_view(['GET'])
+def is_token_valid(request, token):
+    
+    if ValidToken.objects.filter(token=token).exists():
+        return Response(status=status.HTTP_200_OK)
+    else:
+        return Response(status=status.HTTP_404_NOT_FOUND)

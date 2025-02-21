@@ -13,32 +13,27 @@ function useTokenValidation() {
 
     useEffect(() => {
         const validateToken = async () => {
-            const token = getCookies('token');
-			try {
-				const response = await axiosInstance.get(`/api/user/${getJwt(token).id}`);
-			}
-			catch(error) {
-				showToast('error', error);
-			}
-            // if ((!token || typeof token !== 'string') && isAuthenticated === true) {
-            //     console.log('Token expired or invalid, redirecting to login...');
-            //     setIsAuthenticated(false);
-            //     navigate('/login');
-            // }
+            if (isAuthenticated) 
+            {
+                const token = getCookies('token');
+                try {
+                    const response = await axiosInstance.get(`/api/token/${token}`);
+                }
+                catch(error) {
+                    document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+                    setIsAuthenticated(false);
+                    navigate('/');
+                }
+            }
         };
-
-        // const handleUserInteraction = () => validateToken();
-        // document.addEventListener('click', handleUserInteraction);
-
         const interval = setInterval(() => {
             validateToken();
-        }, 600000000);
+        }, 5000);
 
         return () => {
-            // document.removeEventListener('click', handleUserInteraction);
             clearInterval(interval);
         };
-    }, [navigate, setIsAuthenticated]);
+    }, [navigate, setIsAuthenticated, isAuthenticated]);
 }
 
 export default useTokenValidation;

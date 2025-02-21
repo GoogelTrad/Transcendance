@@ -175,7 +175,7 @@ function Profile({id})
 							</div>
 						</div>
 
-						{isPermitted && <div className="btn-group dropend">
+						{isPermitted || isStud ? (<div className="btn-group dropend">
 							<button type="button" className="bouton-drop dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
 								<img
 									src={gear}
@@ -188,12 +188,11 @@ function Profile({id})
 							</ul>
 							{showChangePassword && <ChangeDetails setUser={setUser} setValue={setShowChangePassword} toChange={'password'} value={null} toType={'password'}/>}
 							{isPermitted && !isStud && showChangePassword && <img src={x} className="x-icon" alt="x" onClick={() => setShowChangePassword(false)}/>}
-						</div>}
-
-						{!isPermitted && 
-							<div>
-								<AddFriend id={user.id}/>
-							</div>}
+						</div>)
+						:
+						(<div>
+							<AddFriend id={user.id}/>
+						</div>)}
 					</div>
 				</div>
 			) : (
