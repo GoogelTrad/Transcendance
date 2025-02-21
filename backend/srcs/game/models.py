@@ -1,14 +1,19 @@
 from django.db import models
+from django.contrib.postgres.fields import ArrayField
+
+
 
 class Game(models.Model):
     WAITING = 'waiting'
     STARTED = 'started'
     FINISHED = 'finished'
+    READY = 'ready'
 
     STATUS_CHOICES = [
         (WAITING, 'Waiting for Players'),
         (STARTED, 'Game Started'),
         (FINISHED, 'Game Finished'),
+        (READY, 'Ready waiting to start'),
     ]
 
     timeSeconds = models.IntegerField(default=0)
