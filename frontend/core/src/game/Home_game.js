@@ -85,7 +85,7 @@ function HomeGame({setModalStats, setModalTournament, launching, setParentItems}
     
     const submitPlayer = async () => {
         try {
-          const response = await axiosInstance.post(`http://localhost:8000/game/create_game`, { player1 });
+          const response = await axiosInstance.post(`/game/create_game`, { player1 });
           navigate(`/games/${response.data.id}`);
         } catch (error) {
           console.error("Error submitting Player:", error);
@@ -94,7 +94,7 @@ function HomeGame({setModalStats, setModalTournament, launching, setParentItems}
 
     const submitPlayerMulti = async () => {
         try {
-            const response = await axiosInstance.post('http://localhost:8000/game/create_game_multi');
+            const response = await axiosInstance.post('/game/create_game_multi');
             console.log("Response from game creation:", response.data);
             if (response.data.id) {
                 console.log("Game created, waiting for start...");
@@ -112,7 +112,7 @@ function HomeGame({setModalStats, setModalTournament, launching, setParentItems}
                 if (gameId !== 0) {
                     console.log(user);
                     try {
-                        const gameStatusResponse = await axiosInstance.get(`http://localhost:8000/game/status/${gameId}`);
+                        const gameStatusResponse = await axiosInstance.get(`/game/status/${gameId}`);
                         const gameStatus = gameStatusResponse.data.status;
                         console.log(`Game status for gameId ${gameId}: ${gameStatus}`);
                         if (gameStatus === 'STARTED') {

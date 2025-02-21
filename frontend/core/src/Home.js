@@ -55,6 +55,8 @@ function Home() {
 
     const [items, setItems] = useState([]);
 
+    console.log(`${window.location.hostname}`);
+
     const token = getCookies('token');
     let decodeToken = null;
     if (token)

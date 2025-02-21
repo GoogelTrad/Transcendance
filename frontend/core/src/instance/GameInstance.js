@@ -52,7 +52,7 @@ function GameInstance ( {children} ) {
 	
 	const socketRef = useRef(null);
 	  if (!socketRef.current) {
-		  socketRef.current = new WebSocket(`ws://localhost:8000/ws/game/${id}`);
+		  socketRef.current = new WebSocket(`ws://${window.location.hostname}:8000/ws/game/${id}`);
 	  }
 	  const socket = socketRef.current;
   
