@@ -225,6 +225,9 @@ class GameState:
 class gameConsumer(AsyncWebsocketConsumer):
 
     game_state = None
+    current_key_states = None
+    player = None
+
 
     def __init__(self):  
         self.game_running = False
@@ -300,6 +303,8 @@ class gameConsumer(AsyncWebsocketConsumer):
         try:
             while True:
                 await asyncio.sleep(1 /60)
+                if hasattr(self, 'current_key_states'):
+                    self.process_key_states(gameConsumer.current_key_states, gameConsumer.game_state, gameConsumer.player)
                 game_state.update()
                 current_time = time.time()
                 time_diff = current_time - last_time_updated
@@ -348,9 +353,8 @@ class gameConsumer(AsyncWebsocketConsumer):
             print("Game loop ended", flush=True)
     
     def handle_key_press(self, key_states):
-        self.current_key_states = key_states.get("isKeyDown")
-        player = key_states.get("player", "P1")
-        self.process_key_states(self.current_key_states, gameConsumer.game_state, player)
+        gameConsumer.current_key_states = key_states.get("isKeyDown")
+        gameConsumer.player = key_states.get("player", "P1")
 
     def process_key_states(self, key_states, game_state, player):
         paddle_speed = 10
