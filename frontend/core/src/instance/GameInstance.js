@@ -229,7 +229,7 @@ function GameInstance ( {children} ) {
 			const gameState = { isKeyDown: updatedKeyDown, player: player };
 			
 			if (socket.readyState === WebSocket.OPEN && !keyUpdateTimeout) {
-				console.log(gameState);
+				// console.log(gameState);
 				keyUpdateTimeout = setTimeout(() => {
 					socket.send(JSON.stringify(gameState));
 					keyUpdateTimeout = null;

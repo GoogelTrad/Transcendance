@@ -47,7 +47,7 @@ function HomeGame({setModalStats, setModalTournament, launching, setParentItems}
 
     useEffect(() => {
         if (!socket && waitingForPlayer) {
-            const newSocket = new WebSocket(`ws://localhost:8000/ws/matchmaking/?token=${token}`);
+            const newSocket = new WebSocket(`ws://${window.location.hostname}:8000/ws/matchmaking/?token=${token}`);
             setSocket(newSocket);
         
             newSocket.onmessage = (event) => {
