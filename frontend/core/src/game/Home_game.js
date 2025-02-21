@@ -3,19 +3,16 @@ import '../Home';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min';
 import { Modal, Button } from 'react-bootstrap';
-import { BrowserRouter as Router, Route, Routes, Link, useNavigate } from 'react-router-dom';
-import React, { useEffect, useState } from "react";
+import { BrowserRouter as Router, Route, Routes, Link, useNavigate} from 'react-router-dom';
+import React, { useEffect, useState, useRef } from "react";
 import { jwtDecode } from "jwt-decode";
 import { getCookies } from './../App.js';
 import axiosInstance from "../instance/AxiosInstance";
-import Stats from './Stats.js';
-import Template from '../instance/Template.js';
-import Profile from '../users/Profile.js';
 
 function HomeGame({setModalStats, setModalTournament, launching, setParentItems}) {
     const [player1, setPlayer1] = useState("");
-    const [waitingForPlayer, setwaitingForPlayer] = useState(false);
-    const [onClickWait, setonClickWait] = useState(false);
+    const [waitingForPlayer, setWaitingForPlayer] = useState(false);
+    const [send_Info, setSend_Info] = useState(true)
     const [onClickPlay, setOnClickPlay] = useState(false);
     const [onClickTournament, setOnClickTournament] = useState(false);
     const [onClickStats, setOnClickStats] = useState(false);
@@ -24,7 +21,8 @@ function HomeGame({setModalStats, setModalTournament, launching, setParentItems}
     const [gameCode, setGameCode] = useState("");
     const [numberPlayer, setNumberPlayer] =useState("");
     const navigate = useNavigate();
-    const [gameId, setGameId] = useState(0);
+    const [game, setGame] = useState(null);
+    const [socket, setSocket] = useState(null);
 
     const [items, setItems] = useState([
         { name: 'profile', active: false },
@@ -46,6 +44,37 @@ function HomeGame({setModalStats, setModalTournament, launching, setParentItems}
             console.error("Error decoding token:", error);
         }
     };
+
+    useEffect(() => {
+        if (!socket && waitingForPlayer) {
+            const newSocket = new WebSocket(`ws://localhost:8000/ws/matchmaking/?token=${token}`);
+            setSocket(newSocket);
+        
+            newSocket.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                console.log(data);
+            
+                if (data.game_id) {
+                    console.log('data');
+                    setGame(data);
+                    navigate(`/games/${data.game_id}`);
+                }
+            }; 
+            newSocket.onclose = () => {
+                console.log("Matchmaking webSocket closed");
+            };
+
+            newSocket.onopen = () => {
+                console.log("Matchmaking websocket open")
+                };
+            }
+
+        return () => {
+          if (socket) {
+            socket.close();
+          }
+        };
+      }, [socket, waitingForPlayer]);
 
     useEffect(() => {
         if (user && user.name) {
@@ -79,10 +108,6 @@ function HomeGame({setModalStats, setModalTournament, launching, setParentItems}
         }
     };
 
-    const exitWait = () => {
-        setwaitingForPlayer(false);
-    }
-    
     const submitPlayer = async () => {
         try {
           const response = await axiosInstance.post(`http://localhost:8000/game/create_game`, { player1 });
@@ -91,47 +116,44 @@ function HomeGame({setModalStats, setModalTournament, launching, setParentItems}
           console.error("Error submitting Player:", error);
         }
     };
-
-    const submitPlayerMulti = async () => {
-        try {
-            const response = await axiosInstance.post('http://localhost:8000/game/create_game_multi');
-            console.log("Response from game creation:", response.data);
-            if (response.data.id) {
-                console.log("Game created, waiting for start...");
-                setGameId(response.data.id);
-            }
-        } catch (error) {
-            console.log("Still waiting for another player...");
-        }
-    };
-    
     useEffect(() => {
-        const interval = setInterval(async () => {
-            if (waitingForPlayer === true) {
-                await submitPlayerMulti();
-                if (gameId !== 0) {
-                    console.log(user);
-                    try {
-                        const gameStatusResponse = await axiosInstance.get(`http://localhost:8000/game/status/${gameId}`);
-                        const gameStatus = gameStatusResponse.data.status;
-                        console.log(`Game status for gameId ${gameId}: ${gameStatus}`);
-                        if (gameStatus === 'STARTED') {
-                            setwaitingForPlayer(false);
-                            console.log(waitingForPlayer);
-                            navigate(`/games/${gameId}`);
-                        }
-                    } catch (error) {
-                        console.error("Error checking game status", error);
-                    }
-                }
+        const trySendMessage = () => {
+            if (socket && socket.readyState === WebSocket.OPEN && send_Info) {
+                socket.send(JSON.stringify({ type: 'join' }));
+                setSend_Info(false);
+                console.log("Message sent successfully!");
+            } else {
+                console.log("Socket is not open, retrying...");
             }
-        }, 2000);
+        };
     
-        return () => clearInterval(interval);
-    }, [waitingForPlayer, gameId]);
+        let retryInterval;
     
-    const WaitingPlayer = () => {
-        setwaitingForPlayer(true);
+        if (waitingForPlayer && socket && send_Info) {
+            retryInterval = setInterval(() => {
+                trySendMessage();
+            }, 1000);
+        }
+    
+        return () => {
+            if (retryInterval) {
+                clearInterval(retryInterval);
+            }
+        };
+    }, [socket, waitingForPlayer, send_Info]);
+    
+    
+    
+    const Matchmaking = () =>{
+        setWaitingForPlayer(true);
+    }
+
+
+    const exitWait = () =>{
+        setWaitingForPlayer(false);
+        if (socket) {
+            socket.send(JSON.stringify({ type: 'leave' }));
+        }
     }
 
 return (
@@ -156,7 +178,7 @@ return (
                 <div className="content">
                 <h3 style={{ textAlign: "center" }} onClick={() => handleMenuClick("play")}>Play</h3>
                 <div className="line" onClick={() => submitPlayer('1-player')}> 1 player </div>
-                <div className="line" onClick={() => WaitingPlayer('2-players')}> 2 players - Local </div>
+                <div className="line" onClick={() => Matchmaking('2-players')}> 2 players - Local </div>
                 <div className="line" onClick={() => submitPlayer('2-players')}> 2 players - Online </div>
                 <div className="line" onClick={() => submitPlayer('2-players')}> 4 players - Online </div>
                 </div>
@@ -220,7 +242,7 @@ return (
     ) : (
         <div className="waiting h-100 w-100">
             <h2 className="wait_text" > Waiting for Player...</h2>
-            <div className="line" onClick={() => exitWait('2-players')}> EXIT </div>
+            <div className="line" onClick={() => exitWait()}> EXIT </div>
         </div>
     )
     );
