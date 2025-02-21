@@ -5,30 +5,143 @@ from .models import Game
 import random
 import asyncio
 import time
+import requests
 from channels.layers import get_channel_layer
+from django.contrib.auth.models import AnonymousUser
+import jwt
+import copy
+
+matchmaking_queue = []
+
+class MatchmakingConsumer(AsyncWebsocketConsumer):
+    async def connect(self):
+        token = self.scope.get('query_string', b'').decode().split('=')[1]
+        print(":",token, flush=True)
+        
+        if token:
+            user = await self.authenticate_user(token)
+            if user:
+                self.user = user
+                self.user.auth_token = token
+                await self.accept()
+            else:
+                await self.close()
+        else:
+            await self.close()
+
+    async def disconnect(self, close_code):
+        if self.channel_name in matchmaking_queue:
+            matchmaking_queue.remove(self.channel_name)
+            print(f"User {self.user} removed from the matchmaking queue")
+    async def receive(self, text_data):
+        text_data_json = json.loads(text_data)
+        print(text_data_json, flush=True)
+
+        if text_data_json.get("type") == "join":
+            print(f"User {self.user} joining matchmaking", flush=True)
+            matchmaking_queue.append({
+                'player_name': self.user,
+                'channel_name': self.channel_name
+            })
+            print(f"User {self.user} added to matchmaking queue", flush=True)
+
+            gameData = None
+            if len(matchmaking_queue) >= 2:
+                print(len(matchmaking_queue), flush=True)
+                player1 = matchmaking_queue.pop(0)
+                player2 = matchmaking_queue.pop(0)
+                gameData = await self.create_Game_Multi(self.user.auth_token ,player1['player_name'], player2['player_name'])
+
+            if gameData:
+                game_id = gameData['id']
+                await self.start_game(game_id, player1['channel_name'], player2['channel_name'])
+
+
+    async def authenticate_user(self, token):
+        try:
+            payload = jwt.decode(token, "coucou", algorithms=["HS256"])
+            print("pay :", payload, flush=True)
+            user_id = payload.get('id')
+            if user_id:
+                user = await self.get_user_from_id(user_id)
+                if user:
+                    return user
+            return None
+        except jwt.ExpiredSignatureError:
+            print("Token expired")
+        except jwt.InvalidTokenError:
+            print("Invalid token")
+        return None
+    
+    @database_sync_to_async
+    def get_user_from_id(self, user_id):
+        from users.models import User
+        try:
+            return User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            return None
+
+
+    async def create_Game_Multi(self, token, player1, player2):
+        api_url = "http://localhost:8000/game/create_game"
+        auth_header = {'Authorization': f"Bearer {token}"}
+        data = {
+            'player1': player1,
+            'player2': player2,
+        }
+        
+        try:
+            print('Sending request to create game...', flush=True)
+            response = await asyncio.to_thread(requests.post, api_url, headers=auth_header, data=data)
+            print(f"Response status code: {response.status_code}", flush=True)
+
+            if response.status_code == 201:
+                print('Game created successfully', flush=True)
+                game_data = response.json()
+                return game_data
+            else:
+                return None
+        except requests.exceptions.RequestException as e:
+            print(f"Error with the request: {e}", flush=True)
+            return None
+
+    async def game_update(self, event):
+        await self.send(text_data=json.dumps(event))
+
+    async def start_game(self, game_id, player1, player2):
+        await self.channel_layer.send(player1, {
+            "type": "game_update", 
+            "game_id": game_id,
+        })
+        await self.channel_layer.send(player2, {
+            "type": "game_update",
+            "game_id": game_id,
+        })
+        group_name = f"game_{game_id}"
+        await self.channel_layer.group_add(group_name, player1)
+        await self.channel_layer.group_add(group_name, player2)
 
 
 class GameState:
-    def __init__(self, back_dimensions, game):
+    def __init__(self, game):
         self.timer = {
             "seconds": 0,
             "minutes": 3
         }
-
         self.paddle_data = {
-            "paddleRightY": back_dimensions["height"] / 2 - 170 / 3,
-            "paddleLeftY": back_dimensions["height"] / 2 - 170 / 3,
-            "paddleRightX": back_dimensions["width"] * 0.95 - 17,
-            "paddleLeftX": back_dimensions["width"] * 0.05,
+            "paddleRightY": 826 / 2 - 170 / 3,
+            "paddleLeftY": 826 / 2 - 170 / 3,
+            "paddleRightX": 1536 * 0.95 - 17,
+            "paddleLeftX": 1536 * 0.05,
             "width": 17,
             "height": 170,
-            "height_canvas": back_dimensions["height"],
-            "width_canvas": back_dimensions["width"]
+            "height_canvas": 826,
+            "width_canvas": 1536
         }
 
         self.pong_data = {
-            "pos_x": back_dimensions["width"] / 2,
-            "pos_y": back_dimensions["height"] / 2,
+            "pos_x": 1536 / 2,
+            "pos_y": 826 / 2,
             "width": 20,
             "velocity_x": 8,
             "velocity_y": 8
@@ -111,6 +224,15 @@ class GameState:
 
 class gameConsumer(AsyncWebsocketConsumer):
 
+    game_state = None
+    current_key_states = None
+    player = None
+
+
+    def __init__(self):  
+        self.game_running = False
+        self.groups = []
+        
     @database_sync_to_async
     def get_game(self):
         try:
@@ -129,13 +251,17 @@ class gameConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.game_id = self.scope['url_route']['kwargs']['game_id']
         self.group_name = f"game_{self.game_id}"
-        self.game_state = None
-        self.game_running = False
+        if not gameConsumer.game_state:
+            game = await self.get_game()
+            gameConsumer.game_state = GameState(game)
+
+        self.game_state = gameConsumer.game_state
+
         await self.channel_layer.group_add(
             self.group_name,
             self.channel_name
         )
-        print(f"WebSocket connected to game {self.game_id}!", flush=True)
+
         await self.accept()
 
     async def disconnect(self, close_code):
@@ -143,6 +269,7 @@ class gameConsumer(AsyncWebsocketConsumer):
             self.group_name,
             self.channel_name
         )
+        gameConsumer.game_state = None
         print(f"WebSocket disconnected from game {self.game_id} with close code: {close_code}")
 
     async def receive(self, text_data):
@@ -151,22 +278,16 @@ class gameConsumer(AsyncWebsocketConsumer):
         except json.JSONDecodeError:
             print("Error decoding JSON data")
             return
-
-        if "width" in data_dict and not self.game_running:
-            game = await self.get_game()
-            width = data_dict.get("width")
-            height = data_dict.get("height")
-            back_dimensions = {"width": width, "height": height}
-            self.game_state = GameState(back_dimensions, game)
+        if "message" in data_dict:
             print(f"WebSocket connected to game {self.game_id}!", flush=True)
             self.game_running = True
-            asyncio.create_task(self.run_game_loop(self.game_state))
-
-        if "isKeyDown" in data_dict:
-            key_states = data_dict["isKeyDown"]
-            if self.game_state:
-                self.handle_key_press(key_states)
-
+            asyncio.create_task(self.run_game_loop(gameConsumer.game_state))
+        if "isKeyDown" in data_dict: 
+            key_states = {
+                "isKeyDown": data_dict["isKeyDown"],
+                "player": data_dict["player"]
+            }
+            self.handle_key_press(key_states)
 
     async def send_message(self, message):
         channel_layer = get_channel_layer()
@@ -182,10 +303,8 @@ class gameConsumer(AsyncWebsocketConsumer):
         try:
             while True:
                 await asyncio.sleep(1 /60)
-
                 if hasattr(self, 'current_key_states'):
-                    self.process_key_states(self.current_key_states, game_state)
-
+                    self.process_key_states(gameConsumer.current_key_states, gameConsumer.game_state, gameConsumer.player)
                 game_state.update()
                 current_time = time.time()
                 time_diff = current_time - last_time_updated
@@ -216,6 +335,7 @@ class gameConsumer(AsyncWebsocketConsumer):
                 })
                 if game_state.is_game_over():
                     print(f"Game Over! Winner: {game_state.winner}", flush=True)
+                    print(f"Game Over! Loser: {game_state.loser}", flush=True)
                     await self.send_message({
                         "type": "game_update",
                         "score_P1": game_state.score["score_P1"],
@@ -233,25 +353,28 @@ class gameConsumer(AsyncWebsocketConsumer):
             print("Game loop ended", flush=True)
     
     def handle_key_press(self, key_states):
-        self.current_key_states = key_states
+        gameConsumer.current_key_states = key_states.get("isKeyDown")
+        gameConsumer.player = key_states.get("player", "P1")
 
-    def process_key_states(self, key_states, game_state):
+    def process_key_states(self, key_states, game_state, player):
         paddle_speed = 10
-        if key_states.get("ArrowUp", False):
-            game_state.paddle_data["paddleRightY"] = max(
-                0, game_state.paddle_data["paddleRightY"] - paddle_speed
-            )
-        if key_states.get("ArrowDown", False):
-            game_state.paddle_data["paddleRightY"] = min(
-                game_state.paddle_data["height_canvas"] - game_state.paddle_data["height"],
-                game_state.paddle_data["paddleRightY"] + paddle_speed,
-            )
-        if key_states.get("z", False):
-            game_state.paddle_data["paddleLeftY"] = max(
-                0, game_state.paddle_data["paddleLeftY"] - paddle_speed
-            )
-        if key_states.get("s", False):
-            game_state.paddle_data["paddleLeftY"] = min(
-                game_state.paddle_data["height_canvas"] - game_state.paddle_data["height"],
-                game_state.paddle_data["paddleLeftY"] + paddle_speed,
+        if player == "P1":
+            if key_states.get("ArrowUp", False):
+                game_state.paddle_data["paddleLeftY"] = max(
+                    0, game_state.paddle_data["paddleLeftY"] - paddle_speed
+                )
+            if key_states.get("ArrowDown", False):
+                game_state.paddle_data["paddleLeftY"] = min(
+                    game_state.paddle_data["height_canvas"] - game_state.paddle_data["height"],
+                    game_state.paddle_data["paddleLeftY"] + paddle_speed,
+                )
+        elif player == "P2":
+            if key_states.get("ArrowUp", False):
+                game_state.paddle_data["paddleRightY"] = max(
+                    0, game_state.paddle_data["paddleRightY"] - paddle_speed
+                )
+            if key_states.get("ArrowDown", False):
+                game_state.paddle_data["paddleRightY"] = min(
+                    game_state.paddle_data["height_canvas"] - game_state.paddle_data["height"],
+                    game_state.paddle_data["paddleRightY"] + paddle_speed,
             )
