@@ -104,6 +104,16 @@ function Stats({ itemsArray = [] }) {
             setupMedals(games, "Played", 10, 20, 30);
             setupMedals(winGames, "Win", 5, 10, 15);
             setupMedals(friendList, "Friennds", 5, 10, 15);
+
+            const BestScoreFiltered = winGames.filter(score => 
+                (score.player2 === decodeToken.name && score.score_player_2 === 11) || 
+                (score.player1 === decodeToken.name && score.score_player_1 === 11)
+            );
+            setupMedals(BestScoreFiltered, "BestScore", 5, 10, 15);
+
+            const BestTimeFiltered = winGames.filter(time => time.timeMinutes === '2');
+            setupMedals(BestTimeFiltered, "BestTime", 5, 10, 15);
+            console.log("best", BestTimeFiltered);
         }
     }, [games, id, searchFriend]);
     
@@ -157,6 +167,8 @@ function Stats({ itemsArray = [] }) {
     useEffect(() => {
         const activeOption = option.find(option => option.active);
         setSelectedOption(activeOption || null);
+        console.log(decodeToken);
+        console.log("Image : ", decodeToken.profile_image_url);
     }, [option]);
 
 
@@ -239,13 +251,27 @@ function Stats({ itemsArray = [] }) {
                     <div className={`stats-zone ${mode.find(mode => mode.name === 'profile')?.active ? 'expanded left' : ''} left d-flex flex-reverse`}>
                         <div className="stats-zone-content d-flex flex-row w-100 h-100">
                         <div className="stats-col d-flex flex-column h-100 w-50" style={{ justifyContent:'space-between', alignItems:'center'}}>
-                            <div className="stats-row-element empty-row flex-grow-1"></div>
-                            <div className="stats-row-element empty-row flex-grow-1"></div>
-                            <div className="stats-row-element flex-grow-1">
+                            <div className="stats-row-element empty-row flex-grow-1" style={{height: `50%`}}>
+                                <label htmlFor="profile_image" >
+                                    <img
+                                        src={decodeToken.profile_image_url ? `http://localhost:8000${decodeToken.profile_image_url}` : '/default.png'}
+                                        alt="Profile"
+                                        className="profile-picture"
+                                        title='profile'
+                                    />
+                                </label>
+                            </div>
+                            <div className="stats-row-element empty-row flex-grow-1" style={{ height: "20%", display: "flex", alignItems: "flex-start" }}>{decodeToken.name}</div>
+                            <div className="stats-row-element flex-grow-1" style={{height: `30%`}}>
                             <div className="text-center">
                                 <div className="stats-text">Winrate Ratio</div>
-                                <div className="counter">{Math.round((games?.length / winGames?.length) * 10) || "0"}% </div>
-                            </div>
+                                    <div className="counter">
+                                        {games?.length && winGames?.length 
+                                        ? Math.round((winGames?.length / games?.length) * 100) + "%"
+                                        : "0%"
+                                        }
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         <div className="stats-col d-flex flex-column h-100 w-50" style={{ margin: '3%', justifyContent:'space-between', alignItems:'center'}}>
@@ -303,7 +329,7 @@ function Stats({ itemsArray = [] }) {
                                     { key: "BestScore" },
                                     { key: "BestTime" }
                                     ].map((medal, index) => (
-                                    <div key={index} className="d-flex row w-100 mb-2" style={{ height: '20%' }}>
+                                    <div key={index} className="d-flex row w-100 mb-2" style={{ height: '18%' }}>
                                         <div className="h-100 d-flex justify-content-center align-items-center" style={{ width: '33%' }}>
                                             <img
                                                 src={bronze}

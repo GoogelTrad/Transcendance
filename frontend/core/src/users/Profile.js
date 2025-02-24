@@ -93,7 +93,7 @@ function Profile({id})
 		}
 	};
 
-	const handleConfirm = async () => 
+	const handleConfirm = async () =>
 	{
 		try {
 			axiosInstance.post(`/api/perms/${decodeToken.id}`);

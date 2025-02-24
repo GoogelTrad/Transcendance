@@ -19,9 +19,7 @@ function Tournament({ setSettings, tournamentSettings, modalCreateTournament, se
     const [maxScore, setMaxScore] = useState(0);
     const [tournamentCode, setTournamentCode] = useState(8);
     const [columnBracket, setColumnBracket] = useState(0);
-    const lineRef = useRef(null);
-    const [errorMessage, setErrorMessage] = useState("");
-    const [titlePositionRules, setTitlePositionRules] = useState(-20);    
+    const [errorMessage, setErrorMessage] = useState("");   
     const [marioData, setMarioData] = useState ({
         marioPosition: 4,
         isMarioInit: true,
@@ -244,8 +242,6 @@ function Tournament({ setSettings, tournamentSettings, modalCreateTournament, se
             calculatedColumnBracket -= 2;
         } else if (tournamentSettings.numberPlayer === "4") {
             calculatedColumnBracket = 5;
-        } else if (tournamentSettings.numberPlayer === "8") {
-            calculatedColumnBracket -= 1;
         }
         setColumnBracket(calculatedColumnBracket);
     }, [tournamentSettings.numberPlayer]);
@@ -357,6 +353,9 @@ function Tournament({ setSettings, tournamentSettings, modalCreateTournament, se
                                 >
                                     ••• settings •••
                                 </div>
+                            )}
+                            {marioData.isMarioJump && (
+                                <div className="h-100 w-100 f-flex" style={{top: '10%', position: 'relative', padding: '5%'}}>cc</div>
                             )}
                         </div>
                     </div>

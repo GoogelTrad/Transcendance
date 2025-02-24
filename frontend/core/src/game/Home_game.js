@@ -199,7 +199,6 @@ return (
                             >
                                 <option value="2">2 players</option>
                                 <option value="4">4 players</option>
-                                <option value="8">8 players</option>
                             </select>
                             <button onClick={() => handleClickTournament("create")}> ✅ </button>
                         </p>
