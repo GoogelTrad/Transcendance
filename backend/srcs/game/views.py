@@ -11,7 +11,7 @@ from django.http import HttpResponse
 from .models import Game
 from users.models import User
 import jwt
-from django.db.models import Q
+import os
 
 class HomeGameView:
     @api_view(['POST'])
@@ -22,7 +22,7 @@ class HomeGameView:
         else:
             token = None
 
-        payload = jwt.decode(jwt=token, key='coucou', algorithms=['HS256'])
+        payload = jwt.decode(jwt=token, key=os.getenv('JWT_KEY'), algorithms=['HS256'])
         user = get_object_or_404(User, name=payload.get('name'))
         data = request.data.copy()
 
@@ -69,7 +69,7 @@ class GameView:
             'name'  : name,
         }
 
-        token = jwt.encode(payload, 'coucou', 'HS256')
+        token = jwt.encode(payload, os.getenv('JWT_KEY'), 'HS256')
 
         response = Response()
 
