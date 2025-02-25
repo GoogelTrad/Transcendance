@@ -9,6 +9,7 @@ from django.utils.timezone import now
 from datetime import timedelta
 from .views import refresh_token
 import jwt
+import os
 from ipware import get_client_ip
 from django.utils.deprecation import MiddlewareMixin
 
@@ -42,7 +43,7 @@ class SimpleMiddleware:
                 if not ValidToken.objects.filter(token=token).exists():
                     raise AuthenticationFailed('Invalid or expired token!')
                 
-                payload = jwt.decode(token, 'coucou', algorithms=['HS256'])
+                payload = jwt.decode(token, os.getenv('JWT_KEY'), algorithms=['HS256'])
                 user = User.objects.filter(id=payload['id']).first()
                 if user is not None:
                     request.user = user

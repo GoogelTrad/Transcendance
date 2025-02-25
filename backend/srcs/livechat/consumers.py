@@ -4,6 +4,7 @@ from channels.layers import get_channel_layer
 from users.models import User
 from .models import Room, Message
 import jwt
+import os
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
@@ -27,7 +28,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
             print(f"📢 Token reçu : {token}")
 
-            decoded_token = jwt.decode(token, 'coucou', algorithms=['HS256'])
+            decoded_token = jwt.decode(token, os.getenv('JWT_KEY'), algorithms=['HS256'])
             print(f"📢 Token décodé : {decoded_token}")
 
             user_id = decoded_token.get('id')
@@ -208,7 +209,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
 class NotificationConsumer(AsyncWebsocketConsumer):
     async def getUsers(self):
-        token = jwt.decode(self.scope['cookies']['token'], 'coucou', algorithms=['HS256'])
+        token = jwt.decode(self.scope['cookies']['token'], os.getenv('JWT_KEY'), algorithms=['HS256'])
         return await User.objects.aget(id=token['id'])
     
     async def connect(self):

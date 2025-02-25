@@ -16,6 +16,7 @@ from django.conf import settings
 from django.utils.timezone import now
 import random
 import jwt
+import os
 
 
 class LoginView():
@@ -64,7 +65,7 @@ class LoginView():
             'is_stud': user.is_stud,
         }
 
-        token = jwt.encode(payload, 'coucou', 'HS256')
+        token = jwt.encode(payload, os.getenv('JWT_KEY'), 'HS256')
         if ValidToken.objects.filter(user=user).exists():
             ValidToken.objects.filter(user=user).delete()
         ValidToken.objects.create(user=user, token=token)
@@ -112,7 +113,7 @@ class UserView():
                         'is_stud': user.is_stud,
                     }
                     reponse = Response()
-                    new_token = jwt.encode(payload, 'coucou', 'HS256')
+                    new_token = jwt.encode(payload, os.getenv('JWT_KEY'), 'HS256')
                     
                     print(f'newtoken = {new_token}', flush=True)
                     
@@ -120,7 +121,7 @@ class UserView():
                     ValidToken.objects.create(user=user, token=new_token)
                     
                     reponse.delete_cookie('token')
-                    token = jwt.encode(payload, 'coucou', 'HS256')
+                    token = jwt.encode(payload, os.getenv('JWT_KEY'), 'HS256')
                     reponse.set_cookie(key='token', value=new_token, max_age=3600)
                     reponse.data = serializer.data
                     
@@ -217,7 +218,7 @@ def verify_code(request):
             'is_stud': user.is_stud,
         }
 
-        token = jwt.encode(payload, 'coucou', 'HS256')
+        token = jwt.encode(payload, os.getenv('JWT_KEY'), 'HS256')
         if ValidToken.objects.filter(user=user).exists():
             ValidToken.objects.filter(user=user).delete()
         ValidToken.objects.create(user=user, token=token)
@@ -236,8 +237,8 @@ def verify_code(request):
 
 def refresh_token(user, old_token):
     try:
-        payload = jwt.decode(old_token, 'coucou', algorithms=['HS256'])
-        new_token = jwt.encode(payload, 'coucou', 'HS256')
+        payload = jwt.decode(old_token, os.getenv('JWT_KEY'), algorithms=['HS256'])
+        new_token = jwt.encode(payload, os.getenv('JWT_KEY'), 'HS256')
 
         ValidToken.objects.filter(user=user).delete()
         ValidToken.objects.create(user=user, token=new_token)
@@ -270,4 +271,8 @@ def is_token_valid(request, token):
     if ValidToken.objects.filter(token=token).exists():
         return Response(status=status.HTTP_200_OK)
     else:
+        payload = jwt.decode(token, os.getenv('JWT_KEY'), algorithms=['HS256'])
+        user = User.objects.filter(id=payload[id]).first()
+        user.status = "offline"
+        user.save()
         return Response(status=status.HTTP_404_NOT_FOUND)

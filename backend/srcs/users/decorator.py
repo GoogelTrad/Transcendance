@@ -2,6 +2,7 @@ from django.contrib.auth import get_user_model
 from functools import wraps
 from rest_framework.exceptions import AuthenticationFailed
 import jwt
+import os
 
 def jwt_auth_required(view_func):
     @wraps(view_func)
@@ -13,7 +14,7 @@ def jwt_auth_required(view_func):
 
         try:
             token = auth_header.split(' ')[1]
-            payload = jwt.decode(token, 'coucou', algorithms=['HS256'])
+            payload = jwt.decode(token, os.getenv('JWT_KEY'), algorithms=['HS256'])
             user = get_user_model().objects.get(id=payload['id'])
             request.user = user
         except jwt.ExpiredSignatureError:

@@ -1,6 +1,8 @@
 from rest_framework import serializers
 from .models import User
 from friends.serializer import FriendSerializer
+from django.core.exceptions import ValidationError
+import re
 
 class UserSerializer(serializers.ModelSerializer):
     friends = FriendSerializer(many=True, read_only=True)
@@ -16,6 +18,18 @@ class UserSerializer(serializers.ModelSerializer):
             return obj.profile_image.url
         return None   
     
+    def validate_password(self, password):
+        if len(password) < 8:
+            raise ValidationError("Le mot de passe doit contenir au moins 8 caractères.")
+        if not any(char.isupper() for char in password):
+            raise ValidationError("Le mot de passe doit contenir au moins une majuscule.")
+        if not any(char.islower() for char in password):
+            raise ValidationError("Le mot de passe doit contenir au moins une minuscule.")
+        if not any(char.isdigit() for char in password):
+            raise ValidationError("Le mot de passe doit contenir au moins un chiffre.")
+        if not re.search(r"[@$!%*?&]", password):
+            raise ValidationError("Le mot de passe doit contenir au moins un caractère spécial (@$!%*?&).")
+
     def validate(self, data):
         password = data.get('password')
         password_confirm = data.get('password_confirm')
@@ -25,7 +39,6 @@ class UserSerializer(serializers.ModelSerializer):
         
         return data
 
-    #pour hash le password
     def create(self, validated_data):
         password_confirm = validated_data.pop('password_confirm')
         password = validated_data.pop('password', None)
@@ -34,18 +47,15 @@ class UserSerializer(serializers.ModelSerializer):
             instance.set_password(password)
         
         instance.save()
-
         return instance
 
     def update(self, instance, validated_data):
         validated_data.pop('password_confirm', None)
         password = validated_data.pop('password', None)
 
-        # Mettre à jour les autres champs
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
 
-        # Hacher et mettre à jour le mot de passe si fourni
         if password is not None:
             instance.set_password(password)
 

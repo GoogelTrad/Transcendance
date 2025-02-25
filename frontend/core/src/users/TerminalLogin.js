@@ -5,6 +5,7 @@ import axiosInstance from '../instance/AxiosInstance';
 import logo from '../assets/user/logo.png'
 import './TerminalLogin.css';
 import { HandleAuth } from './AuthSchool';
+import { ValidatePassword } from './LoginForm';
 
 function TerminalLogin({setModal, launching, setTerminal, removeLaunch})
 {
@@ -183,6 +184,20 @@ function TerminalLogin({setModal, launching, setTerminal, removeLaunch})
                     return;
                 }
             }
+
+            if (currentStepLabel.toLowerCase().includes("password")) {
+                if (!ValidatePassword(input))
+                {
+                    const maskedInput = input.replace(/./g, '*');
+                    setLines((prevLines) => [
+                        ...prevLines,
+                        `> ${maskedInput}`,
+                        "The password must be at least 8 characters long, 1 uppercase, 1 lowercase, 1 number and 1 special character (@$!%*?&).",
+                    ]);
+                    return;
+                }
+            }
+    
     
             setCommandArgs((prevArgs) => [...prevArgs, input]);
             if (isPassword) {
