@@ -28,3 +28,7 @@
     height: 40%;
     width: 20%;
 }
+
+.liste_salles {
+    overflow-y: scroll;
+}

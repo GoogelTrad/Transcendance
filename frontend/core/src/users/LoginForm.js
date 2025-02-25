@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Button from 'react-bootstrap/Button';
 import { useNavigate, Link } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
@@ -7,11 +7,27 @@ import axiosInstance from '../instance/AxiosInstance';
 import 'react-toastify/dist/ReactToastify.css';
 import './LoginForm.css';
 import { useAuth } from './AuthContext';
+import AuthSchool from './AuthSchool';
+
+export function ValidatePassword(password){
+    const minLength = 8;
+    const hasUpperCase = /[A-Z]/.test(password);
+    const hasLowerCase = /[a-z]/.test(password);
+    const hasNumber = /\d/.test(password);
+    const hasSpecialChar = /[@$!%*?&]/.test(password);
+
+    if (password && password.length >= minLength && hasUpperCase && hasLowerCase && hasNumber && hasSpecialChar) 
+        return true;
+    else 
+        return false;
+};
 
 function LoginRegister({setModal, setTerminal, removeLaunch}) {
     const [step, setStep] = useState(false);
     const [code, setCode] = useState();
     const navigate = useNavigate();
+    const [rulesPassword, setRulesPassword] = useState(false);
+    const authChannel = new BroadcastChannel("auth_channel");
     const {isAuthenticated, setIsAuthenticated} = useAuth();
     const [loginData, setLoginData] = useState({
         name: 'f',
@@ -33,16 +49,8 @@ function LoginRegister({setModal, setTerminal, removeLaunch}) {
         });
     };
 
-    const handleSchoolLogin = async (e) => {
-        e.preventDefault();
-        if(isAuthenticated)
-            return showToast('error', 'Alrealdy connected!');
-        try {
-            window.location.href = "http://localhost:8000/auth/code";
-        }
-        catch(error) {
-            return "Error while trying to connect with 42."
-        }
+    const handleSchoolLogin = () => {    
+        AuthSchool();  
     }
 
     const handleRegisterChange = (e) => {
@@ -108,6 +116,9 @@ function LoginRegister({setModal, setTerminal, removeLaunch}) {
         for (const [key, value] of Object.entries(registerData)) {
             data.append(key, value);
         }
+        setRulesPassword(false);
+        if (!ValidatePassword(data.password))
+            setRulesPassword(true);
         if(isAuthenticated)
             return showToast('error', 'Cannot create new account while connected!');
         try {
@@ -122,6 +133,25 @@ function LoginRegister({setModal, setTerminal, removeLaunch}) {
         }
     };
 
+    useEffect(() => {
+        authChannel.onmessage = (event) => {
+            const { token } = event.data;
+            if (token) {
+                document.cookie = `token=${token}`;
+                setIsAuthenticated(true);
+                setModal(false);
+                setTerminal(false);
+                removeLaunch("terminal");
+                removeLaunch("forms");
+                navigate('/');
+            }
+        };
+
+        return () => {
+            authChannel.close();
+        };
+    }, []);
+    
     return (
             <div className="coucou row">
                 {step === false ? (
@@ -156,7 +186,8 @@ function LoginRegister({setModal, setTerminal, removeLaunch}) {
                                 <Button type='submit' className='submit-button btn btn-primary'>Login</Button>
                             </form>
                             <div>
-                                <Button type="submit" className='submit-button btn btn-primary' onClick={handleSchoolLogin}>42</Button>
+                                <AuthSchool/>
+                                {/* <Button type="submit" className='submit-button btn btn-primary' onClick={AuthSchool}>42</Button> */}
                             </div>
                         </div>
                     </div>
@@ -212,8 +243,23 @@ function LoginRegister({setModal, setTerminal, removeLaunch}) {
                                     required
                                     placeholder='Password'>
                                 </input>
+                                {rulesPassword && 
+                                    <p className='rule-password'>
+                                        Password need to contains :
+                                        <br />
+                                            At least 8 characters long
+                                        <br / >
+                                            At least 1 uppercase
+                                        <br />
+                                            At least 1 lowercase
+                                        <br />
+                                            At least 1 number
+                                        <br />
+                                            At least 1 special caractere (@$!%*?&)
+                                    </p>
+                                }
                             </div>
-                            <div className=' mb-3'>
+                            <div className='mb-3'>
                                 <label htmlFor='password_confirm'>Confirm Password:</label>
                                 <input className='register-input'
                                     type='password'

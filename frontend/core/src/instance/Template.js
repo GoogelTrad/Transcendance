@@ -34,7 +34,6 @@ function Template({ children, taskBarContent, launching, appArray }) {
 
     const handleClick= (modalName) =>
     {
-        console.log('coucou')
         const app = appArray.find((item) => item.name === modalName);
 
         if (!app) return;

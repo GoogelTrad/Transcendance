@@ -9,7 +9,7 @@ import Home_game from './game/Home_game';
 import Stats from './game/Stats';
 import { Game, Games} from './game/game';
 import { AuthProvider, useAuth } from './users/AuthContext';
-import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Link, Navigate } from 'react-router-dom';
 import Profile from './users/Profile';
 import ProtectedRoute from './instance/RouteInstance';
 import { jwtDecode } from 'jwt-decode';
@@ -18,6 +18,8 @@ import Room from "./chat/Room";
 import useTokenValidation from './instance/EventListener';
 import LoginRegister from './users/LoginForm';
 import Tournament from './game/Tournament';
+import AuthSchool, { AuthSuccess } from './users/AuthSchool';
+import { useEffect } from 'react';
 
 export function getCookies(name) {
   const value = document.cookie;
@@ -52,6 +54,7 @@ function App() {
             </div>
 
             <Routes>
+              <Route path="/" element={<Navigate to="/home" replace />} />
               <Route path="/home" element={<Home />} />
               <Route path="/login" element={<LoginRegister />} />
               <Route path='/logout' element={<ProtectedRoute><Logout /></ProtectedRoute>} />
@@ -64,6 +67,7 @@ function App() {
               <Route path='/games/:id' element={<Games />} />
               <Route path='/games/Stats'  element={<Stats />} />
               <Route path='/games/Tournament' element={<Tournament />} />
+              <Route path="/auth-success" element={<AuthSuccess />} />
             </Routes>
           
           </div>

@@ -4,6 +4,8 @@ import { useAuth } from './AuthContext';
 import axiosInstance from '../instance/AxiosInstance';
 import logo from '../assets/user/logo.png'
 import './TerminalLogin.css';
+import { HandleAuth } from './AuthSchool';
+import { ValidatePassword } from './LoginForm';
 
 function TerminalLogin({setModal, launching, setTerminal, removeLaunch})
 {
@@ -17,6 +19,7 @@ function TerminalLogin({setModal, launching, setTerminal, removeLaunch})
     const [commandArgs, setCommandArgs] = useState([]);
     const [isPassword, setIsPassword] = useState(false);
     const [name, setName] = useState("");
+    const [isSchool, setIsSchool] = useState(false);
 
     const helpLine = [
         {name: "login", value: "You can log in with username and password!"},
@@ -127,7 +130,7 @@ function TerminalLogin({setModal, launching, setTerminal, removeLaunch})
         else if (command === "register")
             return await handleRegister(args);
         else if (command === "school")
-            return await handleSchoolLogin();
+            return handleSchoolLogin();
         else if (command === "clear")
             return await handleClear();
         else if (command === "help")
@@ -136,15 +139,10 @@ function TerminalLogin({setModal, launching, setTerminal, removeLaunch})
             return await handleForms();
     };
 
-    const handleSchoolLogin = async (e) => 
-        {
-            try {
-                window.location.href = "http://localhost:8000/auth/code";
-            }
-            catch(error) {
-                return "Error while trying to connect with 42."
-            }
-        }
+    const handleSchoolLogin = () => 
+    {
+        setIsSchool(true);
+    }
 
     const handleInput = async (input) => {
         if (isTwoFactorRequired) {
@@ -155,8 +153,7 @@ function TerminalLogin({setModal, launching, setTerminal, removeLaunch})
                 setIsTwoFactorRequired(false);
             return;
         }
-
-        console.log(currentCommandRef.current);
+        
         if (!currentCommandRef.current) {
             const [command] = input.split(" ");
 
@@ -187,6 +184,20 @@ function TerminalLogin({setModal, launching, setTerminal, removeLaunch})
                     return;
                 }
             }
+
+            if (currentStepLabel.toLowerCase().includes("password")) {
+                if (!ValidatePassword(input))
+                {
+                    const maskedInput = input.replace(/./g, '*');
+                    setLines((prevLines) => [
+                        ...prevLines,
+                        `> ${maskedInput}`,
+                        "The password must be at least 8 characters long, 1 uppercase, 1 lowercase, 1 number and 1 special character (@$!%*?&).",
+                    ]);
+                    return;
+                }
+            }
+    
     
             setCommandArgs((prevArgs) => [...prevArgs, input]);
             if (isPassword) {
@@ -258,6 +269,8 @@ function TerminalLogin({setModal, launching, setTerminal, removeLaunch})
                     />
                     </div>
                 )}
+
+                {isSchool ? (<HandleAuth />) : (null)}
             </div>
     );
 }
