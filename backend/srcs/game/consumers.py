@@ -225,6 +225,9 @@ class GameState:
 class gameConsumer(AsyncWebsocketConsumer):
 
     game_states = {}
+    paddle_data = {}
+    current_key_states = {}
+    player = {}
 
     def __init__(self):  
         self.game_running = False
@@ -268,6 +271,10 @@ class gameConsumer(AsyncWebsocketConsumer):
         )
         if self.game_id in gameConsumer.game_states:
             del gameConsumer.game_states[self.game_id]
+        if self.game_id in gameConsumer.paddle_data:
+            del gameConsumer.paddle_data[self.game_id]
+        if self.game_id in gameConsumer.player:
+            gameConsumer.player[self.game_id] = ""
         print(f"WebSocket disconnected from game {self.game_id} with close code: {close_code}")
 
     async def receive(self, text_data):
@@ -280,17 +287,17 @@ class gameConsumer(AsyncWebsocketConsumer):
             print(f"WebSocket connected to game {self.game_id}!", flush=True)
             self.game_running = True
             asyncio.create_task(self.run_game_loop(self.game_state))
-        if "isKeyDown" in data_dict: 
-            key_states = {
+        if "isKeyDown" in data_dict:
+            gameConsumer.paddle_data[self.game_id] = {
                 "isKeyDown": data_dict["isKeyDown"],
                 "player": data_dict["player"]
             }
-            self.handle_key_press(key_states)
+            print(gameConsumer.paddle_data[self.game_id], flush=True)
+            self.handle_key_press(gameConsumer.paddle_data[self.game_id])
 
     async def send_message(self, message):
         channel_layer = get_channel_layer()
         await channel_layer.group_send(self.group_name, message)
-
 
     async def game_update(self, event):
         await self.send(text_data=json.dumps(event))
@@ -301,6 +308,8 @@ class gameConsumer(AsyncWebsocketConsumer):
         try:
             while True:
                 await asyncio.sleep(1 /60)
+                if hasattr(gameConsumer, 'current_key_states') and self.game_id in gameConsumer.current_key_states:
+                    self.process_key_states(gameConsumer.current_key_states[self.game_id], game_state, gameConsumer.player[self.game_id])
                 game_state.update()
                 current_time = time.time()
                 time_diff = current_time - last_time_updated
@@ -349,9 +358,8 @@ class gameConsumer(AsyncWebsocketConsumer):
             print("Game loop ended", flush=True)
     
     def handle_key_press(self, key_states):
-        self.current_key_states = key_states.get("isKeyDown")
-        player = key_states.get("player", "P1")
-        self.process_key_states(self.current_key_states, self.game_state, player)
+        gameConsumer.current_key_states[self.game_id] = key_states.get("isKeyDown")
+        gameConsumer.player[self.game_id] = key_states.get("player", "P1")
 
     def process_key_states(self, key_states, game_state, player):
         paddle_speed = 20
@@ -375,3 +383,7 @@ class gameConsumer(AsyncWebsocketConsumer):
                     game_state.paddle_data["height_canvas"] - game_state.paddle_data["height"],
                     game_state.paddle_data["paddleRightY"] + paddle_speed,
             )
+        # if self.game_id in gameConsumer.paddle_data:
+        #     del gameConsumer.paddle_data[self.game_id]
+
+
