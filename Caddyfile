@@ -1,0 +1,6 @@
+localhost {
+	tls internal
+	reverse_proxy react:3000
+
+}
+

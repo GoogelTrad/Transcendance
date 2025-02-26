@@ -4,7 +4,7 @@ export default function useSocket(name, param = '') {
 	const [ready, setReady] = useState(false);
 	const [socket, setSocket] = useState();
 	const handlers = new Map();
-	const BASE_URL = `ws://${window.location.hostname}:8000/ws/`
+	const BASE_URL = `${process.env.REACT_APP_SOCKET_IP}:${process.env.PORT}/ws/`
 
 	useEffect(() => {
 

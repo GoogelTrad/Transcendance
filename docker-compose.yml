@@ -1,20 +1,16 @@
 services:
-  nginx:
-    env_file: .env
-    container_name: nginx
-    build: nginx/
-    environment:
-      - WATCHPACK_POLLING=true
-    depends_on:
-      - react
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80" 
+      - "443:443"
     volumes:
-      - project:/home/
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
     networks:
       - tdc
-    image: nginx
-    ports:
-      - 8089:443
-    restart: unless-stopped
       
   db:
     container_name: db
@@ -79,8 +75,9 @@ services:
     networks:
       - tdc
 
-
 volumes:
+  caddy_data:
+  caddy_config:
   project:
     driver: local
     driver_opts:

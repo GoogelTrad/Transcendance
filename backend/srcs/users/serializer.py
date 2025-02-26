@@ -17,8 +17,13 @@ class UserSerializer(serializers.ModelSerializer):
         if obj.profile_image:
             return obj.profile_image.url
         return None   
-    
-    def validate_password(self, password):
+
+    def validate(self, data):
+        password = data.get('password')
+        password_confirm = data.get('password_confirm')
+        
+        if password and password_confirm and password != password_confirm:
+            raise serializers.ValidationError('Password does not match!')
         if len(password) < 8:
             raise ValidationError("Le mot de passe doit contenir au moins 8 caractères.")
         if not any(char.isupper() for char in password):
@@ -29,13 +34,6 @@ class UserSerializer(serializers.ModelSerializer):
             raise ValidationError("Le mot de passe doit contenir au moins un chiffre.")
         if not re.search(r"[@$!%*?&]", password):
             raise ValidationError("Le mot de passe doit contenir au moins un caractère spécial (@$!%*?&).")
-
-    def validate(self, data):
-        password = data.get('password')
-        password_confirm = data.get('password_confirm')
-        
-        if password and password_confirm and password != password_confirm:
-            raise serializers.ValidationError('Password does not match!')
         
         return data
 
