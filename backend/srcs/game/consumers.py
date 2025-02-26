@@ -16,7 +16,6 @@ matchmaking_queue = []
 class MatchmakingConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         token = self.scope.get('query_string', b'').decode().split('=')[1]
-        print(":",token, flush=True)
         
         if token:
             user = await self.authenticate_user(token)
@@ -30,12 +29,14 @@ class MatchmakingConsumer(AsyncWebsocketConsumer):
             await self.close()
 
     async def disconnect(self, close_code):
+        global matchmaking_queue
         if self.channel_name in matchmaking_queue:
             matchmaking_queue.remove(self.channel_name)
             print(f"User {self.user} removed from the matchmaking queue")
+
     async def receive(self, text_data):
+        global matchmaking_queue
         text_data_json = json.loads(text_data)
-        print(text_data_json, flush=True)
 
         if text_data_json.get("type") == "join":
             print(f"User {self.user} joining matchmaking", flush=True)
@@ -46,21 +47,29 @@ class MatchmakingConsumer(AsyncWebsocketConsumer):
             print(f"User {self.user} added to matchmaking queue", flush=True)
 
             gameData = None
+            print('queue :', matchmaking_queue, flush=True)
             if len(matchmaking_queue) >= 2:
-                print(len(matchmaking_queue), flush=True)
                 player1 = matchmaking_queue.pop(0)
                 player2 = matchmaking_queue.pop(0)
-                gameData = await self.create_Game_Multi(self.user.auth_token ,player1['player_name'], player2['player_name'])
-
+                if player1['player_name'] != player2['player_name']:
+                    gameData = await self.create_Game_Multi(self.user.auth_token ,player1['player_name'], player2['player_name'])
+                else:
+                    matchmaking_queue.append({
+                    'player_name': self.user,
+                    'channel_name': self.channel_name
+                })
             if gameData:
                 game_id = gameData['id']
                 await self.start_game(game_id, player1['channel_name'], player2['channel_name'])
+        if text_data_json.get("type") == "leave":
+            if (len(matchmaking_queue) >= 1):
+                matchmaking_queue = [player for player in matchmaking_queue if player['player_name'] != self.user]
+
 
 
     async def authenticate_user(self, token):
         try:
             payload = jwt.decode(token, "coucou", algorithms=["HS256"])
-            print("pay :", payload, flush=True)
             user_id = payload.get('id')
             if user_id:
                 user = await self.get_user_from_id(user_id)
@@ -292,7 +301,6 @@ class gameConsumer(AsyncWebsocketConsumer):
                 "isKeyDown": data_dict["isKeyDown"],
                 "player": data_dict["player"]
             }
-            print(gameConsumer.paddle_data[self.game_id], flush=True)
             self.handle_key_press(gameConsumer.paddle_data[self.game_id])
 
     async def send_message(self, message):
@@ -359,7 +367,9 @@ class gameConsumer(AsyncWebsocketConsumer):
     
     def handle_key_press(self, key_states):
         gameConsumer.current_key_states[self.game_id] = key_states.get("isKeyDown")
+        print("Keypress :", gameConsumer.current_key_states[self.game_id], flush=True)
         gameConsumer.player[self.game_id] = key_states.get("player", "P1")
+        print("Player :", gameConsumer.player[self.game_id], flush=True)
 
     def process_key_states(self, key_states, game_state, player):
         paddle_speed = 20

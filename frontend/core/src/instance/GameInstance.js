@@ -61,7 +61,6 @@ function GameInstance ( {children} ) {
 		}
 	};
 
-	
 	const socketRef = useRef(null);
 	  if (!socketRef.current) {
 		  socketRef.current = new WebSocket(`ws://${window.location.hostname}:8000/ws/game/${id}`);
@@ -229,7 +228,6 @@ function GameInstance ( {children} ) {
 			const gameState = { isKeyDown: updatedKeyDown, player: player };
 			
 			if (socket.readyState === WebSocket.OPEN && !keyUpdateTimeout) {
-				// console.log(gameState);
 				keyUpdateTimeout = setTimeout(() => {
 					socket.send(JSON.stringify(gameState));
 					keyUpdateTimeout = null;
@@ -413,8 +411,8 @@ function GameInstance ( {children} ) {
 				<p>Player 2: {game?.score_player_2 || "0"}</p>
 				<p>Winner: {game?.winner || "No Player"}</p>
 				<p>Loser: {game?.loser || "No Player"}</p>
-				<p>seconds: {game?.timeSeconds || "Bug"}</p>
-				<p>minutes: {game?.timeMinutes || "Bug"}</p>
+				<p>seconds: {game?.timeSeconds || "0"}</p>
+				<p>minutes: {game?.timeMinutes || "0"}</p>
 			  </div>
 			</div>
 		  )}

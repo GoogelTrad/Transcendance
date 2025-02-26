@@ -26,7 +26,7 @@ canvas.gamebar {
 }
   
 .game-bar {
-	position: absolute;
+	position: relative;
 	display: flex;
 	justify-content: space-around;
 	align-items: center;
@@ -211,18 +211,19 @@ canvas.gamebar {
 .game-over {
 	color: #FFFFFF;
 	justify-content: center;
-    align-items: center;
 	text-align: center;
 	font-family: 'Arrows', sans-serif;
 	font-size: 20px;
 	padding: 100px;
-	position: absolute;
-	display: flex;
+	position: relative;
 	justify-content: space-around;
-	align-items: center;
 	z-index: 2; 
 	font-family: 'Press Start 2P', cursive;
 	font-size: 20px;
+}
+
+.final-scores{
+	padding-top: 50px;
 }
 
 
