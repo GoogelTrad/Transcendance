@@ -46,7 +46,7 @@ function HomeGame({setModalStats, setModalTournament, launching, setParentItems}
     };
 
     useEffect(() => {
-        if (!socket && waitingForPlayer) {
+        if ( waitingForPlayer && !socket) {
             const newSocket = new WebSocket(`ws://${window.location.hostname}:8000/ws/matchmaking/?token=${token}`);
             setSocket(newSocket);
         
@@ -68,10 +68,16 @@ function HomeGame({setModalStats, setModalTournament, launching, setParentItems}
                 console.log("Matchmaking websocket open")
                 };
             }
-
+        if (waitingForPlayer === false){
+            if (socket) {
+                socket.close();
+                setSocket("");
+            }
+        }
         return () => {
           if (socket) {
             socket.close();
+            setSocket("");
           }
         };
       }, [socket, waitingForPlayer]);
@@ -146,6 +152,7 @@ function HomeGame({setModalStats, setModalTournament, launching, setParentItems}
     
     const Matchmaking = () =>{
         setWaitingForPlayer(true);
+        setSend_Info(true)
     }
 
 
@@ -178,9 +185,8 @@ return (
                 <div className="content">
                 <h3 style={{ textAlign: "center" }} onClick={() => handleMenuClick("play")}>Play</h3>
                 <div className="line" onClick={() => submitPlayer('1-player')}> 1 player </div>
-                <div className="line" onClick={() => Matchmaking('2-players')}> 2 players - Local </div>
-                <div className="line" onClick={() => submitPlayer('2-players')}> 2 players - Online </div>
-                <div className="line" onClick={() => submitPlayer('2-players')}> 4 players - Online </div>
+                <div className="line" onClick={() => Matchmaking('2-players')}> 2 players - Online </div>
+                <div className="line" onClick={() => submitPlayer('2-players')}> 2 players - Local </div>
                 </div>
             )}
             {onClickTournament && (
