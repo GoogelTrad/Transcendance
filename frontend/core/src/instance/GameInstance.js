@@ -180,6 +180,17 @@ function GameInstance ( {children} ) {
 			socket.close();
 		}
 	}, [isGameOngoing])
+
+	const addToHistory = async (game) => {
+		console.log(game);
+		try {
+			await axiosInstance.patch(`api/user/${user.id}`, {
+				games : game
+			});
+		} catch (error) {
+			console.error("Error fetching game by ID:", error);
+		}
+	}
 	  
 	
 	useEffect(() => {
@@ -194,6 +205,8 @@ function GameInstance ( {children} ) {
 		};
 		if (!game)
 			fetchData();
+		if (game && game.player2 === user.name)
+			addToHistory(game);
 		if (game && game.player1 === user.name) {
 			const sendGameInstance = () => {
 				if (socket.readyState === WebSocket.OPEN) {
@@ -217,7 +230,7 @@ function GameInstance ( {children} ) {
 	
 	
 	let keyUpdateTimeout = null;
-	const throttleRate = 5;
+	const throttleRate = 1;
 	
 	const handleKeyPress = (e) => {
 		if (isKeyDown[e.key] === undefined) return;
