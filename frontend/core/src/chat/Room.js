@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { showToast } from "../instance/ToastsInstance";
 import useSocket from '../socket'
@@ -7,6 +7,8 @@ import axiosInstance from "../instance/AxiosInstance";
 import "./room.css"
 import useJwt from '../instance/JwtInstance';
 import { getCookies } from '../App';
+import ModalInstance from "../instance/ModalInstance";
+import Profile from "../users/Profile";
 
 export default function Room() {
 
@@ -17,9 +19,13 @@ export default function Room() {
 	const [listrooms, setlistrooms] = useState([]);
 	const [friendList, setFriendList] = useState([]);
 	const [users_room, setUsersRoom] = useState([]);
+	const [blockedUsers, setBlockedUsers] = useState([]);
 	const [clickedNotifications, setClickedNotifications] = useState({});
 	const maxLength = 10;
 	const [caracteresRestants, setCaracteresRestants] = useState(maxLength);
+	const [isModalProfile, setIsModalProfile] = useState(false);
+	const [profileId, setProfileId] = useState(1);
+	const modalProfile = useRef(null);
 
 	const navigate = useNavigate();
 	const getJwt = useJwt();
@@ -41,8 +47,26 @@ export default function Room() {
 	};
 
 	useEffect(() => {
+		const listUsersBlocked = async () => {
+			try {
+				const response = await axiosInstance.get(`/livechat/blocked-users/`);
+				setBlockedUsers(response.data);
+			}
+			catch(error) {
+				console.log(error);
+			}
+		};
+		listUsersBlocked();
+	}, []);
+	
+
+	useEffect(() => {
 		if (socket.ready) {
-			socket.on('chat_message', (data) => {
+			socket.on("chat_message", (data) => {
+				// Vérifier si l'expéditeur est bloqué côté frontend
+				if (blockedUsers.includes(data.username)) {
+					return; // Ne pas afficher le message
+				}
 				const newMessage = `${data.username}: ${data.message}\n`; // Ajouter l'username
 				setChat((prevChat) => prevChat + newMessage);
 			});
@@ -56,7 +80,7 @@ export default function Room() {
 			});
 			return () => {}
 		}
-	}, [socket, navigate]);
+	}, [socket, navigate, blockedUsers]);
 
 	function sendMessage() {
 		if (message.trim() === "") {
@@ -72,16 +96,6 @@ export default function Room() {
 			setMessage(''); // Réinitialisez le champ message après l'envoi
 		}
 	}
-
-	// const exitRoom = async () => {
-	// 	try {
-	// 		const response = await axiosInstance.post('/livechat/exit-room/', {room_name: roomName});
-	// 		console.log(response.data);
-	// 		navigate(`/chat/`);
-	// 	} catch (error) {
-	// 		console.error("Erreur lors de la sortie de la room", error);
-	// 	}
-	// };
 
 	const clearRoom = async () => {
 		try {
@@ -140,8 +154,8 @@ export default function Room() {
 		// const decodeToken = getJwt(token);
 
 		try {
-			const reponse = await axiosInstance.get(`/friends/list/${decodedToken.id}`);
-			setFriendList(reponse.data);
+			const response = await axiosInstance.get(`/friends/list/${decodedToken.id}`);
+			setFriendList(response.data);
 			//console.log(reponse.data)
 		}
 		catch(error) {
@@ -151,9 +165,9 @@ export default function Room() {
 
 	const Users_room_list = async () => {
 		try {
-			const reponse = await axiosInstance.get(`livechat/users_room/${roomName}`);
-			setUsersRoom(reponse.data.filter((value) => value.id !== userId));
-			console.log("USERS ROOMS :", reponse.data)
+			const response = await axiosInstance.get(`livechat/users_room/${roomName}`);
+			setUsersRoom(response.data.filter((value) => value.id !== userId));
+			console.log("USERS ROOMS :", response.data);
 		}
 		catch(error) {
 			console.log(error);
@@ -173,6 +187,11 @@ export default function Room() {
 		// Nettoyer l'intervalle quand le composant est démonté
 		return () => clearInterval(interval);
 	}, [roomName]);
+
+	const handleProfile = (user_id) => {
+		setIsModalProfile(!isModalProfile);
+		setProfileId(user_id);
+	}
 
 	const handleResponse = (notifId, response, senderId) => {
 		if (!clickedNotifications[notifId]) {
@@ -234,15 +253,18 @@ export default function Room() {
 										{user.username}
 									</button>
 									<ul className="dropdown-menu">
-										<button className="dropdown-item" onClick={() => navigate(`/profile/${user.id}`)}> Profile </button>
+										<button className="dropdown-item" onClick={() => handleProfile(user.id)}> Profile </button>
 										<button className="dropdown-item" onClick={() => sendNotification(user.id, "Voulez-vous jouer une partie ?", userId)}> Envoyer une notification </button>
 									</ul>
 								</li>
 							))}
 						</ul>
 					</div>
+					<ModalInstance height="30%" width="40%" isModal={isModalProfile} modalRef={modalProfile} name="Profile" onLaunchUpdate={null} onClose={() => setIsModalProfile(false)}>
+						<Profile id={profileId}/>
+					</ModalInstance>
 					<div>
-						<h3>Notifications en temps réel</h3>
+						<h3>Notifications</h3>
 						<ul>
 							{notifications.map((notif, index) => (
 								<li key={index}>

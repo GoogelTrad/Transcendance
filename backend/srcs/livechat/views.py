@@ -1,8 +1,8 @@
 from django.shortcuts import render
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from .models import Room
-from .serializer import RoomSerializer, UserConnectedSerializer
+from .models import Room, Message, BlockedUser
+from .serializer import RoomSerializer, UserConnectedSerializer, BlockedUSerSerializer
 from django.http import JsonResponse
 import json
 from users.decorator import jwt_auth_required
@@ -16,13 +16,16 @@ from django.shortcuts import get_object_or_404
 def get_list_rooms(request):
     print(request.user.id, flush=True)
     rooms = Room.objects.all()
-    for room in rooms:
-        room.users.all()
     dmRooms = rooms.filter(dm=True)
     rooms = rooms.filter(dm=False)
     roomSerializer = RoomSerializer(rooms, many=True)
     dmSerializer = RoomSerializer(dmRooms, many=True)
     return Response({"publicRooms": roomSerializer.data, "dmRooms": dmSerializer.data})
+
+@api_view(['GET'])
+def get_dm_already_exist(request):
+    rooms = Room.objects.all()
+
 
 @api_view(['GET'])
 def get_list_users(request, name):
@@ -33,6 +36,16 @@ def get_list_users(request, name):
         return Response(users_data, status=200)
     except:
         return Response({"error": "Room introuvable."}, status=404)
+    
+@api_view(['GET'])
+@jwt_auth_required
+def get_users_connected(request):
+    try:
+        users = User.objects.all()
+        serializer = UserConnectedSerializer(users, many=True)
+        return Response(serializer.data)
+    except:
+        return Response({"error": "Users connected not found."}, status=404)
 
 @api_view(['POST'])
 @jwt_auth_required
@@ -95,25 +108,39 @@ def send_notification(user, message):
 
     return JsonResponse({"status": "Notification envoyée"})
 
-@api_view(['GET'])
-def get_users_connected(request):
+@api_view(['POST'])
+@jwt_auth_required
+def block_user(request, user_id):
+    """Bloquer un utilisateur"""
     try:
-        users = User.objects.all()
-        serializer = UserConnectedSerializer(users, many=True)
-        return Response(serializer.data)
+        blocked_user = User.objects.get(id=user_id)
+
+        if request.user == blocked_user:
+            return Response({"error": "Tu ne peux pas te bloquer toi-même."}, status=400)
+
+        BlockedUser.objects.get_or_create(blocker=request.user, blocked=blocked_user)
+        return Response({"success": f"{blocked_user.username} a été bloqué."})
     except:
-        return Response({"error": "Users connected not found."}, status=404)
-    
-# @api_view(["POST"])
-# def invite_user(request):
-#     room_name = request.data.get("room_name")
-#     user_id = request.data.get("user_id")
+        return Response({"error": "Block user"}, status=404)
 
-#     room = get_object_or_404(Room, name=room_name)
-#     user = get_object_or_404(User, id=user_id)
+@api_view(['DELETE'])
+@jwt_auth_required
+def unlock_user(request, user_id):
+    """Débloquer un utilisateur"""
+    try:
+        blocked_user = User.objects.get(id=user_id)
 
-#     if room.invitation_required:
-#         room.invited_users.add(user)
-#         return Response({"message": f"{user.username} a été invité à la room {room.name}"})
+        BlockedUser.objects.filter(blocker=request.user, blocked=blocked_user).delete()
+        return Response({"success": f"{blocked_user.username} a été débloqué."})
+    except:
+        return Response({"error": "Unlock user"}, status=404)
 
-#     return Response({"error": "Cette salle ne nécessite pas d'invitation."}, status=400)
+@api_view(['GET'])
+@jwt_auth_required
+def get_list_blocked(request):
+    """Lister les utilisateurs bloqués"""
+    try:
+        blocked_users = BlockedUser.objects.filter(blocker=request.user).values_list("blocked__id", flat=True)
+        return Response({"blocked_users": list(blocked_users)})
+    except:
+        return Response({"error": "List blocked user"}, status=404)

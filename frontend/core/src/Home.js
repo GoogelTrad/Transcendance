@@ -32,6 +32,9 @@ function Home() {
     const [isModalCode, setIsModalCode] = useState(false);
     const [isLaunch, setIsLaunch] = useState([]);
     const { isAuthenticated, setIsAuthenticated } = useAuth();
+
+    const navigate = useNavigate();
+
     const setters = [
         {name: 'terminal', setter: setIsModalTerminal},
         {name: 'game', setter: setIsModalGame},
@@ -147,16 +150,6 @@ function Home() {
                             Profile
                         </button>
                     )}
-                    {isLaunched(isLaunch, "chat") && (
-                        <button 
-                            className='button-chat' 
-                            onClick={() => { 
-                                handleModal({ setModal: setIsModalChat, boolean: !isModalChat });
-                            }}
-                        >
-                            Chat
-                        </button>
-                    )}
                     {isLaunched(isLaunch, "friend") && (
                         <button
                             className={`${isModalFriendProfile ? "button-on" : "button-off"}`}
@@ -197,7 +190,7 @@ function Home() {
                 Profile
             </button>}
 
-            {isAuthenticated && <button className="icon chatModal" onClick={() => {launching({ newLaunch: "chat", setModal: setIsModalChat})}}>
+            {isAuthenticated && <button className="icon chatModal" onClick={() => navigate(`/chat/`)}>
                 Chat
             </button>}
 
@@ -285,18 +278,6 @@ function Home() {
                 onClose={() => setIsModalProfile(false)}
             >
                 <Profile id={decodeToken.id}/>
-            </ModalInstance>}
-
-            {isAuthenticated && isLaunched(isLaunch, "chat") && <ModalInstance
-                height="30%"
-                width="40%"
-                isModal={isModalChat}
-                modalRef={modalChatRef}
-                name="Chat"
-                onLaunchUpdate={() => removeLaunch("chat")}
-                onClose={() => setIsModalProfile(false)}
-            >
-                <HomeChat/>
             </ModalInstance>}
             
             {isAuthenticated && isLaunched(isLaunch, "friend") && <ModalInstance
