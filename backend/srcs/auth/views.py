@@ -67,7 +67,7 @@ def oauth_login(request):
 					user.save()
 					send_confirmation_email(user)
 					params = urlencode({'status': '2FA_REQUIRED', 'name': user.name})
-					return HttpResponseRedirect(f"http://{os.getenv('REACT_APP_API_URL')}:3000/auth-success?{params}")
+					return HttpResponseRedirect(f"{os.getenv('REACT_APP_API_URL')}:3000/auth-success?{params}")
 
 			user.ip_user = ip
 			user.status = 'online'
@@ -107,7 +107,7 @@ def oauth_login(request):
 			ValidToken.objects.create(user=user, token=jwt_token)
 
 			params = urlencode({'status': 'SUCCESS', 'token': jwt_token})
-			return HttpResponseRedirect(f"http://{os.getenv('REACT_APP_API_URL')}:3000/auth-success?{params}")
+			return HttpResponseRedirect(f"{os.getenv('REACT_APP_API_URL')}:3000/auth-success?{params}")
 
 		else:
 			return JsonResponse({'error': 'Impossible de récupérer les infos utilisateur'}, status=400)

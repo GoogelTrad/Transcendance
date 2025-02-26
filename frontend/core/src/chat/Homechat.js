@@ -108,7 +108,7 @@ export default function HomeChat() {
 
 	const listroom = async () => {
 		try {
-			const response = await axiosInstance.get('/livechat/listroom/');
+			const response = await axiosInstance.get('/api/livechat/listroom/');
 			console.log("Données reçues:", response.data);
 
 			const dmRooms = response.data.dmRooms.map((value) => {
@@ -128,7 +128,7 @@ export default function HomeChat() {
 
 	const users_connected = async () => {
 		try {
-			const response = await axiosInstance.get('/livechat/users_connected/');
+			const response = await axiosInstance.get('/api/livechat/users_connected/');
 			console.log("Données Users:", response.data);
 			setusersconnected(response.data.filter((v) => v.id !== userId));
 		} catch (error) {

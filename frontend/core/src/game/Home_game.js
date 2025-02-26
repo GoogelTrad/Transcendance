@@ -117,7 +117,7 @@ function HomeGame({setModalStats, setModalCreateTournament, setModalTournament, 
 
     const submitPlayer = async () => {
         try {
-          const response = await axiosInstance.post(`/game/create_game`, { player1 });
+          const response = await axiosInstance.post(`/api/game/create_game`, { player1 });
           navigate(`/games/${response.data.id}`);
         } catch (error) {
           console.error("Error submitting Player:", error);

@@ -70,7 +70,7 @@ function LoginRegister({setModal, setTerminal, removeLaunch}) {
         if(isAuthenticated)
             return showToast('error', 'Alrealdy connected!');
         try {
-            const response = await axiosInstance.post('api/login', data, {
+            const response = await axiosInstance.post('/api/user/login', data, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
@@ -96,7 +96,7 @@ function LoginRegister({setModal, setTerminal, removeLaunch}) {
 
     const handleVerify = async () => {
         try {
-            const response = await axiosInstance.post('/api/code' , {code, name: loginData.name});
+            const response = await axiosInstance.post('/api/user/code' , {code, name: loginData.name});
             if (response.status === 200)
             {
                 setIsAuthenticated(true);
@@ -122,7 +122,7 @@ function LoginRegister({setModal, setTerminal, removeLaunch}) {
         if(isAuthenticated)
             return showToast('error', 'Cannot create new account while connected!');
         try {
-            await axiosInstance.post('api/user/create', data, {
+            await axiosInstance.post('/api/user/create', data, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },

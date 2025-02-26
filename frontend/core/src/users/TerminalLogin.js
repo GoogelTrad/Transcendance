@@ -79,7 +79,7 @@ function TerminalLogin({setModal, launching, setTerminal, removeLaunch})
         setName(username);
         data.append("password", password);
         try {
-            const response = await axiosInstance.post('api/login', data, {
+            const response = await axiosInstance.post('/api/user/login', data, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
@@ -109,7 +109,7 @@ function TerminalLogin({setModal, launching, setTerminal, removeLaunch})
 
     const handleTwoFactorVerification = async (code, name) => {
         try {
-            const response = await axiosInstance.post('/api/code', {code: code, name: name});
+            const response = await axiosInstance.post('/api.user/code', {code: code, name: name});
             if (response.status === 200) {
                 setIsAuthenticated(true);
                 setTerminal(false);
