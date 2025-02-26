@@ -6,9 +6,9 @@ from rest_framework.response import Response
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.decorators import api_view, action
 from django.shortcuts import get_object_or_404
-from .serializer import GameSerializer
+from .serializer import GameSerializer, TournamentSerializer
 from django.http import HttpResponse
-from .models import Game
+from .models import Game, Tournament
 from users.models import User
 import jwt
 import os
@@ -103,12 +103,44 @@ class GameView:
         }
         return reponse
 
+class TournamentView:
+    @api_view(['POST'])
+    def create_tournament(request):
+        auth_header = request.headers.get('Authorization')
+        if auth_header:
+            token = auth_header.split(' ')[1]
+        else:
+            token = None
 
+        payload = jwt.decode(jwt=token, key=os.getenv('JWT_KEY'), algorithms=['HS256'])
+        user = get_object_or_404(User, name=payload.get('name'))
 
-        
+        serializer = TournamentSerializer(data=data, partial=True)
 
+        if serializer.is_valid():
+            tournament_instance = serializer.save()
 
+            user.tournament.add(tournament_instance)
+            user.save()
 
+            return Response({"id": tournament_instance.id, **serializer.data}, status=status.HTTP_201_CREATED)
 
-        
-        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    @api_view(['GET', 'PATCH'])
+    def fetch_data_tournament(request, tournament_id):
+        try:
+            tournament = Tournament.objects.get(pk=tournament_id)
+        except Tournament.DoesNotExist:
+            return Response({"error": "Tournament not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        if request.method == 'GET':
+            serializer = TournamentSerializer(tournament)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        elif request.method == 'PATCH':
+            serializer = TournamentSerializer(tournament, data=request.data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(TournamentSerializer(tournament).data, status=status.HTTP_200_OK)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

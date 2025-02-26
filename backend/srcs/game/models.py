@@ -1,8 +1,6 @@
 from django.db import models
 from django.contrib.postgres.fields import ArrayField
 
-
-
 class Game(models.Model):
     WAITING = 'waiting'
     STARTED = 'started'
@@ -43,3 +41,14 @@ class Game(models.Model):
 
     def has_finished(self):
         return self.status == self.FINISHED
+
+class Tournament(models.Model):
+    code = models.IntegerField(default=0)
+    timeMaxMinutes = models.IntegerField(default=0)
+    timeMaxSeconds = models.IntegerField(default=0)
+    scoreMax = models.IntegerField(default=0)
+    player1 = models.CharField(max_length=255, blank=True) 
+    player2 = models.CharField(max_length=255, blank=True)
+    player3 = models.CharField(max_length=255, blank=True)
+    player4 = models.CharField(max_length=255, blank=True)
+    gamesTournament = models.ManyToManyField("game.Game", related_name="tournament_players", blank=True)

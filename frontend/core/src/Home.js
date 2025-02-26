@@ -43,16 +43,19 @@ function Home() {
         {name: 'profile', setter: setIsModalProfile},
         {name: 'friend', setter: setIsModalFriendProfile},
     ]
+
+    const modalChatRef = useRef(null);
     const modalTerminalRef = useRef(null);
     const modalFormsRef = useRef(null);
     const modalGameRef = useRef(null);
     const modalStatsRef = useRef (null);
     const modalTournamentRef = useRef(null);
-    const modalChatRef = useRef(null);
-
+    const modalCreateTournament = useRef(null);
     const modalFriendProfileRef = useRef(null);
     const modalSocial = useRef(null);
     const modalProfile = useRef(null);
+    const [numberPlayer, setNumberPlayer] = useState("");
+    const [tournamentSettings, setTournamentSettings] = useState({});
     const modalCode = useRef(null);
 
     const [items, setItems] = useState([]);
