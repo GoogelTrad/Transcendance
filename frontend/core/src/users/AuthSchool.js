@@ -46,7 +46,7 @@ export function AuthSuccess()
 	const handleVerify = async () => 	
 	{
 		try {
-			const response = await axiosInstance.post('/api/code' , {code, name: name});
+			const response = await axiosInstance.post('/api/user/code' , {code, name: name});
 			if (response.status === 200) {
 				const authChannel = new BroadcastChannel("auth_channel");
 				const token = getCookies('token');

@@ -85,7 +85,7 @@ export default function Room() {
 
 	const clearRoom = async () => {
 		try {
-			const response = await axiosInstance.post('/livechat/exit-room/', {room_name: roomName});
+			const response = await axiosInstance.post('/api/livechat/exit-room/', {room_name: roomName});
 			console.log(response.data);
 		} catch (error) {
 			console.error("Erreur lors du clean de la room", error);
@@ -127,7 +127,7 @@ export default function Room() {
 
 	const listroom = async () => {
 		try {
-			const response = await axiosInstance.get('/livechat/listroom/');
+			const response = await axiosInstance.get('/api/livechat/listroom/');
 			//console.log("DONNEES RECUES:", response.data);
 			setlistrooms(response.data.publicRooms);
 		} catch (error) {
@@ -140,7 +140,7 @@ export default function Room() {
 		// const decodeToken = getJwt(token);
 
 		try {
-			const reponse = await axiosInstance.get(`/friends/list/${decodedToken.id}`);
+			const reponse = await axiosInstance.get(`/api/friends/list/${decodedToken.id}`);
 			setFriendList(reponse.data);
 			//console.log(reponse.data)
 		}
@@ -151,7 +151,7 @@ export default function Room() {
 
 	const Users_room_list = async () => {
 		try {
-			const reponse = await axiosInstance.get(`livechat/users_room/${roomName}`);
+			const reponse = await axiosInstance.get(`/apilivechat/users_room/${roomName}`);
 			setUsersRoom(reponse.data.filter((value) => value.id !== userId));
 			console.log("USERS ROOMS :", reponse.data)
 		}

@@ -2,7 +2,7 @@ import axios from 'axios';
 import { getCookies } from '../App'; 
 
 // Créer une instance axios
-const axiosInstance = axios.create({baseURL: `${process.env.REACT_APP_API_URL}:${process.env.REACT_APP_PORT}`,
+const axiosInstance = axios.create({baseURL: `${process.env.REACT_APP_API_URL}`,
   withCredentials: true, 
 });
 

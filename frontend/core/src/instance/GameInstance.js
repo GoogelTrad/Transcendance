@@ -107,7 +107,7 @@ function GameInstance ( {children} ) {
 
 	const finishGame = async () => {
 		try {
-			const response = await axiosInstance.patch(`/game/fetch_data/${id}/`, {
+			const response = await axiosInstance.patch(`/api/game/fetch_data/${id}/`, {
 				score_player_1: gameData.Score_P1,
 				score_player_2: gameData.Score_P2,
 				winner: gameData.Winner,
@@ -187,7 +187,7 @@ function GameInstance ( {children} ) {
 		if (gameStart === false) {
 		const fetchData = async () => {
 			try {
-				const response = await axiosInstance.get(`/game/fetch_data/${id}/`);
+				const response = await axiosInstance.get(`/api/game/fetch_data/${id}/`);
 				setGame(response.data);
 			} catch (error) {
 				console.error("Error fetching game by ID:", error);

@@ -22,13 +22,13 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('api/', include('users.urls')),
-    path('friends/', include('friends.urls')),
-    path('livechat/', include("livechat.urls")),
-    path('game/', include('game.urls')),
+    path('api/admin/', admin.site.urls),
+    path('api/user/', include('users.urls')),
+    path('api/friends/', include('friends.urls')),
+    path('api/livechat/', include("livechat.urls")),
+    path('api/game/', include('game.urls')),
 	# path('socket.io/', socket.handler),
-    path('auth/', include('auth.urls')),
+    path('api/auth/', include('auth.urls')),
 ]
 
 if settings.DEBUG:
