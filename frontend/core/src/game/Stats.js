@@ -175,7 +175,7 @@ function Stats({ itemsArray = [] }) {
     useEffect(() => {
         const fetchStats = async () => {
           try {
-            const response = await axiosInstance.get(`http://localhost:8000/game/fetch_data_user/${decodeToken.id}/`, {});
+            const response = await axiosInstance.get(`/api/game/fetch_data_user/${decodeToken.id}/`, {});
             setGames(response.data);
           } catch (error) {
             console.error('Error fetching user stats:', error);
@@ -185,7 +185,7 @@ function Stats({ itemsArray = [] }) {
 
         const fetchFriendList = async () => {
             try {
-                const reponse = await axiosInstance.get(`/friends/list/${decodeToken.id}`);
+                const reponse = await axiosInstance.get(`/api/friends/list/${decodeToken.id}`);
                 setFriendList(reponse.data);
             }
             catch(error) {

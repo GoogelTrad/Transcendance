@@ -151,7 +151,7 @@ export default function Room() {
 
 	const Users_room_list = async () => {
 		try {
-			const reponse = await axiosInstance.get(`/apilivechat/users_room/${roomName}`);
+			const reponse = await axiosInstance.get(`/api/livechat/users_room/${roomName}`);
 			setUsersRoom(reponse.data.filter((value) => value.id !== userId));
 			console.log("USERS ROOMS :", reponse.data)
 		}
