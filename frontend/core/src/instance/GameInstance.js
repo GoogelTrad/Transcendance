@@ -24,11 +24,12 @@ function GameInstance ( {children} ) {
     const [showRules, setShowRules] = useState(false);
 	const [showFriend, setShowFriend] = useState(false);
 	const [game, setGame] = useState(null);
+	const [gameStart, setGameStart] = useState(false);
 	const { id } = useParams();
 	const [isKeyDown, setIsKeyDown] = useState({ ArrowUp: false, ArrowDown: false, z: false, s: false });
 	const [backDimensions, setBackDimensions] = useState(() => ({
-		width: window.innerWidth,
-		height: window.innerHeight,
+		width: 1536,
+		height: 826,
 	}));
 
 	const [gameData, setGameData] = useState(() => ({
@@ -49,10 +50,21 @@ function GameInstance ( {children} ) {
 		Loser : "",
 	}));
 
+	const token = getCookies('token');
+	let user = null;
+
+	if (token) {
+		try {
+			user = jwtDecode(token);
+		} catch (error) {
+			console.error("Error decoding token:", error);
+		}
+	};
+
 	
 	const socketRef = useRef(null);
 	  if (!socketRef.current) {
-		  socketRef.current = new WebSocket(`ws://localhost:8000/ws/game/${id}`);
+		  socketRef.current = new WebSocket(`ws://${window.location.hostname}:8000/ws/game/${id}`);
 	  }
 	  const socket = socketRef.current;
   
@@ -61,7 +73,8 @@ function GameInstance ( {children} ) {
 	  };
   
 	  socket.onclose = () => {
-		  console.log("WebSocket connection closed.");
+			finishGame();
+			console.log("WebSocket connection closed.");
 	  };
   
 	  socket.onerror = (error) => {
@@ -88,17 +101,8 @@ function GameInstance ( {children} ) {
 			Winner: data.winner,
 			Loser: data.loser,
 		}));
-		if (data.winner)
+		if (data.winner || data.loser)
 			setisGameOngoing(false);
-	};
-
-	const fetchData = async () => {
-	  try {
-		const response = await axiosInstance.get(`/game/fetch_data/${id}/`);
-		setGame(response.data);
-	  } catch (error) {
-		console.error("Error fetching game by ID:", error);
-	  }
 	};
 
 	const finishGame = async () => {
@@ -108,6 +112,8 @@ function GameInstance ( {children} ) {
 				score_player_2: gameData.Score_P2,
 				winner: gameData.Winner,
 				loser: gameData.Loser,
+				timeSeconds: gameData.Seconds,
+				timeMinutes: gameData.Minutes,
 				status: 'finished',
 		  });
 		  setGame(response.data);
@@ -164,13 +170,13 @@ function GameInstance ( {children} ) {
 	  
 	  useEffect(() => {
 		if (canvasRef.current) {
-		  const context = canvasRef.current.getContext("2d");
-		  drawCanvas(context);
+			const context = canvasRef.current.getContext("2d");
+			drawCanvas(context);
 		}
 	  }, [gameData, drawCanvas]);
 
 	useEffect(() => {
-		if (isGameOngoing === false){
+		if (isGameOngoing === false && socket.readyState !== WebSocket.CLOSED){
 			finishGame();
 			socket.close();
 		}
@@ -178,38 +184,52 @@ function GameInstance ( {children} ) {
 	  
 	
 	useEffect(() => {
-		const GameInstance = backDimensions;
-	
-		const sendGameInstance = () => {
-			if (socket.readyState === WebSocket.OPEN) {
-			  socket.send(JSON.stringify(GameInstance));
-			  return true;
+		if (gameStart === false) {
+		const fetchData = async () => {
+			try {
+				const response = await axiosInstance.get(`/game/fetch_data/${id}/`);
+				setGame(response.data);
+			} catch (error) {
+				console.error("Error fetching game by ID:", error);
 			}
-			return false;
-		  };
-		  
-		if (!sendGameInstance()) {
-			const retryInterval = setInterval(() => {
-				if (sendGameInstance()) {
-					clearInterval(retryInterval);
-				}
-			}, 1000);
+		};
+		if (!game)
 			fetchData();
-			return () => clearInterval(retryInterval);
+		if (game && game.player1 === user.name) {
+			const sendGameInstance = () => {
+				if (socket.readyState === WebSocket.OPEN) {
+					socket.send(JSON.stringify({ "message": "Hello from Player 1" }));
+					setGameStart(true);
+					return true;
+				}
+				return false;
+			};
+			if (!sendGameInstance()) {
+				const retryInterval = setInterval(() => {
+					if (sendGameInstance()) {
+						clearInterval(retryInterval);
+					}
+				}, 1000);
+				return () => clearInterval(retryInterval);
+			}
 		}
-	}, [socket, backDimensions]);
+	}
+	}, [socket, backDimensions, game, user.name, id]);
+	
 	
 	let keyUpdateTimeout = null;
-	const throttleRate = 50;
+	const throttleRate = 30;
 	
 	const handleKeyPress = (e) => {
 		if (isKeyDown[e.key] === undefined) return;
 	
 		setIsKeyDown((prev) => {
 			const updatedKeyDown = { ...prev, [e.key]: true };
-	
-			const gameState = { isKeyDown: updatedKeyDown };
+			const player = user.name === game.player1 ? "P1" : (user.name === game.player2 ? "P2" : null);
+			const gameState = { isKeyDown: updatedKeyDown, player: player };
+			
 			if (socket.readyState === WebSocket.OPEN && !keyUpdateTimeout) {
+				// console.log(gameState);
 				keyUpdateTimeout = setTimeout(() => {
 					socket.send(JSON.stringify(gameState));
 					keyUpdateTimeout = null;
@@ -223,8 +243,9 @@ function GameInstance ( {children} ) {
 	const handleKeyUp = (e) => {
 		setIsKeyDown((prev) => {
 			const updatedKeyDown = { ...prev, [e.key]: false };
-	
-			const gameState = { isKeyDown: updatedKeyDown };
+			const player = user.name === game.player1 ? "P1" : (user.name === game.player2 ? "P2" : null);
+			const gameState = { isKeyDown: updatedKeyDown, player: player };
+			
 			if (socket.readyState === WebSocket.OPEN && !keyUpdateTimeout) {
 				keyUpdateTimeout = setTimeout(() => {
 					socket.send(JSON.stringify(gameState));
@@ -235,15 +256,34 @@ function GameInstance ( {children} ) {
 			return updatedKeyDown;
 		});
 	};
+
+
+		useEffect(() => {
+		  const handleBeforeUnload = (event) => {
+			if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
+			  socketRef.current.close();
+			}
+			event.preventDefault();
+			event.returnValue = ''; 
+		  };
+		  window.addEventListener('beforeunload', handleBeforeUnload);
+		  return () => {
+			window.removeEventListener('beforeunload', handleBeforeUnload);
+			if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
+			  socketRef.current.close();
+			}
+		  };
+		}, []);
+	  
 		  
 	useEffect(() => {
-		window.addEventListener('keydown', handleKeyPress);
-		window.addEventListener('keyup', handleKeyUp);
-		  
-		return () => {
-			window.removeEventListener('keydown', handleKeyPress);
-			window.removeEventListener('keyup', handleKeyUp);
-		};
+			window.addEventListener('keydown', handleKeyPress);
+			window.addEventListener('keyup', handleKeyUp);
+			
+			return () => {
+				window.removeEventListener('keydown', handleKeyPress);
+				window.removeEventListener('keyup', handleKeyUp);
+			};
 	}, [gameData]);
 	
 	return (
@@ -370,10 +410,11 @@ function GameInstance ( {children} ) {
 			  
 			  <div className="final-scores">
 				<p>Player 1: {game?.score_player_1 || "0"}</p>
-				
 				<p>Player 2: {game?.score_player_2 || "0"}</p>
 				<p>Winner: {game?.winner || "No Player"}</p>
 				<p>Loser: {game?.loser || "No Player"}</p>
+				<p>seconds: {game?.timeSeconds || "Bug"}</p>
+				<p>minutes: {game?.timeMinutes || "Bug"}</p>
 			  </div>
 			</div>
 		  )}

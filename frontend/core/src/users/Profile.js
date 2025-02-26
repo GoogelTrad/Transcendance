@@ -69,9 +69,22 @@ function Profile({id})
 	const [isSettings, setIsSettings] = useState(false);
 	const [isPermitted, setIsPermitted] = useState(false);
 	const [isStud, setIsStud] = useState(false);
+	const [friendList, setFriendList] = useState([]);
 	const token = getCookies('token');
 	const getJwt = useJwt();
 	const decodeToken = getJwt(token);
+	let friends = friendList?.friends || [];
+
+	const fetchFriendList = async () => {
+
+		try {
+			const reponse = await axiosInstance.get(`/friends/list/${decodeToken.id}`);
+			setFriendList(reponse.data);
+		}
+		catch(error) {
+			console.log(error);
+		}
+	}
 
     const handleFileChange = async (e) => {
 		e.preventDefault();
@@ -134,6 +147,8 @@ function Profile({id})
     useEffect (() => 
     {
         fetchUserData();
+		fetchFriendList();
+		friends = friendList?.friends || [];
     }, [id]);
 
 	return (
@@ -190,9 +205,16 @@ function Profile({id})
 							{isPermitted && !isStud && showChangePassword && <img src={x} className="x-icon" alt="x" onClick={() => setShowChangePassword(false)}/>}
 						</div>)
 						:
-						(<div>
-							<AddFriend id={user.id}/>
-						</div>)}
+						(
+							<>
+								{!friends.some(friend => friend.id === user.id) && (
+									<div>
+										<AddFriend id={user.id} />
+									</div>
+								)}
+							</>
+						)
+						}
 					</div>
 				</div>
 			) : (

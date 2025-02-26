@@ -207,7 +207,7 @@ function FriendRequests({setModal, setIsFriends, launching}) {
 								}}	
 							/>
 							<span className="friend-name">{user.name}</span>
-							{/* <span className="friend-email">({user.email})</span> */}
+							
 							<AddFriend id={user.id}/>
 						</li>
 					))}
