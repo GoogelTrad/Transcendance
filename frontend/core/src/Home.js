@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, Link } from 'react-router-dom';
 import logo from './assets/user/logo.png';  
 import TerminalLogin from './users/TerminalLogin';
 import LoginRegister from './users/LoginForm';
@@ -20,12 +20,14 @@ import AuthSchool from './users/AuthSchool';
 
 function Home() {
     const [isFriends, setIsFriends] = useState([]);
-    const [isModalStats, setIsModalStats] = useState(false);
-    const [isModalTournament, setIsModalTournament] = useState(false);
+ 
     const [isModalTerminal, setIsModalTerminal] = useState(false);
-    const [isModalSocial, setIsModalSocial] = useState(false);
+    const [isModalStats, setIsModalStats] = useState(false);
     const [isModalForms, setIsModalForms] = useState(false);
     const [isModalGame, setIsModalGame] = useState(false);
+    const [isModalTournament, setIsModalTournament] = useState(false);
+    const [isModalCreateTournament, setIsModalCreateTournament] = useState(false);
+    const [isModalSocial, setIsModalSocial] = useState(false);
     const [isModalProfile, setIsModalProfile] = useState(false);
     const [isModalChat, setIsModalChat] = useState(false);
     const [isModalFriendProfile, setIsModalFriendProfile] = useState(false);
@@ -41,21 +43,22 @@ function Home() {
         {name: 'profile', setter: setIsModalProfile},
         {name: 'friend', setter: setIsModalFriendProfile},
     ]
+
+    const modalChatRef = useRef(null);
     const modalTerminalRef = useRef(null);
     const modalFormsRef = useRef(null);
     const modalGameRef = useRef(null);
     const modalStatsRef = useRef (null);
     const modalTournamentRef = useRef(null);
-    const modalChatRef = useRef(null);
-
+    const modalCreateTournament = useRef(null);
     const modalFriendProfileRef = useRef(null);
     const modalSocial = useRef(null);
     const modalProfile = useRef(null);
+    const [numberPlayer, setNumberPlayer] = useState("");
+    const [tournamentSettings, setTournamentSettings] = useState({});
     const modalCode = useRef(null);
 
     const [items, setItems] = useState([]);
-
-    console.log(`${window.location.hostname}`);
 
     const token = getCookies('token');
     let decodeToken = null;
@@ -185,12 +188,6 @@ function Home() {
                     Game
                 </button>
             }
-            {isAuthenticated && <button
-                className="icon stats"
-                onClick={() => launching({ newLaunch: "stats", setModal: setIsModalStats})}
-            >
-                Stats
-            </button>}
  
             {isAuthenticated && <button
                 className="icon profileModal"
@@ -228,21 +225,21 @@ function Home() {
             </ModalInstance>}
 
             {isAuthenticated && <ModalInstance
-                height="60%"
-                width="50%"
-                isModal={isModalGame}
-                modalRef={modalGameRef}
-                name="Pong"
-                onLaunchUpdate={() => removeLaunch("game")}
-                onClose={() => setIsModalGame(false)}
-            >
-                <HomeGame setModalStats={setIsModalStats} setModalTournament={setIsModalTournament} launching={launching} setParentItems={setItems}/>
+                 height="60%"
+                 width="50%"
+                 isModal={isModalGame}
+                 modalRef={modalGameRef}
+                 name="Pong"
+                 onLaunchUpdate={() => removeLaunch("game")}
+                 onClose={() => setIsModalGame(false)}
+             >
+                <HomeGame setModalStats={setIsModalStats} modalCreateTournament={isModalCreateTournament}  setModalCreateTournament={setIsModalCreateTournament} setModalTournament={setIsModalTournament} launching={launching} setParentItems={setItems} setParentNumberPlayer={setNumberPlayer}/>
             </ModalInstance>}
 
             {isAuthenticated && <ModalInstance
                 height="85%"
                 width="60%"
-                top="7%"
+                top="5%"
                 isModal={isModalStats}
                 modalRef={modalStatsRef}
                 name="Stats"
@@ -253,16 +250,47 @@ function Home() {
             </ModalInstance>}
 
             {isAuthenticated && <ModalInstance
-                height="85%"
-                width="60%"
-                top="7%"
-                isModal={isModalTournament}
-                modalRef={modalTournamentRef}
-                name="Tournament"
-                onLaunchUpdate={() => removeLaunch("stats")}
-                onClose={() => setIsModalTournament(false)}
+                height="50%"
+                width="25%"
+                top="3%"
+                isModal={isModalCreateTournament}
+                modalRef={modalCreateTournament}
+                name="Create game"
+                onLaunchUpdate={() => removeLaunch("createTournament")}
+                onClose={() => setIsModalCreateTournament(false)}
+             >
+                <Tournament  
+                    setSettings={setTournamentSettings}
+                    tournamentSettings={tournamentSettings}
+                    modalCreateTournament={isModalCreateTournament}  
+                    setModalCreateTournament={setIsModalCreateTournament} 
+                    setModalTournament={setIsModalTournament} 
+                    launching={launching} 
+                    numberPlayer={numberPlayer} 
+                    removeLaunch={removeLaunch}
+                />
+            </ModalInstance>}
+
+            {isAuthenticated && <ModalInstance
+               height="85%"
+               width="60%"
+               top="5%"
+               isModal={isModalTournament}
+               modalRef={modalTournamentRef}
+               name="Tournament"
+               onLaunchUpdate={() => removeLaunch("tournament")}
+               onClose={() => setIsModalTournament(false)}
             >
-                <Tournament />
+                <Tournament 
+                    setSettings={setTournamentSettings}
+                    tournamentSettings={tournamentSettings}
+                    modalCreateTournament={isModalCreateTournament}  
+                    setModalCreateTournament={setIsModalCreateTournament} 
+                    setModalTournament={setIsModalTournament} 
+                    launching={launching} 
+                    numberPlayer={numberPlayer} 
+                    removeLaunch={removeLaunch}
+                />
             </ModalInstance>}
 
             {isAuthenticated && isLaunched(isLaunch, "social") && <ModalInstance

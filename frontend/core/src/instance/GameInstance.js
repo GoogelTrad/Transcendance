@@ -12,8 +12,6 @@ import axiosInstance from '../instance/AxiosInstance.js';
 import useSocket from '../socket.js';
 import { throttle } from 'lodash';
 
-
-
 function GameInstance ( {children} ) {
     const canvasRef = useRef(null);
 	const [isGameOngoing, setisGameOngoing] = useState(true);
@@ -116,6 +114,7 @@ function GameInstance ( {children} ) {
 				status: 'finished',
 		  });
 		  setGame(response.data);
+		  console.log(game);
 		} catch (error) {
 		  console.error("Error updating game:", error);
 		}

@@ -9,10 +9,24 @@ import './LoginForm.css';
 import { useAuth } from './AuthContext';
 import AuthSchool from './AuthSchool';
 
+export function ValidatePassword(password){
+    const minLength = 8;
+    const hasUpperCase = /[A-Z]/.test(password);
+    const hasLowerCase = /[a-z]/.test(password);
+    const hasNumber = /\d/.test(password);
+    const hasSpecialChar = /[@$!%*?&]/.test(password);
+
+    if (password && password.length >= minLength && hasUpperCase && hasLowerCase && hasNumber && hasSpecialChar) 
+        return true;
+    else 
+        return false;
+};
+
 function LoginRegister({setModal, setTerminal, removeLaunch}) {
     const [step, setStep] = useState(false);
     const [code, setCode] = useState();
     const navigate = useNavigate();
+    const [rulesPassword, setRulesPassword] = useState(false);
     const authChannel = new BroadcastChannel("auth_channel");
     const {isAuthenticated, setIsAuthenticated} = useAuth();
     const [loginData, setLoginData] = useState({
@@ -102,6 +116,9 @@ function LoginRegister({setModal, setTerminal, removeLaunch}) {
         for (const [key, value] of Object.entries(registerData)) {
             data.append(key, value);
         }
+        setRulesPassword(false);
+        if (!ValidatePassword(data.password))
+            setRulesPassword(true);
         if(isAuthenticated)
             return showToast('error', 'Cannot create new account while connected!');
         try {
@@ -120,9 +137,7 @@ function LoginRegister({setModal, setTerminal, removeLaunch}) {
         authChannel.onmessage = (event) => {
             const { token } = event.data;
             if (token) {
-                console.log("✅ Token reçu :", token);
                 document.cookie = `token=${token}`;
-                console.log('coucou');
                 setIsAuthenticated(true);
                 setModal(false);
                 setTerminal(false);
@@ -228,8 +243,23 @@ function LoginRegister({setModal, setTerminal, removeLaunch}) {
                                     required
                                     placeholder='Password'>
                                 </input>
+                                {rulesPassword && 
+                                    <p className='rule-password'>
+                                        Password need to contains :
+                                        <br />
+                                            At least 8 characters long
+                                        <br / >
+                                            At least 1 uppercase
+                                        <br />
+                                            At least 1 lowercase
+                                        <br />
+                                            At least 1 number
+                                        <br />
+                                            At least 1 special caractere (@$!%*?&)
+                                    </p>
+                                }
                             </div>
-                            <div className=' mb-3'>
+                            <div className='mb-3'>
                                 <label htmlFor='password_confirm'>Confirm Password:</label>
                                 <input className='register-input'
                                     type='password'

@@ -6,12 +6,12 @@ from rest_framework.response import Response
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.decorators import api_view, action
 from django.shortcuts import get_object_or_404
-from .serializer import GameSerializer
+from .serializer import GameSerializer, TournamentSerializer
 from django.http import HttpResponse
-from .models import Game
+from .models import Game, Tournament
 from users.models import User
 import jwt
-from django.db.models import Q
+import os
 
 class HomeGameView:
     @api_view(['POST'])
@@ -22,7 +22,7 @@ class HomeGameView:
         else:
             token = None
 
-        payload = jwt.decode(jwt=token, key='coucou', algorithms=['HS256'])
+        payload = jwt.decode(jwt=token, key=os.getenv('JWT_KEY'), algorithms=['HS256'])
         user = get_object_or_404(User, name=payload.get('name'))
         data = request.data.copy()
 
@@ -59,6 +59,20 @@ class GameView:
                 serializer.save()
                 return Response(GameSerializer(game).data, status=status.HTTP_200_OK)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    @api_view(['GET'])
+    def fetch_data_user(request, user_id):
+        try:
+            user = User.objects.get(id=user_id)
+
+            games = user.games.all().order_by('-player1')
+        
+            game_serializer = GameSerializer(games, many=True)
+
+            return Response(game_serializer.data, status=status.HTTP_200_OK)
+    
+        except User.DoesNotExist:
+            return Response({"detail": "User not found."}, status=status.HTTP_404_NOT_FOUND)
         
     @api_view(['POST'])
     def GameDetails(request):
@@ -69,7 +83,7 @@ class GameView:
             'name'  : name,
         }
 
-        token = jwt.encode(payload, 'coucou', 'HS256')
+        token = jwt.encode(payload, os.getenv('JWT_KEY'), 'HS256')
 
         response = Response()
 
@@ -89,12 +103,44 @@ class GameView:
         }
         return reponse
 
+class TournamentView:
+    @api_view(['POST'])
+    def create_tournament(request):
+        auth_header = request.headers.get('Authorization')
+        if auth_header:
+            token = auth_header.split(' ')[1]
+        else:
+            token = None
 
+        payload = jwt.decode(jwt=token, key=os.getenv('JWT_KEY'), algorithms=['HS256'])
+        user = get_object_or_404(User, name=payload.get('name'))
 
-        
+        serializer = TournamentSerializer(data=data, partial=True)
 
+        if serializer.is_valid():
+            tournament_instance = serializer.save()
 
+            user.tournament.add(tournament_instance)
+            user.save()
 
+            return Response({"id": tournament_instance.id, **serializer.data}, status=status.HTTP_201_CREATED)
 
-        
-        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    @api_view(['GET', 'PATCH'])
+    def fetch_data_tournament(request, tournament_id):
+        try:
+            tournament = Tournament.objects.get(pk=tournament_id)
+        except Tournament.DoesNotExist:
+            return Response({"error": "Tournament not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        if request.method == 'GET':
+            serializer = TournamentSerializer(tournament)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        elif request.method == 'PATCH':
+            serializer = TournamentSerializer(tournament, data=request.data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(TournamentSerializer(tournament).data, status=status.HTTP_200_OK)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

@@ -166,11 +166,11 @@ class GameState:
         self.player2 = game.player2
 
     def is_game_over(self):
-        if self.score["score_P1"] >= 11:
+        if self.score["score_P1"] >= 1:
             self.winner = self.player1
             self.loser = self.player2
             return True
-        elif self.score["score_P2"] >= 11:
+        elif self.score["score_P2"] >= 1:
             self.winner = self.player2
             self.loser = self.player1
             return True

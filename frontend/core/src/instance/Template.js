@@ -6,8 +6,10 @@ import ModalInstance from './ModalInstance';
 import { useAuth } from '../users/AuthContext';
 import LiveDateTime from './DateInstance';
 import social from '../assets/user/friends.svg'; 
+import { useLocation, useNavigate, Link } from 'react-router-dom';
 
 function Template({ children, taskBarContent, launching, appArray }) {
+    const navigate = useNavigate();
     const [isDesktop, setIsDesktop] = useState(false);
     const [isSocial, setIsSocial] = useState(false);
     const { isAuthenticated } = useAuth();
@@ -32,7 +34,6 @@ function Template({ children, taskBarContent, launching, appArray }) {
 
     const handleClick= (modalName) =>
     {
-        console.log('coucou')
         const app = appArray.find((item) => item.name === modalName);
 
         if (!app) return;
@@ -41,6 +42,8 @@ function Template({ children, taskBarContent, launching, appArray }) {
         launching({newLaunch: modalName, setModal: app.setter});
         setIsDesktop(false);
     }
+
+    
 
     return (
         <div className="general container-fluid">
@@ -72,6 +75,12 @@ function Template({ children, taskBarContent, launching, appArray }) {
                                 >
                                     Game
                                 </div>}
+                                {isAuthenticated && <div
+                                className="p-2 bd-highlight flex-item"
+                                onClick={() =>  navigate("/Home") }
+                            >
+                                Home
+                            </div>}
                             </div>
                         </div>
                     </div>

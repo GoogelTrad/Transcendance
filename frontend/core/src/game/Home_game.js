@@ -9,7 +9,7 @@ import { jwtDecode } from "jwt-decode";
 import { getCookies } from './../App.js';
 import axiosInstance from "../instance/AxiosInstance";
 
-function HomeGame({setModalStats, setModalTournament, launching, setParentItems}) {
+function HomeGame({setModalStats, setModalCreateTournament, setModalTournament, launching, setParentItems, setParentNumberPlayer}) {
     const [player1, setPlayer1] = useState("");
     const [waitingForPlayer, setWaitingForPlayer] = useState(false);
     const [send_Info, setSend_Info] = useState(true)
@@ -19,7 +19,7 @@ function HomeGame({setModalStats, setModalTournament, launching, setParentItems}
     const [onClickJoin, setOnClickJoin] = useState(false);
     const [onClickCreate, setOnClickCreate] = useState(false);
     const [gameCode, setGameCode] = useState("");
-    const [numberPlayer, setNumberPlayer] =useState("");
+    const [numberPlayer, setNumberPlayer] =useState(2);
     const navigate = useNavigate();
     const [game, setGame] = useState(null);
     const [socket, setSocket] = useState(null);
@@ -106,8 +106,15 @@ function HomeGame({setModalStats, setModalTournament, launching, setParentItems}
         setOnClickStats(menu === "stats" ? !onClickStats : false);
     };
     
-    const handleClickTournament = () => {
-        if(numberPlayer || gameCode)
+
+    const handleClickTournament = (name) => {
+        if(name === "create")
+        {
+            setParentNumberPlayer(numberPlayer);
+            setModalCreateTournament(true);
+            launching({ newLaunch: 'createTournament', setModal: setModalCreateTournament});
+        }
+        else if (name === "join")
         {
             setModalTournament(true);
             launching({ newLaunch: 'tournament', setModal: setModalTournament});
@@ -204,22 +211,24 @@ return (
                             onClick={(e) => e.stopPropagation()}
                             onChange={(e) => setGameCode(e.target.value.replace(/\D/g, ""))}
                         />
-                        <button onClick={() => handleClickTournament()}> ✅ </button>
+                        <bouton onClick={() => handleClickTournament("join")}> ✅ </bouton>
                         </div>
                     )}
                     </p>
                     <p className="d-flex flex-direction column w-100 h-30" onClick={() => setOnClickCreate((prev) => !prev)}>Create game
-                    {onClickCreate && (
-                        <p style={{ fontSize: 12, marginTop: "8%" }}>Number of players:
-                        <input
-                            type="number"
-                            className="input-players"
-                            placeholder="Players"
-                            value={numberPlayer}
-                            onClick={(e) => e.stopPropagation()}
-                            onChange={(e) => setNumberPlayer(e.target.value.replace(/\D/g, ""))}
-                        />
-                        <button onClick={() => handleClickTournament()}> ✅ </button>
+                    { onClickCreate && (
+                        <p style={{ fontSize: 12, marginTop: "8%" }}>
+                            Number of players:
+                            <select 
+                                className="input-players" 
+                                value={numberPlayer}
+                                onClick={(e) => e.stopPropagation()}
+                                onChange={(e) => setNumberPlayer(e.target.value)}  
+                            >
+                                <option value="2">2 players</option>
+                                <option value="4">4 players</option>
+                            </select>
+                            <button onClick={() => handleClickTournament("create")}> ✅ </button>
                         </p>
                     )}
                     </p>
@@ -227,21 +236,21 @@ return (
                 </div>
             )}
             {onClickStats && (
-                <div className="content">
-                <h3 className="game-home-stats-title" onClick={() => handleMenuClick("stats")}>Stats</h3>
-                <div className="text-stats">
-                    <p onClick={() => handleClickStats('profile', '...')} >Global Stats</p>
-                    <p onClick={() => handleClickStats('global', '...')} >Stats game</p>
-                    <div className="item">
-                    <p onClick={() => handleClickStats('global', 'All games')}>► All games</p>
-                    <p onClick={() => handleClickStats('global', 'Friends')}>► Friends</p>
-                    <p onClick={() => handleClickStats('global', 'Win')}>► Win</p>
-                    <p onClick={() => handleClickStats('global', 'Lose')}>► Lose</p>
+                    <div className="content">
+                        <h3 className="game-home-stats-title"  onClick={() => handleMenuClick("stats")} >Stats</h3>
+                        <div className="text-stats">
+                            <p onClick={() => handleClickStats('profile', '...')} >Global Stats</p>
+                            <p onClick={() => handleClickStats('global', '...')} >Stats game</p>
+                                <div className="item">
+                                    <p onClick={() => handleClickStats('global', 'All games')} >► All games</p>
+                                    <p onClick={() => handleClickStats('global', 'Friends')} >► Friends</p>
+                                    <p onClick={() => handleClickStats('global', 'Win')} >► Win</p>
+                                    <p onClick={() => handleClickStats('global', 'Lose')} >► Lose</p>
+                                </div>
+                            <p onClick={() => handleClickStats('collect', '...')} >Collection</p>
+                        </div>
                     </div>
-                    <p onClick={() => handleClickStats('collect', '...')} >Collection</p>
-                </div>
-                </div>
-            )}
+                )}
             </div>
         </div>
         </div>
@@ -252,6 +261,6 @@ return (
         </div>
     )
     );
-}
+};
 
 export default HomeGame;
