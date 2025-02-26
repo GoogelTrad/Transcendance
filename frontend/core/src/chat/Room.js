@@ -84,7 +84,7 @@ export default function Room() {
 
 	function sendMessage() {
 		if (message.trim() === "") {
-			console.warn("Impossible d'envoyer un message vide.");
+			showToast("error", "Unable to send a blank message");
 			return;
 		}
 		if (socket.ready) {
@@ -121,17 +121,17 @@ export default function Room() {
 		console.log("name:", room.name);
 
 		if (!room.name) {
-			alert("Le nom de la salle est introuvable.");
+			showToast("error", "Room name not found");
 			return;
 		}
 
 		if (room.password) {
-			const enteredPassword = prompt(`Mot de passe requis pour "${room.name}" :`);
+			const enteredPassword = prompt(`A password is required for "${room.name}" :`);
 			if (enteredPassword) {
 				clearRoom();
 				joinRoom(room.name, enteredPassword);
 			} else {
-				alert("Mot de passe requis !");
+				showToast("error", "Enter a password for this room")
 			}
 		} else {
 			clearRoom();
@@ -204,7 +204,7 @@ export default function Room() {
 		<>
 			<div className="general-room d-flex justify-content-between">
 				<div className="listroom">
-					<h5>Liste des salles</h5>
+					<h5>List of rooms</h5>
 					<ul>
 						{listrooms.map((room, index) => (
 							<li key={index}>
@@ -222,14 +222,14 @@ export default function Room() {
 					<textarea id="chat-log" cols="100" rows="20" value={chat} readOnly />
 					<div className="saisi">
 						<input id="chat-message-input" type="text" size="100" maxLength={maxLength} value={message} onChange={handleChange}/>
-						<p>Caractères restants : {caracteresRestants}</p>
+						<p>Remaining characters: {caracteresRestants}</p>
 						<button className="send" onClick={sendMessage}> Send </button>
 						<button className="exit" onClick={() => navigate(`/chat/`)}> Exit </button>
 					</div>
 				</div>
 				<div className="List">
 					<div className="User_list">
-						<h5>Amis</h5>
+						<h5>Friends</h5>
 						<ul>
 							{friendList?.friends?.length > 0 ? (
 								friendList.friends.map((friend) => (
@@ -238,12 +238,12 @@ export default function Room() {
 									</li>
 								))
 							) : (
-								<li>Aucun ami trouvé.</li>
+								<li>No friends found</li>
 							)}
 						</ul>
 					</div>
 					<div>
-						<h5>Autres utilisateurs</h5>
+						<h5>Other users</h5>
 					</div>
 					<div className="btn-group dropend">
 						<ul>
@@ -254,7 +254,7 @@ export default function Room() {
 									</button>
 									<ul className="dropdown-menu">
 										<button className="dropdown-item" onClick={() => handleProfile(user.id)}> Profile </button>
-										<button className="dropdown-item" onClick={() => sendNotification(user.id, "Voulez-vous jouer une partie ?", userId)}> Envoyer une notification </button>
+										<button className="dropdown-item" onClick={() => sendNotification(user.id, `${decodedToken.name}invites you to play a game of pong`, userId)}> Send an invitation to play </button>
 									</ul>
 								</li>
 							))}
@@ -269,7 +269,7 @@ export default function Room() {
 							{notifications.map((notif, index) => (
 								<li key={index}>
 									{notif.response ? (
-										<p>Réponse : {notif.response}</p>
+										<p>Response : {notif.response}</p>
 									) : (
 										<>
 											{notif.message}
@@ -277,13 +277,13 @@ export default function Room() {
 												onClick={() => handleResponse(notif.id, "accepté", notif.sender_id)}
 												disabled={clickedNotifications[notif.id]}
 											>
-												✅ Accepter
+												✅ Accept
 											</button>
 											<button
 												onClick={() => handleResponse(notif.id, "refusé", notif.sender_id)}
 												disabled={clickedNotifications[notif.id]}
 											>
-												❌ Refuser
+												❌ Refuse
 											</button>
 										</>
 									)}

@@ -72,7 +72,7 @@ export default function HomeChat() {
 
 	const createRoom = (roomName, invited_user_id = undefined) => {
 		if (roomName === "") {
-			showToast("error", "Le nom de la salle ne peut pas être vide.");
+			showToast("error", "Room name cannot be empty");
 			return;
 		}
 		if (socket.ready) {
@@ -127,21 +127,19 @@ export default function HomeChat() {
 		}
 	};
 
-	const blockUsers = (blocker, blocked) => {
+	const blockUsers = (blocked) => {
 		if (socket.ready) {
 			socket.send({
 				type: "block_users",
-				blocker: blocker,
 				blocked: blocked,
 			})
 		}
 	}
 
-	const unblockUsers = (blocker, blocked) => {
+	const unblockUsers = (blocked) => {
 		if (socket.ready) {
 			socket.send({
 				type: "unblock_users",
-				blocker: blocker,
 				blocked: blocked,
 			})
 		}
@@ -161,19 +159,18 @@ export default function HomeChat() {
 
 	const handleRoomClick = async (e, room) => {
 		e.preventDefault();
-		console.log("name:", room.name);
 
 		if (!room.name) {
-			alert("Le nom de la salle est introuvable.");
+			showToast("error", "Room name not found");
 			return;
 		}
 
 		if (room.password) {
-			const enteredPassword = prompt(`Mot de passe requis pour "${room.name}" :`);
+			const enteredPassword = prompt(`A password is required for "${room.name}" :`);
 			if (enteredPassword) {
 				joinRoom(room.name, enteredPassword);
 			} else {
-				alert("Mot de passe requis !");
+				showToast("error", "Enter a password for this room")
 			}
 		} else {
 			joinRoom(room.name);
@@ -210,7 +207,7 @@ export default function HomeChat() {
 
 							{!isCreateSwitchOn && (
 								<>
-									<input type="text" placeholder="Nom de la salle" value={createName} onChange={handleChangeCreateRoom} />
+									<input type="text" placeholder="Room name" value={createName} onChange={handleChangeCreateRoom} />
 									<button onClick={() => setShowCreatePublicRoom(false)}>Cancel</button>
 									<button onClick={() => createRoom(createName)}>New Room</button>
 									{socket && createdRoomName && <Room/>}
@@ -219,8 +216,8 @@ export default function HomeChat() {
 
 							{isCreateSwitchOn && (
 								<>
-									<input type="text" placeholder="Nom de la salle" value={createName} onChange={handleChangeCreateRoom} />
-									<input type="password" placeholder="Mdp de la salle" value={createpassword} onChange={handleChangeCreatePassword} />
+									<input type="text" placeholder="Room name" value={createName} onChange={handleChangeCreateRoom} />
+									<input type="password" placeholder="Room password" value={createpassword} onChange={handleChangeCreatePassword} />
 									<button onClick={() => setShowCreatePublicRoom(false)}>Cancel</button>
 									<button onClick={() => createRoom(createName)}>New Room</button>
 									{socket && createdRoomName && <Room/>}
@@ -231,7 +228,7 @@ export default function HomeChat() {
 						<button onClick={() => setShowCreatePublicRoom(true)}>New Room</button>
 					)}
 
-					<h5>Liste des salles</h5>
+					<h5>List of rooms</h5>
 					<ul className="liste_salles">
 						{listrooms && listrooms.map((room, index) => (
 							<li key={index}>
@@ -241,7 +238,7 @@ export default function HomeChat() {
 							</li>
 						))}
 					</ul>
-					<h5>Liste des dms</h5>
+					<h5>List of dms</h5>
 					<ul className="liste_dms"> 
 						{dmrooms && dmrooms.map((room, index) => (
 							<li key={index}>
@@ -253,7 +250,7 @@ export default function HomeChat() {
 					</ul>
 				</div>
 				<div>
-					<h5>Liste des utilisateurs</h5>
+					<h5>List of users</h5>
 					<div className="btn-group dropend">
 						<ul>
 							{usersconnected.map((user, index) => (
@@ -265,11 +262,11 @@ export default function HomeChat() {
 										<button className="dropdown-item" onClick={() => handleProfile(user.id)}> Profile </button>
 										<button className="dropdown-item" onClick={() => {
 											const randomRoomName = makeName(8);
-											sendNotification(user.id, `${decodedToken.name} veut demarrer une discussion avec vous.`, userId, randomRoomName); 
+											sendNotification(user.id, `${decodedToken.name} wants to start a discussion with you.`, userId, randomRoomName); 
 											createRoom(randomRoomName, user.id);}}
-										> Envoyer une invitation </button>
-										<button className="dropdown-item" onClick={() => unblockUsers(userId, user.id)}>Débloquer</button>
-										<button className="dropdown-item" onClick={() => blockUsers(userId, user.id)} >Bloquer</button>
+										> Start a private discussion </button>
+										<button className="dropdown-item" onClick={() => unblockUsers(user.id)}>Block user</button>
+										<button className="dropdown-item" onClick={() => blockUsers(user.id)} >Unlock user</button>
 									</ul>
 								</li>
 							))}
@@ -284,7 +281,7 @@ export default function HomeChat() {
 							{notifications.map((notif, index) => (
 								<li key={index}>
 									{ notif.response ? (
-										<p> Réponse : {notif.response}</p>
+										<p> Response : {notif.response}</p>
 									) : (
 										<>
 											{notif.message}

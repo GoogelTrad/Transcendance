@@ -3,7 +3,6 @@ from users.models import User
 from django.conf import settings
 from django.core.exceptions import ValidationError
 
-
 class Room(models.Model):
     """Modele representant une salle de chat prive"""
     creation = models.DateTimeField(auto_now_add=True)
@@ -21,11 +20,11 @@ class Room(models.Model):
     def __str__(self):
         return f"Room privée créée par {self.createur.username} - {self.creation}"
 
-class MessageManager(models.Manager):
-    def visible_for_user(self, user):
-        """Filtrage des messages pour qu'un user ne voie pas les messages des users bloqués"""
-        blocked_users = BlockedUser.objects.filter(blocker=user).values_list("blocked", flat=True)
-        return self.exclude(sender_id__in=blocked_users)
+# class MessageManager(models.Manager):
+#     def visible_for_user(self, user):
+#         """Filtrage des messages pour qu'un user ne voie pas les messages des users bloqués"""
+#         blocked_users = BlockedUser.objects.filter(blocker=user).values_list("blocked", flat=True)
+#         return self.exclude(sender_id__in=blocked_users)
 
 class Message(models.Model):
     """Modèle représentant un message de chat."""
@@ -34,15 +33,7 @@ class Message(models.Model):
     content = models.TextField(max_length=300)
     timestamp = models.DateTimeField(auto_now_add=True)
 
-    objects = MessageManager()
+    # objects = MessageManager()
 
     def __str__(self):
         return f'[{self.timestamp}] {self.username}: {self.content}'
-
-class BlockedUser(models.Model):
-    """Modele representant un tableau de personne bloque"""
-    blocker = models.ForeignKey(User, on_delete=models.CASCADE, related_name="blocker", default="0")
-    blocked = models.ForeignKey(User, on_delete=models.CASCADE, related_name="blocked", default="1")
-    
-    def __str__(self):
-        return f"{self.blocker.username} a bloqué {self.blocked.username}"

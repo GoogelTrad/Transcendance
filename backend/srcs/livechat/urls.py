@@ -8,7 +8,7 @@ urlpatterns = [
 	path('save_chat_msg/', views.save_chat_msg, name='save_chat_msg'),
 	path('send-notification/', views.send_notification, name='send_notification'),
 	path("users_connected/", views.get_users_connected, name='get_users_connected'),
-	path("block/<int:user_id>/", views.block_user, name='block_user'),
-	path("unlock/<int:user_id>/", views.unlock_user, name='unlock_user'),
-	path("blocked-users/", views.get_list_blocked, name="list_blocked_users"),
+	# path("block/<int:user_id>/", views.block_user, name='block_user'),
+	# path("unlock/<int:user_id>/", views.unlock_user, name='unlock_user'),
+	# path("blocked-users/", views.get_list_blocked, name="list_blocked_users"),
 ]

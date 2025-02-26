@@ -11,7 +11,7 @@ class UserSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = User
-        fields = ['id', 'name', 'email', 'status', 'password', 'password_confirm', 'profile_image', 'profile_image_url', 'friends', 'is_stud', 'is_waiting']
+        fields = ['id', 'name', 'email', 'status', 'password', 'password_confirm', 'profile_image', 'profile_image_url', 'friends', 'is_stud', 'is_waiting', 'blocked_user']
         
     def get_profile_image_url(self, obj):
         if obj.profile_image:

@@ -2,16 +2,18 @@ import json
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.layers import get_channel_layer
 from users.models import User
-from .models import Room, Message, BlockedUser
+from .models import Room, Message
 import jwt
 import os
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 
-from channels.db import database_sync_to_async
+from asgiref.sync import sync_to_async
 
 class ChatConsumer(AsyncWebsocketConsumer):
+
+    room_user_ids = []
     # async def getUsers(self):
     #     token = jwt.decode(self.scope['cookies']['token'], 'coucou', algorithms=['HS256'])
     #     return await User.objects.aget(id=token['id'])
@@ -57,6 +59,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
             return
         self.room_name = self.scope['url_route']['kwargs']['room']
         self.room = None
+        if not self.room_user_ids.__contains__(self.user.id):
+            self.room_user_ids.append(self.user.id)
 
         self.room_group_name = f"chat_{self.room_name}"
         channel_layer = get_channel_layer()
@@ -86,9 +90,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
         elif message_type == 'join_room':
             await self.joinRoom(data.get('room_name'), data.get('password'))
         elif message_type == 'block_users':
-            await self.blockUser(data.get('blocker'), data.get('blocked'))
+            await self.blockUser(data.get('blocked'))
         elif message_type == 'unblock_users':
-            await self.unblockUser(data.get('blocker'), data.get('blocked'))
+            await self.unblockUser(data.get('blocked'))
 
     async def send(self, data, bytes_data = None, close = False):
         text_data = json.dumps(data)
@@ -171,40 +175,48 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 "error": f"Room '{room_name}' does not exist."
             })
 
-    async def blockUser(self, blockerId, blockedId):
-        blocker = await User.objects.aget(id=blockerId)
-        blocked = await User.objects.aget(id=blockedId)
+    async def blockUser(self, user):
+        # blocker = await User.objects.aget(id=blockerId)
+        # blocked = await User.objects.aget(id=blockedId)
 
-        if blocker is None or blocked is None:
-             await self.send({
-                "type": "user_blocked",
-                "status": False,
-                "blocked": None,
-                "message": "User not found"
-            })
+        # if blocker is None or blocked is None:
+        #      await self.send({
+        #         "type": "user_blocked",
+        #         "status": False,
+        #         "blocked": None,
+        #         "message": "User not found"
+        #     })
 
-        block = await BlockedUser.objects.acreate(
-            blocker=blocker,
-            blocked=blocked,
-        )
+        # block = await BlockedUser.objects.acreate(
+        #     blocker=blocker,
+        #     blocked=blocked,
+        # )
 
-        await self.send({
-            "type": "user_blocked",
-            "status": True,
-            "blocked": block.blocked.id,
-            "message": "User succesfully blocked"
-        })
+        # await self.send({
+        #     "type": "user_blocked",
+        #     "status": True,
+        #     "blocked": block.blocked.id,
+        #     "message": "User succesfully blocked"
+        # })
+        await self.user.blocked_user.aadd(user)
+        await self.user.asave()
 
-    async def unblockUser(self, blocker, blocked):
-        row = await BlockedUser.objects.aget(blocker=blocker, blocked=blocked)
-        if row:
-            await row.adelete()
+    async def unblockUser(self, user):
+        # row = await BlockedUser.objects.aget(blocker=blocker, blocked=blocked)
+        # if row:
+        #     await row.adelete()
 
-        await self.send({
-            "type": "user_blocked",
-            "status": True,
-            "message": "User succesfully unblocked"
-        })
+        # await self.send({
+        #     "type": "user_blocked",
+        #     "status": True,
+        #     "message": "User succesfully unblocked"
+        # })
+        await self.user.blocked_user.aremove(user)
+        await self.user.asave()
+
+    async def is_blocked(self, user):
+        """Vérifie si un utilisateur est bloqué"""
+        return self.user.blocked_user.filter(id=user.id).exists()
 
     async def sendMessage(self, message):
         if (self.room is None):
@@ -219,21 +231,16 @@ class ChatConsumer(AsyncWebsocketConsumer):
         await msg.asave()
 
         # Récupérer la liste des utilisateurs bloqués
-        blocked_users = BlockedUser.objects.filter(blocker=self.user).values_list("blocked_id", flat=True)
-
+        print(f'blocked = {self.user.blocked_user}', flush=True)
         # Vérifier si l'utilisateur est bloqué avant d'envoyer le message
-        if self.user.id in blocked_users:
-            return  # Ne rien envoyer
-
         channel_layer = get_channel_layer()
+        print(self.scope, flush=True)
         await channel_layer.group_send(
             self.room_group_name,
             {
                 'type': 'chat_message',
                 'message': message,
-                'username': self.user.username,
-                'sender_id': self.user.id,
-                'blocked_users': list(blocked_users)
+                'username': self.user.name,
             }
         )
 
@@ -241,20 +248,15 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def chat_message(self, event):
         message = event['message']
         username = event['username']
-        sender_id = event['sender_id']
-        blocked_users = event['blocked_users']
+        print(self.user.id, self.user.name, username, flush=True)
 
         # Vérifier si l'utilisateur a bloqué l'expéditeur
-        if sender_id in blocked_users:
-            return  # Ne pas envoyer le message
 
         await self.send({
             'type': 'chat_message',
             'message': message,
             'username': username,
         })
-
-        print()
 
 
 class NotificationConsumer(AsyncWebsocketConsumer):
