@@ -16,11 +16,14 @@ import { useAuth } from './users/AuthContext';
 import { jwtDecode } from "jwt-decode";
 import { getCookies } from "./App";
 import AuthSchool from './users/AuthSchool';
-
+import P from './assets/P.png';
+import S from './assets/S.png';
+import C from './assets/C.png';
+import T from './assets/T.png';
 
 function Home() {
+    const navigate = useNavigate();
     const [isFriends, setIsFriends] = useState([]);
- 
     const [isModalTerminal, setIsModalTerminal] = useState(false);
     const [isModalStats, setIsModalStats] = useState(false);
     const [isModalForms, setIsModalForms] = useState(false);
@@ -60,6 +63,9 @@ function Home() {
 
     const [items, setItems] = useState([]);
 
+    const location = useLocation();
+    const modalSend = location.state?.modalName || "";
+
     const token = getCookies('token');
     let decodeToken = null;
     if (token)
@@ -80,10 +86,84 @@ function Home() {
         return launched.includes(searchApp);
     }
 
-    // const isTokenValid
+    useEffect(() => {
+        if (modalSend) {
+            const modalSetter = setters.find(item => item.name === modalSend)?.setter;
+    
+            if (modalSetter) {
+                launching({ newLaunch: modalSend, setModal: modalSetter });
+            } else {
+                console.warn(`Aucun modal trouvé pour: ${modalSend}`);
+            }
+        }
+    }, [modalSend]);
+
+    const [positionGame, setPositionGame] = useState( {x: window.innerWidth * 0.05, y: window.innerHeight * 0.35});
+    const [positionChat, setPositionChat] = useState( {x: window.innerWidth * 0.84, y: window.innerHeight * 0.35});
+    const [positionStats, setPositionStats] = useState( {x: window.innerWidth * 0.45, y: window.innerHeight * 0.35});
+    const [isDraggingGame, setIsDraggingGame] = useState(false);
+    const [isDraggingChat, setIsDraggingChat] = useState(false);
+    const [isDraggingStats, setIsDraggingStats] = useState(false);
+
+    const handleMouseDown = (e, icon) => {
+        const offsetX = e.clientX - icon.x;
+        const offsetY = e.clientY - icon.y;
+    
+        document.body.style.cursor = 'grabbing';
+    
+        const handleMouseMove = (moveEvent) => {
+            if (icon.isDragging) {
+                const newPos = { x: moveEvent.clientX - offsetX, y: moveEvent.clientY - offsetY };
+                if (icon.name === "game") {
+                    setPositionGame(newPos);
+                } else if (icon.name === "chat") {
+                    setPositionChat(newPos);
+                } else if (icon.name === "stats") {
+                    setPositionStats(newPos);
+                }
+            }
+        };
+    
+        const handleMouseUp = () => {
+
+            if (icon.name === "game") {
+                setIsDraggingGame(false);
+            } else if (icon.name === "chat") {
+                setIsDraggingChat(false);
+            } else if (icon.name === "stats") {
+                setIsDraggingStats(false);
+            }
+    
+            document.body.style.cursor = 'grab';
+    
+            window.removeEventListener('mousemove', handleMouseMove);
+            window.removeEventListener('mouseup', handleMouseUp);
+        };
+
+        window.addEventListener('mousemove', handleMouseMove);
+        window.addEventListener('mouseup', handleMouseUp);
+ 
+        if (icon.name === "game") {
+            setIsDraggingGame(true);
+        } else if (icon.name === "chat") {
+            setIsDraggingChat(true);
+        } else if (icon.name === "stats") {
+            setIsDraggingStats(true);
+        }
+    };    
 
     useEffect(() => {
+        const handleResize = () => {
+            setPositionGame({x: window.innerWidth * 0.05, y: window.innerHeight * 0.35});
+            setPositionChat({x: window.innerWidth * 0.84, y: window.innerHeight * 0.35});
+            setPositionStats({x: window.innerWidth * 0.45, y: window.innerHeight * 0.35});
+        };
 
+        window.addEventListener("resize", handleResize);
+
+        return () => {
+            window.removeEventListener("resize", handleResize);
+        };
     }, []);
 
     return (
@@ -174,32 +254,93 @@ function Home() {
                     )}
                 </div>
             }
-        >
-            {!isAuthenticated && <button
-                className="icon term"
-                onClick={() => launching({ newLaunch: "terminal", setModal: setIsModalTerminal })}
             >
-                Terminal
-            </button>}
-            {isAuthenticated && <button
-                className="icon game"
-                onClick={() => launching({ newLaunch: "game", setModal: setIsModalGame})}
-                >
-                    Game
-                </button>
-            }
- 
-            {isAuthenticated && <button
-                className="icon profileModal"
-                onClick={() => {launching({ newLaunch: "profile", setModal: setIsModalProfile })}}
-            >
-                Profile
-            </button>}
-
-            {isAuthenticated && <button className="icon chatModal" onClick={() => {launching({ newLaunch: "chat", setModal: setIsModalChat})}}>
-                Chat
-            </button>}
-
+            {!isAuthenticated && (
+                <div
+                    style={{
+                        position: 'absolute',
+                        top: '35%',
+                        left: '45%',
+                        height: '20%',
+                        width: '10%',
+                    }}
+                    >
+                    <img
+                        src={T}
+                        alt="icon term"
+                        className="w-100"
+                        style={{height: '80%'}}
+                        onClick={() => launching({ newLaunch: "terminal", setModal: setIsModalTerminal })}
+                    />
+                    <div style={{ position: 'absolute', alignItems:'end', textAlign: 'center', justifyContent:'center', left:'28%', bottom: '20%'}}>TERMINAL</div>
+                </div>
+            )}
+            {isAuthenticated && (
+                <div
+                    style={{
+                        position: 'absolute',
+                        top: `${positionGame.y}px`,
+                        left: `${positionGame.x}px`,
+                        cursor: isDraggingGame ? 'grabbing' : 'grab',
+                        height: '20%',
+                        width: '10%',
+                    }}
+                    onMouseDown={(e) => handleMouseDown(e, { name: 'game', x: positionGame.x, y: positionGame.y, isDragging: isDraggingGame })}
+                    >
+                    <img
+                        src={P}
+                        alt="icon game"
+                        className="w-100"
+                        style={{height: '80%'}}
+                        onClick={() => launching({ newLaunch: "game", setModal: setIsModalGame })}
+                    />
+                    <div style={{ position: 'absolute', alignItems:'end', textAlign: 'center', justifyContent:'center', left:'33%', bottom: '0%'}}>PONG</div>
+                </div>
+            )}
+            {isAuthenticated && (
+                <div
+                    style={{
+                        position: 'absolute',
+                        top: `${positionChat.y}px`,
+                        left: `${positionChat.x}px`,
+                        cursor: isDraggingChat ? 'grabbing' : 'grab',
+                        height: '20%',
+                        width: '10%',
+                    }}
+                    onMouseDown={(e) => handleMouseDown(e, { name: 'chat', x: positionChat.x, y: positionChat.y, isDragging: isDraggingChat })}
+                    >
+                    <img
+                        src={C}
+                        alt="icon chat"
+                        className="w-100"
+                        style={{height: '80%'}}
+                        onClick={() => navigate('/Chat')}
+                    />
+                    <div style={{ position: 'absolute', alignItems:'end', textAlign: 'center', justifyContent:'center', left:'33%', bottom: '0%'}}>CHAT</div>
+                </div>
+            )}
+                {isAuthenticated && (
+                <div
+                    style={{
+                        position: 'absolute',
+                        top: `${positionStats.y}px`,
+                        left: `${positionStats.x}px`,
+                        cursor: isDraggingStats ? 'grabbing' : 'grab',
+                        height: '20%',
+                        width: '10%',
+                    }}
+                    onMouseDown={(e) => handleMouseDown(e, { name: 'stats', x: positionStats.x, y: positionStats.y, isDragging: isDraggingStats })}
+                    >
+                    <img
+                        src={S}
+                        alt="icon stats"
+                        className="w-100"
+                        style={{height: '80%'}}
+                        onClick={() => launching({ newLaunch: "stats", setModal: setIsModalStats })}
+                    />
+                    <div style={{ position: 'absolute', alignItems:'end', textAlign: 'center', justifyContent:'center', left:'33%', bottom: '0%'}}>STATS</div>
+                </div>
+            )}
             {!isAuthenticated && isLaunched(isLaunch, "terminal") && <ModalInstance
                 height="60%"
                 width="50%"

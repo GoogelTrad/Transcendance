@@ -89,7 +89,7 @@ function ModalInstance(props) {
             
             onMouseMove={(e) => handleDragMove(e, modalRef)}
             onMouseUp={() => handleDragEnd(modalRef)}
-        >
+            >
             <div
                 className="modal-header"
                 onMouseDown={(e) => handleDragStart(e, modalRef)}
