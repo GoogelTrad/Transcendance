@@ -10,6 +10,8 @@ from users.models import User
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 from django.shortcuts import get_object_or_404
+from rest_framework.exceptions import AuthenticationFailed
+from rest_framework import status
 
 @api_view(['GET'])
 @jwt_auth_required
@@ -103,3 +105,45 @@ def send_notification(user, message):
 
     return JsonResponse({"status": "Notification envoyée"})
 
+
+@api_view(['POST'])
+@jwt_auth_required
+def block_user(request):
+    from_user = request.data['from_user']
+    to_user = request.data['to_user']
+
+    user = User.objects.filter(id=from_user).first()
+
+    if user is None:
+        raise AuthenticationFailed("User not found")
+
+    blocked = User.objects.filter(id=to_user).first()
+
+    if blocked is None:
+        raise AuthenticationFailed("User not found")
+
+    user.blocked_user.add(blocked)
+    user.save()
+
+    return Response({'message': 'Block user request accepted!'}, status=status.HTTP_200_OK)
+
+@api_view(['POST'])
+@jwt_auth_required
+def unlock_user(request):
+    from_user = request.data['from_user']
+    to_user = request.data['to_user']
+
+    user = User.objects.filter(id=from_user).first()
+
+    if user is None:
+        raise AuthenticationFailed("User not found")
+
+    blocked = User.objects.filter(id=to_user).first()
+
+    if blocked is None:
+        raise AuthenticationFailed("User not found")
+
+    user.blocked_user.remove(blocked)
+    user.save()
+
+    return Response({'message': 'Unlock user request accepted!'}, status=status.HTTP_200_OK)

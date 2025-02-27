@@ -20,7 +20,7 @@ class User(AbstractUser):
     is_waiting = models.BooleanField(default=False)
     enable_verified = models.BooleanField(default=False)
     ip_user = models.CharField(max_length=255, default="")
-    blocked_user = models.ManyToManyField("self", symmetrical=False, related_name="blocked_by")
+    blocked_user = models.ManyToManyField("User", related_name="blocked_by", blank=True)
     username = None
 
     USERNAME_FIELD = 'name'

@@ -127,7 +127,7 @@ export default function HomeChat() {
 		}
 	};
 
-	const blockUsers = (blocked) => {
+	const blockUsers = async () => {
 		if (socket.ready) {
 			socket.send({
 				type: "block_users",

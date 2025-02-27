@@ -9,14 +9,10 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 
-from asgiref.sync import sync_to_async
 
 class ChatConsumer(AsyncWebsocketConsumer):
 
     room_user_ids = []
-    # async def getUsers(self):
-    #     token = jwt.decode(self.scope['cookies']['token'], 'coucou', algorithms=['HS256'])
-    #     return await User.objects.aget(id=token['id'])
 
     async def getUsers(self):
         try:
@@ -89,10 +85,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
             await self.createRoom(data.get('room_name'), data.get('password'), data.get('invited_user_id'))
         elif message_type == 'join_room':
             await self.joinRoom(data.get('room_name'), data.get('password'))
-        elif message_type == 'block_users':
-            await self.blockUser(data.get('blocked'))
-        elif message_type == 'unblock_users':
-            await self.unblockUser(data.get('blocked'))
 
     async def send(self, data, bytes_data = None, close = False):
         text_data = json.dumps(data)
@@ -175,49 +167,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 "error": f"Room '{room_name}' does not exist."
             })
 
-    async def blockUser(self, user):
-        # blocker = await User.objects.aget(id=blockerId)
-        # blocked = await User.objects.aget(id=blockedId)
-
-        # if blocker is None or blocked is None:
-        #      await self.send({
-        #         "type": "user_blocked",
-        #         "status": False,
-        #         "blocked": None,
-        #         "message": "User not found"
-        #     })
-
-        # block = await BlockedUser.objects.acreate(
-        #     blocker=blocker,
-        #     blocked=blocked,
-        # )
-
-        # await self.send({
-        #     "type": "user_blocked",
-        #     "status": True,
-        #     "blocked": block.blocked.id,
-        #     "message": "User succesfully blocked"
-        # })
-        await self.user.blocked_user.aadd(user)
-        await self.user.asave()
-
-    async def unblockUser(self, user):
-        # row = await BlockedUser.objects.aget(blocker=blocker, blocked=blocked)
-        # if row:
-        #     await row.adelete()
-
-        # await self.send({
-        #     "type": "user_blocked",
-        #     "status": True,
-        #     "message": "User succesfully unblocked"
-        # })
-        await self.user.blocked_user.aremove(user)
-        await self.user.asave()
-
-    async def is_blocked(self, user):
-        """Vérifie si un utilisateur est bloqué"""
-        return self.user.blocked_user.filter(id=user.id).exists()
-
     async def sendMessage(self, message):
         if (self.room is None):
             self.room = await Room.objects.aget(name=self.room_name)
@@ -230,8 +179,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         await msg.asave()
 
-        # Récupérer la liste des utilisateurs bloqués
-        print(f'blocked = {self.user.blocked_user}', flush=True)
         # Vérifier si l'utilisateur est bloqué avant d'envoyer le message
         channel_layer = get_channel_layer()
         print(self.scope, flush=True)

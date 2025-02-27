@@ -21,7 +21,7 @@ export default function Room() {
 	const [users_room, setUsersRoom] = useState([]);
 	const [blockedUsers, setBlockedUsers] = useState([]);
 	const [clickedNotifications, setClickedNotifications] = useState({});
-	const maxLength = 10;
+	const maxLength = 100;
 	const [caracteresRestants, setCaracteresRestants] = useState(maxLength);
 	const [isModalProfile, setIsModalProfile] = useState(false);
 	const [profileId, setProfileId] = useState(1);
