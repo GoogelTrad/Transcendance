@@ -4,9 +4,11 @@ export default function useSocket(name, param = '') {
 	const [ready, setReady] = useState(false);
 	const [socket, setSocket] = useState();
 	const handlers = new Map();
-	const BASE_URL = `${process.env.REACT_APP_SOCKET_IP}/ws/`
+	const BASE_URL = `wss://localhost/ws/`
 
 	useEffect(() => {
+
+		console.log('coucou');
 
 		let socket = new WebSocket(`${BASE_URL}${name}/${String(param)}`)
 

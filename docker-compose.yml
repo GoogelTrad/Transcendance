@@ -62,7 +62,7 @@ services:
       - tdc
     environment:
       - REDIS_HOST=redis
-      - REDIS_PORT=6000
+      - REDIS_PORT=6379
       - WATCHPACK_POLLING=true
   
   redis:

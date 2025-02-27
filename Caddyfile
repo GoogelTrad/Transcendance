@@ -1,6 +1,6 @@
 localhost {
-	tls internal
-	reverse_proxy /api/* django:8000 
-	reverse_proxy /ws/* django:8001
-	reverse_proxy react:3000
+    tls internal
+    reverse_proxy /api/* django:8000
+    reverse_proxy react:3000
+    reverse_proxy /ws/* django:8000
 }

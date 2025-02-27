@@ -17,8 +17,6 @@
     "react-router-dom": "^6.28.0",
     "react-scripts": "5.0.1",
     "react-toastify": "^10.0.6",
-    "socket.io-client": "^4.8.1",
-    "socketio": "^1.0.0",
     "web-vitals": "^2.1.4"
   },
   "scripts": {
@@ -44,5 +42,16 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "proxy": "http://localhost",
+    "devServer": {
+      "port": 3000,
+      "proxy": {
+        "/ws": {
+          "target": "wss://localhost",
+          "ws": true,
+          "changeOrigin": true
+      }
+    }
   }
 }
