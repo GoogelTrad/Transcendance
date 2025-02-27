@@ -13,7 +13,9 @@ import silver from '../assets/game/silver.png';
 import gold from '../assets/game/gold.png';
 import backgroundCollect from '../assets/game/background-collect.jpg';
 
+
 function Stats({ itemsArray = [] }) {
+    const navigate = useNavigate();
     const [option, setOption] = useState([]);
     const [mode, setMode] = useState([]);
     const [selectedOption, setSelectedOption] = useState("");
@@ -258,6 +260,7 @@ function Stats({ itemsArray = [] }) {
                                         alt="Profile"
                                         className="profile-picture"
                                         title='profile'
+                                        onClick={(e) => {e.stopPropagation(); navigate("/Home", {state: { modalName: "profile"}}); }}
                                     />
                                 </label>
                             </div>
