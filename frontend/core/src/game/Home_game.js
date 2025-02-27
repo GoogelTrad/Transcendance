@@ -22,6 +22,7 @@ function HomeGame({setModalStats, setModalCreateTournament, setModalTournament, 
     const [numberPlayer, setNumberPlayer] =useState(2);
     const navigate = useNavigate();
     const [game, setGame] = useState(null);
+    const [tournament, setTournament] = useState(null)
     const [socket, setSocket] = useState(null);
 
     const [items, setItems] = useState([
@@ -106,7 +107,6 @@ function HomeGame({setModalStats, setModalCreateTournament, setModalTournament, 
         setOnClickStats(menu === "stats" ? !onClickStats : false);
     };
     
-
     const handleClickTournament = (name) => {
         if(name === "create")
         {
@@ -121,7 +121,7 @@ function HomeGame({setModalStats, setModalCreateTournament, setModalTournament, 
         }
     };
 
-    const submitPlayer = async () => {
+    const StartGameSolo = async () => {
         try {
           const response = await axiosInstance.post(`/game/create_game`, { player1 });
           navigate(`/games/${response.data.id}`);
@@ -191,9 +191,9 @@ return (
             {onClickPlay && (
                 <div className="content">
                 <h3 style={{ textAlign: "center" }} onClick={() => handleMenuClick("play")}>Play</h3>
-                <div className="line" onClick={() => submitPlayer('1-player')}> 1 player </div>
-                <div className="line" onClick={() => Matchmaking('2-players')}> 2 players - Online </div>
-                <div className="line" onClick={() => submitPlayer('2-players')}> 2 players - Local </div>
+                <div className="line" onClick={() => StartGameSolo()}> 1 player </div>
+                <div className="line" onClick={() => Matchmaking()}> 2 players - Online </div>
+                <div className="line" onClick={() => StartGameSolo()}> 2 players - Local </div>
                 </div>
             )}
             {onClickTournament && (

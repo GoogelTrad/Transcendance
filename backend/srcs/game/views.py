@@ -22,17 +22,31 @@ class HomeGameView:
         else:
             token = None
 
-        payload = jwt.decode(jwt=token, key=os.getenv('JWT_KEY'), algorithms=['HS256'])
-        user = get_object_or_404(User, name=payload.get('name'))
         data = request.data.copy()
 
         serializer = GameSerializer(data=data, partial=True)
 
         if serializer.is_valid():
             game_instance = serializer.save()
+            player1_name = data.get('player1')
 
-            user.games.add(game_instance)
-            user.save()
+            if player1_name:
+                try:
+                    player1_user = get_object_or_404(User, name=player1_name)
+                    print("getobject : ",player1_user, flush=True)
+                    player1_user.games.add(game_instance)
+                    player1_user.save()
+                except Exception as e:
+                    return Response({"detail": f"Player1 with name '{player1_name}' not found: {str(e)}"}, status=status.HTTP_404_NOT_FOUND)
+            player2_name = data.get('player2')
+            if player2_name:
+                try:
+                    player2_user = get_object_or_404(User, name=player2_name)
+                    print("getobject : ",player2_user, flush=True)
+                    player2_user.games.add(game_instance)
+                    player2_user.save()
+                except Exception as e:
+                    return Response({"detail": f"Player2 with name '{player2_name}' not found: {str(e)}"}, status=status.HTTP_404_NOT_FOUND)
 
             return Response({"id": game_instance.id, **serializer.data}, status=status.HTTP_201_CREATED)
 
@@ -114,6 +128,7 @@ class TournamentView:
 
         payload = jwt.decode(jwt=token, key=os.getenv('JWT_KEY'), algorithms=['HS256'])
         user = get_object_or_404(User, name=payload.get('name'))
+        data = request.data.copy()
 
         serializer = TournamentSerializer(data=data, partial=True)
 

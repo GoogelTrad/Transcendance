@@ -24,6 +24,7 @@ function GameInstance ( {children} ) {
 	const [game, setGame] = useState(null);
 	const [gameStart, setGameStart] = useState(false);
 	const { id } = useParams();
+	const navigate = useNavigate();
 	const [isKeyDown, setIsKeyDown] = useState({ ArrowUp: false, ArrowDown: false, z: false, s: false });
 	const [backDimensions, setBackDimensions] = useState(() => ({
 		width: 1536,
@@ -113,8 +114,10 @@ function GameInstance ( {children} ) {
 				timeMinutes: gameData.Minutes,
 				status: 'finished',
 		  });
-		  setGame(response.data);
-		  console.log(game);
+			setGame(response.data);
+			if (game.player2 === user.name) {
+				console.log(game);
+			}
 		} catch (error) {
 		  console.error("Error updating game:", error);
 		}
@@ -180,18 +183,6 @@ function GameInstance ( {children} ) {
 		}
 	}, [isGameOngoing])
 
-	const addToHistory = async (game) => {
-		console.log(game);
-		try {
-			await axiosInstance.patch(`api/user/${user.id}`, {
-				games : game
-			});
-		} catch (error) {
-			console.error("Error fetching game by ID:", error);
-		}
-	}
-	  
-	
 	useEffect(() => {
 		if (gameStart === false) {
 		const fetchData = async () => {
@@ -204,8 +195,6 @@ function GameInstance ( {children} ) {
 		};
 		if (!game)
 			fetchData();
-		if (game && game.player2 === user.name)
-			addToHistory(game);
 		if (game && game.player1 === user.name) {
 			const sendGameInstance = () => {
 				if (socket.readyState === WebSocket.OPEN) {
@@ -267,7 +256,9 @@ function GameInstance ( {children} ) {
 		});
 	};
 
-
+	const quitToHome = () => {
+		navigate(`/home`);
+	}
 		useEffect(() => {
 		  const handleBeforeUnload = (event) => {
 			if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
@@ -425,6 +416,7 @@ function GameInstance ( {children} ) {
 				<p>Loser: {game?.loser || "No Player"}</p>
 				<p>seconds: {game?.timeSeconds || "0"}</p>
 				<p>minutes: {game?.timeMinutes || "0"}</p>
+				<div className="p-2" onClick={() => quitToHome()}> EXIT </div>
 			  </div>
 			</div>
 		  )}
