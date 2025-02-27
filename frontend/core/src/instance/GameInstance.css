@@ -26,7 +26,7 @@ canvas.gamebar {
 }
   
 .game-bar {
-	position: relative;
+	position: absolute;
 	display: flex;
 	justify-content: space-around;
 	align-items: center;
@@ -218,7 +218,6 @@ canvas.gamebar {
 
 .p-2 {
 	padding: 0 !important;
-	color: #FF0000;
 }
 
 .touch-style {
@@ -271,19 +270,18 @@ canvas.gamebar {
 .game-over {
 	color: #FFFFFF;
 	justify-content: center;
+    align-items: center;
 	text-align: center;
 	font-family: 'Arrows', sans-serif;
 	font-size: 20px;
 	padding: 100px;
-	position: relative;
+	position: absolute;
+	display: flex;
 	justify-content: space-around;
+	align-items: center;
 	z-index: 2; 
 	font-family: 'Press Start 2P', cursive;
 	font-size: 20px;
-}
-
-.final-scores{
-	padding-top: 50px;
 }
 
 

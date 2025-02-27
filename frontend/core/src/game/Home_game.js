@@ -13,6 +13,7 @@ function HomeGame({setModalStats, setModalCreateTournament, setModalTournament, 
     const [player1, setPlayer1] = useState("");
     const [waitingForPlayer, setWaitingForPlayer] = useState(false);
     const [send_Info, setSend_Info] = useState(true)
+    const [addPlayer, setAddPlayer] = useState(false)
     const [onClickPlay, setOnClickPlay] = useState(false);
     const [onClickTournament, setOnClickTournament] = useState(false);
     const [onClickStats, setOnClickStats] = useState(false);
@@ -87,7 +88,6 @@ function HomeGame({setModalStats, setModalCreateTournament, setModalTournament, 
         if (user && user.name) {
             setPlayer1(user.name);
         }
-        console.log("gameCode : ", gameCode);
     }, [user]);
 
     const handleClickStats = (stats, optionStats) => {
@@ -107,6 +107,47 @@ function HomeGame({setModalStats, setModalCreateTournament, setModalTournament, 
         setOnClickStats(menu === "stats" ? !onClickStats : false);
     };
     
+
+    useEffect(() => {
+        console.log(tournament)
+        if (addPlayer === true) {
+            addPlayerToTournament();
+            setAddPlayer(false);
+        }
+    }, [tournament]); 
+
+    const fetchDataTournament = async () => {
+        try {
+            const response = await axiosInstance.get(`/game/fetch_data_tournament_by_code/${gameCode}/`);
+            console.log("hey");
+            setTournament(response.data);
+        } catch (error) {
+            console.error("Error fetching tournament by code:", error);
+        }
+    }
+
+    const addPlayerToTournament = async () => {
+        try {
+            const dataToSend = {
+                player_name: user.name
+            };
+            if (!tournament.player2) {
+                dataToSend.player2 = user.name;
+            }
+            else if (!tournament.player3){
+                dataToSend.player3 = user.name;
+            }
+            else if (!tournament.player4){
+                dataToSend.player4 = user.name;
+            }
+            console.log("data send : ", dataToSend);
+            const response = await axiosInstance.patch(`/game/add_player_to_tournament/${gameCode}/`, dataToSend);
+            setTournament(response.data)
+        } catch (error) {
+            console.log("Error adding player to tournament:", error);
+        }
+    };
+
     const handleClickTournament = (name) => {
         if(name === "create")
         {
@@ -116,6 +157,9 @@ function HomeGame({setModalStats, setModalCreateTournament, setModalTournament, 
         }
         else if (name === "join")
         {
+            console.log("code : ",gameCode);
+            fetchDataTournament();
+            setAddPlayer(true);
             setModalTournament(true);
             launching({ newLaunch: 'tournament', setModal: setModalTournament});
         }

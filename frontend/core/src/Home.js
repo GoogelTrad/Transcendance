@@ -404,7 +404,8 @@ function Home() {
                     setSettings={setTournamentSettings}
                     tournamentSettings={tournamentSettings}
                     modalCreateTournament={isModalCreateTournament}  
-                    setModalCreateTournament={setIsModalCreateTournament} 
+                    setModalCreateTournament={setIsModalCreateTournament}
+                    ModalTournament={isModalTournament}
                     setModalTournament={setIsModalTournament} 
                     launching={launching} 
                     numberPlayer={numberPlayer} 

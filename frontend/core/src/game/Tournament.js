@@ -1,6 +1,8 @@
 import './Tournament.css';
 import React, { useEffect, useState, useRef  } from "react";
 import axiosInstance from '../instance/AxiosInstance.js';
+import { jwtDecode } from "jwt-decode";
+import { getCookies } from './../App.js';
 import person from '../assets/game/person.svg';
 import TournamentBracket from "./TournamentBracket";
 import ghost from '../assets/game/ghost2.png';
@@ -14,7 +16,7 @@ import marioRun2 from '../assets/game/mario-run-2.png';
 import marioJump from '../assets/game/mario-jump.png';
 import blockAfter from '../assets/game/blockAfter.png';
 
-function Tournament({setSettings, tournamentSettings, modalCreateTournament, setModalCreateTournament, setModalTournament, launching, numberPlayer, removeLaunch }) {
+function Tournament({setSettings, tournamentSettings, modalCreateTournament, setModalCreateTournament, ModalTournament , setModalTournament, launching, numberPlayer, removeLaunch }) {
     const [maxTimeMinutes, setMaxTimeMinutes] = useState("00");
     const [maxTimeSecondes, setMaxTimeSecondes] = useState("00");
     const [maxScore, setMaxScore] = useState(0);
@@ -44,6 +46,18 @@ function Tournament({setSettings, tournamentSettings, modalCreateTournament, set
         right: -100,
         title: false,
     });
+
+
+    const token = getCookies('token');
+    let user = null;
+    
+    if (token) {
+        try {
+            user = jwtDecode(token);
+        } catch (error) {
+            console.error("Error decoding token:", error);
+        }
+    };
 
     useEffect(() => {
         const interval = setInterval(() => {
@@ -209,20 +223,28 @@ function Tournament({setSettings, tournamentSettings, modalCreateTournament, set
     const createTournement = async () => {
         try {
             const response = await axiosInstance.post(`/game/create_tournament`, { 
+                player1 : user.name,
                 code : tournamentSettings.tournamentCode,
                 timeMaxMinutes : tournamentSettings.maxTimeMinutes,
                 timeMaxSeconds :tournamentSettings.maxTimeSecondes,
                 scoreMax : tournamentSettings.maxScore,
+                size: tournamentSettings.numberPlayer,
              });
-            setTournamentResponse(response);
+            setTournamentResponse(response.data);
         } catch (error) {
           console.error("Error submitting Player:", error);
         }
     };
 
     useEffect(() => {
-        console.log("tournament : ", tournamentResponse);
-    }, [tournamentResponse]);
+        if (ModalTournament === true){
+            createTournement();
+        }
+    }, [tournamentSettings]);
+    
+    useEffect(() => {
+        console.log("tournamentRes : ", tournamentResponse);
+    }, [tournamentResponse]); 
     
     const handleClick = () => {
         if (maxScore === 0 || maxTimeMinutes === "00") {
@@ -244,7 +266,6 @@ function Tournament({setSettings, tournamentSettings, modalCreateTournament, set
         setMaxScore(0);
         setMaxTimeMinutes("00");
         setMaxTimeSecondes("00");
-        createTournement();
         launching({ newLaunch: 'tournament', setModal: setModalTournament });
     };
 

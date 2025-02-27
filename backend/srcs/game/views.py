@@ -159,3 +159,56 @@ class TournamentView:
                 serializer.save()
                 return Response(TournamentSerializer(tournament).data, status=status.HTTP_200_OK)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+    @api_view(['GET', 'PATCH'])
+    def fetch_data_tournament_by_code(request, code):
+        try:
+            tournament = Tournament.objects.get(code=code)
+        except Tournament.DoesNotExist:
+            return Response({"error": "Tournament not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        if request.method == 'GET':
+            serializer = TournamentSerializer(tournament)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        elif request.method == 'PATCH':
+            serializer = TournamentSerializer(tournament, data=request.data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(TournamentSerializer(tournament).data, status=status.HTTP_200_OK)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+    @api_view(['PATCH'])
+    def add_player_to_tournament(request, code):
+        try:
+            tournament = Tournament.objects.get(code=code)
+
+            player_name = request.data.get('player_name')
+
+            if player_name in [tournament.player1, tournament.player2, tournament.player3, tournament.player4]:
+                return Response({"error": "Player is already registered in the tournament"}, status=status.HTTP_409_CONFLICT)
+            
+            data_to_patch = {}
+
+            if not tournament.player2:
+                data_to_patch['player2'] = request.data.get('player2', None)
+                if tournament.size == 2:
+                    data_to_patch['status'] = "ready"
+            elif not tournament.player3:
+                data_to_patch['player3'] = request.data.get('player3', None)
+            elif not tournament.player4:
+                data_to_patch['player4'] = request.data.get('player4', None)
+                data_to_patch['status'] = "ready"
+            else:
+                return Response({"error": "Tournament is full"}, status=status.HTTP_400_BAD_REQUEST)
+            
+            serializer = TournamentSerializer(tournament, data=data_to_patch, partial=True)
+            
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        except Tournament.DoesNotExist:
+            return Response({"error": "Tournament not found"}, status=status.HTTP_404_NOT_FOUND)

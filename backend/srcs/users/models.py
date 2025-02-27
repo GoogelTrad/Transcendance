@@ -22,6 +22,7 @@ class User(AbstractUser):
     is_waiting = models.BooleanField(default=False)
     enable_verified = models.BooleanField(default=False)
     ip_user = models.CharField(max_length=255, default="")
+    elo = models.IntegerField(default=100)
 
     username = None
 
