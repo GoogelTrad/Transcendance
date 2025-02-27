@@ -16,7 +16,6 @@ matchmaking_queue = []
 class MatchmakingConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         token = self.scope.get('query_string', b'').decode().split('=')[1]
-        print(":",token, flush=True)
         
         if token:
             user = await self.authenticate_user(token)
@@ -30,12 +29,14 @@ class MatchmakingConsumer(AsyncWebsocketConsumer):
             await self.close()
 
     async def disconnect(self, close_code):
+        global matchmaking_queue
         if self.channel_name in matchmaking_queue:
             matchmaking_queue.remove(self.channel_name)
             print(f"User {self.user} removed from the matchmaking queue")
+
     async def receive(self, text_data):
+        global matchmaking_queue
         text_data_json = json.loads(text_data)
-        print(text_data_json, flush=True)
 
         if text_data_json.get("type") == "join":
             print(f"User {self.user} joining matchmaking", flush=True)
@@ -46,21 +47,29 @@ class MatchmakingConsumer(AsyncWebsocketConsumer):
             print(f"User {self.user} added to matchmaking queue", flush=True)
 
             gameData = None
+            print('queue :', matchmaking_queue, flush=True)
             if len(matchmaking_queue) >= 2:
-                print(len(matchmaking_queue), flush=True)
                 player1 = matchmaking_queue.pop(0)
                 player2 = matchmaking_queue.pop(0)
-                gameData = await self.create_Game_Multi(self.user.auth_token ,player1['player_name'], player2['player_name'])
-
+                if player1['player_name'] != player2['player_name']:
+                    gameData = await self.create_Game_Multi(self.user.auth_token ,player1['player_name'], player2['player_name'])
+                else:
+                    matchmaking_queue.append({
+                    'player_name': self.user,
+                    'channel_name': self.channel_name
+                })
             if gameData:
                 game_id = gameData['id']
                 await self.start_game(game_id, player1['channel_name'], player2['channel_name'])
+        if text_data_json.get("type") == "leave":
+            if (len(matchmaking_queue) >= 1):
+                matchmaking_queue = [player for player in matchmaking_queue if player['player_name'] != self.user]
+
 
 
     async def authenticate_user(self, token):
         try:
             payload = jwt.decode(token, "coucou", algorithms=["HS256"])
-            print("pay :", payload, flush=True)
             user_id = payload.get('id')
             if user_id:
                 user = await self.get_user_from_id(user_id)
@@ -143,8 +152,8 @@ class GameState:
             "pos_x": 1536 / 2,
             "pos_y": 826 / 2,
             "width": 20,
-            "velocity_x": 8,
-            "velocity_y": 8
+            "velocity_x": 6,
+            "velocity_y": 6
         }
 
         self.score = {
@@ -157,11 +166,11 @@ class GameState:
         self.player2 = game.player2
 
     def is_game_over(self):
-        if self.score["score_P1"] >= 1:
+        if self.score["score_P1"] >= 11:
             self.winner = self.player1
             self.loser = self.player2
             return True
-        elif self.score["score_P2"] >= 1:
+        elif self.score["score_P2"] >= 11:
             self.winner = self.player2
             self.loser = self.player1
             return True
@@ -196,6 +205,8 @@ class GameState:
             and self.paddle_data["paddleLeftY"] <= self.pong_data["pos_y"] <= self.paddle_data["paddleLeftY"] + self.paddle_data["height"]
         ):
             self.pong_data["velocity_x"] *= -1
+            if self.pong_data["velocity_x"] >= -16 and self.pong_data["velocity_x"] <= 16:
+                self.pong_data["velocity_x"] *= 1.1
             self.pong_data["pos_x"] = self.paddle_data["paddleLeftX"] + self.paddle_data["width"] + 0.1
 
         if (
@@ -204,6 +215,8 @@ class GameState:
             and self.paddle_data["paddleRightY"] <= self.pong_data["pos_y"] <= self.paddle_data["paddleRightY"] + self.paddle_data["height"]
         ):
             self.pong_data["velocity_x"] *= -1
+            if self.pong_data["velocity_x"] >= -16 and self.pong_data["velocity_x"] <= 16:
+                self.pong_data["velocity_x"] *= 1.1
             self.pong_data["pos_x"] = self.paddle_data["paddleRightX"] - self.paddle_data["width"] - 0.1
 
         if self.paddle_data["paddleLeftY"] < 0:
@@ -219,12 +232,16 @@ class GameState:
     def reset_ball(self, direction=1):
         self.pong_data["pos_x"] = self.paddle_data["width_canvas"] / 2
         self.pong_data["pos_y"] = self.paddle_data["height_canvas"] / 2
-        self.pong_data["velocity_x"] = 8 * direction
+        self.pong_data["velocity_x"] = 6 * direction
         self.pong_data["velocity_y"] = random.choice([-8, 8])
 
 class gameConsumer(AsyncWebsocketConsumer):
 
     game_states = {}
+    paddle_data = {}
+    current_key_states_P1 = {}
+    current_key_states_P2 = {}
+    player = {}
 
     def __init__(self):  
         self.game_running = False
@@ -268,6 +285,14 @@ class gameConsumer(AsyncWebsocketConsumer):
         )
         if self.game_id in gameConsumer.game_states:
             del gameConsumer.game_states[self.game_id]
+        if self.game_id in gameConsumer.paddle_data:
+            del gameConsumer.paddle_data[self.game_id]
+        if self.game_id in gameConsumer.current_key_states_P1:
+            del gameConsumer.current_key_states_P1[self.game_id]
+        if self.game_id in gameConsumer.current_key_states_P2:
+            del gameConsumer.current_key_states_P2[self.game_id]
+        if self.game_id in gameConsumer.player:
+            gameConsumer.player[self.game_id] = ""
         print(f"WebSocket disconnected from game {self.game_id} with close code: {close_code}")
 
     async def receive(self, text_data):
@@ -280,17 +305,16 @@ class gameConsumer(AsyncWebsocketConsumer):
             print(f"WebSocket connected to game {self.game_id}!", flush=True)
             self.game_running = True
             asyncio.create_task(self.run_game_loop(self.game_state))
-        if "isKeyDown" in data_dict: 
-            key_states = {
+        if "isKeyDown" in data_dict:
+            gameConsumer.paddle_data[self.game_id] = {
                 "isKeyDown": data_dict["isKeyDown"],
                 "player": data_dict["player"]
             }
-            self.handle_key_press(key_states)
+            self.handle_key_press(gameConsumer.paddle_data[self.game_id])
 
     async def send_message(self, message):
         channel_layer = get_channel_layer()
         await channel_layer.group_send(self.group_name, message)
-
 
     async def game_update(self, event):
         await self.send(text_data=json.dumps(event))
@@ -301,6 +325,10 @@ class gameConsumer(AsyncWebsocketConsumer):
         try:
             while True:
                 await asyncio.sleep(1 /60)
+                if self.game_id in gameConsumer.current_key_states_P1:
+                    self.process_key_states_P1(gameConsumer.current_key_states_P1[self.game_id], game_state)
+                if self.game_id in gameConsumer.current_key_states_P2:
+                    self.process_key_states_P2(gameConsumer.current_key_states_P2[self.game_id], game_state)
                 game_state.update()
                 current_time = time.time()
                 time_diff = current_time - last_time_updated
@@ -349,29 +377,35 @@ class gameConsumer(AsyncWebsocketConsumer):
             print("Game loop ended", flush=True)
     
     def handle_key_press(self, key_states):
-        self.current_key_states = key_states.get("isKeyDown")
-        player = key_states.get("player", "P1")
-        self.process_key_states(self.current_key_states, self.game_state, player)
+        gameConsumer.player[self.game_id] = key_states.get("player", "P1")
+        if gameConsumer.player[self.game_id] == "P1" :
+            gameConsumer.current_key_states_P1[self.game_id] = key_states.get("isKeyDown")
+        elif gameConsumer.player[self.game_id] == "P2" :
+            gameConsumer.current_key_states_P2[self.game_id] = key_states.get("isKeyDown")
+        if self.game_id in gameConsumer.paddle_data:
+            del gameConsumer.paddle_data[self.game_id]
 
-    def process_key_states(self, key_states, game_state, player):
-        paddle_speed = 20
-        if player == "P1":
-            if key_states.get("ArrowUp", False):
-                game_state.paddle_data["paddleLeftY"] = max(
-                    0, game_state.paddle_data["paddleLeftY"] - paddle_speed
-                )
-            if key_states.get("ArrowDown", False):
-                game_state.paddle_data["paddleLeftY"] = min(
-                    game_state.paddle_data["height_canvas"] - game_state.paddle_data["height"],
-                    game_state.paddle_data["paddleLeftY"] + paddle_speed,
-                )
-        elif player == "P2":
-            if key_states.get("ArrowUp", False):
-                game_state.paddle_data["paddleRightY"] = max(
-                    0, game_state.paddle_data["paddleRightY"] - paddle_speed
-                )
-            if key_states.get("ArrowDown", False):
-                game_state.paddle_data["paddleRightY"] = min(
-                    game_state.paddle_data["height_canvas"] - game_state.paddle_data["height"],
-                    game_state.paddle_data["paddleRightY"] + paddle_speed,
+    def process_key_states_P1(self, key_states, game_state):
+        paddle_speed = 15
+        if key_states.get("ArrowUp", False):
+            game_state.paddle_data["paddleLeftY"] = max(
+                0, game_state.paddle_data["paddleLeftY"] - paddle_speed
             )
+        if key_states.get("ArrowDown", False):
+            game_state.paddle_data["paddleLeftY"] = min(
+                game_state.paddle_data["height_canvas"] - game_state.paddle_data["height"],
+                game_state.paddle_data["paddleLeftY"] + paddle_speed,
+            )
+    def process_key_states_P2(self, key_states, game_state):
+        paddle_speed = 15
+        if key_states.get("ArrowUp", False):
+            game_state.paddle_data["paddleRightY"] = max(
+                0, game_state.paddle_data["paddleRightY"] - paddle_speed
+            )
+        if key_states.get("ArrowDown", False):
+            game_state.paddle_data["paddleRightY"] = min(
+                game_state.paddle_data["height_canvas"] - game_state.paddle_data["height"],
+                game_state.paddle_data["paddleRightY"] + paddle_speed,
+            )
+
+

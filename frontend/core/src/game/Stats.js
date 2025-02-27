@@ -173,11 +173,15 @@ function Stats({ itemsArray = [] }) {
         console.log("Image : ", decodeToken.profile_image_url);
     }, [option]);
 
+    useEffect(() => {
+        console.log(games)
+    }, [games])
+
 
     useEffect(() => {
         const fetchStats = async () => {
           try {
-            const response = await axiosInstance.get(`http://localhost:8000/game/fetch_data_user/${decodeToken.id}/`, {});
+            const response = await axiosInstance.get(`/game/fetch_data_user/${decodeToken.id}/`, {});
             setGames(response.data);
           } catch (error) {
             console.error('Error fetching user stats:', error);

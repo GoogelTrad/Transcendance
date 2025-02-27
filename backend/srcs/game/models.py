@@ -43,6 +43,18 @@ class Game(models.Model):
         return self.status == self.FINISHED
 
 class Tournament(models.Model):
+    WAITING = 'waiting'
+    STARTED = 'started'
+    FINISHED = 'finished'
+    READY = 'ready'
+
+    STATUS_CHOICES = [
+        (WAITING, 'Waiting for Players'),
+        (STARTED, 'Tournament Started'),
+        (FINISHED, 'Tournament Finished'),
+        (READY, 'Ready waiting to start'),
+    ]
+
     code = models.IntegerField(default=0)
     timeMaxMinutes = models.IntegerField(default=0)
     timeMaxSeconds = models.IntegerField(default=0)
@@ -52,3 +64,9 @@ class Tournament(models.Model):
     player3 = models.CharField(max_length=255, blank=True)
     player4 = models.CharField(max_length=255, blank=True)
     gamesTournament = models.ManyToManyField("game.Game", related_name="tournament_players", blank=True)
+    size = models.IntegerField(default=4)
+    status = models.CharField(
+        max_length=10,
+        choices=STATUS_CHOICES,
+        default=WAITING
+    )
