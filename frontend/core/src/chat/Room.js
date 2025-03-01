@@ -9,6 +9,7 @@ import useJwt from '../instance/JwtInstance';
 import { getCookies } from '../App';
 import ModalInstance from "../instance/ModalInstance";
 import Profile from "../users/Profile";
+import Button from 'react-bootstrap/Button';
 
 export default function Room() {
 
@@ -47,27 +48,9 @@ export default function Room() {
 	};
 
 	useEffect(() => {
-		const listUsersBlocked = async () => {
-			try {
-				const response = await axiosInstance.get(`/livechat/blocked-users/`);
-				setBlockedUsers(response.data);
-			}
-			catch(error) {
-				console.log(error);
-			}
-		};
-		listUsersBlocked();
-	}, []);
-	
-
-	useEffect(() => {
 		if (socket.ready) {
 			socket.on("chat_message", (data) => {
-				// Vérifier si l'expéditeur est bloqué côté frontend
-				if (blockedUsers.includes(data.username)) {
-					return; // Ne pas afficher le message
-				}
-				const newMessage = `${data.username}: ${data.message}\n`; // Ajouter l'username
+				const newMessage = `${data.username}: ${data.message}\n`;
 				setChat((prevChat) => prevChat + newMessage);
 			});
 			socket.on("join_room", (data) => {
@@ -82,7 +65,9 @@ export default function Room() {
 		}
 	}, [socket, navigate, blockedUsers]);
 
-	function sendMessage() {
+	function sendMessage(e) {
+		e.preventDefault();
+		setCaracteresRestants(100);
 		if (message.trim() === "") {
 			showToast("error", "Unable to send a blank message");
 			return;
@@ -99,7 +84,7 @@ export default function Room() {
 
 	const clearRoom = async () => {
 		try {
-			const response = await axiosInstance.post('/livechat/exit-room/', {room_name: roomName});
+			const response = await axiosInstance.post('/livechat/exit_room/', {room_name: roomName});
 			console.log(response.data);
 		} catch (error) {
 			console.error("Erreur lors du clean de la room", error);
@@ -221,9 +206,11 @@ export default function Room() {
 					</div>
 					<textarea id="chat-log" cols="100" rows="20" value={chat} readOnly />
 					<div className="saisi">
-						<input id="chat-message-input" type="text" size="100" maxLength={maxLength} value={message} onChange={handleChange}/>
-						<p>Remaining characters: {caracteresRestants}</p>
-						<button className="send" onClick={sendMessage}> Send </button>
+						<form onSubmit={sendMessage}>
+							<input id="chat-message-input" type="text" size="100" maxLength={maxLength} value={message} onChange={handleChange}/>
+							<p>Remaining characters: {caracteresRestants}</p>
+							<button className="send" type='submit'> Send </button>
+						</form>
 						<button className="exit" onClick={() => navigate(`/chat/`)}> Exit </button>
 					</div>
 				</div>

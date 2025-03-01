@@ -9,9 +9,19 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 
+from asgiref.sync import sync_to_async
+
+@sync_to_async
+def get_user_by_name(username):
+    return User.objects.filter(name=username).first()
+
+@sync_to_async
+def is_user_blocked(from_user, to_user):
+    print("ALED = ", flush=True)
+    return from_user.blocked_user.filter(id=to_user.id).exists()
 
 class ChatConsumer(AsyncWebsocketConsumer):
-
+    
     room_user_ids = []
 
     async def getUsers(self):
@@ -21,10 +31,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 print("⚠️ Aucun token trouvé !")
                 return None
 
-            print(f"📢 Token reçu : {token}")
+            # print(f"📢 Token reçu : {token}")
 
             decoded_token = jwt.decode(token, os.getenv('JWT_KEY'), algorithms=['HS256'])
-            print(f"📢 Token décodé : {decoded_token}")
+            # print(f"📢 Token décodé : {decoded_token}")
 
             user_id = decoded_token.get('id')
             if not user_id:
@@ -32,7 +42,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 return None
 
             user = await User.objects.aget(id=user_id)
-            print(f"✅ Utilisateur récupéré : {user}")
+            # print(f"✅ Utilisateur récupéré : {user}")
 
             return user
         except User.DoesNotExist:
@@ -181,7 +191,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         # Vérifier si l'utilisateur est bloqué avant d'envoyer le message
         channel_layer = get_channel_layer()
-        print(self.scope, flush=True)
+        # print(self.scope, flush=True)
         await channel_layer.group_send(
             self.room_group_name,
             {
@@ -198,12 +208,16 @@ class ChatConsumer(AsyncWebsocketConsumer):
         print(self.user.id, self.user.name, username, flush=True)
 
         # Vérifier si l'utilisateur a bloqué l'expéditeur
+        to_user = await get_user_by_name(username)
+        from_user = await get_user_by_name(self.user.name)
 
-        await self.send({
-            'type': 'chat_message',
-            'message': message,
-            'username': username,
-        })
+        if not await is_user_blocked(from_user, to_user):
+            print('coucou', flush=True)
+            await self.send({
+                'type': 'chat_message',
+                'message': message,
+                'username': username,
+            })
 
 
 class NotificationConsumer(AsyncWebsocketConsumer):

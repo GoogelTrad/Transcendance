@@ -27,10 +27,11 @@ export default function HomeChat() {
 	const [listrooms, setlistrooms] = useState([]);
 	const [dmrooms, setdmrooms] = useState([]);
 	const [usersconnected, setusersconnected] = useState([]);
+	const [blockedUsers, setBlockedUsers] = useState([]);
 	const [isModalProfile, setIsModalProfile] = useState(false);
 	const [profileId, setProfileId] = useState(1);
 	const modalProfile = useRef(null);
-	const [clickedNotifications, setClickedNotifications] = useState({});
+	
 
 	const navigate = useNavigate();
 
@@ -44,6 +45,11 @@ export default function HomeChat() {
 	const token = getCookies('token');
 	const decodedToken = getJwt(token);
 	const userId = decodedToken.id;
+
+	const [blockedData, setBlockedData] = useState({
+		from_user: userId,
+		to_user: '',
+	});
 	
 	const { notifications, sendNotification, respondNotification } = useNotifications();
 
@@ -127,32 +133,66 @@ export default function HomeChat() {
 		}
 	};
 
-	const blockUsers = async () => {
-		if (socket.ready) {
-			socket.send({
-				type: "block_users",
-				blocked: blocked,
-			})
+	const blocked_user = async (id) => {
+		const data = {'from_user': userId, 'to_user': id};
+		try {
+			const response = await axiosInstance.post(`livechat/block/`, data, {
+				headers: {
+					'Content-Type': 'multipart/form-data',
+				},
+			});
+
+			if (response.status === 200)
+			{
+				listUsersBlocked();
+				showToast("message", "User block good");
+			}
+
+		} catch(error) {
+			console.error("Erreur lors de la requete de bloquage", error);
 		}
 	}
 
-	const unblockUsers = (blocked) => {
-		if (socket.ready) {
-			socket.send({
-				type: "unblock_users",
-				blocked: blocked,
-			})
+	const unlocked_user = async (id) => {
+		const data = {'from_user': userId, 'to_user': id};
+		try {
+			const response = await axiosInstance.post(`livechat/unlock/`, data, {
+				headers: {
+					'Content-Type': 'multipart/form-data',
+				},
+			});
+
+			if (response.status === 200)
+			{
+				listUsersBlocked();
+				showToast("succes", "User unlock good");
+			}
+
+		} catch(error) {
+			console.error("Erreur lors de la requete de debloquage", error);
 		}
 	}
+
+	const listUsersBlocked = async () => {
+		try {
+			const response = await axiosInstance.get(`/livechat/blocked_users/${userId}`);
+			setBlockedUsers(response.data);
+		}
+		catch(error) {
+			console.log(error);
+		}
+	};
 
 	useEffect(() => {
-		listroom();
 		users_connected();
+		listroom();
+		listUsersBlocked();
 
 		const interval = setInterval(() => {
 			users_connected();
 			listroom();
-		}, 10000);
+			listUsersBlocked();
+		}, 5000);
 
 		return () => clearInterval(interval);
 	}, []);
@@ -265,8 +305,12 @@ export default function HomeChat() {
 											sendNotification(user.id, `${decodedToken.name} wants to start a discussion with you.`, userId, randomRoomName); 
 											createRoom(randomRoomName, user.id);}}
 										> Start a private discussion </button>
-										<button className="dropdown-item" onClick={() => unblockUsers(user.id)}>Block user</button>
-										<button className="dropdown-item" onClick={() => blockUsers(user.id)} >Unlock user</button>
+										{!blockedUsers.includes(user.id) && (
+											<button className="dropdown-item" onClick={() => blocked_user(user.id)}> Block </button>
+										)}
+										{blockedUsers.includes(user.id) && (
+											<button className="dropdown-item" onClick={() => unlocked_user(user.id)}> Unlock </button>
+										)}
 									</ul>
 								</li>
 							))}

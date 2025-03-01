@@ -28,7 +28,7 @@ function useTokenValidation() {
         };
         const interval = setInterval(() => {
             validateToken();
-        }, 50000000);
+        }, 500000000);
 
         return () => {
             clearInterval(interval);

@@ -147,3 +147,22 @@ def unlock_user(request):
     user.save()
 
     return Response({'message': 'Unlock user request accepted!'}, status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+@jwt_auth_required
+def get_list_blocked(request, id):
+    users = User.objects.filter(id=id).first()
+
+    if users is None:
+        raise AuthenticationFailed("User not found")
+
+    response = Response()
+
+    response.data = list(users.blocked_user.values_list('id', flat=True))
+
+    return response
+
+@api_view(['GET'])
+@jwt_auth_required
+def get_messages(request, room_name):
+    messages = Message.objects.filter(name=)
