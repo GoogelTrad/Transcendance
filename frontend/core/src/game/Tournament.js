@@ -13,13 +13,13 @@ import marioRun2 from '../assets/game/mario-run-2.png';
 import marioJump from '../assets/game/mario-jump.png';
 import blockAfter from '../assets/game/blockAfter.png';
 
-function Tournament({ setSettings, tournamentSettings, modalCreateTournament, setModalCreateTournament, setModalTournament, launching, numberPlayer, removeLaunch }) {
+function Tournament({ setSettings, tournamentSettings, modalCreateTournament, setModalCreateTournament, setModalTournament, setModalResult, modalResult, launching, numberPlayer, removeLaunch }) {
     const [maxTimeMinutes, setMaxTimeMinutes] = useState("00");
     const [maxTimeSecondes, setMaxTimeSecondes] = useState("00");
     const [maxScore, setMaxScore] = useState(0);
     const [tournamentCode, setTournamentCode] = useState(8);
     const [columnBracket, setColumnBracket] = useState(0);
-    const [errorMessage, setErrorMessage] = useState("");   
+    const [errorMessage, setErrorMessage] = useState("");
     const [marioData, setMarioData] = useState ({
         marioPosition: 4,
         isMarioInit: true,
@@ -42,6 +42,8 @@ function Tournament({ setSettings, tournamentSettings, modalCreateTournament, se
         right: -100,
         title: false,
     });
+
+    
 
     useEffect(() => {
         const interval = setInterval(() => {
@@ -245,6 +247,13 @@ function Tournament({ setSettings, tournamentSettings, modalCreateTournament, se
         }
         setColumnBracket(calculatedColumnBracket);
     }, [tournamentSettings.numberPlayer]);
+
+    //useEffect(() => {
+    //    setModalTournament(false);
+    //    setModalResult(true);
+    //    removeLaunch("tournament");
+    //    launching({ newLaunch: 'result', setModal: setModalResult});
+    //});
 
 
     const renderImageWithClick = (src, alt, position, onClick) => (
@@ -457,6 +466,11 @@ function Tournament({ setSettings, tournamentSettings, modalCreateTournament, se
                     <div className="tree-tournament" style={{ height: `70%` }}>
                         <TournamentBracket numberPlayer={numberPlayer} />
                     </div>
+                </div>
+            )}
+            {modalResult && (
+                <div>
+                    cc
                 </div>
             )}
         </div>
