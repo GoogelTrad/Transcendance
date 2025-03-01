@@ -1,5 +1,8 @@
 import './Tournament.css';
 import React, { useEffect, useState, useRef  } from "react";
+import axiosInstance from '../instance/AxiosInstance.js';
+import { jwtDecode } from "jwt-decode";
+import { getCookies } from './../App.js';
 import person from '../assets/game/person.svg';
 import TournamentBracket from "./TournamentBracket";
 import ghost from '../assets/game/ghost2.png';
@@ -13,13 +16,14 @@ import marioRun2 from '../assets/game/mario-run-2.png';
 import marioJump from '../assets/game/mario-jump.png';
 import blockAfter from '../assets/game/blockAfter.png';
 
-function Tournament({ setSettings, tournamentSettings, modalCreateTournament, setModalCreateTournament, setModalTournament, setModalResult, modalResult, launching, numberPlayer, removeLaunch }) {
+function Tournament({setSettings, tournamentSettings, modalCreateTournament, setModalCreateTournament, ModalTournament , setModalTournament, launching, numberPlayer, removeLaunch }) {
     const [maxTimeMinutes, setMaxTimeMinutes] = useState("00");
     const [maxTimeSecondes, setMaxTimeSecondes] = useState("00");
     const [maxScore, setMaxScore] = useState(0);
     const [tournamentCode, setTournamentCode] = useState(8);
     const [columnBracket, setColumnBracket] = useState(0);
     const [errorMessage, setErrorMessage] = useState("");
+    const [tournamentResponse, setTournamentResponse] = useState(null)
     const [marioData, setMarioData] = useState ({
         marioPosition: 4,
         isMarioInit: true,
@@ -44,6 +48,20 @@ function Tournament({ setSettings, tournamentSettings, modalCreateTournament, se
     });
 
     
+
+
+    const token = getCookies('token');
+    let user = null;
+    
+    if (token) {
+        try {
+            user = jwtDecode(token);
+        } catch (error) {
+            console.error("Error decoding token:", error);
+        }
+    };
+
+
 
     useEffect(() => {
         const interval = setInterval(() => {
@@ -205,6 +223,32 @@ function Tournament({ setSettings, tournamentSettings, modalCreateTournament, se
     function createCodeTournament() {
         return Math.floor(Math.random() * (999 - 100 + 1)) + 100;
     }
+
+    const createTournement = async () => {
+        try {
+            const response = await axiosInstance.post(`/game/create_tournament`, { 
+                player1 : user.name,
+                code : tournamentSettings.tournamentCode,
+                timeMaxMinutes : tournamentSettings.maxTimeMinutes,
+                timeMaxSeconds :tournamentSettings.maxTimeSecondes,
+                scoreMax : tournamentSettings.maxScore,
+                size: tournamentSettings.numberPlayer,
+             });
+            setTournamentResponse(response.data);
+        } catch (error) {
+          console.error("Error submitting Player:", error);
+        }
+    };
+
+    useEffect(() => {
+        if (ModalTournament === true){
+            createTournement();
+        }
+    }, [tournamentSettings]);
+    
+    useEffect(() => {
+        console.log("tournamentRes : ", tournamentResponse);
+    }, [tournamentResponse]); 
     
     const handleClick = () => {
         if (maxScore === 0 || maxTimeMinutes === "00") {
@@ -226,7 +270,7 @@ function Tournament({ setSettings, tournamentSettings, modalCreateTournament, se
         setMaxScore(0);
         setMaxTimeMinutes("00");
         setMaxTimeSecondes("00");
-        launching({ newLaunch: 'tournament', setModal: setModalTournament }); 
+        launching({ newLaunch: 'tournament', setModal: setModalTournament });
     };
 
     const setTournament = (setInfo, min, max, e) => {

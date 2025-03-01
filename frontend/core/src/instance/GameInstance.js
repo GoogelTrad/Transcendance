@@ -24,6 +24,7 @@ function GameInstance ( {children} ) {
 	const [game, setGame] = useState(null);
 	const [gameStart, setGameStart] = useState(false);
 	const { id } = useParams();
+	const navigate = useNavigate();
 	const [isKeyDown, setIsKeyDown] = useState({ ArrowUp: false, ArrowDown: false, z: false, s: false });
 	const [backDimensions, setBackDimensions] = useState(() => ({
 		width: 1536,
@@ -59,7 +60,6 @@ function GameInstance ( {children} ) {
 		}
 	};
 
-	
 	const socketRef = useRef(null);
 	  if (!socketRef.current) {
 		  socketRef.current = new WebSocket(`ws://${window.location.hostname}:8000/ws/game/${id}`);
@@ -114,8 +114,10 @@ function GameInstance ( {children} ) {
 				timeMinutes: gameData.Minutes,
 				status: 'finished',
 		  });
-		  setGame(response.data);
-		  console.log(game);
+			setGame(response.data);
+			if (game.player2 === user.name) {
+				console.log(game);
+			}
 		} catch (error) {
 		  console.error("Error updating game:", error);
 		}
@@ -180,8 +182,7 @@ function GameInstance ( {children} ) {
 			socket.close();
 		}
 	}, [isGameOngoing])
-	  
-	
+
 	useEffect(() => {
 		if (gameStart === false) {
 		const fetchData = async () => {
@@ -217,7 +218,7 @@ function GameInstance ( {children} ) {
 	
 	
 	let keyUpdateTimeout = null;
-	const throttleRate = 30;
+	const throttleRate = 1;
 	
 	const handleKeyPress = (e) => {
 		if (isKeyDown[e.key] === undefined) return;
@@ -228,7 +229,6 @@ function GameInstance ( {children} ) {
 			const gameState = { isKeyDown: updatedKeyDown, player: player };
 			
 			if (socket.readyState === WebSocket.OPEN && !keyUpdateTimeout) {
-				// console.log(gameState);
 				keyUpdateTimeout = setTimeout(() => {
 					socket.send(JSON.stringify(gameState));
 					keyUpdateTimeout = null;
@@ -256,7 +256,9 @@ function GameInstance ( {children} ) {
 		});
 	};
 
-
+	const quitToHome = () => {
+		navigate(`/home`);
+	}
 		useEffect(() => {
 		  const handleBeforeUnload = (event) => {
 			if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
@@ -423,8 +425,9 @@ function GameInstance ( {children} ) {
 				<p>Player 2: {game?.score_player_2 || "0"}</p>
 				<p>Winner: {game?.winner || "No Player"}</p>
 				<p>Loser: {game?.loser || "No Player"}</p>
-				<p>seconds: {game?.timeSeconds || "Bug"}</p>
-				<p>minutes: {game?.timeMinutes || "Bug"}</p>
+				<p>seconds: {game?.timeSeconds || "0"}</p>
+				<p>minutes: {game?.timeMinutes || "0"}</p>
+				<div className="p-2" onClick={() => quitToHome()}> EXIT </div>
 			  </div>
 			</div>
 		  )}

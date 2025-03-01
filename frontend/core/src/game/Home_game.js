@@ -13,6 +13,7 @@ function HomeGame({setModalStats, setModalCreateTournament, setModalTournament, 
     const [player1, setPlayer1] = useState("");
     const [waitingForPlayer, setWaitingForPlayer] = useState(false);
     const [send_Info, setSend_Info] = useState(true)
+    const [addPlayer, setAddPlayer] = useState(false)
     const [onClickPlay, setOnClickPlay] = useState(false);
     const [onClickTournament, setOnClickTournament] = useState(false);
     const [onClickStats, setOnClickStats] = useState(false);
@@ -22,6 +23,7 @@ function HomeGame({setModalStats, setModalCreateTournament, setModalTournament, 
     const [numberPlayer, setNumberPlayer] =useState(2);
     const navigate = useNavigate();
     const [game, setGame] = useState(null);
+    const [tournament, setTournament] = useState(null)
     const [socket, setSocket] = useState(null);
 
     const [items, setItems] = useState([
@@ -46,7 +48,7 @@ function HomeGame({setModalStats, setModalCreateTournament, setModalTournament, 
     };
 
     useEffect(() => {
-        if (!socket && waitingForPlayer) {
+        if ( waitingForPlayer && !socket) {
             const newSocket = new WebSocket(`ws://${window.location.hostname}:8000/ws/matchmaking/?token=${token}`);
             setSocket(newSocket);
         
@@ -68,10 +70,16 @@ function HomeGame({setModalStats, setModalCreateTournament, setModalTournament, 
                 console.log("Matchmaking websocket open")
                 };
             }
-
+        if (waitingForPlayer === false){
+            if (socket) {
+                socket.close();
+                setSocket("");
+            }
+        }
         return () => {
           if (socket) {
             socket.close();
+            setSocket("");
           }
         };
       }, [socket, waitingForPlayer]);
@@ -80,7 +88,6 @@ function HomeGame({setModalStats, setModalCreateTournament, setModalTournament, 
         if (user && user.name) {
             setPlayer1(user.name);
         }
-        console.log("gameCode : ", gameCode);
     }, [user]);
 
     const handleClickStats = (stats, optionStats) => {
@@ -101,6 +108,46 @@ function HomeGame({setModalStats, setModalCreateTournament, setModalTournament, 
     };
     
 
+    useEffect(() => {
+        console.log(tournament)
+        if (addPlayer === true) {
+            addPlayerToTournament();
+            setAddPlayer(false);
+        }
+    }, [tournament]); 
+
+    const fetchDataTournament = async () => {
+        try {
+            const response = await axiosInstance.get(`/game/fetch_data_tournament_by_code/${gameCode}/`);
+            console.log("hey");
+            setTournament(response.data);
+        } catch (error) {
+            console.error("Error fetching tournament by code:", error);
+        }
+    }
+
+    const addPlayerToTournament = async () => {
+        try {
+            const dataToSend = {
+                player_name: user.name
+            };
+            if (!tournament.player2) {
+                dataToSend.player2 = user.name;
+            }
+            else if (!tournament.player3){
+                dataToSend.player3 = user.name;
+            }
+            else if (!tournament.player4){
+                dataToSend.player4 = user.name;
+            }
+            console.log("data send : ", dataToSend);
+            const response = await axiosInstance.patch(`/game/add_player_to_tournament/${gameCode}/`, dataToSend);
+            setTournament(response.data)
+        } catch (error) {
+            console.log("Error adding player to tournament:", error);
+        }
+    };
+
     const handleClickTournament = (name) => {
         if(name === "create")
         {
@@ -110,12 +157,15 @@ function HomeGame({setModalStats, setModalCreateTournament, setModalTournament, 
         }
         else if (name === "join")
         {
+            console.log("code : ",gameCode);
+            fetchDataTournament();
+            setAddPlayer(true);
             setModalTournament(true);
             launching({ newLaunch: 'tournament', setModal: setModalTournament});
         }
     };
 
-    const submitPlayer = async () => {
+    const StartGameSolo = async () => {
         try {
           const response = await axiosInstance.post(`/game/create_game`, { player1 });
           navigate(`/games/${response.data.id}`);
@@ -153,6 +203,7 @@ function HomeGame({setModalStats, setModalCreateTournament, setModalTournament, 
     
     const Matchmaking = () =>{
         setWaitingForPlayer(true);
+        setSend_Info(true)
     }
 
 
@@ -184,10 +235,9 @@ return (
             {onClickPlay && (
                 <div className="content">
                 <h3 style={{ textAlign: "center" }} onClick={() => handleMenuClick("play")}>Play</h3>
-                <div className="line" onClick={() => submitPlayer('1-player')}> 1 player </div>
-                <div className="line" onClick={() => Matchmaking('2-players')}> 2 players - Local </div>
-                <div className="line" onClick={() => submitPlayer('2-players')}> 2 players - Online </div>
-                <div className="line" onClick={() => submitPlayer('2-players')}> 4 players - Online </div>
+                <div className="line" onClick={() => StartGameSolo()}> 1 player </div>
+                <div className="line" onClick={() => Matchmaking()}> 2 players - Online </div>
+                <div className="line" onClick={() => StartGameSolo()}> 2 players - Local </div>
                 </div>
             )}
             {onClickTournament && (
