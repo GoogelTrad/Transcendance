@@ -20,9 +20,12 @@ class Game(models.Model):
     score_player_2 = models.IntegerField(default=0)
     player1 = models.CharField(max_length=255, blank=True)
     player2 = models.CharField(max_length=255, blank=True)
+    elo_Player1 = models.IntegerField(default=0)
+    elo_Player2 = models.IntegerField(default=0)
     winner = models.CharField(max_length=255, blank=True)
     loser = models.CharField(max_length=255, blank=True)
     date = models.DateField(auto_now=True)
+    
 
     status = models.CharField(
         max_length=10,

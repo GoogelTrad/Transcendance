@@ -13,7 +13,6 @@ function HomeGame({setModalStats, setModalCreateTournament, setModalTournament, 
     const [player1, setPlayer1] = useState("");
     const [waitingForPlayer, setWaitingForPlayer] = useState(false);
     const [send_Info, setSend_Info] = useState(true)
-    const [addPlayer, setAddPlayer] = useState(false)
     const [onClickPlay, setOnClickPlay] = useState(false);
     const [onClickTournament, setOnClickTournament] = useState(false);
     const [onClickStats, setOnClickStats] = useState(false);
@@ -24,7 +23,9 @@ function HomeGame({setModalStats, setModalCreateTournament, setModalTournament, 
     const navigate = useNavigate();
     const [game, setGame] = useState(null);
     const [tournament, setTournament] = useState(null)
+    const [joinTournament, setJoinTournament] = useState(false);
     const [socket, setSocket] = useState(null);
+    const [socketTournament, setSocketTournament] = useState(null);
 
     const [items, setItems] = useState([
         { name: 'profile', active: false },
@@ -46,6 +47,33 @@ function HomeGame({setModalStats, setModalCreateTournament, setModalTournament, 
             console.error("Error decoding token:", error);
         }
     };
+
+       useEffect(() => {
+            if (joinTournament && !socketTournament) {
+                const newSocket = new WebSocket(`ws://${window.location.hostname}:8000/ws/tournament/${gameCode}/?token=${token}`);
+                setSocket(newSocket);
+                newSocket.onmessage = (event) => {
+                    const data = JSON.parse(event.data);
+                    console.log(data);            
+                    if (data.game_id) {
+                        console.log('data');
+                        navigate(`/games/${data.game_id}`);
+                    }
+                }
+                newSocket.onclose = () => {
+                    console.log("Tournament webSocket closed");
+                };
+                newSocket.onopen = () => {
+                    console.log("Tournament websocket open")
+                    };
+                }
+            return () => {
+              if (socketTournament) {
+                socketTournament.close();
+                setSocket(null);
+              }
+            };
+          }, [socketTournament, joinTournament]);
 
     useEffect(() => {
         if ( waitingForPlayer && !socket) {
@@ -108,14 +136,6 @@ function HomeGame({setModalStats, setModalCreateTournament, setModalTournament, 
     };
     
 
-    useEffect(() => {
-        console.log(tournament)
-        if (addPlayer === true) {
-            addPlayerToTournament();
-            setAddPlayer(false);
-        }
-    }, [tournament]); 
-
     const fetchDataTournament = async () => {
         try {
             const response = await axiosInstance.get(`/game/fetch_data_tournament_by_code/${gameCode}/`);
@@ -126,28 +146,6 @@ function HomeGame({setModalStats, setModalCreateTournament, setModalTournament, 
         }
     }
 
-    const addPlayerToTournament = async () => {
-        try {
-            const dataToSend = {
-                player_name: user.name
-            };
-            if (!tournament.player2) {
-                dataToSend.player2 = user.name;
-            }
-            else if (!tournament.player3){
-                dataToSend.player3 = user.name;
-            }
-            else if (!tournament.player4){
-                dataToSend.player4 = user.name;
-            }
-            console.log("data send : ", dataToSend);
-            const response = await axiosInstance.patch(`/game/add_player_to_tournament/${gameCode}/`, dataToSend);
-            setTournament(response.data)
-        } catch (error) {
-            console.log("Error adding player to tournament:", error);
-        }
-    };
-
     const handleClickTournament = (name) => {
         if(name === "create")
         {
@@ -157,10 +155,9 @@ function HomeGame({setModalStats, setModalCreateTournament, setModalTournament, 
         }
         else if (name === "join")
         {
-            console.log("code : ",gameCode);
             fetchDataTournament();
-            setAddPlayer(true);
             setModalTournament(true);
+            setJoinTournament(true);
             launching({ newLaunch: 'tournament', setModal: setModalTournament});
         }
     };

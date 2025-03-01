@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import person from "../assets/game/person.svg";
 import "./TournamentBracket.css";
 
-const TournamentBracket = ({ numberPlayer }) => {
+const TournamentBracket = ({ numberPlayer, onStartTournament }) => {
 
   const generateRounds = (numberPlayer) => {
     let rounds = [];
@@ -39,8 +39,10 @@ const TournamentBracket = ({ numberPlayer }) => {
               <span>{player}</span>
             </div>
           ))}
+         
         </div>
       ))}
+      <p className ="start" onClick={() => onStartTournament()} >► Start</p>
     </div>
   );  
 };

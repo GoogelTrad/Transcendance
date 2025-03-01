@@ -1,22 +1,124 @@
 from channels.db import database_sync_to_async
 import json
 from channels.generic.websocket import AsyncWebsocketConsumer
-from .models import Game
+from django.core.exceptions import MultipleObjectsReturned
+from .models import Game, Tournament
+from users.models import User
 import random
 import asyncio
 import time
 import requests
 from channels.layers import get_channel_layer
-from django.contrib.auth.models import AnonymousUser
 import jwt
-import copy
+
+class TournamentConsumer(AsyncWebsocketConsumer):
+    async def connect(self):
+        self.tournament_code = self.scope['url_route']['kwargs']['tournament_code']
+        self.token = self.scope.get('query_string', b'').decode().split('=')[1]
+        self.user = await self.authenticate_user(self.token)
+        self.tournament = await self.get_tournament(self.tournament_code)
+        
+        if not self.tournament or not self.user:
+            await self.close()
+
+        await self.add_user_to_tournament()
+        print("P1 :", self.tournament.player1, flush=True)
+        await self.accept()
+
+    async def disconnect(self, close_code):
+        print(f"Removed from tournament", flush=True)
+
+    @database_sync_to_async
+    def add_user_to_tournament(self):
+        if not self.tournament.player1:
+            self.tournament.player1 = self.user.name
+        elif not self.tournament.player2:
+            self.tournament.player2 = self.user.name
+        elif not self.tournament.player3:
+            self.tournament.player3 = self.user.name
+        elif not self.tournament.player4:
+            self.tournament.player4 = self.user.name
+        self.tournament.save()
+    
+    async def receive(self, text_data):
+        try:
+            data_dict = json.loads(text_data)
+        except json.JSONDecodeError:
+            print("Error decoding JSON data")
+            return
+    
+    async def create_Game_Multi(self, token, player1, player2):
+        api_url = "http://localhost:8000/game/create_game"
+        auth_header = {'Authorization': f"Bearer {token}"}
+        data = {
+            'player1': player1,
+            'player2': player2,
+        }
+        
+        try:
+            print('Sending request to create game...', flush=True)
+            response = await asyncio.to_thread(requests.post, api_url, headers=auth_header, data=data)
+            print(f"Response status code: {response.status_code}", flush=True)
+
+            if response.status_code == 201:
+                print('Game created successfully', flush=True)
+                game_data = response.json()
+                return game_data
+            else:
+                return None
+        except requests.exceptions.RequestException as e:
+            print(f"Error with the request: {e}", flush=True)
+            return None
+
+    async def authenticate_user(self, token):
+        try:
+            payload = jwt.decode(token, "coucou", algorithms=["HS256"])
+            user_id = payload.get('id')
+            if user_id:
+                user = await self.get_user_from_id(user_id)
+                if user:
+                    return user
+            return None
+        except jwt.ExpiredSignatureError:
+            print("Token expired")
+        except jwt.InvalidTokenError:
+            print("Invalid token")
+        return None
+    
+    @database_sync_to_async
+    def get_user_from_id(self, user_id):
+        try:
+            return User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            return None
+
+    @database_sync_to_async
+    def get_tournament(self, tournament_code):
+        try:
+            tournaments = Tournament.objects.filter(code=tournament_code)
+            
+            if tournaments.count() > 1:
+                raise MultipleObjectsReturned(f"More than one tournament found with the code: {tournament_code}")
+            
+            if tournaments.exists():
+                return tournaments.first()
+            else:
+                return None
+
+        except MultipleObjectsReturned as e:
+            print(f"Error: {e}")
+            return None
+        except Exception as e:
+            print(f"Error fetching tournament: {e}")
+            return None
+
+
 
 matchmaking_queue = []
 
 class MatchmakingConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         token = self.scope.get('query_string', b'').decode().split('=')[1]
-        
         if token:
             user = await self.authenticate_user(token)
             if user:
@@ -164,13 +266,15 @@ class GameState:
         self.loser = None
         self.player1 = game.player1
         self.player2 = game.player2
+        self.eloPlayer1 = game.elo_Player1
+        self.eloPlayer2 = game.elo_Player2
 
     def is_game_over(self):
-        if self.score["score_P1"] >= 11:
+        if self.score["score_P1"] >= 1:
             self.winner = self.player1
             self.loser = self.player2
             return True
-        elif self.score["score_P2"] >= 11:
+        elif self.score["score_P2"] >= 1:
             self.winner = self.player2
             self.loser = self.player1
             return True
@@ -183,6 +287,21 @@ class GameState:
                 self.loser = self.player1
             return True
         return False
+    
+    def update_Elo(self):
+        if self.winner == self.player1:
+            self.eloPlayer1 += 10 + (self.eloPlayer2 * 0.1)
+            if self.eloPlayer2 < 10 + (self.eloPlayer2 * 0.1) :
+                self.eloPlayer2 = 0
+            else :
+                self.eloPlayer2 -= 10 - (self.eloPlayer2 * 0.1)
+        if self.winner == self.player2:
+            self.eloPlayer2 += 10 + (self.eloPlayer1 * 0.1)
+            if self.eloPlayer1 < 10 + (self.eloPlayer1 * 0.1) :
+                self.eloPlayer1 = 0
+            else:
+                self.eloPlayer1 -= 10 - (self.eloPlayer1 * 0.1)
+
 
     def update(self):
         self.pong_data["pos_x"] += self.pong_data["velocity_x"]
@@ -360,6 +479,7 @@ class gameConsumer(AsyncWebsocketConsumer):
                 if game_state.is_game_over():
                     print(f"Game Over! Winner: {game_state.winner}", flush=True)
                     print(f"Game Over! Loser: {game_state.loser}", flush=True)
+                    game_state.update_Elo()
                     await self.send_message({
                         "type": "game_update",
                         "score_P1": game_state.score["score_P1"],
@@ -368,6 +488,8 @@ class gameConsumer(AsyncWebsocketConsumer):
                         "loser": game_state.loser,
                         "seconds": game_state.timer["seconds"],
                         "minutes": game_state.timer["minutes"],
+                        "elo_Player1" : game_state.eloPlayer1,
+                        "elo_Player2" : game_state.eloPlayer2,
                     })
                     break
 

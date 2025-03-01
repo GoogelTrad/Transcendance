@@ -47,6 +47,8 @@ function GameInstance ( {children} ) {
 		Score_P2: 0,
 		Winner : "",
 		Loser : "",
+		elo_Player1 : 0,
+		elo_Player2 : 0,
 	}));
 
 	const token = getCookies('token');
@@ -55,6 +57,7 @@ function GameInstance ( {children} ) {
 	if (token) {
 		try {
 			user = jwtDecode(token);
+			console.log("token :", user);
 		} catch (error) {
 			console.error("Error decoding token:", error);
 		}
@@ -98,6 +101,9 @@ function GameInstance ( {children} ) {
 			Score_P2: data.score_P2,
 			Winner: data.winner,
 			Loser: data.loser,
+			elo_Player1 : data.elo_Player1,
+    		elo_Player2 : data.elo_Player2,
+
 		}));
 		if (data.winner || data.loser)
 			setisGameOngoing(false);
@@ -112,16 +118,41 @@ function GameInstance ( {children} ) {
 				loser: gameData.Loser,
 				timeSeconds: gameData.Seconds,
 				timeMinutes: gameData.Minutes,
+				elo_Player1 : gameData.elo_Player1,
+    			elo_Player2 : gameData.elo_Player2,
 				status: 'finished',
 		  });
 			setGame(response.data);
+			if (game.player1 === user.name) {
+				updateEloP1();
+			}
 			if (game.player2 === user.name) {
-				console.log(game);
+				updateEloP2();
 			}
 		} catch (error) {
 		  console.error("Error updating game:", error);
 		}
 	}
+
+	const updateEloP1 = async () => {
+		try {
+			const response = await axiosInstance.patch(`/api/user/${user.id}`, {
+				elo : gameData.elo_Player1,
+			});
+		} catch (error) {
+			console.error("Error fetching user by ID:", error);
+		}
+	};
+
+	const updateEloP2 = async () => {
+		try {
+			const response = await axiosInstance.patch(`/api/user/${user.id}`, {
+				elo : gameData.elo_Player2,
+			});
+		} catch (error) {
+			console.error("Error fetching user by ID:", error);
+		}
+	};
 
 	const toggleDesktop = (name) => {
 		if (name === "rules")
