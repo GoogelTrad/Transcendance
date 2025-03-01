@@ -70,9 +70,8 @@ function Tournament({setSettings, tournamentSettings, modalCreateTournament, set
             setSocket(newSocket);
             newSocket.onmessage = (event) => {
                 const data = JSON.parse(event.data);
-                console.log(data);            
+                console.log("creator : ", data);            
                 if (data.game_id) {
-                    console.log('data');
                     navigate(`/games/${data.game_id}`);
                 }
             }

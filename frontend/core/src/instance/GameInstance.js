@@ -57,7 +57,6 @@ function GameInstance ( {children} ) {
 	if (token) {
 		try {
 			user = jwtDecode(token);
-			console.log("token :", user);
 		} catch (error) {
 			console.error("Error decoding token:", error);
 		}

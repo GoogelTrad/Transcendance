@@ -17,13 +17,21 @@ class TournamentConsumer(AsyncWebsocketConsumer):
         self.token = self.scope.get('query_string', b'').decode().split('=')[1]
         self.user = await self.authenticate_user(self.token)
         self.tournament = await self.get_tournament(self.tournament_code)
-        
+
         if not self.tournament or not self.user:
             await self.close()
+            return
 
         await self.add_user_to_tournament()
-        print("P1 :", self.tournament.player1, flush=True)
         await self.accept()
+
+        game_group = f"game_{self.tournament_code}"
+        await self.channel_layer.group_add(game_group, self.channel_name)
+        
+        print(f"User {self.user.name} added to group {game_group}", flush=True)
+
+        await self.check_and_launch_game()
+
 
     async def disconnect(self, close_code):
         print(f"Removed from tournament", flush=True)
@@ -34,11 +42,34 @@ class TournamentConsumer(AsyncWebsocketConsumer):
             self.tournament.player1 = self.user.name
         elif not self.tournament.player2:
             self.tournament.player2 = self.user.name
-        elif not self.tournament.player3:
-            self.tournament.player3 = self.user.name
-        elif not self.tournament.player4:
-            self.tournament.player4 = self.user.name
+        # elif not self.tournament.player3:
+        #     self.tournament.player3 = self.user.name
+        # elif not self.tournament.player4:
+        #     self.tournament.player4 = self.user.name
         self.tournament.save()
+
+    async def game_update(self, event):
+        await self.send(text_data=json.dumps(event))
+
+    async def start_game(self, game_id, player1, player2):
+        group_name = f"game_{self.tournament_code}"
+        print(f"Starting game {game_id} for group {group_name}", flush=True)
+        await self.channel_layer.group_send(
+            group_name,
+            {
+                "type": "game_update",
+                "game_id": game_id,
+            }
+        )
+    async def check_and_launch_game(self):
+        if self.tournament.player1 and self.tournament.player2:
+            print("Two players connected. Creating game...", flush=True)
+            game_data = await self.create_Game_Multi(
+                self.token, self.tournament.player1, self.tournament.player2
+            )
+            if game_data:
+                print("Game successfully created and launched!", flush=True)
+                await self.start_game(game_data['id'], self.tournament.player1, self.tournament.player2)
     
     async def receive(self, text_data):
         try:
@@ -270,11 +301,11 @@ class GameState:
         self.eloPlayer2 = game.elo_Player2
 
     def is_game_over(self):
-        if self.score["score_P1"] >= 1:
+        if self.score["score_P1"] >= 11:
             self.winner = self.player1
             self.loser = self.player2
             return True
-        elif self.score["score_P2"] >= 1:
+        elif self.score["score_P2"] >= 11:
             self.winner = self.player2
             self.loser = self.player1
             return True
