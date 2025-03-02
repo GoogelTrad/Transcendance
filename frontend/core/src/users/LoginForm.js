@@ -117,8 +117,8 @@ function LoginRegister({setModal, setTerminal, removeLaunch}) {
             data.append(key, value);
         }
         setRulesPassword(false);
-        if (!ValidatePassword(data.password))
-            setRulesPassword(true);
+        // if (!ValidatePassword(data.password))
+        //     setRulesPassword(true);
         if(isAuthenticated)
             return showToast('error', 'Cannot create new account while connected!');
         try {
