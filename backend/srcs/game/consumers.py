@@ -30,7 +30,9 @@ class TournamentConsumer(AsyncWebsocketConsumer):
         
         print(f"User {self.user.name} added to group {game_group}", flush=True)
 
-        await self.check_and_launch_game()
+        await self.start_first_match()
+        if self.tournament.size == 4:
+            await self.start_finale()
 
 
     async def disconnect(self, close_code):
@@ -42,10 +44,11 @@ class TournamentConsumer(AsyncWebsocketConsumer):
             self.tournament.player1 = self.user.name
         elif not self.tournament.player2:
             self.tournament.player2 = self.user.name
-        # elif not self.tournament.player3:
-        #     self.tournament.player3 = self.user.name
-        # elif not self.tournament.player4:
-        #     self.tournament.player4 = self.user.name
+        elif not self.tournament.player3:
+            self.tournament.player3 = self.user.name
+        elif not self.tournament.player4:
+            self.tournament.player4 = self.user.name
+        self.tournament.players_connected += 1
         self.tournament.save()
 
     async def game_update(self, event):
@@ -59,17 +62,40 @@ class TournamentConsumer(AsyncWebsocketConsumer):
             {
                 "type": "game_update",
                 "game_id": game_id,
+                "player1" : player1,
+                "player2" : player2,
             }
         )
-    async def check_and_launch_game(self):
-        if self.tournament.player1 and self.tournament.player2:
-            print("Two players connected. Creating game...", flush=True)
-            game_data = await self.create_Game_Multi(
-                self.token, self.tournament.player1, self.tournament.player2
-            )
-            if game_data:
-                print("Game successfully created and launched!", flush=True)
-                await self.start_game(game_data['id'], self.tournament.player1, self.tournament.player2)
+    async def start_first_match(self):
+        if self.tournament.size == 2 and self.tournament.players_connected == 2:
+            if self.tournament.player1 and self.tournament.player2:
+                game_data_1 = await self.create_Game_Multi(
+                    self.token, self.tournament.player1, self.tournament.player2
+                )
+                if game_data_1:
+                    await self.start_game(game_data_1['id'], self.tournament.player1, self.tournament.player2)
+        if self.tournament.size == 4 and self.tournament.players_connected == 4:
+            if self.tournament.player1 and self.tournament.player2:
+                game_data_1 = await self.create_Game_Multi(
+                    self.token, self.tournament.player1, self.tournament.player2
+                )
+                if game_data_1:
+                    await self.start_game(game_data_1['id'], self.tournament.player1, self.tournament.player2)
+            if self.tournament.player3 and self.tournament.player4:
+                game_data_2 = await self.create_Game_Multi(
+                    self.token, self.tournament.player3, self.tournament.player4
+                )
+                if game_data_2:
+                    await self.start_game(game_data_2['id'], self.tournament.player3, self.tournament.player4)
+
+    async def start_finale(self):
+        print(self.tournament.winner1, flush=True)
+        print(self.tournament.winner2, flush=True)
+        if self.tournament.winner1 and self.tournament.winner2:
+            final_game_data = await self.create_Game_Multi(self.token, self.tournament.winner1, self.tournament.winner2)
+            if final_game_data:
+                await self.start_game(final_game_data['id'], self.tournament.winner1, self.tournament.winner2)
+
     
     async def receive(self, text_data):
         try:
@@ -84,13 +110,14 @@ class TournamentConsumer(AsyncWebsocketConsumer):
         data = {
             'player1': player1,
             'player2': player2,
+            'isInTournament' : True,
+            'timeSeconds': self.tournament.timeMaxSeconds,
+            'timeMinutes': self.tournament.timeMaxMinutes,
+            'scoreMax': self.tournament.scoreMax,
         }
         
         try:
-            print('Sending request to create game...', flush=True)
             response = await asyncio.to_thread(requests.post, api_url, headers=auth_header, data=data)
-            print(f"Response status code: {response.status_code}", flush=True)
-
             if response.status_code == 201:
                 print('Game created successfully', flush=True)
                 game_data = response.json()
@@ -116,6 +143,14 @@ class TournamentConsumer(AsyncWebsocketConsumer):
             print("Invalid token")
         return None
     
+    def winner_first_match(self, game_id, winner):
+        if game_id == self.tournament.game1_id:
+            self.tournament.winner1 = winner
+        elif game_id == self.tournament.game2_id:
+            self.tournament.winner2 = winner
+        self.tournament.save()
+
+
     @database_sync_to_async
     def get_user_from_id(self, user_id):
         try:
@@ -267,8 +302,8 @@ class MatchmakingConsumer(AsyncWebsocketConsumer):
 class GameState:
     def __init__(self, game):
         self.timer = {
-            "seconds": 0,
-            "minutes": 3
+            "seconds": game.timeSeconds,
+            "minutes": game.timeMinutes,
         }
         self.paddle_data = {
             "paddleRightY": 826 / 2 - 170 / 3,
@@ -299,13 +334,14 @@ class GameState:
         self.player2 = game.player2
         self.eloPlayer1 = game.elo_Player1
         self.eloPlayer2 = game.elo_Player2
+        self.isInTournament = game.isInTournament
 
-    def is_game_over(self):
-        if self.score["score_P1"] >= 11:
+    def is_game_over(self, game):
+        if self.score["score_P1"] >= game.scoreMax:
             self.winner = self.player1
             self.loser = self.player2
             return True
-        elif self.score["score_P2"] >= 11:
+        elif self.score["score_P2"] >= game.scoreMax:
             self.winner = self.player2
             self.loser = self.player1
             return True
@@ -454,7 +490,8 @@ class gameConsumer(AsyncWebsocketConsumer):
         if "message" in data_dict:
             print(f"WebSocket connected to game {self.game_id}!", flush=True)
             self.game_running = True
-            asyncio.create_task(self.run_game_loop(self.game_state))
+            game = await self.get_game(self.game_id)
+            asyncio.create_task(self.run_game_loop(self.game_state, game))
         if "isKeyDown" in data_dict:
             gameConsumer.paddle_data[self.game_id] = {
                 "isKeyDown": data_dict["isKeyDown"],
@@ -469,7 +506,7 @@ class gameConsumer(AsyncWebsocketConsumer):
     async def game_update(self, event):
         await self.send(text_data=json.dumps(event))
            
-    async def run_game_loop(self, game_state):
+    async def run_game_loop(self, game_state, game):
         last_time_updated = time.time()
         accumulated_time = 0
         try:
@@ -507,9 +544,10 @@ class gameConsumer(AsyncWebsocketConsumer):
                     "seconds": game_state.timer["seconds"],
                     "minutes": game_state.timer["minutes"],
                 })
-                if game_state.is_game_over():
+                if game_state.is_game_over(game):
                     print(f"Game Over! Winner: {game_state.winner}", flush=True)
                     print(f"Game Over! Loser: {game_state.loser}", flush=True)
+                    print(f"Game Over! : {game_state.isInTournament}", flush=True)
                     game_state.update_Elo()
                     await self.send_message({
                         "type": "game_update",
@@ -521,6 +559,7 @@ class gameConsumer(AsyncWebsocketConsumer):
                         "minutes": game_state.timer["minutes"],
                         "elo_Player1" : game_state.eloPlayer1,
                         "elo_Player2" : game_state.eloPlayer2,
+                        "isInTournament" : game_state.isInTournament,
                     })
                     break
 

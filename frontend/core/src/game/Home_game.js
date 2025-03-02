@@ -55,8 +55,7 @@ function HomeGame({setModalStats, setModalCreateTournament, setModalTournament, 
                 newSocket.onmessage = (event) => {
                     const data = JSON.parse(event.data);
                     console.log(data);            
-                    if (data.game_id) {
-                        console.log('data');
+                    if (data.game_id && data.player1 === user.name || data.player2 === user.name) {
                         navigate(`/games/${data.game_id}`);
                     }
                 }
@@ -67,12 +66,12 @@ function HomeGame({setModalStats, setModalCreateTournament, setModalTournament, 
                     console.log("Tournament websocket open")
                     };
                 }
-            return () => {
-              if (socketTournament) {
-                socketTournament.close();
-                setSocketTournament(null);
-              }
-            };
+            // return () => {
+            //   if (socketTournament) {
+            //     socketTournament.close();
+            //     setSocketTournament(null);
+            //   }
+            // };
           }, [socketTournament, joinTournament]);
 
     useEffect(() => {

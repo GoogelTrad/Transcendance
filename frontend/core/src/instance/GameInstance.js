@@ -106,6 +106,8 @@ function GameInstance ( {children} ) {
 		}));
 		if (data.winner || data.loser)
 			setisGameOngoing(false);
+		if (data.isInTournament === true)
+			navigate("/home");
 	};
 
 	const finishGame = async () => {
