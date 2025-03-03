@@ -35,6 +35,7 @@ function HomeGame({setModalStats, setModalCreateTournament, setModalTournament, 
         { name: 'Friends', active: false },
         { name: 'Win', active: false },
         { name: 'Lose', active: false },
+        { name: 'Tournament', active: false},
     ]);
     
     const token = getCookies('token');
@@ -287,6 +288,7 @@ return (
                                     <p onClick={() => handleClickStats('global', 'Friends')} >► Friends</p>
                                     <p onClick={() => handleClickStats('global', 'Win')} >► Win</p>
                                     <p onClick={() => handleClickStats('global', 'Lose')} >► Lose</p>
+                                    <p onClick={() => handleClickStats('global', 'Tournament')} >► Tournament</p>
                                 </div>
                             <p onClick={() => handleClickStats('collect', '...')} >Collection</p>
                         </div>

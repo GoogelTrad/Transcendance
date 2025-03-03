@@ -9,6 +9,7 @@ import Template from './instance/Template';
 import ModalInstance from './instance/ModalInstance';
 import Stats from './game/Stats';
 import Tournament from './game/Tournament';
+import ResultTournament from './game/ResultTournament';
 import FriendRequests from './friends/Friends';
 import Profile from './users/Profile';
 import HomeChat from './chat/Homechat';
@@ -32,6 +33,7 @@ function Home() {
     const [isModalCreateTournament, setIsModalCreateTournament] = useState(false);
     const [isModalSocial, setIsModalSocial] = useState(false);
     const [isModalProfile, setIsModalProfile] = useState(false);
+    const [isModalResult, setIsModalResult] = useState(false);
     const [isModalChat, setIsModalChat] = useState(false);
     const [isModalFriendProfile, setIsModalFriendProfile] = useState(false);
     const [isModalCode, setIsModalCode] = useState(false);
@@ -45,9 +47,9 @@ function Home() {
         {name: 'social', setter: setIsModalSocial},
         {name: 'profile', setter: setIsModalProfile},
         {name: 'friend', setter: setIsModalFriendProfile},
+        {name: 'result', setter: setIsModalResult},
     ]
 
-    const modalChatRef = useRef(null);
     const modalTerminalRef = useRef(null);
     const modalFormsRef = useRef(null);
     const modalGameRef = useRef(null);
@@ -55,13 +57,24 @@ function Home() {
     const modalTournamentRef = useRef(null);
     const modalCreateTournament = useRef(null);
     const modalFriendProfileRef = useRef(null);
+    const modalResultRef = useRef(null);
     const modalSocial = useRef(null);
     const modalProfile = useRef(null);
     const [numberPlayer, setNumberPlayer] = useState("");
     const [tournamentSettings, setTournamentSettings] = useState({});
     const modalCode = useRef(null);
 
-    const [items, setItems] = useState([]);
+    const [items, setItems] = useState([
+        { name: 'profile', active: false },
+        { name: 'collect', active: false },
+        { name: 'global', active: false },
+        { name: 'All games', active: false },
+        { name: 'Friends', active: false },
+        { name: 'Win', active: false },
+        { name: 'Lose', active: false },
+        { name: 'Tournament', active: false},
+    ]);
+    
 
     const location = useLocation();
     const modalSend = location.state?.modalName || "";
@@ -232,16 +245,6 @@ function Home() {
                             Profile
                         </button>
                     )}
-                    {isLaunched(isLaunch, "chat") && (
-                        <button 
-                            className='button-chat' 
-                            onClick={() => { 
-                                handleModal({ setModal: setIsModalChat, boolean: !isModalChat });
-                            }}
-                        >
-                            Chat
-                        </button>
-                    )}
                     {isLaunched(isLaunch, "friend") && (
                         <button
                             className={`${isModalFriendProfile ? "button-on" : "button-off"}`}
@@ -250,6 +253,16 @@ function Home() {
                             }}
                         >
                             Friend
+                        </button>
+                    )}
+                    {isLaunched(isLaunch, "resultTournament") && (
+                        <button
+                            className={`${isModalResult ? "button-on" : "button-off"}`}
+                            onClick={() => {
+                                handleModal({ setModal: setIsModalResult, boolean: !isModalResult });
+                            }}
+                        >
+                            Result tournament
                         </button>
                     )}
                 </div>
@@ -406,7 +419,9 @@ function Home() {
                     modalCreateTournament={isModalCreateTournament}  
                     setModalCreateTournament={setIsModalCreateTournament}
                     ModalTournament={isModalTournament}
-                    setModalTournament={setIsModalTournament} 
+                    setModalTournament={setIsModalTournament}
+                    setModalResult={setIsModalResult}
+                    modalResult={isModalResult}
                     launching={launching} 
                     numberPlayer={numberPlayer} 
                     removeLaunch={removeLaunch}
@@ -428,11 +443,32 @@ function Home() {
                     tournamentSettings={tournamentSettings}
                     modalCreateTournament={isModalCreateTournament}  
                     setModalCreateTournament={setIsModalCreateTournament} 
-                    setModalTournament={setIsModalTournament} 
+                    setModalTournament={setIsModalTournament}
+                    setModalResult={setIsModalResult}
+                    modalResult={isModalResult}
                     launching={launching} 
                     numberPlayer={numberPlayer} 
                     removeLaunch={removeLaunch}
                 />
+            </ModalInstance>}
+            {isAuthenticated && <ModalInstance
+                height="60%"
+                width="20%"
+                isModal={isModalResult}
+                modalRef={modalResultRef}
+                name="Result"
+                onLaunchUpdate={() => (removeLaunch("resultTournament"), removeLaunch("tournament"))}
+                onClose={() => (setIsModalResult(false), setIsModalTournament(false))}
+                >
+                    <ResultTournament
+                        items={items}
+                        setItems={setItems}
+                        setIsModalTournament={setIsModalTournament}
+                        setModalResult={setIsModalResult}
+                        setModalStats={setIsModalStats}
+                        removeLaunch={removeLaunch}
+                        launching={launching}
+                    />
             </ModalInstance>}
 
             {isAuthenticated && isLaunched(isLaunch, "social") && <ModalInstance
@@ -458,8 +494,8 @@ function Home() {
             >
                 <Profile id={decodeToken.id}/>
             </ModalInstance>}
-
-            {isAuthenticated && isLaunched(isLaunch, "chat") && <ModalInstance
+          
+            {/*{isAuthenticated && isLaunched(isLaunch, "chat") && <ModalInstance
                 height="30%"
                 width="40%"
                 isModal={isModalChat}
@@ -469,7 +505,7 @@ function Home() {
                 onClose={() => setIsModalProfile(false)}
             >
                 <HomeChat/>
-            </ModalInstance>}
+            </ModalInstance>}*/}
             
             {isAuthenticated && isLaunched(isLaunch, "friend") && <ModalInstance
 				height="13%"

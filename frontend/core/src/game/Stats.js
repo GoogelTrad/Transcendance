@@ -19,10 +19,9 @@ function Stats({ itemsArray = [] }) {
     const [option, setOption] = useState([]);
     const [mode, setMode] = useState([]);
     const [selectedOption, setSelectedOption] = useState("");
-    const token = getCookies('token');
-    let decodeToken = jwtDecode(token);
     const [winGames, setWinGames] = useState([]);
     const [loseGames, setLoseGames] = useState([]);
+    const [tournamentGames, setTournamentGames] = useState([]);
     const [friendName, setFriendsNames] = useState([]);
     const [friendList, setFriendList] = useState([]);
     const [searchFriend, setSearchFriend] = useState("");
@@ -87,6 +86,21 @@ function Stats({ itemsArray = [] }) {
             }
         }
     };
+
+    //useEffect(() => {
+    //    setTournamentGames([ // Mettre les données dans un tableau
+    //        {
+    //            id: 1, // Toujours utile d'avoir un identifiant unique
+    //            date: '00/00/00',
+    //            code: 25,
+    //            against: 'jacques, paul, fred',
+    //            time: '0',
+    //            place: '1',
+    //            classement: '1 paul, 2 fred, 3 jacques, 4 bertrand'
+    //        }
+    //    ]);
+    //}, []);
+    
     
     
     useEffect(() => {
@@ -158,7 +172,7 @@ function Stats({ itemsArray = [] }) {
         setMode(filteredModes);
     
         const filteredOptions = itemsArray
-            .filter(itemsArray => ['All games', 'Friends', 'Win', 'Lose'].includes(itemsArray.name))
+            .filter(itemsArray => ['All games', 'Tournament', 'Friends', 'Win', 'Lose'].includes(itemsArray.name))
             .map(itemsArray => ({
                 name: itemsArray.name,
                 active: itemsArray.active || false,
@@ -169,13 +183,17 @@ function Stats({ itemsArray = [] }) {
     useEffect(() => {
         const activeOption = option.find(option => option.active);
         setSelectedOption(activeOption || null);
-        console.log(decodeToken);
-        console.log("Image : ", decodeToken.profile_image_url);
+
     }, [option]);
 
+    const token = getCookies('token');
+    let decodeToken = ("");
+
     useEffect(() => {
-        console.log(games)
-    }, [games])
+        const token = getCookies('token');
+        if (token)
+            decodeToken = jwtDecode(token);
+    }, [])
 
 
     useEffect(() => {
@@ -442,6 +460,62 @@ function Stats({ itemsArray = [] }) {
                         )}
                         {option.find(option => option.name === 'Lose')?.active && (
                             <StatsTable data={loseGames} />
+                        )}
+                        {option.find(option => option.name === 'Tournament')?.active && (
+                            <>
+                                <div className="w-100 d-flex justify-content-between text-center" style={{ height: '10%', marginTop: '2%', marginBottom: '2%' }}>
+                                    <div className="d-flex flex-column w-33">
+                                        <span className="stats-text" >Played</span>
+                                        <span className="counter" style={{fontSize:'100%'}}>CC</span>
+                                    </div>
+                                    <div className="d-flex flex-column w-33">
+                                        <span className="stats-text">First Place</span>
+                                        <span className="counter" style={{fontSize:'100%'}}>CC</span>
+                                    </div>
+                                    <div className="d-flex flex-column w-33">
+                                        <span className="stats-text">Best Score</span>
+                                        <span className="counter" style={{fontSize:'100%'}}>CC</span>
+                                    </div>
+                                </div>
+                                <div className="stats-zone-table w-100 h-100">
+                                    <div className="w-100 d-flex">
+                                        <table style={{ width: "100%", tableLayout: "relative", overflow: "hidden" }}>
+                                            <thead>
+                                                <tr>
+                                                    <th>Date</th>
+                                                    <th>Code</th>
+                                                    <th>Against</th>
+                                                    <th>Time</th>
+                                                    <th>Place</th>
+                                                    <th>Classement</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {tournamentGames.map((game) => (
+                                                    <tr key={game.id}>
+                                                        <td
+                                                            title={game.date || 'N/A'}
+                                                            onClick={(e) => { e.stopPropagation(); handleDivClick(""); }} 
+                                                            className={expandedTab ? 'expanded-cell' : ''}
+                                                        >{game.date || "N/A"}</td>
+                                                        <td>{game.code || "N/A"}</td>
+                                                        <td  
+                                                            onClick={(e) => { e.stopPropagation(); handleDivClick(""); }} 
+                                                            className={expandedTab ? 'expanded-cell' : ''}
+                                                        >{game.against || "N/A"}</td>
+                                                        <td>{game.time || "N/A"}</td>
+                                                        <td>{game.place || "N/A"}</td>
+                                                        <td
+                                                            onClick={(e) => { e.stopPropagation(); handleDivClick(""); }} 
+                                                            className={expandedTab ? 'expanded-cell' : ''}
+                                                        >{game.classement || "N/A"}</td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </>
                         )}
                     </div>
                 </div>
