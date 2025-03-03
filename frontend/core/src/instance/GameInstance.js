@@ -5,7 +5,8 @@ import axios from 'axios';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Modal, Button } from 'react-bootstrap';
 import { jwtDecode } from "jwt-decode";
-import { getCookies } from './../App.js';
+// import { getCookies } from './../App.js';
+import { getCookies } from './TokenInstance';
 import { BrowserRouter as Router, Route, Routes, Link, useNavigate } from 'react-router-dom';
 import { useParams } from 'react-router-dom';
 import axiosInstance from '../instance/AxiosInstance.js';
@@ -65,7 +66,7 @@ function GameInstance ( {children} ) {
 
 	const socketRef = useRef(null);
 	  if (!socketRef.current) {
-		  socketRef.current = new WebSocket(`${process.env.REACT_APP_API_URL}ws/game/${id}`);
+		  socketRef.current = new WebSocket(`${process.env.REACT_APP_SOCKET_IP}/ws/game/${id}`);
 	  }
 	  const socket = socketRef.current;
   

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axiosInstance from '../instance/AxiosInstance';
-import { getCookies } from '../App';
+import { getCookies } from '../instance/TokenInstance';
 import { jwtDecode } from 'jwt-decode';
 import { showToast } from '../instance/ToastsInstance';
 import { ToastContainer } from 'react-toastify';

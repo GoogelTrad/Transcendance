@@ -6,7 +6,8 @@ import { Modal, Button } from 'react-bootstrap';
 import { BrowserRouter as Router, Route, Routes, Link, useNavigate} from 'react-router-dom';
 import React, { useEffect, useState, useRef } from "react";
 import { jwtDecode } from "jwt-decode";
-import { getCookies } from './../App.js';
+// import { getCookies } from './../App.js';
+import { getCookies } from '../instance/TokenInstance';
 import axiosInstance from "../instance/AxiosInstance";
 
 function HomeGame({setModalStats, setModalCreateTournament, setModalTournament, launching, setParentItems, setParentNumberPlayer}) {
@@ -77,7 +78,7 @@ function HomeGame({setModalStats, setModalCreateTournament, setModalTournament, 
 
     useEffect(() => {
         if (!socket && waitingForPlayer) {
-            const newSocket = new WebSocket(`${process.env.REACT_APP_API_URL}ws/matchmaking/?token=${token}`);
+            const newSocket = new WebSocket(`${process.env.REACT_APP_SOCKET_IP}/ws/matchmaking/?token=${token}`);
             setSocket(newSocket);
         
             newSocket.onmessage = (event) => {

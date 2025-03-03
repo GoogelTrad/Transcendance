@@ -6,7 +6,8 @@ import useNotifications from "../SocketNotif"
 import axiosInstance from "../instance/AxiosInstance";
 import "./room.css"
 import useJwt from '../instance/JwtInstance';
-import { getCookies } from '../App';
+// import { getCookies } from '../App';
+import { getCookies } from '../instance/TokenInstance';
 import ModalInstance from "../instance/ModalInstance";
 import Profile from "../users/Profile";
 

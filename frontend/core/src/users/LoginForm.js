@@ -102,6 +102,8 @@ function LoginRegister({setModal, setTerminal, removeLaunch}) {
                 setIsAuthenticated(true);
                 setModal(false);
                 setTerminal(false);
+                removeLaunch("terminal");
+                removeLaunch("forms");
                 navigate('/home');
             }
         }

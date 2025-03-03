@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getCookies } from '../App';
+// import { getCookies } from '../App';
+import { getCookies } from './TokenInstance';
 import { useAuth } from '../users/AuthContext';
 import axiosInstance from './AxiosInstance';
 import useJwt from './JwtInstance';
@@ -28,7 +29,7 @@ function useTokenValidation() {
         };
         const interval = setInterval(() => {
             validateToken();
-        }, 5000000000);
+        }, 5000);
 
         return () => {
             clearInterval(interval);

@@ -1,5 +1,6 @@
 import "./Profile.css"
-import { getCookies } from "../App"
+// import { getCookies } from "../App"
+import { getCookies } from '../instance/TokenInstance';
 import { useNavigate, Link, useParams } from "react-router-dom"
 import React, {useEffect, useState} from "react";
 import { jwtDecode } from "jwt-decode";
@@ -11,6 +12,8 @@ import x from "../assets/user/x.svg";
 import check from "../assets/user/check.svg"
 import gear from "../assets/user/gear.svg"
 import { AddFriend } from "../friends/Friends"
+import { showToast } from "../instance/ToastsInstance";
+import { ToastContainer } from 'react-toastify';
 
 function ChangeDetails({setUser, setValue, toChange, value, toType})
 {
@@ -30,7 +33,7 @@ function ChangeDetails({setUser, setValue, toChange, value, toType})
         e.preventDefault();
         try 
         {
-			const reponse = await axiosInstance.patch(`/api/api/user/${user.id}`, {
+			const reponse = await axiosInstance.patch(`/api/user/${user.id}`, {
 				[toChange] : detail
 			})
 			setValue(false);
@@ -38,22 +41,25 @@ function ChangeDetails({setUser, setValue, toChange, value, toType})
         } 
         catch (error)
         {
+			if (error.status === 400)
+				showToast('error', 'Username already in use');
             console.error(error);
         }
 	}
 	return (
 		<>
 			<form className='userchange-form' onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "row", gap: "0.7rem"}}>
-                        <input className='input-form'
-                            type={toType}
-                            id={toChange}
-                            name={toChange}
-                            value={detail}
-                            onChange={handleChange}
-                            required
-                            placeholder='modify your details here'/>
-						<button type="submit" className='check-icon'><img src={check} alt="check"/></button>
-                </form>
+				<input className='input-form'
+					type={toType}
+					id={toChange}
+					name={toChange}
+					value={detail}
+					onChange={handleChange}
+					required
+					placeholder='modify your details here'/>
+				<button type="submit" className='check-icon'><img src={check} alt="check"/></button>
+            </form>
+			<ToastContainer />
 		</>
 	) 
 }
@@ -89,7 +95,6 @@ function Profile({id})
     const handleFileChange = async (e) => {
 		e.preventDefault();
 		const selectedImage = e.target.files[0];
-		
 		try {
 			const response = await axiosInstance.patch(`/api/user/${decodeToken.id}`, { 
 				'profile_image' : selectedImage 
@@ -159,7 +164,7 @@ function Profile({id})
 						<div className="profile-general">
 							<label htmlFor="profile_image">
 								<img
-									src={user.profile_image ? `http://localhost:8000${user.profile_image}` : '/default.png'}
+									src={user.profile_image ? `${process.env.REACT_APP_API_URL}${user.profile_image}` : '/default.png'}
 									alt="Profile"
 									className="profile-picture"
 								/>
@@ -223,7 +228,7 @@ function Profile({id})
 			) : (
 				<p>Aucun utilisateur trouvé.</p>
 			)}
-
+			<ToastContainer />
 		</>
 	);
 }

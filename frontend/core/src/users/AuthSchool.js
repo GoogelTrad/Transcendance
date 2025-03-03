@@ -3,7 +3,8 @@ import { useEffect, useState } from "react";
 import axiosInstance from "../instance/AxiosInstance";
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from './AuthContext';
-import { getCookies } from "../App";
+// import { getCookies } from "../App";
+import { getCookies } from '../instance/TokenInstance';
 
 export function HandleAuth() 
 {

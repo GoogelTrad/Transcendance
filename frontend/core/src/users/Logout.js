@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
-import { getCookies } from '../App.js';
+// import { getCookies } from '../App.js';
+import { getCookies } from '../instance/TokenInstance';
 import { useAuth } from './AuthContext.js';
 import axios from 'axios';
 import axiosInstance from '../instance/AxiosInstance.js';
@@ -15,7 +16,7 @@ function Logout() {
     {
         try 
         {
-            const reponse = await axiosInstance.get(`/api/api/logout`)
+            const reponse = await axiosInstance.get(`/api/user/logout`)
             setIsAuthenticated(false);
         }
         catch (error) {

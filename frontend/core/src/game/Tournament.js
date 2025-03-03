@@ -3,7 +3,8 @@ import React, { useEffect, useState, useRef  } from "react";
 import axiosInstance from '../instance/AxiosInstance.js';
 import { BrowserRouter as Router, Route, Routes, Link, useNavigate } from 'react-router-dom';
 import { jwtDecode } from "jwt-decode";
-import { getCookies } from './../App.js';
+// import { getCookies } from './../App.js';
+import { getCookies } from '../instance/TokenInstance';
 import person from '../assets/game/person.svg';
 import personAdd from '../assets/game/person-fill.svg';
 import TournamentBracket from "./TournamentBracket";
@@ -67,7 +68,7 @@ function Tournament({setSettings, tournamentSettings, modalCreateTournament, set
 
    useEffect(() => {
         if (tournamentStarted && !socket) {
-            const newSocket = new WebSocket(`ws://${window.location.hostname}:8000/ws/tournament/${tournamentResponse.code}/?token=${token}`);
+            const newSocket = new WebSocket(`${process.env.REACT_APP_SOCKET_IP}/ws/tournament/${tournamentResponse.code}/?token=${token}`);
             setSocket(newSocket);
             newSocket.onmessage = (event) => {
                 const data = JSON.parse(event.data);
@@ -259,21 +260,21 @@ function Tournament({setSettings, tournamentSettings, modalCreateTournament, set
 
     const fetchTournement = async () => {
         try {
-            const response = await axiosInstance.get(`/game/fetch_data_tournament_by_code/${tournamentSettings.tournamentCode}`);
+            const response = await axiosInstance.get(`/api/game/fetch_data_tournament_by_code/${tournamentSettings.tournamentCode}`);
             setTournamentResponse(response.data);
         } catch (error) {
           console.error("Error fetching tournament:", error);
         }
     };
 
-    useEffect(() => {
-        fetchTournement();
-    });
+    // useEffect(() => {
+    //     fetchTournement();
+    // });
 
 
     const createTournement = async () => {
         try {
-            const response = await axiosInstance.post(`/game/create_tournament`, { 
+            const response = await axiosInstance.post(`/api/game/create_tournament`, { 
                 code : tournamentSettings.tournamentCode,
                 timeMaxMinutes : tournamentSettings.maxTimeMinutes,
                 timeMaxSeconds :tournamentSettings.maxTimeSecondes,

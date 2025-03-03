@@ -62,6 +62,9 @@ class SimpleMiddleware:
         response = self.get_response(request)
         
         if new_token:
-            response.set_cookie(key='token', value=new_token, max_age=3600)
-
+            response.set_cookie(key='token', value=new_token, max_age=3600, httponly=True, secure=True)
+            response.data = {
+                'token': new_token
+            }
+            
         return response

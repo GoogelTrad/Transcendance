@@ -107,7 +107,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
             return
     
     async def create_Game_Multi(self, token, player1, player2):
-        api_url = f"{os.getenv('REACT_APP_API_URL')}/game/create_game"
+        api_url = f"{os.getenv('REACT_APP_SOCKET_IP')}/ws/game/create_game"
         auth_header = {'Authorization': f"Bearer {token}"}
         data = {
             'player1': player1,

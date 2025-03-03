@@ -72,7 +72,7 @@ class LoginView():
 
         reponse = Response()
 
-        reponse.set_cookie(key='token', value=token, max_age=3600)
+        reponse.set_cookie(key='token', value=token, max_age=3600, httponly=True, secure=True)
         reponse.data = {
             'token': token,
             'message': 'Logged in successfully!'
@@ -94,7 +94,7 @@ class UserView():
                 serializer = UserSerializer(user)
                 user_data = serializer.data
                 if user_data == request.user:
-                    filtered_user = {key: value for key, value in user_data.items() if key != 'password'}
+                    filtered_user = {key: value for key, value in user_data.items() if key not in ['password']}
                 else:
                     filtered_user = {key: value for key, value in user_data.items() if key not in ['password']}
                 return Response(filtered_user)
@@ -120,12 +120,17 @@ class UserView():
                     ValidToken.objects.filter(user_id=user.id).delete()
                     ValidToken.objects.create(user=user, token=new_token)
                     
+                    filtered_user = {key: value for key, value in serializer.data.items() if key not in ['password']}
                     reponse.delete_cookie('token')
                     token = jwt.encode(payload, os.getenv('JWT_KEY'), 'HS256')
-                    reponse.set_cookie(key='token', value=new_token, max_age=3600)
-                    reponse.data = serializer.data
+                    reponse.set_cookie(key='token', value=new_token, max_age=3600, httponly=True, secure=True)
+                    reponse.data = {
+                        'token': new_token,
+                        **filtered_user
+                    }
                     
                     return reponse
+                
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
             elif request.method == 'DELETE':
@@ -225,7 +230,7 @@ def verify_code(request):
 
         reponse = Response()
 
-        reponse.set_cookie(key='token', value=token, max_age=3600)
+        reponse.set_cookie(key='token', value=token, max_age=3600, httponly=True, secure=True)
         reponse.data = {
             'token': token,
             'message': 'Code is valid!'
@@ -276,3 +281,12 @@ def is_token_valid(request, token):
         user.status = "offline"
         user.save()
         return Response(status=status.HTTP_404_NOT_FOUND)
+    
+@api_view(['GET'])
+@jwt_auth_required
+def get_token(request):
+    token = ValidToken.objects.filter(user=request.user).first()
+    payload = jwt.decode(token, os.getenv('JWT_KEY'), algorithms=['HS256'])
+    if token:
+        return Response({'token': payload})
+    return Response({'error': 'No valid token'}, status=status.HTTP_404_NOT_FOUND)

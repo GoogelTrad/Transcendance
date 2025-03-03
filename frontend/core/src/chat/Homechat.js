@@ -11,7 +11,8 @@ import "./Homechat.css"
 import Room from './Room'
 
 import useJwt from '../instance/JwtInstance';
-import { getCookies } from '../App';
+// import { getCookies } from '../App';
+import { getCookies } from '../instance/TokenInstance';
 
 import useNotifications from "../SocketNotif"
 
