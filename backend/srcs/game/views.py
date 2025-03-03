@@ -33,7 +33,6 @@ class HomeGameView:
             if player1_name:
                 try:
                     player1_user = get_object_or_404(User, name=player1_name)
-                    print("getobject : ",player1_user, flush=True)
                     player1_user.games.add(game_instance)
                     player1_user.save()
                 except Exception as e:
@@ -42,7 +41,6 @@ class HomeGameView:
             if player2_name:
                 try:
                     player2_user = get_object_or_404(User, name=player2_name)
-                    print("getobject : ",player2_user, flush=True)
                     player2_user.games.add(game_instance)
                     player2_user.save()
                 except Exception as e:

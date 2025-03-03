@@ -1,6 +1,7 @@
 import './Tournament.css';
 import React, { useEffect, useState, useRef  } from "react";
 import axiosInstance from '../instance/AxiosInstance.js';
+import { BrowserRouter as Router, Route, Routes, Link, useNavigate } from 'react-router-dom';
 import { jwtDecode } from "jwt-decode";
 import { getCookies } from './../App.js';
 import person from '../assets/game/person.svg';
@@ -23,7 +24,11 @@ function Tournament({setSettings, tournamentSettings, modalCreateTournament, set
     const [tournamentCode, setTournamentCode] = useState(8);
     const [columnBracket, setColumnBracket] = useState(0);
     const [errorMessage, setErrorMessage] = useState("");
-    const [tournamentResponse, setTournamentResponse] = useState(null)
+    const [tournamentResponse, setTournamentResponse] = useState(null);
+    const [tournamentStarted, setTournamentStarted] = useState(false);
+    const [socket, setSocket] = useState(null);
+    const navigate = useNavigate();
+
     const [marioData, setMarioData] = useState ({
         marioPosition: 4,
         isMarioInit: true,
@@ -59,6 +64,32 @@ function Tournament({setSettings, tournamentSettings, modalCreateTournament, set
         }
     };
 
+   useEffect(() => {
+        if (tournamentStarted && !socket) {
+            const newSocket = new WebSocket(`ws://${window.location.hostname}:8000/ws/tournament/${tournamentResponse.code}/?token=${token}`);
+            setSocket(newSocket);
+            newSocket.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                console.log("creator : ", data);            
+                if (data.game_id && data.player1 === user.name || data.player2 === user.name) {
+                    navigate(`/games/${data.game_id}`);
+                }
+            }
+            newSocket.onclose = () => {
+                console.log("Tournament webSocket closed");
+            };
+            newSocket.onopen = () => {
+                console.log("Tournament websocket open")
+                };
+            }
+        // return () => {
+        //   if (socket) {
+        //     socket.close();
+        //     setSocket(null);
+        //   }
+        // };
+      }, [socket, tournamentStarted]);
+
     useEffect(() => {
         const interval = setInterval(() => {
             setMarioData((prev) => ({
@@ -81,6 +112,9 @@ function Tournament({setSettings, tournamentSettings, modalCreateTournament, set
         return () => clearInterval(interval);
     }, []);
     
+    const handleStartTournament = () => {
+        setTournamentStarted(true);
+    };
 
     const handleClickGhost = () => {
 
@@ -217,13 +251,13 @@ function Tournament({setSettings, tournamentSettings, modalCreateTournament, set
     }, [marioData.marioPosition]);
     
     function createCodeTournament() {
+        console.log("hello");
         return Math.floor(Math.random() * (999 - 100 + 1)) + 100;
     }
 
     const createTournement = async () => {
         try {
             const response = await axiosInstance.post(`/game/create_tournament`, { 
-                player1 : user.name,
                 code : tournamentSettings.tournamentCode,
                 timeMaxMinutes : tournamentSettings.maxTimeMinutes,
                 timeMaxSeconds :tournamentSettings.maxTimeSecondes,
@@ -231,6 +265,7 @@ function Tournament({setSettings, tournamentSettings, modalCreateTournament, set
                 size: tournamentSettings.numberPlayer,
              });
             setTournamentResponse(response.data);
+            setTournamentStarted(true);
         } catch (error) {
           console.error("Error submitting Player:", error);
         }
@@ -242,9 +277,6 @@ function Tournament({setSettings, tournamentSettings, modalCreateTournament, set
         }
     }, [tournamentSettings]);
     
-    useEffect(() => {
-        console.log("tournamentRes : ", tournamentResponse);
-    }, [tournamentResponse]); 
     
     const handleClick = () => {
         if (maxScore === 0 || maxTimeMinutes === "00") {
@@ -255,19 +287,22 @@ function Tournament({setSettings, tournamentSettings, modalCreateTournament, set
         setModalTournament(true);
         setModalCreateTournament(false);
         removeLaunch("createTournament");
-        setTournamentCode(createCodeTournament());
-        setSettings({
-            tournamentCode: tournamentCode,
-            maxTimeMinutes: maxTimeMinutes,
-            maxTimeSecondes: maxTimeSecondes,
-            maxScore: maxScore,
-            numberPlayer: numberPlayer,
-        });
-        setMaxScore(0);
-        setMaxTimeMinutes("00");
-        setMaxTimeSecondes("00");
+        const newTournamentCode = createCodeTournament();
+        setTournamentCode(newTournamentCode);
         launching({ newLaunch: 'tournament', setModal: setModalTournament });
     };
+
+    useEffect(() => {
+        if (tournamentCode) {
+            setSettings({
+                tournamentCode: tournamentCode,
+                maxTimeMinutes: maxTimeMinutes,
+                maxTimeSecondes: maxTimeSecondes,
+                maxScore: maxScore,
+                numberPlayer: numberPlayer,
+            });
+        }
+    }, [tournamentCode]);
 
     const setTournament = (setInfo, min, max, e) => {
         const value = parseInt(e.target.value, 10);
@@ -497,7 +532,7 @@ function Tournament({setSettings, tournamentSettings, modalCreateTournament, set
                         </div>
                     </div>
                     <div className="tree-tournament" style={{ height: `70%` }}>
-                        <TournamentBracket numberPlayer={numberPlayer} />
+                        <TournamentBracket numberPlayer={numberPlayer}  onStartTournament={handleStartTournament} />
                     </div>
                 </div>
             )}
