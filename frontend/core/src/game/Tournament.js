@@ -30,11 +30,10 @@ function Tournament({modalCreateTournament, setModalCreateTournament, ModalTourn
     const [tournamentResponse, setTournamentResponse] = useState(null);
     const [tournamentData, setTournamentData] = useState(null);
     const [tournamentStarted, setTournamentStarted] = useState(false);
-    const [socket, setSocket] = useState(null);
+    const socketRef = useRef(null);
     const navigate = useNavigate();
     const location = useLocation();
     const { tournamentCreated } = location.state || 0;
-    const [fetchTournament, setFetchTournament] = useState(false);
     const [tournamentSettings ,setSettings] = useState(null)
 
     const [marioData, setMarioData] = useState ({
@@ -71,31 +70,39 @@ function Tournament({modalCreateTournament, setModalCreateTournament, ModalTourn
         }
     };
 
-   useEffect(() => {
-        if (tournamentStarted && !socket) {
-            const newSocket =new WebSocket(`${process.env.REACT_APP_SOCKET_IP}ws/tournament/${tournamentCreated}/?token=${token}`)
-            setSocket(newSocket);
+    useEffect(() => {
+        if (tournamentStarted && !socketRef.current) {
+            const newSocket = new WebSocket(`${process.env.REACT_APP_SOCKET_IP}ws/tournament/${tournamentCreated}/?token=${token}`);
+            socketRef.current = newSocket;
+
             newSocket.onmessage = (event) => {
                 const data = JSON.parse(event.data);
-                console.log("creator : ", data);            
-                if (data.game_id && data.player1 === user.name || data.player2 === user.name) {
+                console.log(data)
+                if (data.game_id && (data.player1 === user.name || data.player2 === user.name)) {
                     navigate(`/games/${data.game_id}`);
                 }
-            }
+                if (data.type === 'user_connected_message') {
+                    console.log("2 ", data)
+                    fetchTournement(data.message.code);
+                }
+            };
+
             newSocket.onclose = () => {
                 console.log("Tournament webSocket closed");
             };
+
             newSocket.onopen = () => {
-                console.log("Tournament websocket open")
-                };
+                console.log("Tournament websocket open");
+            };
+        }
+
+        return () => {
+            if (socketRef.current) {
+                socketRef.current.close();
+                console.log("WebSocket closed during cleanup");
             }
-        // return () => {
-        //   if (socket) {
-        //     socket.close();
-        //     setSocket(null);
-        //   }
-        // };
-      }, [socket, tournamentStarted]);
+        };
+    }, [tournamentStarted]);
 
     useEffect(() => {
         const interval = setInterval(() => {
@@ -264,8 +271,6 @@ function Tournament({modalCreateTournament, setModalCreateTournament, ModalTourn
         try {
             const response = await axiosInstance.get(`/api/game/fetch_data_tournament_by_code/${tournamentCreated}`);
             setTournamentData(response.data);
-            setFetchTournament(true);
-            handleStartTournament();
         } catch (error) {
           console.error("Error fetching tournament:", error);
         }
@@ -274,16 +279,16 @@ function Tournament({modalCreateTournament, setModalCreateTournament, ModalTourn
     useEffect(() => {
         console.log(tournamentData);    
         if (tournamentData && tournamentData.winner1) {
-            if (socket.readyState === WebSocket.OPEN) {
-                socket.send(JSON.stringify({ "message": "Hello game 1 is over" }));
+            if (socketRef.current.readyState === WebSocket.OPEN) {
+                socketRef.current.send(JSON.stringify({ "message": "Hello game 1 is over" }));
             }
         }
         if (tournamentData && tournamentData.winner2) {
-            if (socket.readyState === WebSocket.OPEN) {
-                socket.send(JSON.stringify({ "message": "Hello game 2 is over" }));
+            if (socketRef.current.readyState === WebSocket.OPEN) {
+                socketRef.current.send(JSON.stringify({ "message": "Hello game 2 is over" }));
             }
         }
-    }, [tournamentCreated ,tournamentData, socket]);
+    }, [tournamentData]);
 
     useEffect(() => {
         if (tournamentCreated && tournamentCreated !== 8 && tournamentCreated !== 0) {
@@ -292,7 +297,6 @@ function Tournament({modalCreateTournament, setModalCreateTournament, ModalTourn
             handleStartTournament();
         }
     }, [tournamentCreated]);
-
 
     const createTournement = async () => {
         try {
@@ -431,17 +435,16 @@ function Tournament({modalCreateTournament, setModalCreateTournament, ModalTourn
                                 onChange={(e) => setTournament(setMaxTimeMinutes, 1, 3, e, true)}
                                 min="1"
                                 max="3"
-                            />
-                            :
+                            /> :  
                             <input
                                 type="number"
                                 className="input-max secondes"
                                 placeholder="00"
                                 value={String(maxTimeSecondes).padStart(2, "0")}
-                                onChange={(e) => setTournament(setMaxTimeSecondes, 0, 30, e)}
+                                onChange={(e) => setTournament(setMaxTimeSecondes, 0, 30, e)} 
                                 min="0"
                                 max="30"
-                                step="30"
+                                step="30" 
                             />
                         </p>
                     </div>
@@ -460,37 +463,33 @@ function Tournament({modalCreateTournament, setModalCreateTournament, ModalTourn
                         </p>
                     </div>
                     <div className="column d-flex w-100" style={{ marginLeft: "65%" }}>
-                        {errorMessage && (
-                            <p className="error-message-time-score" style={{ color: "red", textAlign: "center" }}>
-                                {errorMessage}
-                            </p>
-                        )}
+                        {errorMessage && <p className="error-message-time-score" style={{ color: "red", textAlign: "center" }}>{errorMessage}</p>}
                         <button onClick={handleClick} className="cell">Create tournament</button>
                     </div>
                 </div>
-            ) : !fetchTournament ? (
-                <div>Loading...</div>
             ) : (
                 <div className="h-100 w-100">
                     {marioData.isMarioJump && renderImageWithClick(piece, "piece", { position: 'absolute', height: '4%', left: '17%', top:'10%' }, () => handleClickMario())}
                     <div style={{ position: 'absolute', height: '50%', top: '15%', left: '0%', width: '23%', overflow: "hidden" }}>
-                        <div className="w-100 h-100" style={{ position: 'relative' }}>
+                        <div className="w-100 h-100" style={{ position: 'relative'}}>
                             {marioData.isMarioInit && (
                                 <>
                                     {renderImageWithClick(block, "block", { position: 'absolute', height: '8%', right: '15%' })}
                                     {renderImageWithClick(marioInit, "mario", { position: 'absolute', height: '9%', top: '10%', left: '4%', cursor: 'pointer', zIndex: 10 }, () => handleClickMario())}
+                                    
                                 </>
                             )}
-                            {marioData.isMarioRun1 && (
+                           {marioData.isMarioRun1 &&  (
                                 <>
                                     {renderImageWithClick(block, "block", { position: 'absolute', height: '8%', right: '15%' })}
                                     {renderImageWithClick(marioRun1, "marioRun1", { position: 'absolute', height: '9%', top: '10%', left: `${marioData.marioPosition}%`, cursor: 'pointer', zIndex: 10 })}
                                 </>
                             )}
-                            {marioData.isMarioRun2 && (
+
+                            {marioData.isMarioRun2 &&  (
                                 <>
                                     {renderImageWithClick(block, "block", { position: 'absolute', height: '8%', right: '15%' })}
-                                    {renderImageWithClick(marioRun2, "marioRun2", { position: 'absolute', height: '9%', top: '10%', left: `${marioData.marioPosition}%`, cursor: 'pointer', zIndex: 10 })}
+                                    {renderImageWithClick(marioRun2, "marioRun2", { position: 'absolute', height: '9%', top: '10%', left: `${marioData.marioPosition}%`, cursor: 'pointer', zIndex: 10})}
                                 </>
                             )}
                             {marioData.isMarioJump && (
@@ -509,91 +508,96 @@ function Tournament({modalCreateTournament, setModalCreateTournament, ModalTourn
                                         position: "absolute",
                                         transition: "left 0.5s ease-in-out",
                                         overflow: "none",
-                                        color: '#9632ab',
+                                         color: '#9632ab',
                                     }}
                                 >
                                     ••• settings •••
-                                </div>
+                                </div> 
                             )}
-                            {marioData.isMarioJump && (
+                           {marioData.isMarioJump && (
+                            <div
+                                className="w-100 tournament-text"
+                                style={{
+                                    position: 'absolute',
+                                    height: '80%',
+                                    top: '15%',
+                                    padding: '3%',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    gap: '2%',
+                                    paddingLeft: '10%',
+                                    paddingRight: '25%',
+                                    fontSize: '90%',
+                                }}
+                            >
+                                {tournamentResponse?.player1 && (
+                                    <div
+                                        className="w-100"
+                                        style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'space-between',
+                                            color: 'white',
+                                        }}
+                                    >
+                                        {tournamentResponse?.player1 || "player"}
+                                    </div>
+                                )}
+
+                                {tournamentResponse?.player2 && (
+                                    <div
+                                        style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'space-between',
+                                            color: 'white',
+                                        }}
+                                    >
+                                        {tournamentResponse?.player2 || "player"}
+                                        {renderImageWithClick(ban, "ban", { height: '20px'}, null, "KICK")}
+                                    </div>
+                                )}
+
+                                {tournamentResponse?.player3 && (
+                                    <div
+                                        style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'space-between',
+                                            color: 'white',
+                                        }}
+                                    >
+                                        {tournamentResponse?.player3 || ""}
+                                        {renderImageWithClick(ban, "ban", { height: '20px'}, null, "KICK")}
+                                    </div>
+                                )}
+
+                                {tournamentResponse?.player4  &&(
+                                    <div
+                                        style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'space-between',
+                                            color: 'white',
+                                        }}
+                                    >
+                                        {tournamentResponse.player4 || ""}
+                                        {renderImageWithClick(ban, "ban", { height: '20px'}, null, "KICK")}
+                                    </div>
+                                )}
+                                <button className="tournament-text" style={{ height:'10%', fontWeight:'bold', fontSize:'120%', color:'rgb(11, 49, 77)', marginTop: '2%', fontWeight:'bold'}}>START</button>
                                 <div
-                                    className="w-100 tournament-text"
-                                    style={{
-                                        position: 'absolute',
-                                        height: '80%',
-                                        top: '15%',
-                                        padding: '3%',
-                                        display: 'flex',
-                                        flexDirection: 'column',
-                                        gap: '2%',
-                                        paddingLeft: '10%',
-                                        paddingRight: '25%',
-                                        fontSize: '90%',
-                                    }}
-                                >
-                                    {tournamentResponse?.player1 && (
-                                        <div
-                                            className="w-100"
-                                            style={{
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'space-between',
-                                                color: 'white',
-                                            }}
-                                        >
-                                            {tournamentResponse?.player1 || "player"}
-                                        </div>
-                                    )}
-    
-                                    {tournamentResponse?.player2 && (
-                                        <div
-                                            style={{
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'space-between',
-                                                color: 'white',
-                                            }}
-                                        >
-                                            {tournamentResponse?.player2 || "player"}
-                                            {renderImageWithClick(ban, "ban", { height: '20px'}, null, "KICK")}
-                                        </div>
-                                    )}
-    
-                                    {tournamentResponse?.player3 && (
-                                        <div
-                                            style={{
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'space-between',
-                                                color: 'white',
-                                            }}
-                                        >
-                                            {tournamentResponse?.player3 || ""}
-                                            {renderImageWithClick(ban, "ban", { height: '20px'}, null, "KICK")}
-                                        </div>
-                                    )}
-    
-                                    {tournamentResponse?.player4 && (
-                                        <div
-                                            style={{
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'space-between',
-                                                color: 'white',
-                                            }}
-                                        >
-                                            {tournamentResponse.player4 || ""}
-                                            {renderImageWithClick(ban, "ban", { height: '20px'}, null, "KICK")}
-                                        </div>
-                                    )}
-                                    <button className="tournament-text" style={{ height: '10%', fontWeight: 'bold', fontSize: '120%', color: 'rgb(11, 49, 77)', marginTop: '2%', fontWeight: 'bold' }}>START</button>
-                                    <div className="w-100 horizontal-line" style={{ backgroundColor: 'white' }}></div>
-                                </div>
-                            )}
+                                    className="w-100 horizontal-line"
+                                    style={{ backgroundColor: 'white' }}
+                                ></div>
+                            </div>
+                        )}
+
+
                         </div>
                     </div>
                     <div style={{ position: 'absolute', height: '50%', top: '15%', right: '0%', width: '23%', overflow: "hidden" }}>
-                        <div className="w-100 h-100" style={{ position: 'relative' }}>
+                        <div className="w-100 h-100" style={{ position: 'relative'}}>
                             {pacmanData.dots.map((dot, index) => (
                                 <span key={index} style={{ position: 'absolute', top: '6%', left: `${dot}%`, color: 'white', zIndex: 10 }}>•</span>
                             ))}
@@ -602,11 +606,11 @@ function Tournament({modalCreateTournament, setModalCreateTournament, ModalTourn
                             {pacmanData.isPacmanEating && renderImageWithClick(pacman, "Pac-Man", { position: 'absolute', top: '6%', height: '30px', left: `${pacmanData.pacmanPosition}%`, zIndex: 10 })}
                             {pacmanData.gameOver && (
                                 <>
-                                    <div className="w-100 h-100 tournament-text" style={{ color: '#0079bf', fontWeight: 'none', position: 'absolute', top: '16%', right: '0%' }}>
+                                    <div className="w-100 h-100 tournament-text" style={{ color:  '#0079bf',fontWeight:'none', position: 'absolute', top: '16%', right: '0%'}}>
                                         <div className="explications title d-flex p-2">
                                             <p>Tournament PONG</p>
                                         </div>
-                                        <div className="explications one d-flex p-2" style={{ fontSize: '50%', height: '25%', width: '96%', marginLeft: '2%' }}>
+                                        <div className="explications one d-flex p-2" style={{fontSize: '50%', height: '25%', width:'96%', marginLeft:'2%'}}>
                                             The {numberPlayer} players compete 2 against 2. The first to reach {tournamentSettings.maxScore} points or the one who has the most points at the end of the defined time ({tournamentSettings.maxTimeMinutes} : {tournamentSettings.maxTimeSecondes}) qualifies for the next phase until there are 2 players left who will compete for victory.
                                         </div>
                                         <div className="border-top border-2 border-white w-75 mx-auto"></div>
@@ -636,21 +640,63 @@ function Tournament({modalCreateTournament, setModalCreateTournament, ModalTourn
                                                         <div className="touch-line">
                                                             <div className="touch-square arrows">j</div>
                                                             <div className="touch-square arrows">l</div>
-                                                            <div className="touch-square arrows">;</div>
+                                                            <div className="touch-square arrows">i</div>
                                                         </div>
                                                     </div>
                                                 </div>
                                                 <div className="player-touch p-2 w-100 h-50">Player 2</div>
                                             </div>
                                         </div>
-                                    </div>
+                                    </div> 
                                 </>
                             )}
+                            {pacmanData.title && (
+                                <div
+                                    className="d-flex tournament-text"
+                                    style={{
+                                        width: "80%",
+                                        height: "20%",
+                                        right: `${pacmanData.right}%`,
+                                        position: "absolute",
+                                        transition: "right 0.5s ease-in-out",
+                                        overflow: "none",
+                                        top: '6%',
+                                        color: '#9632ab',
+                                    }}
+                                >
+                                    ••• Rules •••
+                                </div>
+                            )
+                            }
                         </div>
+                    </div>
+                    <div className="w-100" style={{ position: "absolute", height: "10%", marginTop: "3%" }}>
+                        <div className="tournament-text d-flex flex-row w-100">
+                            <div className="d-flex flex-column h-100 w-25">Tournament Code</div>
+                            <div className="d-flex flex-column h-100 w-25">Time</div>
+                            <div className="d-flex flex-column h-100 w-25">Max Score</div>
+                            <div className="d-flex flex-column h-100 w-25">Players</div>
+                        </div>
+                        <div className="tournament-text d-flex flex-row w-100">
+                            <div className="d-flex flex-column h-100 w-25">{tournamentData?.code || "X"} </div>
+                            <div className="d-flex flex-column h-100 w-25">
+                                {String(tournamentData?.timeMaxMinutes || "00").padStart(2, "0")} : {String(tournamentData?.timeMaxSeconds || "00").padStart(2, "0")}
+                            </div>
+                            <div className="d-flex flex-column h-100 w-25">{tournamentData?.scoreMax || "0"}</div>
+                            <div className="d-flex flex-column h-100 w-25">{tournamentData?.size || "X"}</div>
+                        </div>
+                    </div>
+                    <div className="players-container d-flex flex-row w-100 " style={{ position: "absolute", height: "12%", marginTop: "11%", textAlign: `center`, alignItems: `center`, justifyContent: `center` }}>
+                        <div className="players-co">
+                            {renderPlayerImages(tournamentData?.size || "4" , tournamentData?.players_connected || 4)}
+                        </div>
+                    </div>
+                    <div className="tree-tournament" style={{ height: `70%` }}>
+                        <TournamentBracket numberPlayer={numberPlayer} tournamentResponse={tournamentResponse}  onStartTournament={handleStartTournament} />
                     </div>
                 </div>
             )}
         </div>
     );
-}    
+}
 export default Tournament;

@@ -14,7 +14,7 @@ import copy
 import os
 
 class TournamentConsumer(AsyncWebsocketConsumer):
-    tournament_states = {}  # Changed from game_states to tournament_states
+    tournament_states = {}
 
     def __init__(self):  
         self.groups = []
@@ -24,6 +24,12 @@ class TournamentConsumer(AsyncWebsocketConsumer):
         self.token = self.scope.get('query_string', b'').decode().split('=')[1]
         self.user = await self.authenticate_user(self.token)
         self.tournament = await self.get_tournament(self.tournament_code)
+        self.group_name = f'tournament_{self.tournament_code}'
+
+        await self.channel_layer.group_add(
+            self.group_name,
+            self.channel_name
+        )
 
         if not self.tournament or not self.user:
             await self.close()
@@ -31,6 +37,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
 
         await self.add_user_to_tournament()
         await self.accept()
+        await self.send_user_connected_message()
 
         game_group = f"game_{self.tournament_code}"
         await self.channel_layer.group_add(game_group, self.channel_name)
@@ -57,6 +64,25 @@ class TournamentConsumer(AsyncWebsocketConsumer):
             self.tournament.player4 = self.user.name
         self.tournament.players_connected += 1
         self.tournament.save()
+
+    async def send_user_connected_message(self):
+        message = {
+            'type': 'user_connected',
+            'username': self.user.name,
+            'players_connected': self.tournament.players_connected,
+            'code': self.tournament_code,
+        }
+
+        await self.channel_layer.group_send(
+            self.group_name,
+            {
+                'type': 'user_connected_message',
+                'message': message
+            }
+        )
+
+    async def user_connected_message(self, event):
+        await self.send(text_data=json.dumps(event))
 
     async def game_update(self, event):
         await self.send(text_data=json.dumps(event))
