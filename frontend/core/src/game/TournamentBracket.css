@@ -35,6 +35,11 @@
     text-align: center;
 }
 
+
+.start{
+    color: red;
+}
+
 .podium {
     border: 2px solid blue;
     border-radius: 7%;

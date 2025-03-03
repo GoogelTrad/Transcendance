@@ -64,8 +64,10 @@ const TournamentBracket = ({ numberPlayer, tournamentResponse }) => {
               )}
             </div>
           ))}
+         
         </div>
       ))}
+      {/* <p className ="start" onClick={() => onStartTournament()} >► Start</p> */}
     </div>
   );
 };
