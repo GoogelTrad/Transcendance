@@ -16,8 +16,8 @@ const TournamentBracket = ({ numberPlayer, tournamentResponse }) => {
 		
         for (let i = 0; i < 3; i++) {
             rounds.unshift([
-                tournamentResponse.player1,  // correction ici
-                tournamentResponse.player2 ? tournamentResponse.player2 : waiting,  // correction ici
+                tournamentResponse?.player1,  // correction ici
+                tournamentResponse?.player2 ? tournamentResponse?.player2 : waiting,  // correction ici
             ]);
         }
         rounds.unshift([
@@ -27,10 +27,10 @@ const TournamentBracket = ({ numberPlayer, tournamentResponse }) => {
 
     if (numberPlayer == "4") {
         rounds.unshift([
-            tournamentResponse.player1,
-            tournamentResponse.player2 ? tournamentResponse.player2 : waiting,  // correction ici
-            tournamentResponse.player3 ? tournamentResponse.player3 : waiting,  // correction ici
-            tournamentResponse.player4 ? tournamentResponse.player4 : waiting,  // correction ici
+            tournamentResponse?.player1,
+            tournamentResponse?.player2 ? tournamentResponse.player2 : waiting,  // correction ici
+            tournamentResponse?.player3 ? tournamentResponse.player3 : waiting,  // correction ici
+            tournamentResponse?.player4 ? tournamentResponse.player4 : waiting,  // correction ici
         ]);
         rounds.unshift([
             isBox.winnerRound1[0].box1 ? isBox.winnerRound1[0].box1 : waiting,

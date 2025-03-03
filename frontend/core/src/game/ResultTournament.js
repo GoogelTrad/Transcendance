@@ -33,7 +33,9 @@ function ResultTournament({ items, setItems, setIsModalTournament, setModalResul
             setItems(itemsActiv);
             setModalStats(true);
             launching({ newLaunch: 'stats', setModal: setModalStats });
-        };    
+        };
+
+        
 
     return (
         <div className="tournament background h-100 w-100">
