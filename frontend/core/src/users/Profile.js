@@ -221,7 +221,7 @@ function Profile({id})
 					</div>
 				</div>
 			) : (
-				<p>Aucun utilisateur trouvé.</p>
+				<p>No user found.</p>
 			)}
 
 		</>

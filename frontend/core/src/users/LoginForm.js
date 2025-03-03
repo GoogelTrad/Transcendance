@@ -248,7 +248,7 @@ function LoginRegister({setModal, setTerminal, removeLaunch}) {
                                         Password need to contains :
                                         <br />
                                             At least 8 characters long
-                                        <br / >
+                                        <br />
                                             At least 1 uppercase
                                         <br />
                                             At least 1 lowercase
