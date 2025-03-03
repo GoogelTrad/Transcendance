@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { useParams, Link, useNavigate, useLocation } from "react-router-dom";
 import { showToast } from "../instance/ToastsInstance";
 import useSocket from '../socket'
 import useNotifications from "../SocketNotif"
@@ -9,14 +9,15 @@ import useJwt from '../instance/JwtInstance';
 import { getCookies } from '../App';
 import ModalInstance from "../instance/ModalInstance";
 import Profile from "../users/Profile";
-import Button from 'react-bootstrap/Button';
 
 export default function Room() {
 
 	const { roomName } = useParams();
+	const query = new URLSearchParams(useLocation().search);
 	const socket = useSocket('chat', roomName);
+	const [dmname, setdmname] = useState(undefined);
 	const [message, setMessage] = useState('');
-	const [chat, setChat] = useState('');
+	const [chat, setChat] = useState([]);
 	const [listrooms, setlistrooms] = useState([]);
 	const [friendList, setFriendList] = useState([]);
 	const [users_room, setUsersRoom] = useState([]);
@@ -30,12 +31,9 @@ export default function Room() {
 
 	const navigate = useNavigate();
 	const getJwt = useJwt();
-
 	const token = getCookies('token');
 	const decodedToken = getJwt(token);
 	const userId = decodedToken.id;
-
-	console.log("ID: ", userId);
 
 	const { notifications, sendNotification, respondNotification } = useNotifications();
 
@@ -49,13 +47,25 @@ export default function Room() {
 
 	useEffect(() => {
 		if (socket.ready) {
-			socket.on("chat_message", (data) => {
-				const newMessage = `${data.username}: ${data.message}\n`;
-				setChat((prevChat) => prevChat + newMessage);
+			socket.on('history', (data) => {
+				const formattedMessages = data.messages.map(msg => ({
+					username: msg.user,
+					message: msg.content,
+					timestamp: msg.timestamp
+				}));
+				setChat(formattedMessages);
 			});
-			socket.on("join_room", (data) => {
+			socket.on('chat_message', (data) => {
+				const newMessage = {
+					username: data.username,
+					message: data.message,
+					timestamp: data.timestamp,
+				}
+				setChat((prevChat) => [...prevChat, newMessage]);
+			});
+			socket.on('join_room', (data) => {
 				if (data.status) {
-					console.log("Salle rejoint :", data.room_name);
+					console.log("Salle rejoint room:", data.room_name);
 					navigate(`/room/${data.room_name}`);
 				} else {
 					showToast("error", data.error);
@@ -63,11 +73,11 @@ export default function Room() {
 			});
 			return () => {}
 		}
-	}, [socket, navigate, blockedUsers]);
+	}, [socket, navigate, navigate]);
 
-	function sendMessage(e) {
+	const sendMessage = (e) => {
 		e.preventDefault();
-		setCaracteresRestants(100);
+		setCaracteresRestants(maxLength);
 		if (message.trim() === "") {
 			showToast("error", "Unable to send a blank message");
 			return;
@@ -75,12 +85,12 @@ export default function Room() {
 		if (socket.ready) {
 			socket.send({
 				type: 'send_message',
-				room: 'public',
+				room: roomName,
 				message: message,
 			});
-			setMessage(''); // Réinitialisez le champ message après l'envoi
+			setMessage('');
 		}
-	}
+	};
 
 	const clearRoom = async () => {
 		try {
@@ -127,7 +137,6 @@ export default function Room() {
 	const listroom = async () => {
 		try {
 			const response = await axiosInstance.get('/livechat/listroom/');
-			//console.log("DONNEES RECUES:", response.data);
 			setlistrooms(response.data.publicRooms);
 		} catch (error) {
 			console.error("Erreur lors de la récupération des salles", error);
@@ -135,13 +144,9 @@ export default function Room() {
 	}
 
 	const FriendList = async () => {
-		// const token = getCookies('token');
-		// const decodeToken = getJwt(token);
-
 		try {
 			const response = await axiosInstance.get(`/friends/list/${decodedToken.id}`);
 			setFriendList(response.data);
-			//console.log(reponse.data)
 		}
 		catch(error) {
 			console.log(error);
@@ -159,17 +164,27 @@ export default function Room() {
 		}
 	}
 
+	const get_room = async () => {
+		try {
+			const response = await axiosInstance.get(`livechat/room/${roomName}`);
+			const { dmname: roomPseudo } = response.data
+			setdmname(roomPseudo);
+		}
+		catch(error) {
+			console.log(error);
+		}
+	}
+
 	useEffect(() => {
 		listroom();
 		FriendList();
 		Users_room_list();
+		get_room();
 
-		// Rafraîchir toutes les 5 secondes
 		const interval = setInterval(() => {
 			Users_room_list();
 		}, 10000);
 
-		// Nettoyer l'intervalle quand le composant est démonté
 		return () => clearInterval(interval);
 	}, [roomName]);
 
@@ -202,9 +217,16 @@ export default function Room() {
 				</div>
 				<div className="chat">
 					<div className="titre">
-						<h3>Chat Room: {roomName}</h3>
+						<h3>Chat Room: { dmname ? dmname : roomName }</h3>
 					</div>
-					<textarea id="chat-log" cols="100" rows="20" value={chat} readOnly />
+					<div className="chat-messages" style={{ height: '400px', overflowY: 'scroll', border: '1px solid #ccc', padding: '10px' }}>
+						{chat.map((msg, index) => (
+							<div key={index} style={{ marginBottom: '10px' }}>
+								<strong>{msg.username}:</strong> {msg.message}{' '}
+								<small>({new Date(msg.timestamp).toLocaleTimeString()})</small>
+							</div>
+						))}
+					</div>
 					<div className="saisi">
 						<form onSubmit={sendMessage}>
 							<input id="chat-message-input" type="text" size="100" maxLength={maxLength} value={message} onChange={handleChange}/>

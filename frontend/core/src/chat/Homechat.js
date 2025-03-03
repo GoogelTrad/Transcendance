@@ -67,7 +67,7 @@ export default function HomeChat() {
 			});
 			socket.on("join_room", (data) => {
 				if (data.status) {
-					console.log("Salle rejoint :", data.room_name);
+					console.log("Salle rejoint home:", data.room_name);
 					navigate(`/room/${data.room_name}`);
 				} else {
 					showToast("error", data.error);
@@ -93,6 +93,7 @@ export default function HomeChat() {
 	};
 
 	const joinRoom = (name, password = null, dmname = null) => {
+		console.log("join room dmname", dmname);
 		if (socket.ready) {
 			socket.send({
 				type: "join_room",
@@ -197,7 +198,8 @@ export default function HomeChat() {
 		return () => clearInterval(interval);
 	}, []);
 
-	const handleRoomClick = async (e, room) => {
+	const handleRoomClick = async (e, room, dmname = null) => {
+		console.log("dmname", dmname);
 		e.preventDefault();
 
 		if (!room.name) {
@@ -213,7 +215,7 @@ export default function HomeChat() {
 				showToast("error", "Enter a password for this room")
 			}
 		} else {
-			joinRoom(room.name);
+			joinRoom(room.name, null, dmname);
 		}
 	}
 
@@ -282,7 +284,7 @@ export default function HomeChat() {
 					<ul className="liste_dms"> 
 						{dmrooms && dmrooms.map((room, index) => (
 							<li key={index}>
-								<Link to={`/room/${room.name}`} onClick={(e) => handleRoomClick(e, room)}>
+								<Link to={`/room/${room.name}`} onClick={(e) => handleRoomClick(e, room, room.dmname)}>
 									{room.dmname}
 								</Link>
 							</li>

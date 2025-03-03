@@ -13,6 +13,25 @@ from django.shortcuts import get_object_or_404
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework import status
 
+
+@api_view(['GET'])
+@jwt_auth_required
+def get_me(request, room_name):
+    dmname = None
+    room = Room.objects.get(name=room_name)
+    me = request.user
+    # print(room.users.all(), flush=True)
+    if room.dm:
+        friend = [user for user in room.users.all() if user.id != me.id]
+        print("FRIEND:", friend, flush=True)
+        dmname = friend[0].name + ' dm'
+    return Response({
+        "creation": room.creation,
+        "createur": room.createur.id,
+        "name": room.name,
+        "dmname": dmname
+    })
+
 @api_view(['GET'])
 @jwt_auth_required
 def get_list_rooms(request):
@@ -161,8 +180,3 @@ def get_list_blocked(request, id):
     response.data = list(users.blocked_user.values_list('id', flat=True))
 
     return response
-
-@api_view(['GET'])
-@jwt_auth_required
-def get_messages(request, room_name):
-    messages = Message.objects.filter(name=)

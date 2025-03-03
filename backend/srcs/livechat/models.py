@@ -13,18 +13,10 @@ class Room(models.Model):
     dm = models.BooleanField(default=False)
 
     async def add_members(self, member):
-        # if self.dm == True and await self.users.acount() >= 2:
-        #     raise ValidationError("limit reach")
         await self.users.aadd(member)
 
     def __str__(self):
         return f"Room privée créée par {self.createur.username} - {self.creation}"
-
-# class MessageManager(models.Manager):
-#     def visible_for_user(self, user):
-#         """Filtrage des messages pour qu'un user ne voie pas les messages des users bloqués"""
-#         blocked_users = BlockedUser.objects.filter(blocker=user).values_list("blocked", flat=True)
-#         return self.exclude(sender_id__in=blocked_users)
 
 class Message(models.Model):
     """Modèle représentant un message de chat."""
@@ -32,8 +24,6 @@ class Message(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='messages', default="0")
     content = models.TextField(max_length=300)
     timestamp = models.DateTimeField(auto_now_add=True)
-
-    # objects = MessageManager()
 
     def __str__(self):
         return f'[{self.timestamp}] {self.username}: {self.content}'
