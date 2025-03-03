@@ -10,6 +10,8 @@ import time
 import requests
 from channels.layers import get_channel_layer
 import jwt
+import copy
+import os
 
 class TournamentConsumer(AsyncWebsocketConsumer):
     async def connect(self):
@@ -105,7 +107,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
             return
     
     async def create_Game_Multi(self, token, player1, player2):
-        api_url = "http://localhost:8000/game/create_game"
+        api_url = f"{os.getenv('REACT_APP_API_URL')}/game/create_game"
         auth_header = {'Authorization': f"Bearer {token}"}
         data = {
             'player1': player1,
@@ -117,7 +119,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
         }
         
         try:
-            response = await asyncio.to_thread(requests.post, api_url, headers=auth_header, data=data)
+            response = await asyncio.to_thread(requests.post, api_url, headers=auth_header, data=data, verify=False)
             if response.status_code == 201:
                 print('Game created successfully', flush=True)
                 game_data = response.json()
@@ -260,7 +262,7 @@ class MatchmakingConsumer(AsyncWebsocketConsumer):
 
 
     async def create_Game_Multi(self, token, player1, player2):
-        api_url = "http://localhost:8000/game/create_game"
+        api_url = f"{os.getenv('REACT_APP_API_URL')}api/game/create_game"
         auth_header = {'Authorization': f"Bearer {token}"}
         data = {
             'player1': player1,
@@ -269,7 +271,7 @@ class MatchmakingConsumer(AsyncWebsocketConsumer):
         
         try:
             print('Sending request to create game...', flush=True)
-            response = await asyncio.to_thread(requests.post, api_url, headers=auth_header, data=data)
+            response = await asyncio.to_thread(requests.post, api_url, headers=auth_header, data=data, verify=False)
             print(f"Response status code: {response.status_code}", flush=True)
 
             if response.status_code == 201:

@@ -8,8 +8,6 @@ from django.http import HttpResponse
 from users.decorator import jwt_auth_required
 from users.serializer import UserSerializer
 
-# Create your views here.
-
 @api_view(['POST'])
 @jwt_auth_required
 def send_friend_request(request, user_id):

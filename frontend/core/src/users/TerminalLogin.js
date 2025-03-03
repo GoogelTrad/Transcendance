@@ -185,18 +185,19 @@ function TerminalLogin({setModal, launching, setTerminal, removeLaunch})
                 }
             }
 
-            if (currentStepLabel.toLowerCase().includes("password")) {
-                if (!ValidatePassword(input))
-                {
-                    const maskedInput = input.replace(/./g, '*');
-                    setLines((prevLines) => [
-                        ...prevLines,
-                        `> ${maskedInput}`,
-                        "The password must be at least 8 characters long, 1 uppercase, 1 lowercase, 1 number and 1 special character (@$!%*?&).",
-                    ]);
-                    return;
-                }
-            }
+            // A remettre pour les regles de mots de passe.
+            // if (currentStepLabel.toLowerCase().includes("password") && command === "register") {
+            //     if (!ValidatePassword(input))
+            //     {
+            //         const maskedInput = input.replace(/./g, '*');
+            //         setLines((prevLines) => [
+            //             ...prevLines,
+            //             `> ${maskedInput}`,
+            //             "The password must be at least 8 characters long, 1 uppercase, 1 lowercase, 1 number and 1 special character (@$!%*?&).",
+            //         ]);
+            //         return;
+            //     }
+            // }
     
     
             setCommandArgs((prevArgs) => [...prevArgs, input]);

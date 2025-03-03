@@ -26,6 +26,7 @@ function GameInstance ( {children} ) {
 	const { id } = useParams();
 	const navigate = useNavigate();
 	const [isKeyDown, setIsKeyDown] = useState({ ArrowUp: false, ArrowDown: false, z: false, s: false });
+	const [waitInput, setWaitInput] = useState(false);
 	const [backDimensions, setBackDimensions] = useState(() => ({
 		width: 1536,
 		height: 826,
@@ -64,7 +65,7 @@ function GameInstance ( {children} ) {
 
 	const socketRef = useRef(null);
 	  if (!socketRef.current) {
-		  socketRef.current = new WebSocket(`ws://${window.location.hostname}:8000/ws/game/${id}`);
+		  socketRef.current = new WebSocket(`${process.env.REACT_APP_API_URL}ws/game/${id}`);
 	  }
 	  const socket = socketRef.current;
   
@@ -221,6 +222,7 @@ function GameInstance ( {children} ) {
 			try {
 				const response = await axiosInstance.get(`/api/game/fetch_data/${id}/`);
 				setGame(response.data);
+				setWaitInput(true);
 			} catch (error) {
 				console.error("Error fetching game by ID:", error);
 			}
@@ -254,6 +256,8 @@ function GameInstance ( {children} ) {
 	
 	const handleKeyPress = (e) => {
 		if (isKeyDown[e.key] === undefined) return;
+		if (!waitInput) return;
+		
 	
 		setIsKeyDown((prev) => {
 			const updatedKeyDown = { ...prev, [e.key]: true };
@@ -266,12 +270,12 @@ function GameInstance ( {children} ) {
 					keyUpdateTimeout = null;
 				}, throttleRate);
 			}
-	
 			return updatedKeyDown;
 		});
 	};
-	
 	const handleKeyUp = (e) => {
+		if (isKeyDown[e.key] === undefined) return;
+		if (!waitInput) return;
 		setIsKeyDown((prev) => {
 			const updatedKeyDown = { ...prev, [e.key]: false };
 			const player = user.name === game.player1 ? "P1" : (user.name === game.player2 ? "P2" : null);
@@ -283,7 +287,6 @@ function GameInstance ( {children} ) {
 					keyUpdateTimeout = null;
 				}, throttleRate);
 			}
-	
 			return updatedKeyDown;
 		});
 	};

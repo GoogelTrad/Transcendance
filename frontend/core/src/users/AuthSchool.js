@@ -7,7 +7,7 @@ import { getCookies } from "../App";
 
 export function HandleAuth() 
 {
-	const popup = window.open("http://localhost:8000/auth/code", "42Auth", "width=600,height=800");
+	const popup = window.open("https://localhost:8000/auth/code", "42Auth", "width=600,height=800");
 	
 	console.log(popup.opener);
 
