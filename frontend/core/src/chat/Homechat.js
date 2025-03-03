@@ -106,7 +106,7 @@ export default function HomeChat() {
 
 	const listroom = async () => {
 		try {
-			const response = await axiosInstance.get('/livechat/listroom/');
+			const response = await axiosInstance.get('/api/livechat/listroom/');
 			console.log("Liste des salles:", response.data);
 
 			const dmRooms = response.data.dmRooms.map((value) => {
@@ -126,7 +126,7 @@ export default function HomeChat() {
 
 	const users_connected = async () => {
 		try {
-			const response = await axiosInstance.get('/livechat/users_connected/');
+			const response = await axiosInstance.get('/api/livechat/users_connected/');
 			console.log("Liste des users:", response.data);
 			setusersconnected(response.data.filter((v) => v.id !== userId));
 		} catch (error) {
@@ -137,7 +137,7 @@ export default function HomeChat() {
 	const blocked_user = async (id) => {
 		const data = {'from_user': userId, 'to_user': id};
 		try {
-			const response = await axiosInstance.post(`livechat/block/`, data, {
+			const response = await axiosInstance.post(`/api/livechat/block/`, data, {
 				headers: {
 					'Content-Type': 'multipart/form-data',
 				},
@@ -157,7 +157,7 @@ export default function HomeChat() {
 	const unlocked_user = async (id) => {
 		const data = {'from_user': userId, 'to_user': id};
 		try {
-			const response = await axiosInstance.post(`livechat/unlock/`, data, {
+			const response = await axiosInstance.post(`/api/livechat/unlock/`, data, {
 				headers: {
 					'Content-Type': 'multipart/form-data',
 				},
@@ -176,7 +176,7 @@ export default function HomeChat() {
 
 	const listUsersBlocked = async () => {
 		try {
-			const response = await axiosInstance.get(`/livechat/blocked_users/${userId}`);
+			const response = await axiosInstance.get(`/api/livechat/blocked_users/${userId}`);
 			setBlockedUsers(response.data);
 		}
 		catch(error) {

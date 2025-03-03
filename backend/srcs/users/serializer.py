@@ -16,8 +16,8 @@ class UserSerializer(serializers.ModelSerializer):
     def get_profile_image_url(self, obj):
         if obj.profile_image:
             return obj.profile_image.url
-        return None  
-        
+        return None   
+
     def validate(self, data):
         password = data.get('password')
         password_confirm = data.get('password_confirm')

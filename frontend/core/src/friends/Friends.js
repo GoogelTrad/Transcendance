@@ -16,7 +16,7 @@ export function AddFriend({id})
 {
 	const handleAddFriend = async (id) => {
 		try {
-			await axiosInstance.post(`/friends/send/${id}`);
+			await axiosInstance.post(`/api/friends/send/${id}`);
 			showToast('success', 'Friend Request sent !')
 		} catch (error) {
 			showToast("error", error.response.data.error);
@@ -37,9 +37,9 @@ function SeeFriendsRequest({ toWhom, type, onResponse }) {
     const handleResponse = async () => {
         try {
             if (type) {
-                await axiosInstance.post(`/friends/accept/${toWhom}`);
+                await axiosInstance.post(`/api/friends/accept/${toWhom}`);
             } else {
-                await axiosInstance.post(`/friends/decline/${toWhom}`);
+                await axiosInstance.post(`/api/friends/decline/${toWhom}`);
             }
             onResponse(toWhom);
         } catch (error) {
@@ -78,7 +78,7 @@ function FriendRequests({setModal, setIsFriends, launching}) {
         
         if (query.length > 0) {
             try {
-                const response = await axiosInstance.get(`/friends/search/${query}`);
+                const response = await axiosInstance.get(`/api/friends/search/${query}`);
                 setSearchResults(response.data);
             } catch (error) {
 				console.log(error);
@@ -94,7 +94,7 @@ function FriendRequests({setModal, setIsFriends, launching}) {
 		const decodeToken = getJwt(token);
 
 		try {
-			const reponse = await axiosInstance.get(`/friends/list/${decodeToken.id}`);
+			const reponse = await axiosInstance.get(`/api/friends/list/${decodeToken.id}`);
 			setFriendList(reponse.data);
 			console.log(reponse.data)
 		}
@@ -106,7 +106,7 @@ function FriendRequests({setModal, setIsFriends, launching}) {
 	const deleteFriend = async (id) => {
 
 		try {
-			const response = await axiosInstance.post(`/friends/delete/${id}`);
+			const response = await axiosInstance.post(`/api/friends/delete/${id}`);
 			setFriendList((prevList) => ({
 				...prevList,
 				friends: prevList.friends.filter((friend) => friend.id !== id),
@@ -120,7 +120,7 @@ function FriendRequests({setModal, setIsFriends, launching}) {
 
     const fetchFriendRequests = async () => {
         try {
-            const response = await axiosInstance.get('/friends/request');
+            const response = await axiosInstance.get('/api/friends/request');
             setFriendRequests(response.data);
 			console.log("hello:", response);
         } catch (error) {

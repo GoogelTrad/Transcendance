@@ -25,12 +25,14 @@ class SimpleMiddleware:
 
     def __call__(self, request):
         
-        if request.path.startswith(('/media/', '/static/', '/auth/', '/api/code', '/api/token')):
+        print(f'path = {request.path}', flush=True)
+        
+        if request.path.startswith(('/media/', '/static/', '/auth/', '/api/user/code', '/api/user/token')):
             return self.get_response(request)
         
         new_token = None
         
-        if not request.path == '/api/login' and not request.path == '/api/user/create':
+        if not request.path == '/api/user/login' and not request.path == '/api/user/create':
             auth_header = request.headers.get('Authorization')
             
             if not auth_header:

@@ -2,7 +2,7 @@ import axios from 'axios';
 import { getCookies } from '../App'; 
 
 // Créer une instance axios
-const axiosInstance = axios.create({baseURL: `http://${process.env.REACT_APP_API_URL}:8000`,
+const axiosInstance = axios.create({baseURL: `${process.env.REACT_APP_API_URL}`,
   withCredentials: true, 
 });
 
@@ -14,13 +14,11 @@ axiosInstance.interceptors.request.use(
     }
 	  if (!config.headers['Content-Type']) 
 		  config.headers['Content-Type'] = 'application/json';
-
     return config;
   },
   (error) => {
     return Promise.reject(error);
   }
 );
-
 
 export default axiosInstance;

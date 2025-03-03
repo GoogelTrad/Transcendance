@@ -79,7 +79,7 @@ function TerminalLogin({setModal, launching, setTerminal, removeLaunch})
         setName(username);
         data.append("password", password);
         try {
-            const response = await axiosInstance.post('api/login', data, {
+            const response = await axiosInstance.post('/api/user/login', data, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
@@ -109,7 +109,7 @@ function TerminalLogin({setModal, launching, setTerminal, removeLaunch})
 
     const handleTwoFactorVerification = async (code, name) => {
         try {
-            const response = await axiosInstance.post('/api/code', {code: code, name: name});
+            const response = await axiosInstance.post('/api.user/code', {code: code, name: name});
             if (response.status === 200) {
                 setIsAuthenticated(true);
                 setTerminal(false);
@@ -185,18 +185,19 @@ function TerminalLogin({setModal, launching, setTerminal, removeLaunch})
                 }
             }
 
-            if (currentStepLabel.toLowerCase().includes("password")) {
-                if (!ValidatePassword(input))
-                {
-                    const maskedInput = input.replace(/./g, '*');
-                    setLines((prevLines) => [
-                        ...prevLines,
-                        `> ${maskedInput}`,
-                        "The password must be at least 8 characters long, 1 uppercase, 1 lowercase, 1 number and 1 special character (@$!%*?&).",
-                    ]);
-                    return;
-                }
-            }
+            // A remettre pour les regles de mots de passe.
+            // if (currentStepLabel.toLowerCase().includes("password") && command === "register") {
+            //     if (!ValidatePassword(input))
+            //     {
+            //         const maskedInput = input.replace(/./g, '*');
+            //         setLines((prevLines) => [
+            //             ...prevLines,
+            //             `> ${maskedInput}`,
+            //             "The password must be at least 8 characters long, 1 uppercase, 1 lowercase, 1 number and 1 special character (@$!%*?&).",
+            //         ]);
+            //         return;
+            //     }
+            // }
     
     
             setCommandArgs((prevArgs) => [...prevArgs, input]);

@@ -17,7 +17,7 @@ function useTokenValidation() {
             {
                 const token = getCookies('token');
                 try {
-                    const response = await axiosInstance.get(`/api/token/${token}`);
+                    const response = await axiosInstance.get(`/api/user/token/${token}`);
                 }
                 catch(error) {
                     document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";

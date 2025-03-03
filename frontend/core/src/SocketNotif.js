@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-const BASE_URL_NOTIF = `ws://${window.location.hostname}:8000/ws/notifications/`;
+const BASE_URL_NOTIF = `${process.env.REACT_APP_API_URL}ws/notifications/`;
 
 export default function useNotifications() {
 	const [socket, setSocket] = useState(null);

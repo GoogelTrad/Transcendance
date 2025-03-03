@@ -30,7 +30,7 @@ function ChangeDetails({setUser, setValue, toChange, value, toType})
         e.preventDefault();
         try 
         {
-			const reponse = await axiosInstance.patch(`api/user/${user.id}`, {
+			const reponse = await axiosInstance.patch(`/api/api/user/${user.id}`, {
 				[toChange] : detail
 			})
 			setValue(false);
@@ -78,7 +78,7 @@ function Profile({id})
 	const fetchFriendList = async () => {
 
 		try {
-			const reponse = await axiosInstance.get(`/friends/list/${decodeToken.id}`);
+			const reponse = await axiosInstance.get(`/api/friends/list/${decodeToken.id}`);
 			setFriendList(reponse.data);
 		}
 		catch(error) {
@@ -91,7 +91,7 @@ function Profile({id})
 		const selectedImage = e.target.files[0];
 		
 		try {
-			const response = await axiosInstance.patch(`api/user/${decodeToken.id}`, { 
+			const response = await axiosInstance.patch(`/api/user/${decodeToken.id}`, { 
 				'profile_image' : selectedImage 
 				}, {
 				headers: {
@@ -109,7 +109,7 @@ function Profile({id})
 	const handleConfirm = async () =>
 	{
 		try {
-			axiosInstance.post(`/api/perms/${decodeToken.id}`);
+			axiosInstance.post(`/api/user/perms/${decodeToken.id}`);
 		}
 		catch(error){
 			console.log("Error while changing perms on 2FA!");
@@ -134,7 +134,7 @@ function Profile({id})
 		{
 			if (token)
 			{
-				const reponse = await axiosInstance.get(`api/user/${id}`);
+				const reponse = await axiosInstance.get(`/api/user/${id}`);
 				setUser(reponse.data);
 			}
 		}

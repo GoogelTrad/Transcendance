@@ -7,7 +7,7 @@ import { getCookies } from "../App";
 
 export function HandleAuth() 
 {
-	const popup = window.open("http://localhost:8000/auth/code", "42Auth", "width=600,height=800");
+	const popup = window.open("https://localhost:8000/auth/code", "42Auth", "width=600,height=800");
 	
 	console.log(popup.opener);
 
@@ -46,7 +46,7 @@ export function AuthSuccess()
 	const handleVerify = async () => 	
 	{
 		try {
-			const response = await axiosInstance.post('/api/code' , {code, name: name});
+			const response = await axiosInstance.post('/api/user/code' , {code, name: name});
 			if (response.status === 200) {
 				const authChannel = new BroadcastChannel("auth_channel");
 				const token = getCookies('token');

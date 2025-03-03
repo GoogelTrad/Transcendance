@@ -1,21 +1,4 @@
 services:
-  nginx:
-    env_file: .env
-    container_name: nginx
-    build: nginx/
-    environment:
-      - WATCHPACK_POLLING=true
-    depends_on:
-      - react
-    volumes:
-      - project:/home/
-    networks:
-      - tdc
-    image: nginx
-    ports:
-      - 8089:443
-    restart: unless-stopped
-      
   db:
     container_name: db
     image: postgres
@@ -38,7 +21,10 @@ services:
     build: ./frontend/
     environment:
       - WATCHPACK_POLLING=true
+      - HTTPS=true
+      - PORT=3000
     volumes:
+      - ./certs:/home/certs
       - project:/home/
     depends_on:
       - db
@@ -56,6 +42,7 @@ services:
     build: ./backend/
     volumes:
       - project:/home/
+      - ./certs:/home/certs
     depends_on:
       - db
       - redis
@@ -65,7 +52,7 @@ services:
       - tdc
     environment:
       - REDIS_HOST=redis
-      - REDIS_PORT=6000
+      - REDIS_PORT=6379
       - WATCHPACK_POLLING=true
   
   redis:
@@ -78,7 +65,6 @@ services:
     command: ["redis-server", "--bind", "0.0.0.0"]
     networks:
       - tdc
-
 
 volumes:
   project:
