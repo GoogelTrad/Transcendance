@@ -19,8 +19,6 @@ function Stats({ itemsArray = [] }) {
     const [option, setOption] = useState([]);
     const [mode, setMode] = useState([]);
     const [selectedOption, setSelectedOption] = useState("");
-    const token = getCookies('token');
-    let decodeToken = jwtDecode(token);
     const [winGames, setWinGames] = useState([]);
     const [loseGames, setLoseGames] = useState([]);
     const [tournamentGames, setTournamentGames] = useState([]);
@@ -185,13 +183,17 @@ function Stats({ itemsArray = [] }) {
     useEffect(() => {
         const activeOption = option.find(option => option.active);
         setSelectedOption(activeOption || null);
-        console.log(decodeToken);
-        console.log("Image : ", decodeToken.profile_image_url);
+
     }, [option]);
 
+    const token = getCookies('token');
+    let decodeToken = ("");
+
     useEffect(() => {
-        console.log(games)
-    }, [games])
+        const token = getCookies('token');
+        if (token)
+            decodeToken = jwtDecode(token);
+    }, [])
 
 
     useEffect(() => {

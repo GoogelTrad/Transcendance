@@ -26,7 +26,7 @@ function Tournament({setSettings, tournamentSettings, modalCreateTournament, set
     const [tournamentCode, setTournamentCode] = useState(8);
     const [columnBracket, setColumnBracket] = useState(0);
     const [errorMessage, setErrorMessage] = useState("");
-    const [tournamentResponse, setTournamentResponse] = useState(null);
+    const [tournamentResponse, setTournamentResponse] = useState({});
     const [tournamentStarted, setTournamentStarted] = useState(false);
     const [socket, setSocket] = useState(null);
     const navigate = useNavigate();
@@ -308,13 +308,13 @@ function Tournament({setSettings, tournamentSettings, modalCreateTournament, set
         }
     }, [tournamentCode]);
 
-    useEffect(() => {
-        if (tournamentResponse.winner)
-        {
-            setModalResult(true);
-            launching({ newLaunch: 'resultTournament', setModal: setModalResult });
-        }
-    }, [tournamentResponse.winner]);
+    //useEffect(() => {
+    //    if (tournamentResponse.winner)
+    //    {
+    //        setModalResult(true);
+    //        launching({ newLaunch: 'resultTournament', setModal: setModalResult });
+    //    }
+    //}, [tournamentResponse.winner]);
 
     const setTournament = (setInfo, min, max, e, isMinutes = false) => {
         const value = parseInt(e.target.value, 10);
@@ -524,7 +524,7 @@ function Tournament({setSettings, tournamentSettings, modalCreateTournament, set
                                     </div>
                                 )}
 
-                                {tournamentResponse.player4 && (
+                                {tournamentResponse.player4 &&(
                                     <div
                                         style={{
                                             display: 'flex',

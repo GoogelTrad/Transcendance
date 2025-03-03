@@ -26,9 +26,8 @@ const TournamentBracket = ({ numberPlayer, tournamentResponse }) => {
     }
 
     if (numberPlayer == "4") {
-		console.log("tournamentRepppp1 : ", tournamentResponse.player1);
         rounds.unshift([
-            tournamentResponse.player1,  // correction ici
+            tournamentResponse.player1,
             tournamentResponse.player2 ? tournamentResponse.player2 : waiting,  // correction ici
             tournamentResponse.player3 ? tournamentResponse.player3 : waiting,  // correction ici
             tournamentResponse.player4 ? tournamentResponse.player4 : waiting,  // correction ici
