@@ -18,7 +18,7 @@ import marioJump from '../assets/game/mario-jump.png';
 import blockAfter from '../assets/game/blockAfter.png';
 import ban from '../assets/ban.png';
 
-function Tournament({setSettings, tournamentSettings, modalCreateTournament, setModalCreateTournament, ModalTournament , setModalTournament, launching, numberPlayer, removeLaunch }) {
+function Tournament({setSettings, tournamentSettings, modalCreateTournament, setModalCreateTournament, ModalTournament , setModalTournament, setModalResult, modalResult, launching, numberPlayer, removeLaunch }) {
     const [maxTimeMinutes, setMaxTimeMinutes] = useState("00");
     const [maxTimeSecondes, setMaxTimeSecondes] = useState("00");
     const [maxScore, setMaxScore] = useState(0);
@@ -236,15 +236,13 @@ function Tournament({setSettings, tournamentSettings, modalCreateTournament, set
     //      console.error("Error submitting Player:", error);
     //    }
     //};
-    useEffect(() => {
-        setTournamentResponse({
-            size: 2,
-            player1: 'bob',
-            player2: 'jacques',
-            player3: 'georges',
-            player4: 'franck'
-        });
-    }, []); // Exécute l'effet une seule fois au montage
+    //useEffect(() => {
+    //    setTournamentResponse({
+    //        size: 3,
+    //        player1: 'bob',
+    //        player2: 'jacques'
+    //    });
+    //}, []); // Exécute l'effet une seule fois au montage
     //useEffect(() => {
     //    if (ModalTournament === true){
     //        createTournement();
@@ -278,6 +276,14 @@ function Tournament({setSettings, tournamentSettings, modalCreateTournament, set
         launching({ newLaunch: 'tournament', setModal: setModalTournament });
     };
 
+    useEffect(() => {
+        if (tournamentResponse.winner)
+        {
+            setModalResult(true);
+            launching({ newLaunch: 'resultTournament', setModal: setModalResult });
+        }
+    }, [tournamentResponse.winner]);
+
     const setTournament = (setInfo, min, max, e, isMinutes = false) => {
         const value = parseInt(e.target.value, 10);
     
@@ -305,6 +311,8 @@ function Tournament({setSettings, tournamentSettings, modalCreateTournament, set
         }
         setColumnBracket(calculatedColumnBracket);
     }, [tournamentSettings.numberPlayer]);
+
+
 
 
     const renderImageWithClick = (src, alt, position, onClick, title) => (

@@ -34,3 +34,16 @@
     min-height: 60px;
     text-align: center;
 }
+
+.podium {
+    border: 2px solid blue;
+    border-radius: 7%;
+    animation: neon-glow 1.5s infinite alternate;
+    background-color: transparent;
+}
+
+@keyframes neon-glow {
+    0% { filter: drop-shadow(0 0 5px blueviolet); }
+    50% { filter: drop-shadow(0 0 15px blue); }
+    100% { filter: drop-shadow(0 0 5px blueviolet); }
+  }
