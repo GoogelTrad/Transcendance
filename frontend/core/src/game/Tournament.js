@@ -329,13 +329,13 @@ function Tournament({setSettings, tournamentSettings, modalCreateTournament, set
         }
     }, [tournamentCode]);
 
-    useEffect(() => {
-        if (tournamentResponse.winner)
-        {
-            setModalResult(true);
-            launching({ newLaunch: 'resultTournament', setModal: setModalResult });
-        }
-    }, [tournamentResponse.winner]);
+    //useEffect(() => {
+    //    if (tournamentResponse.winner)
+    //    {
+    //        setModalResult(true);
+    //        launching({ newLaunch: 'resultTournament', setModal: setModalResult });
+    //    }
+    //}, [tournamentResponse.winner]);
 
     const setTournament = (setInfo, min, max, e, isMinutes = false) => {
         const value = parseInt(e.target.value, 10);
