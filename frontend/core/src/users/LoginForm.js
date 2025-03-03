@@ -117,7 +117,6 @@ function LoginRegister({setModal, setTerminal, removeLaunch}) {
             data.append(key, value);
         }
         setRulesPassword(false);
-        //A remettre pour les regles du mot de passe.
         // if (!ValidatePassword(data.password))
         //     setRulesPassword(true);
         if(isAuthenticated)
