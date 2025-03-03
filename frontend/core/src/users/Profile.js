@@ -106,7 +106,7 @@ function Profile({id})
 		}
 	};
 
-	const handleConfirm = async () => 
+	const handleConfirm = async () =>
 	{
 		try {
 			axiosInstance.post(`/api/perms/${decodeToken.id}`);
@@ -186,6 +186,9 @@ function Profile({id})
 								</div>
 								{user.email && (
 									<div>{user.email}</div> 
+								)}
+								{user.elo && (
+									<div> ELO : {user.elo}</div> 
 								)}
 							</div>
 						</div>

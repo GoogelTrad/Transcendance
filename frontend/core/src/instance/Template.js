@@ -6,8 +6,14 @@ import ModalInstance from './ModalInstance';
 import { useAuth } from '../users/AuthContext';
 import LiveDateTime from './DateInstance';
 import social from '../assets/user/friends.svg'; 
+import { useLocation, useNavigate, Link } from 'react-router-dom';
+import home from '../assets/home.svg'
+import info from '../assets/info.svg'
+import profile from '../assets/profile.svg'
+import power from '../assets/power.svg'
 
 function Template({ children, taskBarContent, launching, appArray }) {
+    const navigate = useNavigate();
     const [isDesktop, setIsDesktop] = useState(false);
     const [isSocial, setIsSocial] = useState(false);
     const { isAuthenticated } = useAuth();
@@ -41,6 +47,8 @@ function Template({ children, taskBarContent, launching, appArray }) {
         setIsDesktop(false);
     }
 
+    
+
     return (
         <div className="general container-fluid">
             <div className="content-area" onClick={handleClickOutside}>{children}</div>
@@ -61,16 +69,41 @@ function Template({ children, taskBarContent, launching, appArray }) {
                             <div className="application-desktop d-flex flex-column bd-highlight mb-3">
                                 {!isAuthenticated && <div
                                     className="p-2 bd-highlight flex-item"
-                                    onClick={() => handleClick('terminal')} 
+                                    onClick={() => navigate("/Home", {state: { modalName: "terminal"}})} 
                                 >
                                     Terminal
                                 </div>}
                                 {isAuthenticated && <div
                                     className="p-2 bd-highlight flex-item"
-                                    onClick={() => handleClick('game')}
+                                    onClick={() => navigate("/Home", {state: { modalName: "game"}})}
                                 >
                                     Game
                                 </div>}
+                                {isAuthenticated && <div
+                                        className="p-2 bd-highlight flex-item"
+                                        onClick={() => navigate("/Chat")}
+                                    >
+                                    Chat
+                                </div>}
+                                {isAuthenticated && <div
+                                    className="p-2 bd-highlight flex-item"
+                                    onClick={() => navigate("/Home", {state: { modalName: "stats"}})}
+                                >
+                                    Stats
+                                </div>}
+                                {isAuthenticated && 
+                                    <>
+                                    <div className="w-100" style={{ position: 'absolute', left:'0%', height:'10%', bottom:'10%'}}>
+                                        <img src={profile} alt="Profile" title="Profile" style={{ width: '24px', height: '24px', cursor: 'pointer', margin:'2%' }} onClick={() => navigate("/Home", { state: { modalName: "profile" } })} />
+                                        <img src={home} alt="Home" title="Home" style={{ width: '24px', height: '24px', cursor: 'pointer', margin:'2%' }} onClick={() => navigate("/Home")} />
+                                        <img src={info} alt="Info" title="Infos" style={{ width: '24px', height: '24px', cursor: 'pointer', margin:'2%' }} onClick={() => console.log("Info clicked")} />
+                                    </div>
+                                    <div className="w-100" style={{ position: 'absolute', borderTop:'2px solid #989a9c', left:'0%', height:'10%', bottom:'0%'}}>
+                                        <div className='h-100' style={{position: 'absolute', left:'86%', borderLeft:'2px solid #989a9c' }}></div>
+                                        <img src={power} alt="Power" title="logout" style={{ position: 'absolute', bottom: '0%', width: '24px', height: '24px', cursor: 'pointer', margin:'2%', right: '0%' }} onClick={() => navigate("/logout")} />
+                                    </div>
+                                    </>
+                                }
                             </div>
                         </div>
                     </div>

@@ -15,12 +15,15 @@ class User(AbstractUser):
     status = models.CharField(max_length=20, default='offline')
     is_stud = models.BooleanField(max_length=255, default=False)
     games = models.ManyToManyField("game.Game", related_name="players", blank=True)
+    tournament = models.ManyToManyField("game.Tournament", related_name="players", blank=True)
     is_verified = models.BooleanField(default=False)
     last_verified = models.DateTimeField(null=True, blank=True)
     is_waiting = models.BooleanField(default=False)
     enable_verified = models.BooleanField(default=False)
     ip_user = models.CharField(max_length=255, default="")
     blocked_user = models.ManyToManyField("User", related_name="blocked_by", blank=True)
+    elo = models.IntegerField(default=100)
+
     username = None
 
     USERNAME_FIELD = 'name'

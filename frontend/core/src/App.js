@@ -40,42 +40,6 @@ function NavBar()
   if (token)
     decodeToken = jwtDecode(token);
 
-  return (
-    <nav className='navbar navbar-expand-md navbar-dark fixed-top'>
-      <div className='container-fluid'>
-        <div className='accueil-container'>
-          <button className="buttonAccueil">
-            <Link to="/home" className="text-decoration-none text-dark">Home</Link>
-          </button>
-        </div>
-
-        {isAuthenticated && (
-          <>
-            <div>
-              <button className="buttonGame">
-                <Link to="/home_game" className="text-decoration-none text-dark">Game</Link>
-              </button>
-              <button className="buttonChat">
-                <Link to="/chat" className="text-decoration-none text-dark">Chat</Link>
-              </button>
-            </div>
-            <div className='d-flex flex-row'>
-              <div>
-                <button className="buttonProfile">
-                  <Link to="/profile" className="text-decoration-none text-dark">Profile</Link>
-                </button>
-              </div>
-              <div>
-                <button className="buttonLogout">
-                  <Link to="/logout" className="text-decoration-none text-dark">Logout</Link>
-                </button>
-              </div>
-            </div>
-          </>
-        )}
-        </div>
-    </nav>
-  );
 }
 
 function App() {
