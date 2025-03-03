@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from users.serializer import BasicUserSerializer
-from .models import Room
+from .models import Room, Message
 from users.models import User
 
 class RoomSerializer(serializers.ModelSerializer):
@@ -13,3 +13,11 @@ class UserConnectedSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['id', 'name']
+
+class MessageSerializer(serializers.ModelSerializer):
+    user = serializers.CharField(source='user.name')
+    print("USER:", user, flush=True)
+
+    class Meta:
+        model = Message
+        fields = ['user', 'content', 'timestamp']

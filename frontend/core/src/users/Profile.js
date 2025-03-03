@@ -187,6 +187,9 @@ function Profile({id})
 								{user.email && (
 									<div>{user.email}</div> 
 								)}
+								{user.elo && (
+									<div> ELO : {user.elo}</div> 
+								)}
 							</div>
 						</div>
 

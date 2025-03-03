@@ -1,6 +1,11 @@
 import './Tournament.css';
 import React, { useEffect, useState, useRef  } from "react";
+import axiosInstance from '../instance/AxiosInstance.js';
+import { BrowserRouter as Router, Route, Routes, Link, useNavigate } from 'react-router-dom';
+import { jwtDecode } from "jwt-decode";
+import { getCookies } from './../App.js';
 import person from '../assets/game/person.svg';
+import personAdd from '../assets/game/person-fill.svg';
 import TournamentBracket from "./TournamentBracket";
 import ghost from '../assets/game/ghost2.png';
 import pacman from '../assets/game/pacman.png';
@@ -12,14 +17,20 @@ import marioRun1 from '../assets/game/mario-run-1.png';
 import marioRun2 from '../assets/game/mario-run-2.png';
 import marioJump from '../assets/game/mario-jump.png';
 import blockAfter from '../assets/game/blockAfter.png';
+import ban from '../assets/ban.png';
 
-function Tournament({ setSettings, tournamentSettings, modalCreateTournament, setModalCreateTournament, setModalTournament, launching, numberPlayer, removeLaunch }) {
+function Tournament({setSettings, tournamentSettings, modalCreateTournament, setModalCreateTournament, ModalTournament , setModalTournament, setModalResult, modalResult, launching, numberPlayer, removeLaunch }) {
     const [maxTimeMinutes, setMaxTimeMinutes] = useState("00");
     const [maxTimeSecondes, setMaxTimeSecondes] = useState("00");
     const [maxScore, setMaxScore] = useState(0);
     const [tournamentCode, setTournamentCode] = useState(8);
     const [columnBracket, setColumnBracket] = useState(0);
-    const [errorMessage, setErrorMessage] = useState("");   
+    const [errorMessage, setErrorMessage] = useState("");
+    const [tournamentResponse, setTournamentResponse] = useState(null);
+    const [tournamentStarted, setTournamentStarted] = useState(false);
+    const [socket, setSocket] = useState(null);
+    const navigate = useNavigate();
+
     const [marioData, setMarioData] = useState ({
         marioPosition: 4,
         isMarioInit: true,
@@ -43,11 +54,48 @@ function Tournament({ setSettings, tournamentSettings, modalCreateTournament, se
         title: false,
     });
 
+    const token = getCookies('token');
+    let user = null;
+    
+    if (token) {
+        try {
+            user = jwtDecode(token);
+        } catch (error) {
+            console.error("Error decoding token:", error);
+        }
+    };
+
+   useEffect(() => {
+        if (tournamentStarted && !socket) {
+            const newSocket = new WebSocket(`ws://${window.location.hostname}:8000/ws/tournament/${tournamentResponse.code}/?token=${token}`);
+            setSocket(newSocket);
+            newSocket.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                console.log("creator : ", data);            
+                if (data.game_id && data.player1 === user.name || data.player2 === user.name) {
+                    navigate(`/games/${data.game_id}`);
+                }
+            }
+            newSocket.onclose = () => {
+                console.log("Tournament webSocket closed");
+            };
+            newSocket.onopen = () => {
+                console.log("Tournament websocket open")
+                };
+            }
+        // return () => {
+        //   if (socket) {
+        //     socket.close();
+        //     setSocket(null);
+        //   }
+        // };
+      }, [socket, tournamentStarted]);
+
     useEffect(() => {
         const interval = setInterval(() => {
             setMarioData((prev) => ({
                 ...prev,
-                left: prev.left < 0 ? prev.left + 22 : prev.left
+                left: prev.left < 0 ? prev.left + 20 : prev.left
             }));
         }, 500);
     
@@ -65,6 +113,9 @@ function Tournament({ setSettings, tournamentSettings, modalCreateTournament, se
         return () => clearInterval(interval);
     }, []);
     
+    const handleStartTournament = () => {
+        setTournamentStarted(true);
+    };
 
     const handleClickGhost = () => {
 
@@ -162,6 +213,7 @@ function Tournament({ setSettings, tournamentSettings, modalCreateTournament, se
                 title: false,
             }));
         }
+        console.log("tournamentSize:", tournamentResponse.code);
 
     }    
 
@@ -201,8 +253,55 @@ function Tournament({ setSettings, tournamentSettings, modalCreateTournament, se
     }, [marioData.marioPosition]);
     
     function createCodeTournament() {
+        console.log("hello");
         return Math.floor(Math.random() * (999 - 100 + 1)) + 100;
     }
+
+    const fetchTournement = async () => {
+        try {
+            const response = await axiosInstance.get(`/game/fetch_data_tournament_by_code/${tournamentSettings.tournamentCode}`);
+            setTournamentResponse(response.data);
+        } catch (error) {
+          console.error("Error fetching tournament:", error);
+        }
+    };
+
+    useEffect(() => {
+        fetchTournement();
+    });
+
+
+    const createTournement = async () => {
+        try {
+            const response = await axiosInstance.post(`/game/create_tournament`, { 
+                code : tournamentSettings.tournamentCode,
+                timeMaxMinutes : tournamentSettings.maxTimeMinutes,
+                timeMaxSeconds :tournamentSettings.maxTimeSecondes,
+                scoreMax : tournamentSettings.maxScore,
+                size: tournamentSettings.numberPlayer,
+             });
+            setTournamentResponse(response.data);
+            setTournamentStarted(true);
+        } catch (error) {
+          console.error("Error submitting Player:", error);
+        }
+    };
+
+    useEffect(() => {
+        
+        console.log("tournamentRes2 : ", tournamentResponse);
+
+        if (ModalTournament === true){
+            createTournement();
+        }
+    }, [tournamentSettings]);
+    
+    useEffect(() => {
+
+        console.log("tournamentRes : ", tournamentResponse);
+    }, [tournamentResponse]);
+
+    
     
     const handleClick = () => {
         if (maxScore === 0 || maxTimeMinutes === "00") {
@@ -213,26 +312,46 @@ function Tournament({ setSettings, tournamentSettings, modalCreateTournament, se
         setModalTournament(true);
         setModalCreateTournament(false);
         removeLaunch("createTournament");
-        setTournamentCode(createCodeTournament());
-        setSettings({
-            tournamentCode: tournamentCode,
-            maxTimeMinutes: maxTimeMinutes,
-            maxTimeSecondes: maxTimeSecondes,
-            maxScore: maxScore,
-            numberPlayer: numberPlayer,
-        });
-        setMaxScore(0);
-        setMaxTimeMinutes("00");
-        setMaxTimeSecondes("00");
-        launching({ newLaunch: 'tournament', setModal: setModalTournament }); 
+        const newTournamentCode = createCodeTournament();
+        setTournamentCode(newTournamentCode);
+        launching({ newLaunch: 'tournament', setModal: setModalTournament });
     };
 
-    const setTournament = (setInfo, min, max, e) => {
+    useEffect(() => {
+        if (tournamentCode) {
+            setSettings({
+                tournamentCode: tournamentCode,
+                maxTimeMinutes: maxTimeMinutes,
+                maxTimeSecondes: maxTimeSecondes,
+                maxScore: maxScore,
+                numberPlayer: numberPlayer,
+            });
+        }
+    }, [tournamentCode]);
+
+    //useEffect(() => {
+    //    if (tournamentResponse.winner)
+    //    {
+    //        setModalResult(true);
+    //        launching({ newLaunch: 'resultTournament', setModal: setModalResult });
+    //    }
+    //}, [tournamentResponse.winner]);
+
+    const setTournament = (setInfo, min, max, e, isMinutes = false) => {
         const value = parseInt(e.target.value, 10);
+    
         if (!isNaN(value)) {
-            setInfo(Math.max(min, Math.min(max, value)));
-        } else {
-            setInfo("");
+            if (isMinutes) {
+                if (value >= min && value <= max) {
+                    setInfo(value);
+                }
+            } else {
+                if (value === 0 || value === 30) {
+                    if (maxTimeMinutes !== 3 || value === 0) {
+                        setInfo(value);
+                    }
+                }
+            }
         }
     };
 
@@ -247,21 +366,28 @@ function Tournament({ setSettings, tournamentSettings, modalCreateTournament, se
     }, [tournamentSettings.numberPlayer]);
 
 
-    const renderImageWithClick = (src, alt, position, onClick) => (
+
+
+    const renderImageWithClick = (src, alt, position, onClick, title) => (
         <img
             src={src}
             alt={alt}
             style={position}
             onClick={onClick}
+            title={title}
         />
     );
     
-    const renderPlayerImages = (numberPlayer) => (
-        Array.from({ length: numberPlayer }).map((_, index) => (
-            <img key={index} src={person} alt={`Player ${index + 1}`} className="player-icon" />
-        ))
+    const renderPlayerImages = (numberPlayer, numberPlayerCo) => (
+        [
+            ...Array.from({ length: numberPlayerCo }).map((_, index) => (
+                <img key={index + (numberPlayer - numberPlayerCo)} src={personAdd} alt={`Player ${index + 1}`} className="player-icon" />
+            )),
+            ...Array.from({ length: numberPlayer - numberPlayerCo }).map((_, index) => (
+                <img key={index} src={person} alt={`Player ${index + 1}`} className="player-icon" />
+            ))
+        ]
     );
-
 
     return (
         <div className="tournament background h-100 w-100">
@@ -274,19 +400,24 @@ function Tournament({ setSettings, tournamentSettings, modalCreateTournament, se
                     <div className="column d-flex w-100">
                         <p className="cell-left w-50 text-center">Max time:</p>
                         <p className="cell-right w-50 text-center">
-                            <input 
+                            <input
                                 type="number"
                                 className="input-max minutes"
                                 placeholder="00"
                                 value={String(maxTimeMinutes).padStart(2, "0")}
-                                onChange={(e) => setTournament(setMaxTimeMinutes, 1, 3, e)}
+                                onChange={(e) => setTournament(setMaxTimeMinutes, 1, 3, e, true)}
+                                min="1"
+                                max="3"
                             /> :  
                             <input
                                 type="number"
                                 className="input-max secondes"
                                 placeholder="00"
                                 value={String(maxTimeSecondes).padStart(2, "0")}
-                                onChange={(e) => setTournament(setMaxTimeSecondes, 0, 59, e)}
+                                onChange={(e) => setTournament(setMaxTimeSecondes, 0, 30, e)} 
+                                min="0"
+                                max="30"
+                                step="30" 
                             />
                         </p>
                     </div>
@@ -298,7 +429,9 @@ function Tournament({ setSettings, tournamentSettings, modalCreateTournament, se
                                 className="input-max score"
                                 placeholder="00"
                                 value={maxScore}
-                                onChange={(e) => setTournament(setMaxScore, 1, 11, e)}
+                                onChange={(e) => setTournament(setMaxScore, 1, 11, e, true)}
+                                min="1"
+                                max="11"
                             />
                         </p>
                     </div>
@@ -352,11 +485,88 @@ function Tournament({ setSettings, tournamentSettings, modalCreateTournament, se
                                     }}
                                 >
                                     ••• settings •••
-                                </div>
+                                </div> 
                             )}
-                            {marioData.isMarioJump && (
-                                <div className="h-100 w-100 f-flex" style={{top: '10%', position: 'relative', padding: '5%'}}>cc</div>
-                            )}
+                           {marioData.isMarioJump && (
+                            <div
+                                className="w-100 tournament-text"
+                                style={{
+                                    position: 'absolute',
+                                    height: '80%',
+                                    top: '15%',
+                                    padding: '3%',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    gap: '2%',
+                                    paddingLeft: '10%',
+                                    paddingRight: '25%',
+                                    fontSize: '90%',
+                                }}
+                            >
+                                {tournamentResponse?.player1 && (
+                                    <div
+                                        className="w-100"
+                                        style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'space-between',
+                                            color: 'white',
+                                        }}
+                                    >
+                                        {tournamentResponse?.player1 || "player"}
+                                    </div>
+                                )}
+
+                                {tournamentResponse?.player2 && (
+                                    <div
+                                        style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'space-between',
+                                            color: 'white',
+                                        }}
+                                    >
+                                        {tournamentResponse?.player2 || "player"}
+                                        {renderImageWithClick(ban, "ban", { height: '20px'}, null, "KICK")}
+                                    </div>
+                                )}
+
+                                {tournamentResponse?.player3 && (
+                                    <div
+                                        style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'space-between',
+                                            color: 'white',
+                                        }}
+                                    >
+                                        {tournamentResponse?.player3 || ""}
+                                        {renderImageWithClick(ban, "ban", { height: '20px'}, null, "KICK")}
+                                    </div>
+                                )}
+
+                                {tournamentResponse?.player4  &&(
+                                    <div
+                                        style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'space-between',
+                                            color: 'white',
+                                        }}
+                                    >
+                                        {tournamentResponse.player4 || ""}
+                                        {renderImageWithClick(ban, "ban", { height: '20px'}, null, "KICK")}
+                                    </div>
+                                )}
+                                <button className="tournament-text" style={{ height:'10%', fontWeight:'bold', fontSize:'120%', color:'rgb(11, 49, 77)', marginTop: '2%', fontWeight:'bold'}}>START</button>
+                                <div
+                                    className="w-100 horizontal-line"
+                                    style={{ backgroundColor: 'white' }}
+                                ></div>
+                            </div>
+                        )}
+
+
                         </div>
                     </div>
                     <div style={{ position: 'absolute', height: '50%', top: '15%', right: '0%', width: '23%', overflow: "hidden" }}>
@@ -451,11 +661,11 @@ function Tournament({ setSettings, tournamentSettings, modalCreateTournament, se
                     </div>
                     <div className="players-container d-flex flex-row w-100 " style={{ position: "absolute", height: "12%", marginTop: "11%", textAlign: `center`, alignItems: `center`, justifyContent: `center` }}>
                         <div className="players-co">
-                            {renderPlayerImages(numberPlayer)}
+                            {renderPlayerImages(numberPlayer, tournamentResponse?.players_connected || 4)}
                         </div>
                     </div>
                     <div className="tree-tournament" style={{ height: `70%` }}>
-                        <TournamentBracket numberPlayer={numberPlayer} />
+                        <TournamentBracket numberPlayer={numberPlayer} tournamentResponse={tournamentResponse}  onStartTournament={handleStartTournament} />
                     </div>
                 </div>
             )}

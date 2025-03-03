@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from .models import Room
+from .models import Room, Message
 from .serializer import RoomSerializer, UserConnectedSerializer
 from django.http import JsonResponse
 import json
@@ -10,14 +10,33 @@ from users.models import User
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 from django.shortcuts import get_object_or_404
+from rest_framework.exceptions import AuthenticationFailed
+from rest_framework import status
+
+
+@api_view(['GET'])
+@jwt_auth_required
+def get_me(request, room_name):
+    dmname = None
+    room = Room.objects.get(name=room_name)
+    me = request.user
+    # print(room.users.all(), flush=True)
+    if room.dm:
+        friend = [user for user in room.users.all() if user.id != me.id]
+        print("FRIEND:", friend, flush=True)
+        dmname = friend[0].name + ' dm'
+    return Response({
+        "creation": room.creation,
+        "createur": room.createur.id,
+        "name": room.name,
+        "dmname": dmname
+    })
 
 @api_view(['GET'])
 @jwt_auth_required
 def get_list_rooms(request):
     print(request.user.id, flush=True)
     rooms = Room.objects.all()
-    for room in rooms:
-        room.users.all()
     dmRooms = rooms.filter(dm=True)
     rooms = rooms.filter(dm=False)
     roomSerializer = RoomSerializer(rooms, many=True)
@@ -33,6 +52,16 @@ def get_list_users(request, name):
         return Response(users_data, status=200)
     except:
         return Response({"error": "Room introuvable."}, status=404)
+    
+@api_view(['GET'])
+@jwt_auth_required
+def get_users_connected(request):
+    try:
+        users = User.objects.all()
+        serializer = UserConnectedSerializer(users, many=True)
+        return Response(serializer.data)
+    except:
+        return Response({"error": "Users connected not found."}, status=404)
 
 @api_view(['POST'])
 @jwt_auth_required
@@ -95,25 +124,59 @@ def send_notification(user, message):
 
     return JsonResponse({"status": "Notification envoyée"})
 
+
+@api_view(['POST'])
+@jwt_auth_required
+def block_user(request):
+    from_user = request.data['from_user']
+    to_user = request.data['to_user']
+
+    user = User.objects.filter(id=from_user).first()
+
+    if user is None:
+        raise AuthenticationFailed("User not found")
+
+    blocked = User.objects.filter(id=to_user).first()
+
+    if blocked is None:
+        raise AuthenticationFailed("User not found")
+
+    user.blocked_user.add(blocked)
+    user.save()
+
+    return Response({'message': 'Block user request accepted!'}, status=status.HTTP_200_OK)
+
+@api_view(['POST'])
+@jwt_auth_required
+def unlock_user(request):
+    from_user = request.data['from_user']
+    to_user = request.data['to_user']
+
+    user = User.objects.filter(id=from_user).first()
+
+    if user is None:
+        raise AuthenticationFailed("User not found")
+
+    blocked = User.objects.filter(id=to_user).first()
+
+    if blocked is None:
+        raise AuthenticationFailed("User not found")
+
+    user.blocked_user.remove(blocked)
+    user.save()
+
+    return Response({'message': 'Unlock user request accepted!'}, status=status.HTTP_200_OK)
+
 @api_view(['GET'])
-def get_users_connected(request):
-    try:
-        users = User.objects.all()
-        serializer = UserConnectedSerializer(users, many=True)
-        return Response(serializer.data)
-    except:
-        return Response({"error": "Users connected not found."}, status=404)
-    
-# @api_view(["POST"])
-# def invite_user(request):
-#     room_name = request.data.get("room_name")
-#     user_id = request.data.get("user_id")
+@jwt_auth_required
+def get_list_blocked(request, id):
+    users = User.objects.filter(id=id).first()
 
-#     room = get_object_or_404(Room, name=room_name)
-#     user = get_object_or_404(User, id=user_id)
+    if users is None:
+        raise AuthenticationFailed("User not found")
 
-#     if room.invitation_required:
-#         room.invited_users.add(user)
-#         return Response({"message": f"{user.username} a été invité à la room {room.name}"})
+    response = Response()
 
-#     return Response({"error": "Cette salle ne nécessite pas d'invitation."}, status=400)
+    response.data = list(users.blocked_user.values_list('id', flat=True))
+
+    return response

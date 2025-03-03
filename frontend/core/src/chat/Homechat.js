@@ -18,7 +18,6 @@ import useNotifications from "../SocketNotif"
 export default function HomeChat() {
 
 	const socket = useSocket('chat', 'public');
-	console.log("🛠️ Hook useSocket appelé !");
 
 	const [createName, setCreateRoomName] = useState("");
 	const [createpassword, setCreatePassword] = useState("");
@@ -28,17 +27,15 @@ export default function HomeChat() {
 	const [listrooms, setlistrooms] = useState([]);
 	const [dmrooms, setdmrooms] = useState([]);
 	const [usersconnected, setusersconnected] = useState([]);
+	const [blockedUsers, setBlockedUsers] = useState([]);
 	const [isModalProfile, setIsModalProfile] = useState(false);
 	const [profileId, setProfileId] = useState(1);
 	const modalProfile = useRef(null);
-	const [clickedNotifications, setClickedNotifications] = useState({});
+	
 
 	const navigate = useNavigate();
 
-	const handleChangeCreateRoom = (e) => {
-		setCreateRoomName(e.target.value);
-		console.log("Valeur entrée :", e.target.value);
-	};	
+	const handleChangeCreateRoom = (e) => setCreateRoomName(e.target.value);
 	const handleChangeCreatePassword = (e) => setCreatePassword(e.target.value);
 
 	const handleCreateToggle = () => { setIsCreateSwitchOn(!isCreateSwitchOn) };
@@ -48,12 +45,16 @@ export default function HomeChat() {
 	const token = getCookies('token');
 	const decodedToken = getJwt(token);
 	const userId = decodedToken.id;
+
+	const [blockedData, setBlockedData] = useState({
+		from_user: userId,
+		to_user: '',
+	});
 	
 	const { notifications, sendNotification, respondNotification } = useNotifications();
 
 	useEffect(() => {
 		if (socket.ready) {
-			console.log("bonjour");
 			socket.on("create_room", (data) => {
 				if (data.status) {
 					console.log("Salle créée :", data.room_name);
@@ -66,7 +67,7 @@ export default function HomeChat() {
 			});
 			socket.on("join_room", (data) => {
 				if (data.status) {
-					console.log("Salle rejoint :", data.room_name);
+					console.log("Salle rejoint home:", data.room_name);
 					navigate(`/room/${data.room_name}`);
 				} else {
 					showToast("error", data.error);
@@ -76,14 +77,11 @@ export default function HomeChat() {
 	}, [socket]);
 
 	const createRoom = (roomName, invited_user_id = undefined) => {
-		console.log("HYYYYYY");
 		if (roomName === "") {
-			showToast("error", "Le nom de la salle ne peut pas être vide.");
+			showToast("error", "Room name cannot be empty");
 			return;
 		}
-		console.log("invited_user_id:", invited_user_id);
 		if (socket.ready) {
-			console.log("bonsoir");
 			socket.send({
 				type: "create_room",
 				room_name: roomName,
@@ -94,14 +92,14 @@ export default function HomeChat() {
 		}
 	};
 
-	const joinRoom = (name, password = null) => {
-		console.log("joinRoom name:", name);
+	const joinRoom = (name, password = null, dmname = null) => {
+		console.log("join room dmname", dmname);
 		if (socket.ready) {
-			console.log("hello");
 			socket.send({
 				type: "join_room",
 				room_name: name,
 				password: password,
+				dmname
 			});
 		}
 	};
@@ -109,13 +107,13 @@ export default function HomeChat() {
 	const listroom = async () => {
 		try {
 			const response = await axiosInstance.get('/api/livechat/listroom/');
-			console.log("Données reçues:", response.data);
+			console.log("Liste des salles:", response.data);
 
 			const dmRooms = response.data.dmRooms.map((value) => {
 				value.dmname = value.users.filter((v) => {
 					if (v.id !== userId) return true;
 					return false;
-				})[0]?.name + ' dm' ?? value.name;
+				})[0]?.name + ' dm' ?? value.name + ' dm';
 				return value;
 			});
 
@@ -129,43 +127,95 @@ export default function HomeChat() {
 	const users_connected = async () => {
 		try {
 			const response = await axiosInstance.get('/api/livechat/users_connected/');
-			console.log("Données Users:", response.data);
+			console.log("Liste des users:", response.data);
 			setusersconnected(response.data.filter((v) => v.id !== userId));
 		} catch (error) {
 			console.error("Erreur lors de la récupération des utilisateurs", error);
 		}
 	};
 
+	const blocked_user = async (id) => {
+		const data = {'from_user': userId, 'to_user': id};
+		try {
+			const response = await axiosInstance.post(`/api/livechat/block/`, data, {
+				headers: {
+					'Content-Type': 'multipart/form-data',
+				},
+			});
+
+			if (response.status === 200)
+			{
+				listUsersBlocked();
+				showToast("message", "User block good");
+			}
+
+		} catch(error) {
+			console.error("Erreur lors de la requete de bloquage", error);
+		}
+	}
+
+	const unlocked_user = async (id) => {
+		const data = {'from_user': userId, 'to_user': id};
+		try {
+			const response = await axiosInstance.post(`/api/livechat/unlock/`, data, {
+				headers: {
+					'Content-Type': 'multipart/form-data',
+				},
+			});
+
+			if (response.status === 200)
+			{
+				listUsersBlocked();
+				showToast("succes", "User unlock good");
+			}
+
+		} catch(error) {
+			console.error("Erreur lors de la requete de debloquage", error);
+		}
+	}
+
+	const listUsersBlocked = async () => {
+		try {
+			const response = await axiosInstance.get(`/api/livechat/blocked_users/${userId}`);
+			setBlockedUsers(response.data);
+		}
+		catch(error) {
+			console.log(error);
+		}
+	};
+
 	useEffect(() => {
-		listroom();
 		users_connected();
+		listroom();
+		listUsersBlocked();
 
 		const interval = setInterval(() => {
 			users_connected();
 			listroom();
-		}, 10000);
+			listUsersBlocked();
+		}, 5000);
 
 		return () => clearInterval(interval);
 	}, []);
 
-	const handleRoomClick = async (e, room) => {
+	const handleRoomClick = async (e, room, dmname = null) => {
+		console.log("dmname", dmname);
 		e.preventDefault();
-		console.log("name:", room.name);
 
 		if (!room.name) {
-			alert("Le nom de la salle est introuvable.");
+			showToast("error", "Room name not found");
 			return;
 		}
 
 		if (room.password) {
-			const enteredPassword = prompt(`Mot de passe requis pour "${room.name}" :`);
+			const enteredPassword = prompt(`A password is required for "${room.name}" :`);
 			if (enteredPassword) {
 				joinRoom(room.name, enteredPassword);
 			} else {
-				alert("Mot de passe requis !");
+				showToast("error", "Enter a password for this room")
 			}
 		} else {
-			joinRoom(room.name);
+			joinRoom(room.name, null, dmname);
 		}
 	}
 
@@ -173,17 +223,6 @@ export default function HomeChat() {
 		setIsModalProfile(!isModalProfile);
 		setProfileId(user_id);
 	}
-
-	const handleResponse = (notifId, response, senderId, createName) => {
-		if (!clickedNotifications[notifId]) {
-			respondNotification(userId, response, senderId);
-			setClickedNotifications((prev) => ({ ...prev, [notifId]: true }));
-			if (response == "accepté") {
-				console.log("createName dans handleResponse:", createName);
-				joinRoom(createName);
-			}
-		}
-	};
 
 	function makeName(length) {
 		let result = '';
@@ -210,7 +249,7 @@ export default function HomeChat() {
 
 							{!isCreateSwitchOn && (
 								<>
-									<input type="text" placeholder="Nom de la salle" value={createName} onChange={handleChangeCreateRoom} />
+									<input type="text" placeholder="Room name" value={createName} onChange={handleChangeCreateRoom} />
 									<button onClick={() => setShowCreatePublicRoom(false)}>Cancel</button>
 									<button onClick={() => createRoom(createName)}>New Room</button>
 									{socket && createdRoomName && <Room/>}
@@ -219,8 +258,8 @@ export default function HomeChat() {
 
 							{isCreateSwitchOn && (
 								<>
-									<input type="text" placeholder="Nom de la salle" value={createName} onChange={handleChangeCreateRoom} />
-									<input type="password" placeholder="Mdp de la salle" value={createpassword} onChange={handleChangeCreatePassword} />
+									<input type="text" placeholder="Room name" value={createName} onChange={handleChangeCreateRoom} />
+									<input type="password" placeholder="Room password" value={createpassword} onChange={handleChangeCreatePassword} />
 									<button onClick={() => setShowCreatePublicRoom(false)}>Cancel</button>
 									<button onClick={() => createRoom(createName)}>New Room</button>
 									{socket && createdRoomName && <Room/>}
@@ -231,7 +270,7 @@ export default function HomeChat() {
 						<button onClick={() => setShowCreatePublicRoom(true)}>New Room</button>
 					)}
 
-					<h5>Liste des salles</h5>
+					<h5>List of rooms</h5>
 					<ul className="liste_salles">
 						{listrooms && listrooms.map((room, index) => (
 							<li key={index}>
@@ -241,11 +280,11 @@ export default function HomeChat() {
 							</li>
 						))}
 					</ul>
-					<h5>Liste des dms</h5>
-					<ul className="liste_dms">
+					<h5>List of dms</h5>
+					<ul className="liste_dms"> 
 						{dmrooms && dmrooms.map((room, index) => (
 							<li key={index}>
-								<Link to={`/room/${room.name}`} onClick={(e) => handleRoomClick(e, room)}>
+								<Link to={`/room/${room.name}`} onClick={(e) => handleRoomClick(e, room, room.dmname)}>
 									{room.dmname}
 								</Link>
 							</li>
@@ -253,7 +292,7 @@ export default function HomeChat() {
 					</ul>
 				</div>
 				<div>
-					<h5>Liste des utilisateurs</h5>
+					<h5>List of users</h5>
 					<div className="btn-group dropend">
 						<ul>
 							{usersconnected.map((user, index) => (
@@ -265,65 +304,39 @@ export default function HomeChat() {
 										<button className="dropdown-item" onClick={() => handleProfile(user.id)}> Profile </button>
 										<button className="dropdown-item" onClick={() => {
 											const randomRoomName = makeName(8);
-											sendNotification(user.id, `${user.name} veut demarrer une discussion avec vous.`, userId, randomRoomName); 
-											createRoom(randomRoomName, user.id);}}> Envoyer une invitation </button>
+											sendNotification(user.id, `${decodedToken.name} wants to start a discussion with you.`, userId, randomRoomName); 
+											createRoom(randomRoomName, user.id);}}
+										> Start a private discussion </button>
+										{!blockedUsers.includes(user.id) && (
+											<button className="dropdown-item" onClick={() => blocked_user(user.id)}> Block </button>
+										)}
+										{blockedUsers.includes(user.id) && (
+											<button className="dropdown-item" onClick={() => unlocked_user(user.id)}> Unlock </button>
+										)}
 									</ul>
 								</li>
 							))}
 						</ul>
 					</div>
-					<ModalInstance
-						height="30%"
-						width="40%"
-						isModal={isModalProfile}
-						modalRef={modalProfile}
-						name="Profile"
-						onLaunchUpdate={null}
-						onClose={() => setIsModalProfile(false)}
-					>
+					<ModalInstance height="30%" width="40%" isModal={isModalProfile} modalRef={modalProfile} name="Profile" onLaunchUpdate={null} onClose={() => setIsModalProfile(false)}>
 						<Profile id={profileId}/>
 					</ModalInstance>
 					<div>
-						<h3>Notifications en temps réel</h3>
+						<h3>Notifications</h3>
 						<ul>
 							{notifications.map((notif, index) => (
 								<li key={index}>
-									{notif.response ? (
-										<p>Réponse : {notif.response}</p>
+									{ notif.response ? (
+										<p> Response : {notif.response}</p>
 									) : (
 										<>
 											{notif.message}
-											{/* <button
-												onClick={() => handleResponse(notif.id, "accepté", notif.sender_id, notif.room_name)}
-												disabled={clickedNotifications[notif.id]}
-											>
-												✅ Accepter
-											</button>
-											<button
-												onClick={() => handleResponse(notif.id, "refusé", notif.sender_id, null)}
-												disabled={clickedNotifications[notif.id]}
-											>
-												❌ Refuser
-											</button> */}
 										</>
 									)}
 								</li>
 							))}
 						</ul>
 					</div>
-
-					{/* {currentChat && (
-						<div>
-							<h4>Chat Privé</h4>
-							<div>
-								{messages.map((msg, i) => (
-									<p key={i}><strong>{msg.sender}:</strong> {msg.text}</p>
-								))}
-							</div>
-							<input value={message} onChange={(e) => setMessage(e.target.value)} />
-							<button onClick={sendMessage}>Envoyer</button>
-						</div>
-					)} */}
 				</div>
 			</div>
 			<ToastContainer />

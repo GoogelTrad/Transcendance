@@ -22,7 +22,10 @@ function HomeGame({setModalStats, setModalCreateTournament, setModalTournament, 
     const [numberPlayer, setNumberPlayer] =useState(2);
     const navigate = useNavigate();
     const [game, setGame] = useState(null);
+    const [tournament, setTournament] = useState(null)
+    const [joinTournament, setJoinTournament] = useState(false);
     const [socket, setSocket] = useState(null);
+    const [socketTournament, setSocketTournament] = useState(null);
 
     const [items, setItems] = useState([
         { name: 'profile', active: false },
@@ -32,6 +35,7 @@ function HomeGame({setModalStats, setModalCreateTournament, setModalTournament, 
         { name: 'Friends', active: false },
         { name: 'Win', active: false },
         { name: 'Lose', active: false },
+        { name: 'Tournament', active: false},
     ]);
     
     const token = getCookies('token');
@@ -45,17 +49,41 @@ function HomeGame({setModalStats, setModalCreateTournament, setModalTournament, 
         }
     };
 
+       useEffect(() => {
+            if (joinTournament && !socketTournament) {
+                const newSocket = new WebSocket(`ws://${window.location.hostname}:8000/ws/tournament/${gameCode}/?token=${token}`);
+                setSocketTournament(newSocket);
+                newSocket.onmessage = (event) => {
+                    const data = JSON.parse(event.data);
+                    console.log(data);            
+                    if (data.game_id && data.player1 === user.name || data.player2 === user.name) {
+                        navigate(`/games/${data.game_id}`);
+                    }
+                }
+                newSocket.onclose = () => {
+                    console.log("Tournament webSocket closed");
+                };
+                newSocket.onopen = () => {
+                    console.log("Tournament websocket open")
+                    };
+                }
+            // return () => {
+            //   if (socketTournament) {
+            //     socketTournament.close();
+            //     setSocketTournament(null);
+            //   }
+            // };
+          }, [socketTournament, joinTournament]);
+
     useEffect(() => {
-        if (!socket && waitingForPlayer) {
+        if ( waitingForPlayer && !socket) {
             const newSocket = new WebSocket(`ws://${window.location.hostname}:8000/ws/matchmaking/?token=${token}`);
             setSocket(newSocket);
         
             newSocket.onmessage = (event) => {
                 const data = JSON.parse(event.data);
-                console.log(data);
-            
+                console.log("join : ", data); 
                 if (data.game_id) {
-                    console.log('data');
                     setGame(data);
                     navigate(`/games/${data.game_id}`);
                 }
@@ -68,10 +96,16 @@ function HomeGame({setModalStats, setModalCreateTournament, setModalTournament, 
                 console.log("Matchmaking websocket open")
                 };
             }
-
+        if (waitingForPlayer === false){
+            if (socket) {
+                socket.close();
+                setSocket("");
+            }
+        }
         return () => {
           if (socket) {
             socket.close();
+            setSocket("");
           }
         };
       }, [socket, waitingForPlayer]);
@@ -80,7 +114,6 @@ function HomeGame({setModalStats, setModalCreateTournament, setModalTournament, 
         if (user && user.name) {
             setPlayer1(user.name);
         }
-        console.log("gameCode : ", gameCode);
     }, [user]);
 
     const handleClickStats = (stats, optionStats) => {
@@ -101,7 +134,18 @@ function HomeGame({setModalStats, setModalCreateTournament, setModalTournament, 
     };
     
 
-    const handleClickTournament = (name) => {
+    const fetchDataTournament = async () => {
+        try {
+            const response = await axiosInstance.get(`/game/fetch_data_tournament_by_code/${gameCode}/`);
+            setTournament(response.data);
+            return 0;
+        } catch (error) {
+            console.error("Error fetching tournament by code:", error);
+            return 1;
+        }
+    }
+
+    const handleClickTournament = async (name) => {
         if(name === "create")
         {
             setParentNumberPlayer(numberPlayer);
@@ -110,12 +154,16 @@ function HomeGame({setModalStats, setModalCreateTournament, setModalTournament, 
         }
         else if (name === "join")
         {
-            setModalTournament(true);
-            launching({ newLaunch: 'tournament', setModal: setModalTournament});
+            const fonction_return = await fetchDataTournament();
+            if (fonction_return === 0) {
+                setModalTournament(true);
+                setJoinTournament(true);
+                launching({ newLaunch: 'tournament', setModal: setModalTournament});
+            }
         }
     };
 
-    const submitPlayer = async () => {
+    const StartGameSolo = async () => {
         try {
           const response = await axiosInstance.post(`/api/game/create_game`, { player1 });
           navigate(`/games/${response.data.id}`);
@@ -153,6 +201,7 @@ function HomeGame({setModalStats, setModalCreateTournament, setModalTournament, 
     
     const Matchmaking = () =>{
         setWaitingForPlayer(true);
+        setSend_Info(true)
     }
 
 
@@ -184,10 +233,9 @@ return (
             {onClickPlay && (
                 <div className="content">
                 <h3 style={{ textAlign: "center" }} onClick={() => handleMenuClick("play")}>Play</h3>
-                <div className="line" onClick={() => submitPlayer('1-player')}> 1 player </div>
-                <div className="line" onClick={() => Matchmaking('2-players')}> 2 players - Local </div>
-                <div className="line" onClick={() => submitPlayer('2-players')}> 2 players - Online </div>
-                <div className="line" onClick={() => submitPlayer('2-players')}> 4 players - Online </div>
+                <div className="line" onClick={() => StartGameSolo()}> 1 player </div>
+                <div className="line" onClick={() => Matchmaking()}> 2 players - Online </div>
+                <div className="line" onClick={() => StartGameSolo()}> 2 players - Local </div>
                 </div>
             )}
             {onClickTournament && (
@@ -240,6 +288,7 @@ return (
                                     <p onClick={() => handleClickStats('global', 'Friends')} >► Friends</p>
                                     <p onClick={() => handleClickStats('global', 'Win')} >► Win</p>
                                     <p onClick={() => handleClickStats('global', 'Lose')} >► Lose</p>
+                                    <p onClick={() => handleClickStats('global', 'Tournament')} >► Tournament</p>
                                 </div>
                             <p onClick={() => handleClickStats('collect', '...')} >Collection</p>
                         </div>

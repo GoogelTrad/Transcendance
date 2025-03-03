@@ -3,63 +3,80 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.layers import get_channel_layer
 from users.models import User
 from .models import Room, Message
+from .serializer import MessageSerializer
 import jwt
 import os
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 
-from channels.layers import get_channel_layer
-from django.shortcuts import get_object_or_404
+from asgiref.sync import sync_to_async
 
-from channels.db import database_sync_to_async
+@sync_to_async
+def get_user_by_name(username):
+    return User.objects.filter(name=username).first()
+
+@sync_to_async
+def is_user_blocked(from_user, to_user):
+    return from_user.blocked_user.filter(id=to_user.id).exists()
+
+@sync_to_async
+def get_room_messages(room_name):
+    try:
+        room = Room.objects.get(name=room_name)
+        messages = Message.objects.filter(room=room).order_by('timestamp')
+
+
+        for msg in messages:
+            if not isinstance(msg.user, User):
+                print(f"Message {msg.id} has invalid user: {msg.user}", flush=True)
+        serializer = MessageSerializer(messages, many=True)
+        return serializer.data
+    except Room.DoesNotExist:
+        pass
 
 class ChatConsumer(AsyncWebsocketConsumer):
-    # async def getUsers(self):
-    #     token = jwt.decode(self.scope['cookies']['token'], 'coucou', algorithms=['HS256'])
-    #     return await User.objects.aget(id=token['id'])
+    
+    room_user_ids = []
 
     async def getUsers(self):
         try:
             token = self.scope['cookies'].get('token', None)
             if not token:
-                print("⚠️ Aucun token trouvé !")
+                print("Aucun token trouvé !", flush=True)
                 return None
 
-            print(f"📢 Token reçu : {token}")
-
             decoded_token = jwt.decode(token, os.getenv('JWT_KEY'), algorithms=['HS256'])
-            print(f"📢 Token décodé : {decoded_token}")
-
             user_id = decoded_token.get('id')
+
             if not user_id:
-                print("⚠️ Aucun ID utilisateur dans le token !")
+                print("Aucun ID utilisateur dans le token !", flush=True)
                 return None
 
             user = await User.objects.aget(id=user_id)
-            print(f"✅ Utilisateur récupéré : {user}")
-
             return user
+
         except User.DoesNotExist:
-            print("❌ Erreur : Utilisateur introuvable !")
+            print("Erreur : Utilisateur introuvable !", flush=True)
             return None
         except Exception as e:
-            print(f"❌ Erreur d'authentification : {e}")
+            print(f"Erreur d'authentification : {e}", flush=True)
             return None
 
     async def connect(self):
-        print("passe", flush=True)
         if not self.scope['cookies']['token']:
-            print("not auth", flush=True)
+            print("Aucun token trouvé !", flush=True)
             await self.close()
             return
         self.user = await self.getUsers()
-        if not self.user:  # Vérifie si l'utilisateur est valide
-            print("user none", flush=True)
+        if not self.user:
+            print("Erreur : Utilisateur introuvable !", flush=True)
             await self.close()
             return
         self.room_name = self.scope['url_route']['kwargs']['room']
         self.room = None
+        if not self.room_user_ids.__contains__(self.user.id):
+            self.room_user_ids.append(self.user.id)
 
         self.room_group_name = f"chat_{self.room_name}"
         channel_layer = get_channel_layer()
@@ -68,14 +85,20 @@ class ChatConsumer(AsyncWebsocketConsumer):
             self.channel_name
         )
         await self.accept()
+
+        messages = await get_room_messages(self.room_name)
+        await self.send({
+            'type': 'history',
+            'messages': messages
+        })
         
     async def disconnect(self, close_code):
-        print(f"❌ {self.user.username} déconnecté du WebSocket ! {close_code}", flush=True)
-        # Leave the chat room group
+        print(f"{self.user.username} déconnecté du WebSocket ! {close_code}", flush=True)
+
         channel_layer = get_channel_layer()
-        if hasattr(self, 'room_group_name'):  # Vérifie si l'attribut existe
+        if hasattr(self, 'room_group_name'):
             await channel_layer.group_discard(
-                self.room_group_name,  # Ajout du nom du groupe
+                self.room_group_name,
                 self.channel_name
             )
 
@@ -87,11 +110,22 @@ class ChatConsumer(AsyncWebsocketConsumer):
         elif message_type == 'create_room':
             await self.createRoom(data.get('room_name'), data.get('password'), data.get('invited_user_id'))
         elif message_type == 'join_room':
-            await self.joinRoom(data.get('room_name'), data.get('password'))
+            await self.joinRoom(data.get('room_name'), data.get('password'), data.get('dmname'))
 
     async def send(self, data, bytes_data = None, close = False):
         text_data = json.dumps(data)
         await super().send(text_data, bytes_data, close)
+
+    @sync_to_async
+    def checkIfDmRoomExist(self, invited_id):
+        if invited_id == None:
+            return []
+        invited_user: User = User.objects.get(id=invited_id)
+
+        result = Room.objects.filter(createur=invited_user, dm=True) | Room.objects.filter(createur=self.user, dm=True)
+        print(result, flush=True)
+        return list(result)
+        
     
     async def createRoom(self, room_name, password = None, invited_user_id = None):
         if room_name == '' or room_name is None:
@@ -110,6 +144,17 @@ class ChatConsumer(AsyncWebsocketConsumer):
             return
         except Room.DoesNotExist:
             pass
+        dmRoom = await self.checkIfDmRoomExist(invited_user_id)
+        if dmRoom:
+            print("dmRoom[0].name:", dmRoom[0].name, flush=True)
+            await self.send({
+                "type": "create_room",
+                "status": True,
+                "room_name": dmRoom[0].name,
+                "error": f"already exist"
+            })
+            return
+
         room = await Room.objects.acreate(
             createur=self.user,
             password=password,
@@ -134,7 +179,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def deleteRoom(self, room_name):
         pass
 
-    async def joinRoom(self, room_name, password=None):
+    async def joinRoom(self, room_name, password=None, dmname=None):
         try:
             room = await Room.objects.aget(name=room_name)
         except Room.DoesNotExist:
@@ -144,67 +189,78 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 "error": f"Room '{room_name}' does not exist."
             })
             return
-        try:
-            room = await Room.objects.aget(name=room_name)
-            # Vérifier si un mot de passe est requis
-            if room.password and (not password or password != room.password):
-                await self.send({
-                    "type": "join_room",
-                    "status": False,
-                    "error": "Invalid password"
-                })
-                return
-            await room.add_members(self.user)
-            await self.send({
-                "type": "join_room",
-                "status": True,
-                "room_name": room.name,
-                "message": f"You have successfully joined the room '{room.name}'."
-            })
-
-        except Room.DoesNotExist:
+       
+        if room.password and (not password or password != room.password):
             await self.send({
                 "type": "join_room",
                 "status": False,
-                "error": f"Room '{room_name}' does not exist."
+                "error": "Invalid password"
             })
+            return
 
-    async def sendMessage(self, message):
-        if (self.room is None):
-            self.room = await Room.objects.aget(name=self.room_name)
+        await room.add_members(self.user)
+        self.room = room
+        self.name = room_name
+        self.room_group_name = f"chat_{self.name}"
+
         channel_layer = get_channel_layer()
+        await channel_layer.group_add(self.room_group_name, self.channel_name)
+        print("DMNAME2:", dmname, flush=True)
+        await self.send({
+            "type": "join_room",
+            "status": True,
+            "room_name": room.name,
+            "dmname": dmname,
+            "message": f"You have successfully joined the room '{room.name}'."
+        })
+
+        messages = await get_room_messages(self.room_name)
+        await self.send({
+            'type': 'history',
+            'messages': messages
+        })
+            
+    async def sendMessage(self, message):
+        if self.room is None:
+            self.room = await Room.objects.aget(name=self.room_name)
+
         msg = await Message.objects.acreate(
             user=self.user, 
             room=self.room,
             content=message
         )
-        msg.asave()
+
+        await msg.asave()
+
+        channel_layer = get_channel_layer()
         await channel_layer.group_send(
             self.room_group_name,
             {
                 'type': 'chat_message',
                 'message': message,
                 'username': self.user.name,
+                'timestamp': msg.timestamp.isoformat()
             }
         )
-        print(f"User: {self.user}, Authenticated: {self.user.is_authenticated}", flush=True)
+        print(f"Message envoyé au groupe : username={self.user.name}, message={message}, timestamp={msg.timestamp.isoformat()}", flush=True)
 
-    # Receive message from group (broadcast from the server)
     async def chat_message(self, event):
+        print("EVENT:", event, flush=True)
         message = event['message']
         username = event['username']
-        ev = event['type']
+        timestamp = event['timestamp']
 
-        print(event, flush=True)
+        to_user = await get_user_by_name(username)
+        from_user = await get_user_by_name(self.user.name)
 
-        # Send message to WebSocket
-        await self.send({
-            'type': ev,
-            'message': message,
-            'username': username,
-        })
-
-        print()
+        print("USERNAME:", username, flush=True)
+        if not await is_user_blocked(from_user, to_user):
+            await self.send({
+                'type': 'chat_message',
+                'message': message,
+                'username': username,
+                'timestamp': timestamp
+            })
 
 
 class NotificationConsumer(AsyncWebsocketConsumer):
