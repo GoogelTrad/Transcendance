@@ -20,44 +20,17 @@ import LoginRegister from './users/LoginForm';
 import Tournament from './game/Tournament';
 import AuthSchool, { AuthSuccess } from './users/AuthSchool';
 import { useEffect } from 'react';
-import { getCookies, setToken } from './instance/TokenInstance';
 import axiosInstance from './instance/AxiosInstance';
-
-// export function getCookies(name) {
-//   const value = document.cookie;
-//   let parts = null;
-//   if (!value)
-//     parts = null;
-//   else
-//     parts = value.match(`(?:\s|^)${name}=([^;]*);?`)?.[1];
-
-//   return (parts);
-// }
+import { useUserInfo } from './instance/TokenInstance';
 
 function NavBar()
 {
   const {isAuthenticated} = useAuth();
-  const token = getCookies('token');
-  let decodeToken = null;
-  if (token)
-    decodeToken = jwtDecode(token);
-
+  const { userInfo } = useUserInfo();
+  const decodeToken = userInfo;
 }
 
 function App() {
-  useEffect(() => {
-    const initializeToken = async () => {
-        if (!getCookies()) {
-            try {
-                const response = await axiosInstance.get('/api/user/get_token'); 
-                setToken(response.data.token);
-            } catch (error) {
-                console.log('No token available yet:', error);
-            }
-        }
-    };
-    initializeToken();
-  }, []);
 
   return (
     <AuthProvider>

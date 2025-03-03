@@ -8,6 +8,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import './LoginForm.css';
 import { useAuth } from './AuthContext';
 import AuthSchool from './AuthSchool';
+import { setToken } from '../instance/TokenInstance';
 
 export function ValidatePassword(password){
     const minLength = 8;
@@ -139,7 +140,7 @@ function LoginRegister({setModal, setTerminal, removeLaunch}) {
         authChannel.onmessage = (event) => {
             const { token } = event.data;
             if (token) {
-                document.cookie = `token=${token}`;
+                setToken(token)
                 setIsAuthenticated(true);
                 setModal(false);
                 setTerminal(false);

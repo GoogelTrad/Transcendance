@@ -6,8 +6,7 @@ import { Modal, Button } from 'react-bootstrap';
 import { BrowserRouter as Router, Route, Routes, Link, useNavigate} from 'react-router-dom';
 import React, { useEffect, useState, useRef } from "react";
 import { jwtDecode } from "jwt-decode";
-// import { getCookies } from './../App.js';
-import { getCookies } from '../instance/TokenInstance';
+import { useUserInfo } from '../instance/TokenInstance';
 import axiosInstance from "../instance/AxiosInstance";
 
 function HomeGame({setModalStats, setModalCreateTournament, setModalTournament, launching, setParentItems, setParentNumberPlayer}) {
@@ -39,12 +38,13 @@ function HomeGame({setModalStats, setModalCreateTournament, setModalTournament, 
         { name: 'Tournament', active: false},
     ]);
     
-    const token = getCookies('token');
+    const { userInfo, tokenUser } = useUserInfo();
     let user = null;
+    const token = tokenUser;
 
     if (token) {
         try {
-            user = jwtDecode(token);
+            user = userInfo;
         } catch (error) {
             console.error("Error decoding token:", error);
         }

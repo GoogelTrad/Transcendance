@@ -3,8 +3,7 @@ import React, { useEffect, useState, useRef  } from "react";
 import axiosInstance from '../instance/AxiosInstance.js';
 import { BrowserRouter as Router, Route, Routes, Link, useNavigate } from 'react-router-dom';
 import { jwtDecode } from "jwt-decode";
-// import { getCookies } from './../App.js';
-import { getCookies } from '../instance/TokenInstance';
+import { useUserInfo } from '../instance/TokenInstance';
 import person from '../assets/game/person.svg';
 import personAdd from '../assets/game/person-fill.svg';
 import TournamentBracket from "./TournamentBracket";
@@ -55,12 +54,12 @@ function Tournament({setSettings, tournamentSettings, modalCreateTournament, set
         title: false,
     });
 
-    const token = getCookies('token');
+    const { userInfo, tokenUser } = useUserInfo();
     let user = null;
-    
-    if (token) {
+
+    if (tokenUser) {
         try {
-            user = jwtDecode(token);
+            user = userInfo;
         } catch (error) {
             console.error("Error decoding token:", error);
         }
@@ -68,7 +67,7 @@ function Tournament({setSettings, tournamentSettings, modalCreateTournament, set
 
    useEffect(() => {
         if (tournamentStarted && !socket) {
-            const newSocket = new WebSocket(`${process.env.REACT_APP_SOCKET_IP}/ws/tournament/${tournamentResponse.code}/?token=${token}`);
+            const newSocket = new WebSocket(`${process.env.REACT_APP_SOCKET_IP}/ws/tournament/${tournamentResponse.code}/?token=${tokenUser}`);
             setSocket(newSocket);
             newSocket.onmessage = (event) => {
                 const data = JSON.parse(event.data);

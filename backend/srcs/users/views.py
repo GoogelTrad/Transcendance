@@ -74,7 +74,6 @@ class LoginView():
 
         reponse.set_cookie(key='token', value=token, max_age=3600, httponly=True, secure=True)
         reponse.data = {
-            'token': token,
             'message': 'Logged in successfully!'
         }
         return reponse
@@ -125,7 +124,6 @@ class UserView():
                     token = jwt.encode(payload, os.getenv('JWT_KEY'), 'HS256')
                     reponse.set_cookie(key='token', value=new_token, max_age=3600, httponly=True, secure=True)
                     reponse.data = {
-                        'token': new_token,
                         **filtered_user
                     }
                     
@@ -232,7 +230,6 @@ def verify_code(request):
 
         reponse.set_cookie(key='token', value=token, max_age=3600, httponly=True, secure=True)
         reponse.data = {
-            'token': token,
             'message': 'Code is valid!'
         }
 
@@ -284,9 +281,36 @@ def is_token_valid(request, token):
     
 @api_view(['GET'])
 @jwt_auth_required
+def set_token(request):
+    token = ValidToken.objects.filter(user=request.user).first()
+    if not token :
+        AuthenticationFailed('User not connected!')
+    response = Response()
+    response.set_cookie(key='token', value=token.token, max_age=3600, httponly=True, secure=True)
+
+    return response
+
+@api_view(['GET'])
+@jwt_auth_required
 def get_token(request):
     token = ValidToken.objects.filter(user=request.user).first()
-    payload = jwt.decode(token, os.getenv('JWT_KEY'), algorithms=['HS256'])
-    if token:
-        return Response({'token': payload})
-    return Response({'error': 'No valid token'}, status=status.HTTP_404_NOT_FOUND)
+    if not token :
+        AuthenticationFailed('User not connected!')
+
+    return token.token
+
+@api_view(['GET'])
+@jwt_auth_required
+def fetch_user_data(request):
+    user = request.user
+    if user.is_authenticated:
+        payload = { 
+            'id': user.id,
+            'name': user.name,
+            'email': user.email,
+            'status': user.status,
+            'profile_image_url': profile_image_url,
+            'is_stud': user.is_stud,
+        }
+        return Response({'payload': payload})
+    return Response({'error': 'Not authenticated'}, status=status.HTTP_401_UNAUTHORIZED)

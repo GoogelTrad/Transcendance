@@ -1,7 +1,6 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-// import { getCookies } from '../App';
-import { getCookies } from './TokenInstance';
+import { useUserInfo } from './TokenInstance';
 import { useAuth } from '../users/AuthContext';
 import axiosInstance from './AxiosInstance';
 import useJwt from './JwtInstance';
@@ -11,12 +10,13 @@ function useTokenValidation() {
     const navigate = useNavigate();
 	const getJwt = useJwt();
     const { isAuthenticated, setIsAuthenticated } = useAuth();
+    const { tokenUser } = useUserInfo();
 
     useEffect(() => {
         const validateToken = async () => {
             if (isAuthenticated) 
             {
-                const token = getCookies('token');
+	            const token = tokenUser;
                 try {
                     const response = await axiosInstance.get(`/api/user/token/${token}`);
                 }

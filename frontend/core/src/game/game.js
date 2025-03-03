@@ -5,8 +5,7 @@ import axios from 'axios';
 import { useState, useEffect, useRef } from 'react';
 import { Modal, Button } from 'react-bootstrap';
 import { jwtDecode } from "jwt-decode";
-// import { getCookies } from './../App.js';
-import { getCookies } from '../instance/TokenInstance';
+import { useUserInfo } from '../instance/TokenInstance';
 import { BrowserRouter as Router, Route, Routes, Link, useNavigate } from 'react-router-dom';
 import { useParams } from 'react-router-dom';
 import axiosInstance from '../instance/AxiosInstance.js';
@@ -167,7 +166,9 @@ const Games = () => {
 function Game() {
 	const [game, setGame] = useState('');
 	const { id } = useParams();
-	const token = getCookies('token');
+	
+	const { tokenUser } = useUserInfo();
+	const token = tokenUser;
 	
 	
 	const fetch_data = async () => {

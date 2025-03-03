@@ -68,13 +68,13 @@ function Template({ children, taskBarContent, launching, appArray }) {
                             <div className="application-desktop d-flex flex-column bd-highlight mb-3">
                                 {!isAuthenticated && <div
                                     className="p-2 bd-highlight flex-item"
-                                    onClick={() => navigate("/Home", {state: { modalName: "terminal"}})} 
+                                    onClick={() => navigate("/home", {state: { modalName: "terminal"}})} 
                                 >
                                     Terminal
                                 </div>}
                                 {isAuthenticated && <div
                                     className="p-2 bd-highlight flex-item"
-                                    onClick={() => navigate("/Home", {state: { modalName: "game"}})}
+                                    onClick={() => navigate("/home", {state: { modalName: "game"}})}
                                 >
                                     Game
                                 </div>}
@@ -86,7 +86,7 @@ function Template({ children, taskBarContent, launching, appArray }) {
                                 </div>}
                                 {isAuthenticated && <div
                                     className="p-2 bd-highlight flex-item"
-                                    onClick={() => navigate("/Home", {state: { modalName: "stats"}})}
+                                    onClick={() => navigate("/home", {state: { modalName: "stats"}})}
                                 >
                                     Stats
                                 </div>}

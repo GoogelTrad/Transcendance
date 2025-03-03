@@ -5,8 +5,7 @@ import axios from 'axios';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Modal, Button } from 'react-bootstrap';
 import { jwtDecode } from "jwt-decode";
-// import { getCookies } from './../App.js';
-import { getCookies } from './TokenInstance';
+import { useUserInfo } from './TokenInstance';
 import { BrowserRouter as Router, Route, Routes, Link, useNavigate } from 'react-router-dom';
 import { useParams } from 'react-router-dom';
 import axiosInstance from '../instance/AxiosInstance.js';
@@ -53,12 +52,13 @@ function GameInstance ( {children} ) {
 		elo_Player2 : 0,
 	}));
 
-	const token = getCookies('token');
+	const { userInfo, tokenUser } = useUserInfo();
 	let user = null;
+	const token = tokenUser;
 
 	if (token) {
 		try {
-			user = jwtDecode(token);
+			user = userInfo;
 		} catch (error) {
 			console.error("Error decoding token:", error);
 		}

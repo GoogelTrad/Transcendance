@@ -6,13 +6,12 @@ import useSocket from '../socket'
 import axiosInstance from "../instance/AxiosInstance";
 import ModalInstance from "../instance/ModalInstance";
 import Profile from "../users/Profile";
+import { useUserInfo } from "../instance/TokenInstance";
 
 import "./Homechat.css"
 import Room from './Room'
 
 import useJwt from '../instance/JwtInstance';
-// import { getCookies } from '../App';
-import { getCookies } from '../instance/TokenInstance';
 
 import useNotifications from "../SocketNotif"
 
@@ -43,8 +42,8 @@ export default function HomeChat() {
 
 	const getJwt = useJwt();
 
-	const token = getCookies('token');
-	const decodedToken = getJwt(token);
+  	const { userInfo } = useUserInfo();
+ 	const decodedToken = userInfo;
 	const userId = decodedToken.id;
 
 	const [blockedData, setBlockedData] = useState({

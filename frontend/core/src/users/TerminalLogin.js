@@ -2,13 +2,12 @@ import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 import axiosInstance from '../instance/AxiosInstance';
-import logo from '../assets/user/logo.png'
+import logo from '../assets/user/logo.png';
 import './TerminalLogin.css';
 import { HandleAuth } from './AuthSchool';
 import { ValidatePassword } from './LoginForm';
 
-function TerminalLogin({setModal, launching, setTerminal, removeLaunch})
-{
+function TerminalLogin({ setModal, launching, setTerminal, removeLaunch }) {
     const { setIsAuthenticated } = useAuth();
     const navigate = useNavigate();
     const [lines, setLines] = useState(["Welcome to the Terminal."]);
@@ -22,12 +21,12 @@ function TerminalLogin({setModal, launching, setTerminal, removeLaunch})
     const [isSchool, setIsSchool] = useState(false);
 
     const helpLine = [
-        {name: "login", value: "You can log in with username and password!"},
-        {name: "register", value: "You can register with username, email and password!"},
-        {name: "school", value: "You can log in your school login!"},
-        {name: "clear", value: "Clear the terminal!"},
-        {name: "forms", value: "You can use the forms!"},
-        {name: "help", value: "You can have the command list available!"},
+        { name: "login", value: "You can log in with username and password!" },
+        { name: "register", value: "You can register with username, email and password!" },
+        { name: "school", value: "You can log in your school login!" },
+        { name: "clear", value: "Clear the terminal!" },
+        { name: "forms", value: "You can use the forms!" },
+        { name: "help", value: "You can have the command list available!" },
     ];
 
     const commandSteps = {
@@ -41,15 +40,16 @@ function TerminalLogin({setModal, launching, setTerminal, removeLaunch})
 
     const handleForms = () => {
         setModal(true);
-        launching({newLaunch: 'forms', setModal: setModal});
-    }
+        launching({ newLaunch: 'forms', setModal: setModal });
+    };
 
     const handleHelp = () => {
-        setLines((prevLines) => [...prevLines,
+        setLines((prevLines) => [
+            ...prevLines,
             "Available commands:",
             ...helpLine.map(line => `- ${line.name}: ${line.value}`)
         ]);
-    }
+    };
 
     const handleClear = () => {
         setLines(["Welcome to the Terminal."]);
@@ -85,12 +85,10 @@ function TerminalLogin({setModal, launching, setTerminal, removeLaunch})
                 },
             });
 
-            if (response.status === 401)
-            {
+            if (response.status === 401) {
                 setIsTwoFactorRequired(true);
                 return "2FA required. Please enter the code sent to your email.";
-            }
-            else if (response.status === 200) {
+            } else if (response.status === 200) {
                 setIsAuthenticated(true);
                 setTerminal(false);
                 removeLaunch('terminal');
@@ -98,8 +96,7 @@ function TerminalLogin({setModal, launching, setTerminal, removeLaunch})
                 navigate('/home');
             }
         } catch (error) {
-            if (error.response && error.response.status === 401) 
-            {
+            if (error.response && error.response.status === 401) {
                 setIsTwoFactorRequired(true);
                 return "2FA required. Please enter the code sent to your email.";
             }
@@ -109,7 +106,7 @@ function TerminalLogin({setModal, launching, setTerminal, removeLaunch})
 
     const handleTwoFactorVerification = async (code, name) => {
         try {
-            const response = await axiosInstance.post('/api.user/code', {code: code, name: name});
+            const response = await axiosInstance.post('/api/user/code', { code: code, name: name });
             if (response.status === 200) {
                 setIsAuthenticated(true);
                 setTerminal(false);
@@ -139,10 +136,19 @@ function TerminalLogin({setModal, launching, setTerminal, removeLaunch})
             return await handleForms();
     };
 
-    const handleSchoolLogin = () => 
-    {
+    const handleSchoolLogin = () => {
         setIsSchool(true);
-    }
+    };
+
+    const cancelCommand = () => {
+        setCurrentCommand(null);
+        currentCommandRef.current = null;
+        setCommandArgs([]);
+        setIsPassword(false);
+        setIsTwoFactorRequired(false);
+        setLines((prevLines) => [...prevLines, "> Command cancelled with Ctrl+C"]);
+        setCurrentInput("");
+    };
 
     const handleInput = async (input) => {
         if (isTwoFactorRequired) {
@@ -172,7 +178,6 @@ function TerminalLogin({setModal, launching, setTerminal, removeLaunch})
             const currentStepLabel = steps[step];
             const nextStepLabel = steps[step + 1];
 
-
             if (currentStepLabel.toLowerCase().includes("email")) {
                 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
                 if (!emailRegex.test(input)) {
@@ -184,21 +189,17 @@ function TerminalLogin({setModal, launching, setTerminal, removeLaunch})
                     return;
                 }
             }
-
-            // A remettre pour les regles de mots de passe.
-            // if (currentStepLabel.toLowerCase().includes("password") && command === "register") {
-            //     if (!ValidatePassword(input))
-            //     {
-            //         const maskedInput = input.replace(/./g, '*');
-            //         setLines((prevLines) => [
-            //             ...prevLines,
-            //             `> ${maskedInput}`,
-            //             "The password must be at least 8 characters long, 1 uppercase, 1 lowercase, 1 number and 1 special character (@$!%*?&).",
-            //         ]);
-            //         return;
-            //     }
-            // }
-    
+            if (currentStepLabel.toLowerCase().includes("password") && currentCommandRef.current === "register") {
+                if (!ValidatePassword(input)) {
+                    const maskedInput = input.replace(/./g, '*');
+                    setLines((prevLines) => [
+                        ...prevLines,
+                        `> ${maskedInput}`,
+                        "The password must be at least 8 characters long, 1 uppercase, 1 lowercase, 1 number and 1 special character (@$!%*?&).",
+                    ]);
+                    return;
+                }
+            }
     
             setCommandArgs((prevArgs) => [...prevArgs, input]);
             if (isPassword) {
@@ -225,29 +226,36 @@ function TerminalLogin({setModal, launching, setTerminal, removeLaunch})
     };
 
     const handleKeyDown = (e) => {
+        if (e.ctrlKey && e.key === 'c') { 
+            e.preventDefault();
+            cancelCommand();
+            return;
+        }
+    
         if (e.key === "Enter") {
             e.preventDefault();
-            if (currentInput.trim().length > 0)
-            {
-                if (currentInput == "school" || currentInput == "clear" || currentInput == "help" || currentInput == "forms")
-                    handleCommandExecution(currentInput, null);
-                else
+            if (currentInput.trim().length > 0) {
+                if (currentCommand) { 
                     handleInput(currentInput);
+                } else if (currentInput === "school" || currentInput === "clear" || currentInput === "help" || currentInput === "forms") {
+                    handleCommandExecution(currentInput, null); 
+                } else {
+                    handleInput(currentInput);
+                }
                 setCurrentInput("");
             }
         }
     };
 
     return (
-            <div className="terminal-container">
-                <div className="terminal-output">
-                    {lines.map((line, index) => (
-                        <div key={index}>{line}</div>
-                    ))}
-                </div>
-                {!(isPassword) ?
-                (
-                    <div className="terminal-input">
+        <div className="terminal-container">
+            <div className="terminal-output">
+                {lines.map((line, index) => (
+                    <div key={index}>{line}</div>
+                ))}
+            </div>
+            {!(isPassword) ? (
+                <div className="terminal-input">
                     <span>&gt;</span>
                     <input
                         type="text"
@@ -256,10 +264,9 @@ function TerminalLogin({setModal, launching, setTerminal, removeLaunch})
                         onKeyDown={handleKeyDown}
                         autoFocus
                     />
-                    </div>
-                ) : 
-                (
-                    <div className="terminal-input">
+                </div>
+            ) : (
+                <div className="terminal-input">
                     <span>&gt;</span>
                     <input
                         type="password"
@@ -268,11 +275,11 @@ function TerminalLogin({setModal, launching, setTerminal, removeLaunch})
                         onKeyDown={handleKeyDown}
                         autoFocus
                     />
-                    </div>
-                )}
+                </div>
+            )}
 
-                {isSchool ? (<HandleAuth />) : (null)}
-            </div>
+            {isSchool ? (<HandleAuth />) : (null)}
+        </div>
     );
 }
 

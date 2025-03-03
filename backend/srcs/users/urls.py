@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import UserView, LoginView, LogoutView, verify_code, permission_verif, is_token_valid, get_token
+from .views import UserView, LoginView, LogoutView, verify_code, permission_verif, is_token_valid, set_token, fetch_user_data, get_token
 
 
 urlpatterns = [
@@ -11,5 +11,7 @@ urlpatterns = [
     path('code', verify_code, name="verify_code"),
     path('perms/<int:id>', permission_verif, name="permission_verif"),
     path('token/<str:token>', is_token_valid, name="is_token_valid"),
+    path('set_token/', set_token, name="set_token"),
+    path('fetch_user_data', fetch_user_data, name="fetch_user_data"),
     path('get_token/', get_token, name="get_token"),
 ]

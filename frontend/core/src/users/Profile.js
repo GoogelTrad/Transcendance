@@ -1,6 +1,5 @@
 import "./Profile.css"
-// import { getCookies } from "../App"
-import { getCookies } from '../instance/TokenInstance';
+import { useUserInfo } from '../instance/TokenInstance';
 import { useNavigate, Link, useParams } from "react-router-dom"
 import React, {useEffect, useState} from "react";
 import { jwtDecode } from "jwt-decode";
@@ -18,8 +17,8 @@ import { ToastContainer } from 'react-toastify';
 function ChangeDetails({setUser, setValue, toChange, value, toType})
 {
 	const navigate = useNavigate();
-	const token = getCookies('token')
-	const user = jwtDecode(token);
+	const { userInfo } = useUserInfo();
+	const user = userInfo
 	const [detail, setDetails] = useState(value);
 
 	const handleChange = (e) => {
@@ -76,9 +75,9 @@ function Profile({id})
 	const [isPermitted, setIsPermitted] = useState(false);
 	const [isStud, setIsStud] = useState(false);
 	const [friendList, setFriendList] = useState([]);
-	const token = getCookies('token');
-	const getJwt = useJwt();
-	const decodeToken = getJwt(token);
+	const { userInfo, tokenUser } = useUserInfo();
+	const decodeToken = userInfo;
+	const token = tokenUser;
 	let friends = friendList?.friends || [];
 
 	const fetchFriendList = async () => {

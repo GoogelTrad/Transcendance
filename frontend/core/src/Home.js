@@ -14,8 +14,7 @@ import Profile from './users/Profile';
 import HomeChat from './chat/Homechat';
 import { useAuth } from './users/AuthContext';
 import { jwtDecode } from "jwt-decode";
-// import { getCookies } from "./App";
-import { getCookies } from './instance/TokenInstance';
+import { useUserInfo } from './instance/TokenInstance';
 import P from './assets/P.png';
 import S from './assets/S.png';
 import C from './assets/C.png';
@@ -80,10 +79,8 @@ function Home() {
     const [tournamentSettings, setTournamentSettings] = useState({});
     const location = useLocation();
     const modalSend = location.state?.modalName || "";
-    const token = getCookies('token');
-    let decodeToken = null;
-    if (token)
-        decodeToken = jwtDecode(token);
+    const { userInfo } = useUserInfo();
+    const decodeToken = userInfo;
 
     const removeLaunch = (appName) => {
         setIsLaunch((prevLaunch) => prevLaunch.filter((app) => app !== appName));
@@ -155,13 +152,12 @@ function Home() {
     useEffect(() => {
         if (modalSend) {
             const modalSetter = setters.find(item => item.name === modalSend)?.setter;
-            if (modalSetter) {
+            if (modalSetter && !isLaunched(isLaunch, modalSend)) {
                 launching({ newLaunch: modalSend, setModal: modalSetter });
-            } else {
-                console.warn(`Aucun modal trouvé pour: ${modalSend}`);
+                navigate(location.pathname, { replace: true, state: {} });
             }
         }
-    }, [modalSend]);
+    }, [modalSend, navigate]);
 
     const [positionGame, setPositionGame] = useState({ x: window.innerWidth * 0.05, y: window.innerHeight * 0.35 });
     const [positionChat, setPositionChat] = useState({ x: window.innerWidth * 0.84, y: window.innerHeight * 0.35 });

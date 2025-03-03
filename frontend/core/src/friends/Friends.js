@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axiosInstance from '../instance/AxiosInstance';
-import { getCookies } from '../instance/TokenInstance';
+import { useUserInfo } from '../instance/TokenInstance';
 import { jwtDecode } from 'jwt-decode';
 import { showToast } from '../instance/ToastsInstance';
 import { ToastContainer } from 'react-toastify';
@@ -70,6 +70,7 @@ function FriendRequests({setModal, setIsFriends, launching}) {
 	const [friendList, setFriendList] = useState([]);
 	const [searchQuery, setSearchQuery] = useState('');
 	const [searchResults, setSearchResults] = useState([]);
+	const { userInfo } = useUserInfo();
 	
 	const getJwt = useJwt();
 
@@ -90,8 +91,7 @@ function FriendRequests({setModal, setIsFriends, launching}) {
     };
 
 	const fetchFriendList = async () => {
-		const token = getCookies('token');
-		const decodeToken = getJwt(token);
+		const decodeToken = userInfo;
 
 		try {
 			const reponse = await axiosInstance.get(`/api/friends/list/${decodeToken.id}`);
