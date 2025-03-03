@@ -169,6 +169,7 @@ export default function Room() {
 			const response = await axiosInstance.get(`livechat/room/${roomName}`);
 			const { dmname: roomPseudo } = response.data
 			setdmname(roomPseudo);
+			console.log("DMNAME:", roomPseudo);
 		}
 		catch(error) {
 			console.log(error);
@@ -217,7 +218,8 @@ export default function Room() {
 				</div>
 				<div className="chat">
 					<div className="titre">
-						<h3>Chat Room: { dmname ? dmname : roomName }</h3>
+						{console.log("ROOM DMNAME:", dmname)}
+						<h3>Room Name: { dmname ? dmname : roomName }</h3>
 					</div>
 					<div className="chat-messages" style={{ height: '400px', overflowY: 'scroll', border: '1px solid #ccc', padding: '10px' }}>
 						{chat.map((msg, index) => (
@@ -247,7 +249,7 @@ export default function Room() {
 									</li>
 								))
 							) : (
-								<li>No friends found</li>
+								<li>No friend found</li>
 							)}
 						</ul>
 					</div>
@@ -263,7 +265,7 @@ export default function Room() {
 									</button>
 									<ul className="dropdown-menu">
 										<button className="dropdown-item" onClick={() => handleProfile(user.id)}> Profile </button>
-										<button className="dropdown-item" onClick={() => sendNotification(user.id, `${decodedToken.name}invites you to play a game of pong`, userId)}> Send an invitation to play </button>
+										<button className="dropdown-item" onClick={() => sendNotification(user.id, `${decodedToken.name} invites you to play a game of pong`, userId)}> Send an invitation to play </button>
 									</ul>
 								</li>
 							))}

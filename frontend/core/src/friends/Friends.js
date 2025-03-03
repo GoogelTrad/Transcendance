@@ -218,13 +218,13 @@ function FriendRequests({setModal, setIsFriends, launching}) {
 		</div>
 
 		<div className="friend-requests">
-                <p>📥 Demandes d'amis</p>
+                <p>Friend Request</p>
                 {friendRequests.length > 0 ? (
                     <ul>
                         {friendRequests.map((request) => (
                             <li key={request.id} className="request-item">
                                 {request.from_user_name} ({request.from_user_email})
-                                <span> - Envoyée le {new Date(request.created_at).toLocaleDateString()}</span>
+                                <span> - Send on {new Date(request.created_at).toLocaleDateString()}</span>
                                 <div>
                                     <SeeFriendsRequest 
                                         toWhom={request.id} 
@@ -241,7 +241,7 @@ function FriendRequests({setModal, setIsFriends, launching}) {
                         ))}
                     </ul>
                 ) : (
-                    <p>Aucune demande en attente.</p>
+                    <p>No pending requests</p>
                 )}
             </div>
 

@@ -85,6 +85,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             self.channel_name
         )
         await self.accept()
+
         messages = await get_room_messages(self.room_name)
         await self.send({
             'type': 'history',
@@ -145,6 +146,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             pass
         dmRoom = await self.checkIfDmRoomExist(invited_user_id)
         if dmRoom:
+            print("dmRoom[0].name:", dmRoom[0].name, flush=True)
             await self.send({
                 "type": "create_room",
                 "status": True,
@@ -203,6 +205,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         channel_layer = get_channel_layer()
         await channel_layer.group_add(self.room_group_name, self.channel_name)
+        print("DMNAME2:", dmname, flush=True)
         await self.send({
             "type": "join_room",
             "status": True,
