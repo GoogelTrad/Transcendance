@@ -14,6 +14,11 @@ import copy
 import os
 
 class TournamentConsumer(AsyncWebsocketConsumer):
+    tournament_states = {}  # Changed from game_states to tournament_states
+
+    def __init__(self):  
+        self.groups = []
+
     async def connect(self):
         self.tournament_code = self.scope['url_route']['kwargs']['tournament_code']
         self.token = self.scope.get('query_string', b'').decode().split('=')[1]
@@ -33,9 +38,9 @@ class TournamentConsumer(AsyncWebsocketConsumer):
         print(f"User {self.user.name} added to group {game_group}", flush=True)
 
         await self.start_first_match()
-        if self.tournament.size == 4:
-            await self.start_finale()
 
+        if self.tournament_code not in TournamentConsumer.tournament_states:
+            TournamentConsumer.tournament_states[self.tournament_code] = {"games_finished": 0}
 
     async def disconnect(self, close_code):
         print(f"Removed from tournament", flush=True)
@@ -68,6 +73,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
                 "player2" : player2,
             }
         )
+
     async def start_first_match(self):
         if self.tournament.size == 2 and self.tournament.players_connected == 2:
             if self.tournament.player1 and self.tournament.player2:
@@ -98,16 +104,33 @@ class TournamentConsumer(AsyncWebsocketConsumer):
             if final_game_data:
                 await self.start_game(final_game_data['id'], self.tournament.winner1, self.tournament.winner2)
 
-    
     async def receive(self, text_data):
         try:
             data_dict = json.loads(text_data)
         except json.JSONDecodeError:
             print("Error decoding JSON data")
             return
-    
+        print("receive :", data_dict, flush=True)
+        
+        if "message" in data_dict:
+            message = data_dict["message"]
+            
+            if self.tournament_code not in TournamentConsumer.tournament_states:
+                TournamentConsumer.tournament_states[self.tournament_code] = {"games_finished": 0}
+            
+            if 'Hello game 1 is over' in message:
+                TournamentConsumer.tournament_states[self.tournament_code]["games_finished"] += 1
+                if TournamentConsumer.tournament_states[self.tournament_code]["games_finished"] == 2:
+                    await self.start_finale()
+
+            elif 'Hello game 2 is over' in message:
+                TournamentConsumer.tournament_states[self.tournament_code]["games_finished"] += 1
+                if TournamentConsumer.tournament_states[self.tournament_code]["games_finished"] == 2:
+                    await self.start_finale()
+
+
     async def create_Game_Multi(self, token, player1, player2):
-        api_url = f"{os.getenv('REACT_APP_API_URL')}/game/create_game"
+        api_url = f"{os.getenv('REACT_APP_API_URL')}/api/game/create_game"
         auth_header = {'Authorization': f"Bearer {token}"}
         data = {
             'player1': player1,
@@ -116,8 +139,8 @@ class TournamentConsumer(AsyncWebsocketConsumer):
             'timeSeconds': self.tournament.timeMaxSeconds,
             'timeMinutes': self.tournament.timeMaxMinutes,
             'scoreMax': self.tournament.scoreMax,
+            'tournamentCode': self.tournament_code,
         }
-        
         try:
             response = await asyncio.to_thread(requests.post, api_url, headers=auth_header, data=data, verify=False)
             if response.status_code == 201:
@@ -337,6 +360,7 @@ class GameState:
         self.eloPlayer1 = game.elo_Player1
         self.eloPlayer2 = game.elo_Player2
         self.isInTournament = game.isInTournament
+        self.code = game.tournamentCode
 
     def is_game_over(self, game):
         if self.score["score_P1"] >= game.scoreMax:
@@ -562,6 +586,7 @@ class gameConsumer(AsyncWebsocketConsumer):
                         "elo_Player1" : game_state.eloPlayer1,
                         "elo_Player2" : game_state.eloPlayer2,
                         "isInTournament" : game_state.isInTournament,
+                        "code" : game_state.code,
                     })
                     break
 

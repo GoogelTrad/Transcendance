@@ -103,13 +103,26 @@ function GameInstance ( {children} ) {
 			Loser: data.loser,
 			elo_Player1 : data.elo_Player1,
     		elo_Player2 : data.elo_Player2,
-
 		}));
 		if (data.winner || data.loser)
 			setisGameOngoing(false);
-		if (data.isInTournament === true)
-			navigate("/home");
+		if (data.isInTournament === true){
+			patchTournament(data)
+			navigate(`/tournament/${data.code}`, { state: { tournamentCreated: data.code }});
+		}
 	};
+
+
+	const patchTournament = async (data) => {
+		try {
+			const response = await axiosInstance.patch(`/api/game/fetch_data_tournament_by_code/${data.code}/`, {
+				winner: data.winner
+		  });
+		} catch (error) {
+		  console.error("Error updating game:", error);
+		}
+	}
+	
 
 	const finishGame = async () => {
 		try {

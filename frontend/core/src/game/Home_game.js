@@ -136,7 +136,7 @@ function HomeGame({setModalStats, setModalCreateTournament, setModalTournament, 
 
     const fetchDataTournament = async () => {
         try {
-            const response = await axiosInstance.get(`/game/fetch_data_tournament_by_code/${gameCode}/`);
+            const response = await axiosInstance.get(`/api/game/fetch_data_tournament_by_code/${gameCode}/`);
             setTournament(response.data);
             return 0;
         } catch (error) {
@@ -156,9 +156,9 @@ function HomeGame({setModalStats, setModalCreateTournament, setModalTournament, 
         {
             const fonction_return = await fetchDataTournament();
             if (fonction_return === 0) {
-                setModalTournament(true);
-                setJoinTournament(true);
-                launching({ newLaunch: 'tournament', setModal: setModalTournament});
+                navigate(`/tournament/${gameCode}`, { state: { tournamentCreated: gameCode }});
+                // setModalTournament(true);
+                // launching({ newLaunch: 'tournament', setModal: setModalTournament});
             }
         }
     };
