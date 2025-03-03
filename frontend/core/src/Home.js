@@ -31,7 +31,6 @@ function Home() {
     const [isModalSocial, setIsModalSocial] = useState(false);
     const [isModalProfile, setIsModalProfile] = useState(false);
     const [isModalResult, setIsModalResult] = useState(false);
-    const [isModalChat, setIsModalChat] = useState(false);
     const [isModalFriendProfile, setIsModalFriendProfile] = useState(false);
     const [isModalCode, setIsModalCode] = useState(false);
     const [isLaunch, setIsLaunch] = useState([]);
@@ -43,7 +42,6 @@ function Home() {
         {name: 'terminal', setter: setIsModalTerminal},
         {name: 'game', setter: setIsModalGame},
         {name: 'stats', setter: setIsModalStats},
-        {name: 'chat', setter: setIsModalChat},
         {name: 'social', setter: setIsModalSocial},
         {name: 'profile', setter: setIsModalProfile},
         {name: 'friend', setter: setIsModalFriendProfile},
@@ -585,23 +583,6 @@ function Home() {
                     onClose={() => setIsModalProfile(false)}
                 >
                     <Profile id={decodeToken.id}/>
-                </ModalInstance>
-            }
-            {isAuthenticated && isLaunched(isLaunch, "chat") && 
-                <ModalInstance
-                    height="30%"
-                    width="40%"
-                    isModal={isModalChat}
-                    modalRef={modalChatRef}
-                    name="Chat"
-                    zIndex={modalZIndexes["chat"] || 1}
-                    position={modalPositions["chat"]}
-                    onUpdatePosition={(newPos) => updatePosition("chat", newPos)}
-                    onBringToFront={() => bringToFront("chat")}
-                    onLaunchUpdate={() => removeLaunch("chat")}
-                    onClose={() => setIsModalChat(false)}
-                >
-                    <HomeChat/>
                 </ModalInstance>
             }
             {isAuthenticated && isLaunched(isLaunch, "friend") && 
