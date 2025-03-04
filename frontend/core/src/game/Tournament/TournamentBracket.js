@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
-import person from "../assets/game/person.svg";
-import "./TournamentBracket.css";
-import waiting from '../assets/waiting.gif';
+import person from '../../assets/game/person.svg';
+import "./Tournament.css";
+import waiting from '../../assets/waiting.gif';
 
 const TournamentBracket = ({ numberPlayer, tournamentResponse }) => {
   const [isBox, setIsBox] = useState({
@@ -16,8 +16,8 @@ const TournamentBracket = ({ numberPlayer, tournamentResponse }) => {
 		
         for (let i = 0; i < 3; i++) {
             rounds.unshift([
-                tournamentResponse?.player1,  // correction ici
-                tournamentResponse?.player2 ? tournamentResponse?.player2 : waiting,  // correction ici
+                tournamentResponse?.player1, 
+                tournamentResponse?.player2 ? tournamentResponse?.player2 : waiting, 
             ]);
         }
         rounds.unshift([
@@ -28,9 +28,9 @@ const TournamentBracket = ({ numberPlayer, tournamentResponse }) => {
     if (numberPlayer == "4") {
         rounds.unshift([
             tournamentResponse?.player1,
-            tournamentResponse?.player2 ? tournamentResponse.player2 : waiting,  // correction ici
-            tournamentResponse?.player3 ? tournamentResponse.player3 : waiting,  // correction ici
-            tournamentResponse?.player4 ? tournamentResponse.player4 : waiting,  // correction ici
+            tournamentResponse?.player2 ? tournamentResponse.player2 : waiting,
+            tournamentResponse?.player3 ? tournamentResponse.player3 : waiting,
+            tournamentResponse?.player4 ? tournamentResponse.player4 : waiting,
         ]);
         rounds.unshift([
             isBox.winnerRound1[0].box1 ? isBox.winnerRound1[0].box1 : waiting,
@@ -45,13 +45,9 @@ const TournamentBracket = ({ numberPlayer, tournamentResponse }) => {
 };
 
   const rounds = generateRounds(numberPlayer);
-  	//useEffect(() => {
-	//	  console.log("tournamentRepppp : ", tournamentResponse);
-	//	  console.log("tournamentRepppp1 : ", tournamentResponse.player1);
-	//  }, [tournamentResponse]);
 
   return (
-    <div className="bracket-container h-100 w-100">
+    <div className="bracket-container h-100 w-100" style={{ backgroundColor:'transparent'}}>
       {rounds.map((round, roundIndex) => (
         <div key={roundIndex} className="round">
           {round.map((player, playerIndex) => (
@@ -66,7 +62,6 @@ const TournamentBracket = ({ numberPlayer, tournamentResponse }) => {
          
         </div>
       ))}
-      {/* <p className ="start" onClick={() => onStartTournament()} >► Start</p> */}
     </div>
   );
 };

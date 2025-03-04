@@ -194,7 +194,7 @@ function Game() {
 				<h1 className="position-absolute title text-center text-white title-overlay w-100" style={{ top: "120px" }}>TIME : {game?.time}</h1>
 				<div className="d-flex justify-content-center align-items-center w-100 h-100">
 					<div className="d-flex flex-column align-items-center justify-content-center col-12 col-md-5 flex-grow-1">
-						<p> Player1 : {game?.player1}</p>
+						<p style={{color: 'red !important'}}> Player1 : {game?.player1}</p>
 						<p> Score1 : {game?.score1} </p>
 						<h2 className="position-absolute title text-center text-white title-overlay w-100" style={{ bottom: "120px" }} >WINNER : {game?.winner}</h2>
 					</div>

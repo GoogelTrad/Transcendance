@@ -1,9 +1,9 @@
-import './TournamentBracket.css';
+import './Tournament.css';
 import React, { useState, useEffect, useRef } from 'react';
-import fisrtPrize from '../assets/1prize.png';
-import secondPrize from '../assets/2prize.png';
-import thirdPrize from '../assets/3prize.png';
-import star from '../assets/star.png';
+import fisrtPrize from '../../assets/1prize.png';
+import secondPrize from '../../assets/2prize.png';
+import thirdPrize from '../../assets/3prize.png';
+import star from '../../assets/star.png';
 
 function ResultTournament({ items, setItems, setIsModalTournament, setModalResult, setModalStats, removeLaunch, launching }) {
 
