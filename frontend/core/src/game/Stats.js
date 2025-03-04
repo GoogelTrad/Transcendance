@@ -7,11 +7,11 @@ import Button from 'react-bootstrap/Button';
 import { BrowserRouter as Router, Route, Routes, Link, useNavigate, useParams} from 'react-router-dom';
 import React, { useEffect, useState, useRef} from "react";
 import { jwtDecode } from "jwt-decode";
-import { getCookies } from './../App.js';
 import bronze from '../assets/game/bronze.png';
 import silver from '../assets/game/silver.png';
 import gold from '../assets/game/gold.png';
 import backgroundCollect from '../assets/game/background-collect.jpg';
+import { useAuth } from "../users/AuthContext";
 
 
 function Stats({ itemsArray = [] }) {
@@ -43,6 +43,9 @@ function Stats({ itemsArray = [] }) {
         BestScore: false,
         BestTime: false,
     });
+
+    const { userInfo } = useAuth();
+    const decodeToken = userInfo;
 
     const medalRules = {
         Played: {
@@ -94,9 +97,9 @@ function Stats({ itemsArray = [] }) {
     
     
     useEffect(() => {
-        if (games.length > 0) {
-            const winGamesFiltered = games.filter(game => game.winner === decodeToken.name);
-            const loseGamesFiltered = games.filter(game => game.loser === decodeToken.name);
+        if (games.length > 0 && userInfo) {
+            const winGamesFiltered = games.filter(game => game.winner === decodeToken?.name);
+            const loseGamesFiltered = games.filter(game => game.loser === decodeToken?.name);
             
             if (winGamesFiltered)
                 setWinGames(winGamesFiltered);
@@ -108,8 +111,8 @@ function Stats({ itemsArray = [] }) {
 
 
             const BestScoreFiltered = winGames.filter(score => 
-                (score.player2 === decodeToken.name && score.score_player_2 === 11) || 
-                (score.player1 === decodeToken.name && score.score_player_1 === 11)
+                (score.player2 === decodeToken?.name && score.score_player_2 === 11) || 
+                (score.player1 === decodeToken?.name && score.score_player_1 === 11)
             );
             setupMedals(BestScoreFiltered, "BestScore", 5, 10, 15);
 
@@ -117,7 +120,7 @@ function Stats({ itemsArray = [] }) {
             setupMedals(BestTimeFiltered, "BestTime", 5, 10, 15);
             console.log("best", BestTimeFiltered);
         }
-    }, [games, id,]);
+    }, [games, id, searchFriend, userInfo]);
     
     
 
@@ -169,27 +172,19 @@ function Stats({ itemsArray = [] }) {
     useEffect(() => {
         const activeOption = option.find(option => option.active);
         setSelectedOption(activeOption || null);
-
     }, [option]);
 
-    const token = getCookies('token');
-    let decodeToken = ("");
-
-    useEffect(() => {
-        const token = getCookies('token');
-        if (token)
-            decodeToken = jwtDecode(token);
-    }, [])
-
+    
 
     useEffect(() => {
         const fetchStats = async () => {
-          try {
-            const response = await axiosInstance.get(`/api/game/fetch_data_user/${decodeToken.id}/`, {});
-            setGames(response.data);
-          } catch (error) {
-            console.error('Error fetching user stats:', error);
-          }
+            if (!userInfo) return;
+            try {
+                const response = await axiosInstance.get(`/api/game/fetch_data_user/${decodeToken?.id}/`, {});
+                setGames(response.data);
+                } catch (error) {
+                console.error('Error fetching user stats:', error);
+            }
         };
         fetchStats();
       },[id]);
@@ -225,10 +220,10 @@ function Stats({ itemsArray = [] }) {
                                         </td>
                                         <td>{data.timeMinutes} : {data.timeSeconds}</td>
                                         <td>{data.score_player_1} - {data.score_player_2}</td>
-                                        {data.winner === decodeToken.name && (
+                                        {data.winner === decodeToken?.name && (
                                             <td>{"win" || "N/A"}</td>
                                         )}
-                                        {data.loser === decodeToken.name && (
+                                        {data.loser === decodeToken?.name && (
                                             <td>{"lose" || "N/A"}</td>
                                         )}
                                         {!data.winner && !data.loser && (
@@ -253,7 +248,7 @@ function Stats({ itemsArray = [] }) {
                             <div className="stats-row-element empty-row flex-grow-1" style={{height: `50%`}}>
                                 <label htmlFor="profile_image" >
                                     <img
-                                        src={decodeToken.profile_image_url ? `http://localhost:8000${decodeToken.profile_image_url}` : '/default.png'}
+                                        src={decodeToken?.profile_image_url ? `https://localhost:8000${decodeToken?.profile_image_url}` : '/default.png'}
                                         alt="Profile"
                                         className="profile-picture"
                                         title='profile'
@@ -261,7 +256,7 @@ function Stats({ itemsArray = [] }) {
                                     />
                                 </label>
                             </div>
-                            <div className="stats-row-element empty-row flex-grow-1" style={{ height: "20%", display: "flex", alignItems: "flex-start" }}>{decodeToken.name}</div>
+                            <div className="stats-row-element empty-row flex-grow-1" style={{ height: "20%", display: "flex", alignItems: "flex-start" }}>{decodeToken?.name}</div>
                             <div className="stats-row-element flex-grow-1" style={{height: `30%`}}>
                             <div className="text-center">
                                 <div className="stats-text">Winrate Ratio</div>

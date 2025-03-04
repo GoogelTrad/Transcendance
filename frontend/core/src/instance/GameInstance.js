@@ -5,10 +5,12 @@ import axios from 'axios';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Modal, Button } from 'react-bootstrap';
 import { jwtDecode } from "jwt-decode";
-import { getCookies } from './../App.js';
 import { useParams, useNavigate } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Link, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import axiosInstance from '../instance/AxiosInstance.js';
 import { throttle } from 'lodash';
+import { useAuth } from '../users/AuthContext.js';
 
 function GameInstance({ children }) {
     const canvasRef = useRef(null);
@@ -57,60 +59,55 @@ function GameInstance({ children }) {
         elo_Player2: 0,
     }));
 
-    const token = getCookies('token');
-    let user = null;
-    if (token) {
-        try {
-            user = jwtDecode(token);
-        } catch (error) {
-            console.error("Error decoding token:", error);
-        }
-    }
+	const { userInfo } = useAuth();
+	const user = userInfo;
 
-    const socketRef = useRef(null);
-    if (!socketRef.current) {
-        socketRef.current = new WebSocket(`${process.env.REACT_APP_API_URL}ws/game/${id}`);
-    }
-    const socket = socketRef.current;
-
-    socket.onopen = () => {
-        console.log("WebSocket connection established.");
-    };
-
-    socket.onclose = () => {
-        finishGame();
-        console.log("WebSocket connection closed.");
-    };
-
-    socket.onerror = (error) => {
-        console.error("WebSocket error: ", error);
-    };
-
-    socket.onmessage = (event) => {
-        const data = JSON.parse(event.data);
-        setGameData((prevState) => ({
-            ...prevState,
-            Seconds: data.seconds,
-            Minutes: data.minutes,
-            PaddleRightY: data.paddleRightY,
-            PaddleLeftY: data.paddleLeftY,
-            PaddleRightX: data.paddleRightX,
-            PaddleLeftX: data.paddleLeftX,
-            PaddleWidth: data.width,
-            PaddleHeight: data.height,
-            Ball_Pos_x: data.new_pos_x,
-            Ball_Pos_y: data.new_pos_y,
-            Ball_Width: data.ball_width,
-            Score_P1: data.score_P1,
-            Score_P2: data.score_P2,
-            Winner: data.winner,
-            Loser: data.loser,
-            elo_Player1: data.elo_Player1,
-            elo_Player2: data.elo_Player2,
-        }));
-        if (data.winner || data.loser) setIsGameOngoing(false);
-        if (data.isInTournament === true) navigate("/home");
-    };
+	const socketRef = useRef(null);
+	  if (!socketRef.current) {
+		  socketRef.current = new WebSocket(`${process.env.REACT_APP_SOCKET_IP}ws/game/${id}`);
+	  }
+	  const socket = socketRef.current;
+  
+	  socket.onopen = () => {
+		  console.log("WebSocket connection established.");
+	  };
+  
+	  socket.onclose = () => {
+			finishGame();
+			console.log("WebSocket connection closed.");
+	  };
+  
+	  socket.onerror = (error) => {
+		  console.error("WebSocket error: ", error);
+	  };
+  
+	  socket.onmessage = (event) => {
+		const data = JSON.parse(event.data);
+		setGameData((prevState) => ({
+			...prevState,
+			Seconds: data.seconds,
+			Minutes: data.minutes,
+			PaddleRightY: data.paddleRightY,
+			PaddleLeftY: data.paddleLeftY,
+			PaddleRightX: data.paddleRightX,
+			PaddleLeftX: data.paddleLeftX,
+			PaddleWidth: data.width,
+			PaddleHeight: data.height,
+			Ball_Pos_x : data.new_pos_x,
+			Ball_Pos_y : data.new_pos_y,
+			Ball_Width: data.ball_width,
+			Score_P1: data.score_P1,
+			Score_P2: data.score_P2,
+			Winner: data.winner,
+			Loser: data.loser,
+			elo_Player1 : data.elo_Player1,
+    		elo_Player2 : data.elo_Player2,
+		}));
+		if (data.winner || data.loser)
+			setisGameOngoing(false);
+		if (data.isInTournament === true)
+			navigate("/home");
+	};
 
     const finishGame = async () => {
         try {
@@ -167,6 +164,29 @@ function GameInstance({ children }) {
 	};
 
 	useEffect(() => {
+		if (isGameOngoing === false && socket.readyState !== WebSocket.CLOSED){
+			finishGame();
+			socket.close();
+		}
+	}, [isGameOngoing]);
+
+	useEffect(() => {
+		if (gameStart === false) {
+			const fetchData = async () => {
+				try {
+					const response = await axiosInstance.get(`/api/game/fetch_data/${id}/`);
+					console.log(response.data)
+					setGame(response.data);
+					setWaitInput(true);
+				} catch (error) {
+					console.error("Error fetching game by ID:", error);
+				}
+			}
+		}
+	}, []);
+
+
+	useEffect(() => {
 		if (!isGameOngoing || !canvasRef.current) return;
 
 		const generateBonusBall = () => {
@@ -181,6 +201,7 @@ function GameInstance({ children }) {
 		const interval = setInterval(generateBonusBall, 30000); 
 		return () => clearInterval(interval);
 	}, [isGameOngoing]);
+
 	const checkCollision = (mainBallX, mainBallY, mainBallRadius, bonusBallX, bonusBallY, bonusBallRadius) => {
 		const dx = mainBallX - bonusBallX;
 		const dy = mainBallY - bonusBallY;

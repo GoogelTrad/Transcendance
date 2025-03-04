@@ -72,9 +72,8 @@ class LoginView():
 
         reponse = Response()
 
-        reponse.set_cookie(key='token', value=token, max_age=3600)
+        reponse.set_cookie(key='token', value=token, max_age=3600, httponly=True, secure=True)
         reponse.data = {
-            'token': token,
             'message': 'Logged in successfully!'
         }
         return reponse
@@ -94,7 +93,7 @@ class UserView():
                 serializer = UserSerializer(user)
                 user_data = serializer.data
                 if user_data == request.user:
-                    filtered_user = {key: value for key, value in user_data.items() if key != 'password'}
+                    filtered_user = {key: value for key, value in user_data.items() if key not in ['password']}
                 else:
                     filtered_user = {key: value for key, value in user_data.items() if key not in ['password']}
                 return Response(filtered_user)
@@ -120,12 +119,16 @@ class UserView():
                     ValidToken.objects.filter(user_id=user.id).delete()
                     ValidToken.objects.create(user=user, token=new_token)
                     
+                    filtered_user = {key: value for key, value in serializer.data.items() if key not in ['password']}
                     reponse.delete_cookie('token')
                     token = jwt.encode(payload, os.getenv('JWT_KEY'), 'HS256')
-                    reponse.set_cookie(key='token', value=new_token, max_age=3600)
-                    reponse.data = serializer.data
+                    reponse.set_cookie(key='token', value=new_token, max_age=3600, httponly=True, secure=True)
+                    reponse.data = {
+                        **filtered_user
+                    }
                     
                     return reponse
+                
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
             elif request.method == 'DELETE':
@@ -154,13 +157,13 @@ class LogoutView():
     @jwt_auth_required
     def logoutUser(request):
         
-        auth_header = request.headers.get('Authorization')
-        if not auth_header:
-            raise AuthenticationFailed('Authorization header missing!')
+        token = request.COOKIES.get('token')
+        if not token :
+            AuthenticationFailed('Token is missing!')
+        
         user = User.objects.get(name=request.user.name)
         user.status = 'offline'
         user.save()
-        token = auth_header.split(' ')[1]
         
         ValidToken.objects.filter(token=token).delete()
         
@@ -225,9 +228,8 @@ def verify_code(request):
 
         reponse = Response()
 
-        reponse.set_cookie(key='token', value=token, max_age=3600)
+        reponse.set_cookie(key='token', value=token, max_age=3600, httponly=True, secure=True)
         reponse.data = {
-            'token': token,
             'message': 'Code is valid!'
         }
 
@@ -276,3 +278,48 @@ def is_token_valid(request, token):
         user.status = "offline"
         user.save()
         return Response(status=status.HTTP_404_NOT_FOUND)
+
+@api_view(['GET'])
+@jwt_auth_required
+def get_token(request):
+    token = request.COOKIES.get('token')
+    if token:
+        return Response({'token': token})
+    else:
+        return Response({'error': 'No token found'}, status=status.HTTP_401_UNAUTHORIZED)
+
+@api_view(['GET'])
+@jwt_auth_required
+def fetch_user_data(request):
+    user = request.user
+    
+    profile_image_url = user.profile_image.url if user.profile_image else None
+    if user.is_authenticated:
+        payload = { 
+            'id': user.id,
+            'name': user.name,
+            'email': user.email,
+            'status': user.status,
+            'profile_image_url': profile_image_url,
+            'is_stud': user.is_stud,
+        }
+        return Response({'payload': payload})
+    return Response({'error': 'Not authenticated'}, status=status.HTTP_401_UNAUTHORIZED)
+
+@api_view(['GET'])
+def check_auth(request):
+    token = request.COOKIES.get('token')
+    if not token:
+        return Response({'isAuthenticated': False})
+
+    try:
+        payload = jwt.decode(token, os.getenv('JWT_KEY'), algorithms=['HS256'])
+        user = User.objects.filter(id=payload['id']).first()
+        if user:
+            return Response({'isAuthenticated': True, 'user': {'id': user.id, 'name': user.name}})
+        else:
+            return Response({'isAuthenticated': False})
+    except jwt.ExpiredSignatureError:
+        return Response({'isAuthenticated': False, 'error': 'Token expired'})
+    except jwt.InvalidTokenError:
+        return Response({'isAuthenticated': False, 'error': 'Invalid token'})

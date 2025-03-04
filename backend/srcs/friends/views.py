@@ -83,7 +83,9 @@ def friends_list(request, user_id):
         return Response({'error': 'User not found'}, status=404)
 
     serializer = UserSerializer(user)
-    return Response(serializer.data)
+    user_data = serializer.data
+    filtered_user = {key: value for key, value in user_data.items() if key not in ['password']}
+    return Response(filtered_user)
 
 @api_view(['POST'])
 @jwt_auth_required

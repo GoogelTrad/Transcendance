@@ -3,18 +3,12 @@ import { useEffect, useState } from "react";
 import axiosInstance from "../instance/AxiosInstance";
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from './AuthContext';
-import { getCookies } from "../App";
+import { useUserInfo } from '../instance/TokenInstance';
+import { setToken } from "../instance/TokenInstance";
 
 export function HandleAuth() 
 {
-	const popup = window.open("https://localhost:8000/auth/code", "42Auth", "width=600,height=800");
-	
-	console.log(popup.opener);
-
-	if (popup) 
-		console.log("✅ window.opener défini manuellement !");
-	else
-		alert("Veuillez autoriser les pop-ups !");
+	window.open( `${process.env.REACT_APP_API_URL}/api/auth/code`, "42Auth", "width=600,height=800");
 };
 
 
@@ -39,8 +33,8 @@ export function AuthSuccess()
 	const [isSchoolAuth, setIsSchoolAuth] = useState(false);
 	const [isPop, setIsPop] = useState(false);
 	const [code, setCode] = useState("");
-	const {isAuthenticated, setIsAuthenticated} = useAuth();
 	const [name, setName] = useState("");
+	const { tokenUser } = useUserInfo();
 
 
 	const handleVerify = async () => 	
@@ -49,8 +43,8 @@ export function AuthSuccess()
 			const response = await axiosInstance.post('/api/user/code' , {code, name: name});
 			if (response.status === 200) {
 				const authChannel = new BroadcastChannel("auth_channel");
-				const token = getCookies('token');
-				authChannel.postMessage({ token });
+				setToken(token);
+				const token = tokenUser;
            	 	authChannel.close();
             	window.close();
 			}
@@ -73,6 +67,7 @@ export function AuthSuccess()
 		{
             const authChannel = new BroadcastChannel("auth_channel");
             authChannel.postMessage({ token });
+			setToken(token);
             authChannel.close();
             window.close();
         }
