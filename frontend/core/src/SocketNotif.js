@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-const BASE_URL_NOTIF = `${process.env.REACT_APP_SOCKET_IP}/ws/notifications/`;
+const BASE_URL_NOTIF = `${process.env.REACT_APP_SOCKET_IP}ws/notifications/`;
 
 export default function useNotifications() {
 	const [socket, setSocket] = useState(null);

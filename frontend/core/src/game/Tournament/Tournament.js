@@ -4,6 +4,7 @@ import axiosInstance from '../../instance/AxiosInstance.js';
 import { BrowserRouter as Router, Route, Routes, Link, useNavigate, useParams } from 'react-router-dom';
 import { jwtDecode } from "jwt-decode";
 import { getCookies } from '../../App.js';
+import { useLocation } from 'react-router-dom';
 import person from '../../assets/game/person.svg';
 import personAdd from '../../assets/game/person-fill.svg';
 import TournamentBracket from "./TournamentBracket.js";
@@ -16,8 +17,12 @@ function Tournament() {
     const { tournamentCode } = useParams();
     const [tournamentResponse, setTournamentResponse] = useState(null);
     const [tournamentStarted, setTournamentStarted] = useState(false);
-    const [socket, setSocket] = useState(null);
+    
+    
     const navigate = useNavigate();
+    const location = useLocation();
+    const { join } = location.state || false;
+    const { makeTournament } = location.state || {}; 
 
     const { userInfo } = useAuth();
     const user = userInfo;
@@ -52,22 +57,52 @@ function Tournament() {
 
     const fetchTournement = async () => {
         try {
+
             const response = await axiosInstance.get(`/api/game/fetch_data_tournament_by_code/${tournamentCode}`);
             setTournamentResponse(response.data);
-            setTournamentStarted(true);
         } catch (error) {
           console.error("Error fetching tournament:", error);
         }
     };
 
+    const startTournament = () => {
+        if (socketRef.current.readyState === WebSocket.OPEN) {
+            socketRef.current.send(JSON.stringify({ "Start": "Start games" }));
+        }
+        console.log("onStart")
+    }
+
+
+    useEffect(() => {
+        console.log("j: ", join);
+        if (join === true) {
+            fetchTournement();
+        }
+    }, [join]);
+
     useEffect(() => {
         if (tournamentCode) {
             fetchTournement();
+            setTournamentStarted(true);
         }
     }, [tournamentCode]);
-    
-    useEffect(() => {
 
+    useEffect(() => {
+        if (!socketRef.current)
+            console.log("aie");
+        if (tournamentResponse && tournamentResponse.winner1) {
+            if (socketRef.current.readyState === WebSocket.OPEN) {
+                socketRef.current.send(JSON.stringify({ "message": "Hello game 1 is over" }));
+            }
+        }
+        if (tournamentResponse && tournamentResponse.winner2) {
+            if (socketRef.current.readyState === WebSocket.OPEN) {
+                socketRef.current.send(JSON.stringify({ "message": "Hello game 2 is over" }));
+            }
+        }
+    }, [tournamentResponse]);
+
+    useEffect(() => {
         console.log("tournamentRes : ", tournamentResponse);
     }, [tournamentResponse]);
 
@@ -126,7 +161,7 @@ function Tournament() {
                         {renderPlayerImages(tournamentResponse?.size, tournamentResponse?.players_connected || 0)}
                     </div>
                 </div>
-                <MarioSection tournamentResponse={tournamentResponse} renderImageWithClick={renderImageWithClick}/>
+                <MarioSection tournamentResponse={tournamentResponse} renderImageWithClick={renderImageWithClick} onStartTournament={startTournament}/>
            <PacmanSection tournamentResponse={tournamentResponse} renderImageWithClick={renderImageWithClick}/>
                 <div className="tree-tournament" style={{ height: `70%` }}>
                     <TournamentBracket numberPlayer={tournamentResponse?.size} tournamentResponse={tournamentResponse}/>

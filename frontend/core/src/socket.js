@@ -6,7 +6,7 @@ export default function useSocket(name, param = '') {
 	const handlers = new Map();
 
 	useEffect(() => {
-		let socket = new WebSocket(`${process.env.REACT_APP_SOCKET_IP}/ws/${name}/${String(param)}`)
+		let socket = new WebSocket(`${process.env.REACT_APP_SOCKET_IP}ws/${name}/${String(param)}`)
 
 		socket.onopen = () => {
 			console.log('WebSocket connected');

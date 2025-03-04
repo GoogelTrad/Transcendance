@@ -40,25 +40,25 @@ function HomeGame({ setModalStats, setModalCreateTournament, setModalTournament,
     const { userInfo } = useAuth();
     let user = userInfo;
 
-    useEffect(() => {
-        if (joinTournament && !socketTournament) {
-            const newSocket = new WebSocket(`${process.env.REACT_APP_SOCKET_IP}ws/tournament/${gameCode}/`);
-            setSocketTournament(newSocket);
-            newSocket.onmessage = (event) => {
-                const data = JSON.parse(event.data);
-                console.log(data);
-                if (data.game_id && (data.player1 === user.name || data.player2 === user.name)) {
-                    navigate(`/games/${data.game_id}`);
-                }
-            };
-            newSocket.onclose = () => {
-                console.log("Tournament webSocket closed");
-            };
-            newSocket.onopen = () => {
-                console.log("Tournament websocket open");
-            };
-        }
-    }, [socketTournament, joinTournament]);
+    // useEffect(() => {
+    //     if (joinTournament && !socketTournament) {
+    //         const newSocket = new WebSocket(`${process.env.REACT_APP_SOCKET_IP}ws/tournament/${gameCode}/`);
+    //         setSocketTournament(newSocket);
+    //         newSocket.onmessage = (event) => {
+    //             const data = JSON.parse(event.data);
+    //             console.log(data);
+    //             if (data.game_id && (data.player1 === user.name || data.player2 === user.name)) {
+    //                 navigate(`/games/${data.game_id}`);
+    //             }
+    //         };
+    //         newSocket.onclose = () => {
+    //             console.log("Tournament webSocket closed");
+    //         };
+    //         newSocket.onopen = () => {
+    //             console.log("Tournament websocket open");
+    //         };
+    //     }
+    // }, [socketTournament, joinTournament]);
 
     useEffect(() => {
         if (!socket && waitingForPlayer) {
@@ -118,8 +118,9 @@ function HomeGame({ setModalStats, setModalCreateTournament, setModalTournament,
     };
 
     const fetchDataTournament = async () => {
+        console.log("he" , gameCode);
         try {
-            const response = await axiosInstance.get(`/game/fetch_data_tournament_by_code/${gameCode}/`);
+            const response = await axiosInstance.get(`/api/game/fetch_data_tournament_by_code/${gameCode}/`);
             setTournament(response.data);
             return 0;
         } catch (error) {
@@ -136,9 +137,8 @@ function HomeGame({ setModalStats, setModalCreateTournament, setModalTournament,
         } else if (name === "join") {
             const fonction_return = await fetchDataTournament();
             if (fonction_return === 0) {
-                setModalTournament(true);
-                setJoinTournament(true);
-                launching({ newLaunch: 'tournament', setModal: setModalTournament });
+                console.log("code", gameCode);
+                navigate(`/games/tournament/${gameCode}` , { state: { makeTournament: true } });
             }
         }
     };

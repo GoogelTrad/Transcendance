@@ -16,8 +16,6 @@ import os
 class HomeGameView:
     @api_view(['POST'])
     def create_game(request):
-        token = request.COOKIES.get('token')
-
         data = request.data.copy()
 
         serializer = GameSerializer(data=data, partial=True)
@@ -41,6 +39,15 @@ class HomeGameView:
                     player2_user.save()
                 except Exception as e:
                     return Response({"detail": f"Player2 with name '{player2_name}' not found: {str(e)}"}, status=status.HTTP_404_NOT_FOUND)
+                
+            tournament_code = data.get('tournamentCode')
+            if tournament_code:
+                try:
+                    tournament = get_object_or_404(Tournament, code=tournament_code)
+                    tournament.gamesTournament.add(game_instance)
+                    tournament.save()
+                except Exception as e:
+                    return Response({"detail": f"Tournament with code '{tournament_code}' not found: {str(e)}"}, status=status.HTTP_404_NOT_FOUND)
 
             return Response({"id": game_instance.id, **serializer.data}, status=status.HTTP_201_CREATED)
 
@@ -95,7 +102,7 @@ class GameView:
 
         response = Response()
 
-        response.set_cookie(key='token', value=token, max_age=3600, httponly=True, secure=True)
+        response.set_cookie(key='token', value=token, max_age=3600)
 
         response.data = {
             'token' : token
@@ -114,11 +121,7 @@ class GameView:
 class TournamentView:
     @api_view(['POST'])
     def create_tournament(request):
-        auth_header = request.headers.get('Authorization')
-        if auth_header:
-            token = auth_header.split(' ')[1]
-        else:
-            token = None
+        token = request.COOKIE.get('token')
 
         payload = jwt.decode(jwt=token, key=os.getenv('JWT_KEY'), algorithms=['HS256'])
         user = get_object_or_404(User, name=payload.get('name'))
@@ -166,6 +169,14 @@ class TournamentView:
             return Response(serializer.data, status=status.HTTP_200_OK)
 
         elif request.method == 'PATCH':
+            winner = request.data.get('winner')
+
+            if winner == tournament.winner1 or winner == tournament.winner2:
+                return Response({'detail': 'Winner is already assigned to either winner1 or winner2.'}, status=status.HTTP_200_OK)
+            if tournament.winner1:
+                tournament.winner2 = winner
+            else:
+                tournament.winner1 = winner
             serializer = TournamentSerializer(tournament, data=request.data, partial=True)
             if serializer.is_valid():
                 serializer.save()
