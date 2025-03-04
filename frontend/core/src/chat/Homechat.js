@@ -6,6 +6,7 @@ import useSocket from '../socket'
 import axiosInstance from "../instance/AxiosInstance";
 import ModalInstance from "../instance/ModalInstance";
 import Profile from "../users/Profile";
+import Template from "../instance/Template";
 
 import "./Homechat.css"
 import Room from './Room'
@@ -237,7 +238,7 @@ export default function HomeChat() {
 	}
 
 	return (
-		<>
+		<Template>
 			<div className="general-chat d-flex justify-content-between">
 				<div className="create-public-room">
 					{showCreatePublicRoom ? (
@@ -340,6 +341,6 @@ export default function HomeChat() {
 				</div>
 			</div>
 			<ToastContainer />
-		</>
+		</Template>
 	);
 }

@@ -7,6 +7,7 @@ import Logout from './users/Logout';
 import TerminalLogin from './users/TerminalLogin';
 import Home_game from './game/Home_game';
 import Stats from './game/Stats';
+import Tournament from './game/Tournament/Tournament';
 import { Game, Games} from './game/game';
 import { AuthProvider, useAuth } from './users/AuthContext';
 import { BrowserRouter as Router, Route, Routes, Link, Navigate } from 'react-router-dom';
@@ -17,7 +18,6 @@ import HomeChat from './chat/Homechat';
 import Room from "./chat/Room";
 import useTokenValidation from './instance/EventListener';
 import LoginRegister from './users/LoginForm';
-import Tournament from './game/Tournament';
 import AuthSchool, { AuthSuccess } from './users/AuthSchool';
 import { useEffect } from 'react';
 
@@ -66,7 +66,7 @@ function App() {
               <Route path='/friends' element={<ProtectedRoute><Friends /></ProtectedRoute>} />
               <Route path='/games/:id' element={<Games />} />
               <Route path='/games/Stats'  element={<Stats />} />
-              <Route path='/games/Tournament' element={<Tournament />} />
+              <Route path='/games/Tournament/:tournamentCode' element={<Tournament />} />
               <Route path="/auth-success" element={<AuthSuccess />} />
             </Routes>
           

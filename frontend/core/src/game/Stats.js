@@ -22,30 +22,24 @@ function Stats({ itemsArray = [] }) {
     const [winGames, setWinGames] = useState([]);
     const [loseGames, setLoseGames] = useState([]);
     const [tournamentGames, setTournamentGames] = useState([]);
-    const [friendName, setFriendsNames] = useState([]);
-    const [friendList, setFriendList] = useState([]);
-    const [searchFriend, setSearchFriend] = useState("");
     const { id } = useParams();
     const [games, setGames] = useState([]);
     const [expandedTab, setExpandedTab] = useState(false);
     const [medalBronze, setMedalBronze] = useState({
         Played: false,
         Win: false,
-        Friend: false,
         BestScore: false,
         BestTime: false,
     });
     const [medalSilver, setMedalSilver] = useState({
         Played: false,
         Win: false,
-        Friend: false,
         BestScore: false,
         BestTime: false,
     });
     const [medalGold, setMedalGold] = useState({
         Played: false,
         Win: false,
-        Friend: false,
         BestScore: false,
         BestTime: false,
     });
@@ -58,10 +52,6 @@ function Stats({ itemsArray = [] }) {
         Win: {
             thresholds: [5, 10, 15],
             titles: ["5 games win", "10 games win", "15 games win"]
-        },
-        Friend: {
-            thresholds: [5, 10, 15],
-            titles: ["5 friends in the friends list", "10 friends in the friends list", "15 friends in the friends list"]
         },
         BestScore: {
             thresholds: [5, 10, 15],
@@ -112,14 +102,10 @@ function Stats({ itemsArray = [] }) {
                 setWinGames(winGamesFiltered);
             if (loseGamesFiltered)
                 setLoseGames(loseGamesFiltered);
-            if (searchFriend) {
-                const friendGamesFiltered = games.filter(game => game.player2 === searchFriend);
-                setFriendsNames(friendGamesFiltered);
-            }
 
             setupMedals(games, "Played", 10, 20, 30);
             setupMedals(winGames, "Win", 5, 10, 15);
-            setupMedals(friendList, "Friennds", 5, 10, 15);
+
 
             const BestScoreFiltered = winGames.filter(score => 
                 (score.player2 === decodeToken.name && score.score_player_2 === 11) || 
@@ -131,7 +117,7 @@ function Stats({ itemsArray = [] }) {
             setupMedals(BestTimeFiltered, "BestTime", 5, 10, 15);
             console.log("best", BestTimeFiltered);
         }
-    }, [games, id, searchFriend]);
+    }, [games, id,]);
     
     
 
@@ -172,7 +158,7 @@ function Stats({ itemsArray = [] }) {
         setMode(filteredModes);
     
         const filteredOptions = itemsArray
-            .filter(itemsArray => ['All games', 'Tournament', 'Friends', 'Win', 'Lose'].includes(itemsArray.name))
+            .filter(itemsArray => ['All games', 'Tournament', 'Win', 'Lose'].includes(itemsArray.name))
             .map(itemsArray => ({
                 name: itemsArray.name,
                 active: itemsArray.active || false,
@@ -206,17 +192,6 @@ function Stats({ itemsArray = [] }) {
           }
         };
         fetchStats();
-
-        const fetchFriendList = async () => {
-            try {
-                const reponse = await axiosInstance.get(`/api/friends/list/${decodeToken.id}`);
-                setFriendList(reponse.data);
-            }
-            catch(error) {
-                console.log(error);
-            }
-        };
-        fetchFriendList();
       },[id]);
     
     function StatsTable({ data }) {
@@ -350,7 +325,6 @@ function Stats({ itemsArray = [] }) {
                                 {[
                                     { key: "Played" },
                                     { key: "Win" },
-                                    { key: "Friend" },
                                     { key: "BestScore" },
                                     { key: "BestTime" }
                                     ].map((medal, index) => (
@@ -421,39 +395,6 @@ function Stats({ itemsArray = [] }) {
 
                         {option.find(option => option.name === 'All games')?.active && (
                             <StatsTable data={games} />
-                        )}
-                        {option.find(option => option.name === 'Friends')?.active && (
-                            <>
-                            <div className="dropdown-friends d-flex w-100" style={{ height: '8%' }}
-                                onClick={(e) => e.stopPropagation()}>
-                                <button className="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                    ...
-                                </button>
-                                <ul className="dropdown-menu">
-                                {Array.isArray(friendList) ? (
-                                <>
-                                    {friendList.map((friend) => (
-                                        <li key={friend.name}>
-                                            <a href="#" onClick={(e) => { e.preventDefault(); setSearchFriend(friend.name); }}>
-                                                {friend.name}
-                                            </a>
-                                        </li>
-                                    ))}
-                                    <div className="horizontal-line"></div>
-                                </>
-                            ) : (
-                                <>
-                                    <li>Aucun ami trouvé</li>
-                                    <div className="horizontal-line"></div>
-                                </>
-                            )}
-
-                                </ul>
-                            </div>
-                            {searchFriend &&
-                                <StatsTable data={friendName} />
-                            }
-                            </>
                         )}
                         {option.find(option => option.name === 'Win')?.active && (
                             <StatsTable data={winGames} />
