@@ -109,10 +109,11 @@ function GameInstance({ children }) {
     		elo_Player2 : data.elo_Player2,
 		}));
 		if (data.winner || data.loser)
-			setisGameOngoing(false);
+			setIsGameOngoing(false);
 		if (data.isInTournament === true){
 			patchTournament(data)
-			navigate(`/tournament/${data.code}`, { state: { tournamentCreated: data.code }});
+            console.log("code2 after patch", data.code)
+			navigate(`/games/tournament/${data.code}` , { state: { makeTournament: false } });
 		}
 	};
 

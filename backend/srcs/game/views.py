@@ -45,6 +45,15 @@ class HomeGameView:
                     player2_user.save()
                 except Exception as e:
                     return Response({"detail": f"Player2 with name '{player2_name}' not found: {str(e)}"}, status=status.HTTP_404_NOT_FOUND)
+                
+            tournament_code = data.get('tournamentCode')
+            if tournament_code:
+                try:
+                    tournament = get_object_or_404(Tournament, code=tournament_code)
+                    tournament.gamesTournament.add(game_instance)
+                    tournament.save()
+                except Exception as e:
+                    return Response({"detail": f"Tournament with code '{tournament_code}' not found: {str(e)}"}, status=status.HTTP_404_NOT_FOUND)
 
             return Response({"id": game_instance.id, **serializer.data}, status=status.HTTP_201_CREATED)
 
