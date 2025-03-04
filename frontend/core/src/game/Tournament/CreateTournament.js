@@ -87,7 +87,7 @@ const CreateTournament = ({ setIsModalTournament, setIsModalCreateTournament, se
             removeLaunch("createTournament");
             setTournamentCode(newTournamentCode);
             launching({ newLaunch: 'tournament', setModal: setIsModalTournament });
-            navigate(`/games/Tournament/${newTournamentCode}`);
+            navigate(`/games/Tournament/${newTournamentCode}` , { state: { makeTournament: true } });
         } else {
             setErrorMessage("Failed to create tournament. Please try again.");
         }

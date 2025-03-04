@@ -5,10 +5,11 @@ import axios from 'axios';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Modal, Button } from 'react-bootstrap';
 import { jwtDecode } from "jwt-decode";
-import { getCookies } from './../App.js';
 import { useParams, useNavigate } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
 import axiosInstance from '../instance/AxiosInstance.js';
 import { throttle } from 'lodash';
+import { useAuth } from '../users/AuthContext.js';
 
 function GameInstance({ children }) {
     const canvasRef = useRef(null);
@@ -30,7 +31,7 @@ function GameInstance({ children }) {
         { name: "PaddleMinus", color: "#00FFFF", active: false },
         { name: "ScoreUp", color: "#00FFFF", active: false },
     ]);
-    const [bonusBalls, setBonusBalls] = useState([]); // Separate state for spawned bonus balls
+    const [bonusBalls, setBonusBalls] = useState([]); 
     const [backDimensions, setBackDimensions] = useState(() => ({
         width: 1536,
         height: 826,
@@ -55,60 +56,69 @@ function GameInstance({ children }) {
         elo_Player2: 0,
     }));
 
-    const token = getCookies('token');
-    let user = null;
-    if (token) {
-        try {
-            user = jwtDecode(token);
-        } catch (error) {
-            console.error("Error decoding token:", error);
-        }
-    }
+	const { userInfo } = useAuth();
+	const user = userInfo;
 
-    const socketRef = useRef(null);
-    if (!socketRef.current) {
-        socketRef.current = new WebSocket(`${process.env.REACT_APP_API_URL}ws/game/${id}`);
-    }
-    const socket = socketRef.current;
+	const socketRef = useRef(null);
+	  if (!socketRef.current) {
+		  socketRef.current = new WebSocket(`${process.env.REACT_APP_SOCKET_IP}ws/game/${id}`);
+	  }
+	  const socket = socketRef.current;
+  
+	  socket.onopen = () => {
+		  console.log("WebSocket connection established.");
+	  };
+  
+	  socket.onclose = () => {
+			finishGame();
+			console.log("WebSocket connection closed.");
+	  };
+  
+	  socket.onerror = (error) => {
+		  console.error("WebSocket error: ", error);
+	  };
+  
+	  socket.onmessage = (event) => {
+		const data = JSON.parse(event.data);
+		setGameData((prevState) => ({
+			...prevState,
+			Seconds: data.seconds,
+			Minutes: data.minutes,
+			PaddleRightY: data.paddleRightY,
+			PaddleLeftY: data.paddleLeftY,
+			PaddleRightX: data.paddleRightX,
+			PaddleLeftX: data.paddleLeftX,
+			PaddleWidth: data.width,
+			PaddleHeight: data.height,
+			Ball_Pos_x : data.new_pos_x,
+			Ball_Pos_y : data.new_pos_y,
+			Ball_Width: data.ball_width,
+			Score_P1: data.score_P1,
+			Score_P2: data.score_P2,
+			Winner: data.winner,
+			Loser: data.loser,
+			elo_Player1 : data.elo_Player1,
+    		elo_Player2 : data.elo_Player2,
+		}));
+		if (data.winner || data.loser)
+			setIsGameOngoing(false);
+		if (data.isInTournament === true)
+		{
+			patchTournament(data)
+            console.log("code2 after patch", data.code)
+			navigate(`/games/tournament/${data.code}` , { state: { makeTournament: false } });
+		}
+	};
 
-    socket.onopen = () => {
-        console.log("WebSocket connection established.");
-    };
-
-    socket.onclose = () => {
-        finishGame();
-        console.log("WebSocket connection closed.");
-    };
-
-    socket.onerror = (error) => {
-        console.error("WebSocket error: ", error);
-    };
-
-    socket.onmessage = (event) => {
-        const data = JSON.parse(event.data);
-        setGameData((prevState) => ({
-            ...prevState,
-            Seconds: data.seconds,
-            Minutes: data.minutes,
-            PaddleRightY: data.paddleRightY,
-            PaddleLeftY: data.paddleLeftY,
-            PaddleRightX: data.paddleRightX,
-            PaddleLeftX: data.paddleLeftX,
-            PaddleWidth: data.width,
-            PaddleHeight: data.height,
-            Ball_Pos_x: data.new_pos_x,
-            Ball_Pos_y: data.new_pos_y,
-            Ball_Width: data.ball_width,
-            Score_P1: data.score_P1,
-            Score_P2: data.score_P2,
-            Winner: data.winner,
-            Loser: data.loser,
-            elo_Player1: data.elo_Player1,
-            elo_Player2: data.elo_Player2,
-        }));
-        if (data.winner || data.loser) setIsGameOngoing(false);
-        if (data.isInTournament === true) navigate("/home");
-    };
+	const patchTournament = async (data) => {
+		try {
+			const response = await axiosInstance.patch(`/api/game/fetch_data_tournament_by_code/${data.code}/`, {
+				winner: data.winner
+		  });
+		} catch (error) {
+		  console.error("Error updating game:", error);
+		}
+	}
 
     const finishGame = async () => {
         try {
@@ -124,8 +134,8 @@ function GameInstance({ children }) {
                 status: 'finished',
             });
             setGame(response.data);
-            if (game?.player1 === user.name) updateEloP1();
-            if (game?.player2 === user.name) updateEloP2();
+            if (game?.player1 === userInfo.name) updateEloP1();
+            if (game?.player2 === userInfo.name) updateEloP2();
         } catch (error) {
             console.error("Error updating game:", error);
         }
@@ -133,7 +143,7 @@ function GameInstance({ children }) {
 
     const updateEloP1 = async () => {
         try {
-            await axiosInstance.patch(`/api/user/${user.id}`, { elo: gameData.elo_Player1 });
+            await axiosInstance.patch(`/api/user/${userInfo.id}`, { elo: gameData.elo_Player1 });
         } catch (error) {
             console.error("Error fetching user by ID:", error);
         }
@@ -141,7 +151,7 @@ function GameInstance({ children }) {
 
     const updateEloP2 = async () => {
         try {
-            await axiosInstance.patch(`/api/user/${user.id}`, { elo: gameData.elo_Player2 });
+            await axiosInstance.patch(`/api/user/${userInfo.id}`, { elo: gameData.elo_Player2 });
         } catch (error) {
             console.error("Error fetching user by ID:", error);
         }
@@ -165,6 +175,29 @@ function GameInstance({ children }) {
 	};
 
 	useEffect(() => {
+		if (isGameOngoing === false && socket.readyState !== WebSocket.CLOSED){
+			finishGame();
+			socket.close();
+		}
+	}, [isGameOngoing]);
+
+	useEffect(() => {
+		if (gameStart === false) {
+			const fetchData = async () => {
+				try {
+					const response = await axiosInstance.get(`/api/game/fetch_data/${id}/`);
+					console.log(response.data)
+					setGame(response.data);
+					setWaitInput(true);
+				} catch (error) {
+					console.error("Error fetching game by ID:", error);
+				}
+			}
+		}
+	}, []);
+
+
+	useEffect(() => {
 		if (!isGameOngoing || !canvasRef.current) return;
 
 		const generateBonusBall = () => {
@@ -179,14 +212,13 @@ function GameInstance({ children }) {
 		const interval = setInterval(generateBonusBall, 30000); 
 		return () => clearInterval(interval);
 	}, [isGameOngoing]);
+
 	const checkCollision = (mainBallX, mainBallY, mainBallRadius, bonusBallX, bonusBallY, bonusBallRadius) => {
 		const dx = mainBallX - bonusBallX;
 		const dy = mainBallY - bonusBallY;
 		const distance = Math.sqrt(dx * dx + dy * dy);
 		return distance < (mainBallRadius + bonusBallRadius);
 	};
-
-
 
     useEffect(() => {
         if (canvasRef.current && showModal) {
@@ -279,7 +311,7 @@ function GameInstance({ children }) {
             };
             if (!game) fetchData();
 
-            if (game && game.player1 === user.name) {
+            if (game && game.player1 === userInfo.name) {
                 const sendGameInstance = () => {
                     if (socket.readyState === WebSocket.OPEN) {
                         socket.send(JSON.stringify({ "message": "Hello from Player 1" }));
@@ -296,7 +328,7 @@ function GameInstance({ children }) {
                 }
             }
         }
-    }, [socket, backDimensions, game, user?.name, id]);
+    }, [socket, backDimensions, game, userInfo.name, id]);
 
     let keyUpdateTimeout = null;
     const throttleRate = 1;
@@ -306,7 +338,7 @@ function GameInstance({ children }) {
 
         setIsKeyDown((prev) => {
             const updatedKeyDown = { ...prev, [e.key]: true };
-            const player = user.name === game.player1 ? "P1" : (user.name === game.player2 ? "P2" : null);
+            const player = userInfo.name === game.player1 ? "P1" : (userInfo.name === game.player2 ? "P2" : null);
             const gameState = { isKeyDown: updatedKeyDown, player };
 
             if (socket.readyState === WebSocket.OPEN && !keyUpdateTimeout) {
@@ -324,7 +356,7 @@ function GameInstance({ children }) {
 
         setIsKeyDown((prev) => {
             const updatedKeyDown = { ...prev, [e.key]: false };
-            const player = user.name === game.player1 ? "P1" : (user.name === game.player2 ? "P2" : null);
+            const player = userInfo.name === game.player1 ? "P1" : (userInfo.name === game.player2 ? "P2" : null);
             const gameState = { isKeyDown: updatedKeyDown, player };
 
             if (socket.readyState === WebSocket.OPEN && !keyUpdateTimeout) {

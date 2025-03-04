@@ -6,8 +6,8 @@ import { Modal, Button } from 'react-bootstrap';
 import { BrowserRouter as Router, Route, Routes, Link, useNavigate } from 'react-router-dom';
 import React, { useEffect, useState, useRef } from "react";
 import { jwtDecode } from "jwt-decode";
-import { getCookies } from './../App.js';
 import axiosInstance from "../instance/AxiosInstance";
+import { useAuth } from '../users/AuthContext';
 
 function HomeGame({ setModalStats, setModalCreateTournament, setModalTournament, launching, setParentItems, setParentNumberPlayer }) {
     const [player1, setPlayer1] = useState("");
@@ -23,9 +23,7 @@ function HomeGame({ setModalStats, setModalCreateTournament, setModalTournament,
     const navigate = useNavigate();
     const [game, setGame] = useState(null);
     const [tournament, setTournament] = useState(null);
-    const [joinTournament, setJoinTournament] = useState(false);
     const [socket, setSocket] = useState(null);
-    const [socketTournament, setSocketTournament] = useState(null);
 
     const [items, setItems] = useState([
         { name: 'profile', active: false },
@@ -36,41 +34,13 @@ function HomeGame({ setModalStats, setModalCreateTournament, setModalTournament,
         { name: 'Lose', active: false },
         { name: 'Tournament', active: false },
     ]);
-
-    const token = getCookies('token');
-    let user = null;
-
-    if (token) {
-        try {
-            user = jwtDecode(token);
-        } catch (error) {
-            console.error("Error decoding token:", error);
-        }
-    }
-
-    useEffect(() => {
-        if (joinTournament && !socketTournament) {
-            const newSocket = new WebSocket(`ws://${window.location.hostname}:8000/ws/tournament/${gameCode}/?token=${token}`);
-            setSocketTournament(newSocket);
-            newSocket.onmessage = (event) => {
-                const data = JSON.parse(event.data);
-                console.log(data);
-                if (data.game_id && (data.player1 === user.name || data.player2 === user.name)) {
-                    navigate(`/games/${data.game_id}`);
-                }
-            };
-            newSocket.onclose = () => {
-                console.log("Tournament webSocket closed");
-            };
-            newSocket.onopen = () => {
-                console.log("Tournament websocket open");
-            };
-        }
-    }, [socketTournament, joinTournament]);
+    
+    const { userInfo } = useAuth();
+    let user = userInfo;
 
     useEffect(() => {
         if (!socket && waitingForPlayer) {
-            const newSocket = new WebSocket(`${process.env.REACT_APP_API_URL}ws/matchmaking/?token=${token}`);
+            const newSocket = new WebSocket(`${process.env.REACT_APP_SOCKET_IP}ws/matchmaking/`);
             setSocket(newSocket);
 
             newSocket.onmessage = (event) => {
@@ -127,7 +97,7 @@ function HomeGame({ setModalStats, setModalCreateTournament, setModalTournament,
 
     const fetchDataTournament = async () => {
         try {
-            const response = await axiosInstance.get(`/game/fetch_data_tournament_by_code/${gameCode}/`);
+            const response = await axiosInstance.get(`/api/game/fetch_data_tournament_by_code/${gameCode}/`);
             setTournament(response.data);
             return 0;
         } catch (error) {
@@ -144,9 +114,8 @@ function HomeGame({ setModalStats, setModalCreateTournament, setModalTournament,
         } else if (name === "join") {
             const fonction_return = await fetchDataTournament();
             if (fonction_return === 0) {
-                setModalTournament(true);
-                setJoinTournament(true);
-                launching({ newLaunch: 'tournament', setModal: setModalTournament });
+                console.log("code", gameCode);
+                navigate(`/games/tournament/${gameCode}` , { state: { makeTournament: true } });
             }
         }
     };

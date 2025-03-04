@@ -24,7 +24,6 @@ function Template({ children, taskBarContent, launching, appArray }) {
     };
 
     const toggleSocial = () => {
-        console.log('prout')
         setIsSocial(((prev) => !prev));
         handleClick('social')
     }
@@ -69,13 +68,13 @@ function Template({ children, taskBarContent, launching, appArray }) {
                             <div className="application-desktop d-flex flex-column bd-highlight mb-3">
                                 {!isAuthenticated && <div
                                     className="p-2 bd-highlight flex-item"
-                                    onClick={() => navigate("/Home", {state: { modalName: "terminal"}})} 
+                                    onClick={() => navigate("/home", {state: { modalName: "terminal"}})} 
                                 >
                                     Terminal
                                 </div>}
                                 {isAuthenticated && <div
                                     className="p-2 bd-highlight flex-item"
-                                    onClick={() => navigate("/Home", {state: { modalName: "game"}})}
+                                    onClick={() => navigate("/home", {state: { modalName: "game"}})}
                                 >
                                     Game
                                 </div>}
@@ -87,15 +86,15 @@ function Template({ children, taskBarContent, launching, appArray }) {
                                 </div>}
                                 {isAuthenticated && <div
                                     className="p-2 bd-highlight flex-item"
-                                    onClick={() => navigate("/Home", {state: { modalName: "stats"}})}
+                                    onClick={() => navigate("/home", {state: { modalName: "stats"}})}
                                 >
                                     Stats
                                 </div>}
                                 {isAuthenticated && 
                                     <>
                                     <div className="w-100" style={{ position: 'absolute', left:'0%', height:'10%', bottom:'10%'}}>
-                                        <img src={profile} alt="Profile" title="Profile" style={{ width: '24px', height: '24px', cursor: 'pointer', margin:'2%' }} onClick={() => navigate("/Home", { state: { modalName: "profile" } })} />
-                                        <img src={home} alt="Home" title="Home" style={{ width: '24px', height: '24px', cursor: 'pointer', margin:'2%' }} onClick={() => navigate("/Home")} />
+                                        <img src={profile} alt="Profile" title="Profile" style={{ width: '24px', height: '24px', cursor: 'pointer', margin:'2%' }} onClick={() => navigate("/home", { state: { modalName: "profile" } })} />
+                                        <img src={home} alt="Home" title="Home" style={{ width: '24px', height: '24px', cursor: 'pointer', margin:'2%' }} onClick={() => navigate("/home")} />
                                         <img src={info} alt="Info" title="Infos" style={{ width: '24px', height: '24px', cursor: 'pointer', margin:'2%' }} onClick={() => console.log("Info clicked")} />
                                     </div>
                                     <div className="w-100" style={{ position: 'absolute', borderTop:'2px solid #989a9c', left:'0%', height:'10%', bottom:'0%'}}>

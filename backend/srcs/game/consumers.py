@@ -14,44 +14,102 @@ import copy
 import os
 
 class TournamentConsumer(AsyncWebsocketConsumer):
+    tournament_states = {}
+    tournament = {}
+    processed_messages = set()
+
+    def __init__(self):  
+            self.groups = []
+            self.tournament_code = None
+            self.token = None
+            self.user = None
+            self.group_name = None
+
     async def connect(self):
         self.tournament_code = self.scope['url_route']['kwargs']['tournament_code']
-        self.token = self.scope.get('query_string', b'').decode().split('=')[1]
+        self.token = self.scope['cookies'].get('token')
         self.user = await self.authenticate_user(self.token)
-        self.tournament = await self.get_tournament(self.tournament_code)
+        
+        tournament = await self.get_tournament(self.tournament_code)
+        if tournament:
+            TournamentConsumer.tournament[self.tournament_code] = tournament
+        else:
+            await self.close()
+            return
+        
+        self.group_name = f'tournament_{self.tournament_code}'
+        await self.channel_layer.group_add(
+            self.group_name,
+            self.channel_name
+        )
 
-        if not self.tournament or not self.user:
+        if not self.user:
             await self.close()
             return
 
-        await self.add_user_to_tournament()
-        await self.accept()
+        if self.user.name in [tournament.player1, tournament.player2, tournament.player3, tournament.player4]:
+            await self.accept()
+        else:
+            await self.add_user_to_tournament()
+            await self.accept()
+            await self.send_user_connected_message()
+            game_group = f"game_{self.tournament_code}"
+            await self.channel_layer.group_add(game_group, self.channel_name)
+            print(f"User {self.user.name} added to group {game_group}", flush=True)
 
-        game_group = f"game_{self.tournament_code}"
-        await self.channel_layer.group_add(game_group, self.channel_name)
-        
-        print(f"User {self.user.name} added to group {game_group}", flush=True)
-
-        await self.start_first_match()
-        if self.tournament.size == 4:
-            await self.start_finale()
-
+            if self.tournament_code not in TournamentConsumer.tournament_states:
+                TournamentConsumer.tournament_states[self.tournament_code] = {"games_finished": 0}
 
     async def disconnect(self, close_code):
         print(f"Removed from tournament", flush=True)
+        if self.tournament_code in TournamentConsumer.tournament:
+            del TournamentConsumer.tournament[self.tournament_code]
+
+    @database_sync_to_async
+    def fetch_nbr_games(self):
+        tournament = TournamentConsumer.tournament.get(self.tournament_code)
+        if tournament:
+            count = tournament.gamesTournament.count()
+            print(f"Games count: {count}", flush=True)
+            return count
+        return 0
 
     @database_sync_to_async
     def add_user_to_tournament(self):
-        if not self.tournament.player1:
-            self.tournament.player1 = self.user.name
-        elif not self.tournament.player2:
-            self.tournament.player2 = self.user.name
-        elif not self.tournament.player3:
-            self.tournament.player3 = self.user.name
-        elif not self.tournament.player4:
-            self.tournament.player4 = self.user.name
-        self.tournament.players_connected += 1
-        self.tournament.save()
+        tournament = TournamentConsumer.tournament.get(self.tournament_code)
+        if tournament:
+            if not tournament.player1:
+                tournament.player1 = self.user.name
+            elif not tournament.player2:
+                tournament.player2 = self.user.name
+            elif not tournament.player3:
+                tournament.player3 = self.user.name
+            elif not tournament.player4:
+                tournament.player4 = self.user.name
+            tournament.players_connected += 1
+            tournament.save()
+
+
+    async def send_user_connected_message(self):
+        tournament = TournamentConsumer.tournament.get(self.tournament_code)
+        if tournament:
+            message = {
+                'type': 'user_connected',
+                'username': self.user.name,
+                'players_connected': tournament.players_connected,
+                'code': self.tournament_code,
+            }
+
+            await self.channel_layer.group_send(
+                self.group_name,
+                {
+                    'type': 'user_connected_message',
+                    'message': message
+                }
+            )
+
+    async def user_connected_message(self, event):
+        await self.send(text_data=json.dumps(event))
 
     async def game_update(self, event):
         await self.send(text_data=json.dumps(event))
@@ -68,68 +126,100 @@ class TournamentConsumer(AsyncWebsocketConsumer):
                 "player2" : player2,
             }
         )
+
     async def start_first_match(self):
-        if self.tournament.size == 2 and self.tournament.players_connected == 2:
-            if self.tournament.player1 and self.tournament.player2:
-                game_data_1 = await self.create_Game_Multi(
-                    self.token, self.tournament.player1, self.tournament.player2
-                )
-                if game_data_1:
-                    await self.start_game(game_data_1['id'], self.tournament.player1, self.tournament.player2)
-        if self.tournament.size == 4 and self.tournament.players_connected == 4:
-            if self.tournament.player1 and self.tournament.player2:
-                game_data_1 = await self.create_Game_Multi(
-                    self.token, self.tournament.player1, self.tournament.player2
-                )
-                if game_data_1:
-                    await self.start_game(game_data_1['id'], self.tournament.player1, self.tournament.player2)
-            if self.tournament.player3 and self.tournament.player4:
-                game_data_2 = await self.create_Game_Multi(
-                    self.token, self.tournament.player3, self.tournament.player4
-                )
-                if game_data_2:
-                    await self.start_game(game_data_2['id'], self.tournament.player3, self.tournament.player4)
+        tournament = TournamentConsumer.tournament.get(self.tournament_code)
+        if tournament:
+            if tournament.size == 2 and tournament.players_connected == 2:
+                if tournament.player1 and tournament.player2:
+                    game_data_1 = await self.create_Game_Multi(
+                        self.token, tournament.player1, tournament.player2
+                    )
+                    if game_data_1:
+                        await self.start_game(game_data_1['id'], tournament.player1, tournament.player2)
+
+            if tournament.size == 4 and tournament.players_connected == 4:
+                if tournament.player1 and tournament.player2:
+                    game_data_1 = await self.create_Game_Multi(
+                        self.token, tournament.player1, tournament.player2
+                    )
+                    if game_data_1:
+                        await self.start_game(game_data_1['id'], tournament.player1, tournament.player2)
+                if tournament.player3 and tournament.player4:
+                    game_data_2 = await self.create_Game_Multi(
+                        self.token, tournament.player3, tournament.player4
+                    )
+                    if game_data_2:
+                        await self.start_game(game_data_2['id'], tournament.player3, tournament.player4)
 
     async def start_finale(self):
-        print(self.tournament.winner1, flush=True)
-        print(self.tournament.winner2, flush=True)
-        if self.tournament.winner1 and self.tournament.winner2:
-            final_game_data = await self.create_Game_Multi(self.token, self.tournament.winner1, self.tournament.winner2)
-            if final_game_data:
-                await self.start_game(final_game_data['id'], self.tournament.winner1, self.tournament.winner2)
+        tournament = TournamentConsumer.tournament.get(self.tournament_code)
+        if tournament:
+            print(tournament.winner1, flush=True)
+            print(tournament.winner2, flush=True)
+            if tournament.winner1 and tournament.winner2:
+                final_game_data = await self.create_Game_Multi(self.token, tournament.winner1, tournament.winner2)
+                if final_game_data:
+                    await self.start_game(final_game_data['id'], tournament.winner1, tournament.winner2)
 
-    
     async def receive(self, text_data):
         try:
             data_dict = json.loads(text_data)
         except json.JSONDecodeError:
             print("Error decoding JSON data")
             return
-    
-    async def create_Game_Multi(self, token, player1, player2):
-        api_url = f"{os.getenv('REACT_APP_API_URL')}/game/create_game"
-        auth_header = {'Authorization': f"Bearer {token}"}
-        data = {
-            'player1': player1,
-            'player2': player2,
-            'isInTournament' : True,
-            'timeSeconds': self.tournament.timeMaxSeconds,
-            'timeMinutes': self.tournament.timeMaxMinutes,
-            'scoreMax': self.tournament.scoreMax,
-        }
+        print("receive :", data_dict, flush=True)
         
+        if "Start" in data_dict:  
+            tournament = TournamentConsumer.tournament.get(self.tournament_code)
+            if tournament:
+                if tournament.players_connected == 2 and tournament.size == 2 and await self.fetch_nbr_games() < 3:
+                    await self.start_first_match()
+                elif tournament.players_connected == 4 and tournament.size == 4 and await self.fetch_nbr_games() < 2:
+                    await self.start_first_match()
+                elif tournament.players_connected == 4 and tournament.size == 4 and await self.fetch_nbr_games() == 2:
+                    await self.start_finale()
+
+    @database_sync_to_async
+    def create_game_directly(self, player1, player2, timeSeconds, timeMinutes, scoreMax, tournamentCode):
         try:
-            response = await asyncio.to_thread(requests.post, api_url, headers=auth_header, data=data, verify=False)
-            if response.status_code == 201:
-                print('Game created successfully', flush=True)
-                game_data = response.json()
-                return game_data
-            else:
-                return None
-        except requests.exceptions.RequestException as e:
-            print(f"Error with the request: {e}", flush=True)
+            game = Game.objects.create(
+                player1=player1,
+                player2=player2,
+                isInTournament=True,
+                timeSeconds=timeSeconds,
+                timeMinutes=timeMinutes,
+                scoreMax=scoreMax,
+                tournamentCode=tournamentCode
+            )
+            TournamentConsumer.tournament[self.tournament_code].gamesTournament.add(game) 
+            print(f"Game created directly - ID: {game.id}, Player1: {game.player1}, Player2: {game.player2}", flush=True)
+            return {
+                'id': game.id,
+                'player1': game.player1,
+                'player2': game.player2,
+            }
+        except Exception as e:
+            print(f"Error creating game directly: {e}", flush=True)
             return None
 
+    async def create_Game_Multi(self, token, player1, player2):
+        
+        timeSeconds = TournamentConsumer.tournament[self.tournament_code].timeMaxSeconds 
+        timeMinutes = TournamentConsumer.tournament[self.tournament_code].timeMaxMinutes
+        scoreMax = TournamentConsumer.tournament[self.tournament_code].scoreMax
+        tournement_code = self.tournament_code
+        
+        game_data = await self.create_game_directly(player1, player2, timeSeconds, timeMinutes, scoreMax, tournement_code)
+
+        if game_data:
+            print('Game created successfully in create_Game_Multi:', game_data, flush=True)
+            return game_data
+        else:
+            print("Failed to create game in create_Game_Multi", flush=True)
+            return None
+
+            
     async def authenticate_user(self, token):
         try:
             payload = jwt.decode(token, "coucou", algorithms=["HS256"])
@@ -145,14 +235,6 @@ class TournamentConsumer(AsyncWebsocketConsumer):
             print("Invalid token")
         return None
     
-    def winner_first_match(self, game_id, winner):
-        if game_id == self.tournament.game1_id:
-            self.tournament.winner1 = winner
-        elif game_id == self.tournament.game2_id:
-            self.tournament.winner2 = winner
-        self.tournament.save()
-
-
     @database_sync_to_async
     def get_user_from_id(self, user_id):
         try:
@@ -180,13 +262,12 @@ class TournamentConsumer(AsyncWebsocketConsumer):
             print(f"Error fetching tournament: {e}")
             return None
 
-
-
 matchmaking_queue = []
 
 class MatchmakingConsumer(AsyncWebsocketConsumer):
     async def connect(self):
-        token = self.scope.get('query_string', b'').decode().split('=')[1]
+        token = self.scope['cookies'].get('token')
+        print("coucou",token, flush=True)
         if token:
             user = await self.authenticate_user(token)
             if user:
@@ -222,7 +303,7 @@ class MatchmakingConsumer(AsyncWebsocketConsumer):
                 player1 = matchmaking_queue.pop(0)
                 player2 = matchmaking_queue.pop(0)
                 if player1['player_name'] != player2['player_name']:
-                    gameData = await self.create_Game_Multi(self.user.auth_token ,player1['player_name'], player2['player_name'])
+                    gameData = await self.create_Game_Multi(player1['player_name'], player2['player_name'])
                 else:
                     matchmaking_queue.append({
                     'player_name': self.user,
@@ -260,28 +341,30 @@ class MatchmakingConsumer(AsyncWebsocketConsumer):
         except User.DoesNotExist:
             return None
 
-
-    async def create_Game_Multi(self, token, player1, player2):
-        api_url = f"{os.getenv('REACT_APP_API_URL')}api/game/create_game"
-        auth_header = {'Authorization': f"Bearer {token}"}
-        data = {
-            'player1': player1,
-            'player2': player2,
-        }
-        
+    @database_sync_to_async
+    def create_game_directly(self, player1, player2):
         try:
-            print('Sending request to create game...', flush=True)
-            response = await asyncio.to_thread(requests.post, api_url, headers=auth_header, data=data, verify=False)
-            print(f"Response status code: {response.status_code}", flush=True)
+            game = Game.objects.create(
+                player1=player1,
+                player2=player2,
+            )
+            print(f"Game created directly - ID: {game.id}, Player1: {game.player1}, Player2: {game.player2}", flush=True)
+            return {
+                'id': game.id,
+                'player1': game.player1,
+                'player2': game.player2,
+            }
+        except Exception as e:
+            print(f"Error creating game directly: {e}", flush=True)
+            return None
 
-            if response.status_code == 201:
-                print('Game created successfully', flush=True)
-                game_data = response.json()
-                return game_data
-            else:
-                return None
-        except requests.exceptions.RequestException as e:
-            print(f"Error with the request: {e}", flush=True)
+    async def create_Game_Multi(self, player1, player2):
+        game_data = await self.create_game_directly(player1, player2)
+        if game_data:
+            print('Game created successfully in create_Game_Multi:', game_data, flush=True)
+            return game_data
+        else:
+            print("Failed to create game in create_Game_Multi", flush=True)
             return None
 
     async def game_update(self, event):
@@ -299,7 +382,6 @@ class MatchmakingConsumer(AsyncWebsocketConsumer):
         group_name = f"game_{game_id}"
         await self.channel_layer.group_add(group_name, player1)
         await self.channel_layer.group_add(group_name, player2)
-
 
 class GameState:
     def __init__(self, game):
@@ -337,6 +419,8 @@ class GameState:
         self.eloPlayer1 = game.elo_Player1
         self.eloPlayer2 = game.elo_Player2
         self.isInTournament = game.isInTournament
+        self.code = game.tournamentCode
+        self.gamerunning = False
 
     def is_game_over(self, game):
         if self.score["score_P1"] >= game.scoreMax:
@@ -449,14 +533,13 @@ class gameConsumer(AsyncWebsocketConsumer):
             game.save()
         except Exception as e:
             print(f"Error saving game: {e}")
-
+            
     async def connect(self):
         self.game_id = self.scope['url_route']['kwargs']['game_id']
         self.group_name = f"game_{self.game_id}"
         if self.game_id not in gameConsumer.game_states:
             game = await self.get_game(self.game_id)
             gameConsumer.game_states[self.game_id] = GameState(game)
-
         self.game_state = gameConsumer.game_states[self.game_id]
 
         await self.channel_layer.group_add(
@@ -471,8 +554,6 @@ class gameConsumer(AsyncWebsocketConsumer):
             self.group_name,
             self.channel_name
         )
-        if self.game_id in gameConsumer.game_states:
-            del gameConsumer.game_states[self.game_id]
         if self.game_id in gameConsumer.paddle_data:
             del gameConsumer.paddle_data[self.game_id]
         if self.game_id in gameConsumer.current_key_states_P1:
@@ -509,6 +590,11 @@ class gameConsumer(AsyncWebsocketConsumer):
         await self.send(text_data=json.dumps(event))
            
     async def run_game_loop(self, game_state, game):
+        print("states : ", gameConsumer.game_states[self.game_id].gamerunning, flush=True)
+        if gameConsumer.game_states[self.game_id].gamerunning == True:
+            return
+        gameConsumer.game_states[self.game_id].gamerunning = True
+        print("states after : ", gameConsumer.game_states[self.game_id].gamerunning, flush=True)
         last_time_updated = time.time()
         accumulated_time = 0
         try:
@@ -550,6 +636,7 @@ class gameConsumer(AsyncWebsocketConsumer):
                     print(f"Game Over! Winner: {game_state.winner}", flush=True)
                     print(f"Game Over! Loser: {game_state.loser}", flush=True)
                     print(f"Game Over! : {game_state.isInTournament}", flush=True)
+                    gameConsumer.game_states[self.game_id].gamerunning = False
                     game_state.update_Elo()
                     await self.send_message({
                         "type": "game_update",
@@ -562,6 +649,7 @@ class gameConsumer(AsyncWebsocketConsumer):
                         "elo_Player1" : game_state.eloPlayer1,
                         "elo_Player2" : game_state.eloPlayer2,
                         "isInTournament" : game_state.isInTournament,
+                        "code" : game_state.code,
                     })
                     break
 
@@ -601,5 +689,4 @@ class gameConsumer(AsyncWebsocketConsumer):
                 game_state.paddle_data["height_canvas"] - game_state.paddle_data["height"],
                 game_state.paddle_data["paddleRightY"] + paddle_speed,
             )
-
 

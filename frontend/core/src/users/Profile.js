@@ -1,22 +1,23 @@
 import "./Profile.css"
-import { getCookies } from "../App"
 import { useNavigate, Link, useParams } from "react-router-dom"
 import React, {useEffect, useState} from "react";
 import { jwtDecode } from "jwt-decode";
 import Button from 'react-bootstrap/Button';
 import axiosInstance from "../instance/AxiosInstance";
-import useJwt from "../instance/JwtInstance";
 import edit from "../assets/user/edit.svg";
 import x from "../assets/user/x.svg";
 import check from "../assets/user/check.svg"
 import gear from "../assets/user/gear.svg"
 import { AddFriend } from "../friends/Friends"
+import { showToast } from "../instance/ToastsInstance";
+import { ToastContainer } from 'react-toastify';
+import { useAuth } from "./AuthContext";
 
 function ChangeDetails({setUser, setValue, toChange, value, toType})
 {
 	const navigate = useNavigate();
-	const token = getCookies('token')
-	const user = jwtDecode(token);
+	const { userInfo, refreshUserInfo } = useAuth();
+	const user = userInfo
 	const [detail, setDetails] = useState(value);
 
 	const handleChange = (e) => {
@@ -30,30 +31,34 @@ function ChangeDetails({setUser, setValue, toChange, value, toType})
         e.preventDefault();
         try 
         {
-			const reponse = await axiosInstance.patch(`/api/api/user/${user.id}`, {
+			const reponse = await axiosInstance.patch(`/api/user/${user.id}`, {
 				[toChange] : detail
 			})
 			setValue(false);
 			setUser(reponse.data);
+			await refreshUserInfo();
         } 
         catch (error)
         {
+			if (error.status === 400)
+				showToast('error', 'Username already in use');
             console.error(error);
         }
 	}
 	return (
 		<>
 			<form className='userchange-form' onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "row", gap: "0.7rem"}}>
-                        <input className='input-form'
-                            type={toType}
-                            id={toChange}
-                            name={toChange}
-                            value={detail}
-                            onChange={handleChange}
-                            required
-                            placeholder='modify your details here'/>
-						<button type="submit" className='check-icon'><img src={check} alt="check"/></button>
-                </form>
+				<input className='input-form'
+					type={toType}
+					id={toChange}
+					name={toChange}
+					value={detail}
+					onChange={handleChange}
+					required
+					placeholder='modify your details here'/>
+				<button type="submit" className='check-icon'><img src={check} alt="check"/></button>
+            </form>
+			<ToastContainer />
 		</>
 	) 
 }
@@ -70,9 +75,8 @@ function Profile({id})
 	const [isPermitted, setIsPermitted] = useState(false);
 	const [isStud, setIsStud] = useState(false);
 	const [friendList, setFriendList] = useState([]);
-	const token = getCookies('token');
-	const getJwt = useJwt();
-	const decodeToken = getJwt(token);
+	const { userInfo, refreshUserInfo } = useAuth();
+	const decodeToken = userInfo;
 	let friends = friendList?.friends || [];
 
 	const fetchFriendList = async () => {
@@ -89,7 +93,6 @@ function Profile({id})
     const handleFileChange = async (e) => {
 		e.preventDefault();
 		const selectedImage = e.target.files[0];
-		
 		try {
 			const response = await axiosInstance.patch(`/api/user/${decodeToken.id}`, { 
 				'profile_image' : selectedImage 
@@ -99,6 +102,7 @@ function Profile({id})
 				},
 			})
 			setUser(response.data);
+			await refreshUserInfo();
 			console.log(response);
 		} 
 		catch (error) {
@@ -130,17 +134,20 @@ function Profile({id})
 			setIsPermitted(false);
 			setIsStud(false);
 		}
-		try 
+		console.log(userInfo);
+		setUser(userInfo);
+		console.log(user);
+		if (decodeToken.id !== id)
 		{
-			if (token)
+			try 
 			{
 				const reponse = await axiosInstance.get(`/api/user/${id}`);
 				setUser(reponse.data);
 			}
-		}
-		catch (error)
-		{
-			console.error('Erreur lors de la récupération des données utilisateur', error);
+			catch (error)
+			{
+				console.error('Erreur lors de la récupération des données utilisateur', error);
+			}
 		}
 	}
 
@@ -151,6 +158,10 @@ function Profile({id})
 		friends = friendList?.friends || [];
     }, [id]);
 
+	useEffect(() => {
+        console.log('user mis à jour:', user);
+    }, [user]);
+
 	return (
 		<>
 			{user ? (
@@ -159,7 +170,7 @@ function Profile({id})
 						<div className="profile-general">
 							<label htmlFor="profile_image">
 								<img
-									src={user.profile_image ? `http://localhost:8000${user.profile_image}` : '/default.png'}
+									src={user.profile_image_url ? `${process.env.REACT_APP_API_URL}${user.profile_image_url}` : '/default.png'}
 									alt="Profile"
 									className="profile-picture"
 								/>
@@ -223,7 +234,7 @@ function Profile({id})
 			) : (
 				<p>Aucun utilisateur trouvé.</p>
 			)}
-
+			<ToastContainer />
 		</>
 	);
 }

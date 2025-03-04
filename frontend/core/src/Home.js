@@ -16,7 +16,6 @@ import Profile from './users/Profile';
 import HomeChat from './chat/Homechat';
 import { useAuth } from './users/AuthContext';
 import { jwtDecode } from "jwt-decode";
-import { getCookies } from "./App";
 import P from './assets/P.png';
 import S from './assets/S.png';
 import C from './assets/C.png';
@@ -37,7 +36,7 @@ function Home() {
     const [tournamentCode, setTournamentCode] = useState(0);
     const [isModalCode, setIsModalCode] = useState(false);
     const [isLaunch, setIsLaunch] = useState([]);
-    const { isAuthenticated, setIsAuthenticated } = useAuth();
+    const { isAuthenticated, userInfo } = useAuth();
 
     const navigate = useNavigate();
 
@@ -80,10 +79,7 @@ function Home() {
     const [numberPlayer, setNumberPlayer] = useState("");
     const location = useLocation();
     const modalSend = location.state?.modalName || "";
-    const token = getCookies('token');
-    let decodeToken = null;
-    if (token)
-        decodeToken = jwtDecode(token);
+    const decodeToken = userInfo;
 
     const removeLaunch = (appName) => {
         setIsLaunch((prevLaunch) => prevLaunch.filter((app) => app !== appName));
@@ -160,13 +156,12 @@ function Home() {
     useEffect(() => {
         if (modalSend) {
             const modalSetter = setters.find(item => item.name === modalSend)?.setter;
-            if (modalSetter) {
+            if (modalSetter && !isLaunched(isLaunch, modalSend)) {
                 launching({ newLaunch: modalSend, setModal: modalSetter });
-            } else {
-                console.warn(`Aucun modal trouvé pour: ${modalSend}`);
+                navigate(location.pathname, { replace: true, state: {} });
             }
         }
-    }, [modalSend]);
+    }, [modalSend, navigate]);
 
     useEffect(() => {
         const initializePosition = (ref, initialXFactor) => {

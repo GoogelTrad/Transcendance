@@ -5,13 +5,13 @@ import axios from 'axios';
 import { useState, useEffect, useRef } from 'react';
 import { Modal, Button } from 'react-bootstrap';
 import { jwtDecode } from "jwt-decode";
-import { getCookies } from './../App.js';
 import { BrowserRouter as Router, Route, Routes, Link, useNavigate } from 'react-router-dom';
 import { useParams } from 'react-router-dom';
 import axiosInstance from '../instance/AxiosInstance.js';
 import useSocket from '../socket.js';
 import Template from '../instance/Template.js';
 import GameInstance from '../instance/GameInstance.js';
+import { useAuth } from '../users/AuthContext.js';
 
 const Games = () => {
 	
@@ -166,16 +166,14 @@ const Games = () => {
 function Game() {
 	const [game, setGame] = useState('');
 	const { id } = useParams();
-	const token = getCookies('token');
+	
+	const { userInfo } = useAuth();
 	
 	
 	const fetch_data = async () => {
 		try {
-			const response = await axios.get(`http://localhost:8000/game/fetch_data/${id}/`, {
-				headers: {
-					'Content-Type': 'application/json',
-					'Authorization': `Bearer ${token}`,
-				}
+			const response = await axiosInstance.get(`/api/game/fetch_data/${id}/`, {
+
 			});
 			setGame(response.data);
 		} catch (error) {
