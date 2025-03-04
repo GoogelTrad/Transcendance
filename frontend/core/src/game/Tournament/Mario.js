@@ -183,7 +183,7 @@ const MarioSection = ({ tournamentResponse, renderImageWithClick, onKickPlayer, 
                                     paddingLeft: "15px",
                                 }}
                             >
-                                ••• settings •••
+                                ••• players •••
                             </div>
                         )}
 

@@ -26,8 +26,6 @@ function GameInstance({ children }) {
     const [isBonusBall, setIsBonusBall] = useState([
         { name: "SpeedUp", color: "#ff914d", active: false },
         { name: "SpeedDown", color: "#00FF00", active: false },
-        { name: "SizePlus", color: "#0000FF", active: false },
-        { name: "SizeMinus", color: "#FFFF00", active: false },
         { name: "PaddlePlus", color: "#FF00FF", active: false },
         { name: "PaddleMinus", color: "#00FFFF", active: false },
         { name: "ScoreUp", color: "#00FFFF", active: false },
