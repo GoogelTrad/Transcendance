@@ -6,8 +6,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { Modal, Button } from 'react-bootstrap';
 import { jwtDecode } from "jwt-decode";
 import { useParams, useNavigate } from 'react-router-dom';
-import { BrowserRouter as Router, Route, Routes, Link, useNavigate } from 'react-router-dom';
-import { useParams } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
 import axiosInstance from '../instance/AxiosInstance.js';
 import { throttle } from 'lodash';
 import { useAuth } from '../users/AuthContext.js';
@@ -34,7 +33,7 @@ function GameInstance({ children }) {
         { name: "PaddleMinus", color: "#00FFFF", active: false },
         { name: "ScoreUp", color: "#00FFFF", active: false },
     ]);
-    const [bonusBalls, setBonusBalls] = useState([]); // Separate state for spawned bonus balls
+    const [bonusBalls, setBonusBalls] = useState([]); 
     const [backDimensions, setBackDimensions] = useState(() => ({
         width: 1536,
         height: 826,
@@ -104,7 +103,7 @@ function GameInstance({ children }) {
     		elo_Player2 : data.elo_Player2,
 		}));
 		if (data.winner || data.loser)
-			setisGameOngoing(false);
+			setIsGameOngoing(false);
 		if (data.isInTournament === true)
 			navigate("/home");
 	};

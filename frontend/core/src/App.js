@@ -32,7 +32,6 @@ function App() {
   return (
     <AuthProvider>
       <Router>
-        <div>
           <Routes>
             <Route path="/" element={<Navigate to="/home" replace />} />
             <Route path="/home" element={<Home />} />
@@ -49,8 +48,6 @@ function App() {
             <Route path='/games/Tournament' element={<Tournament />} />
             <Route path="/auth-success" element={<AuthSuccess />} />
           </Routes>
-        
-        </div>
       </Router>
     </AuthProvider>
   );

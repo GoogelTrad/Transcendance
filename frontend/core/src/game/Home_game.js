@@ -42,22 +42,22 @@ function HomeGame({ setModalStats, setModalCreateTournament, setModalTournament,
 
     useEffect(() => {
         if (joinTournament && !socketTournament) {
-            const newSocket = new WebSocket(`${process.env.REACT_APP_SOCKET_IP}/ws/tournament/${gameCode}/`);
+            const newSocket = new WebSocket(`${process.env.REACT_APP_SOCKET_IP}ws/tournament/${gameCode}/`);
             setSocketTournament(newSocket);
             newSocket.onmessage = (event) => {
                 const data = JSON.parse(event.data);
-                console.log(data);            
-                if (data.game_id && data.player1 === user.name || data.player2 === user.name) {
+                console.log(data);
+                if (data.game_id && (data.player1 === user.name || data.player2 === user.name)) {
                     navigate(`/games/${data.game_id}`);
                 }
-            }
-        };
-        newSocket.onclose = () => {
-            console.log("Tournament webSocket closed");
-        };
-        newSocket.onopen = () => {
-            console.log("Tournament websocket open");
-        };
+            };
+            newSocket.onclose = () => {
+                console.log("Tournament webSocket closed");
+            };
+            newSocket.onopen = () => {
+                console.log("Tournament websocket open");
+            };
+        }
     }, [socketTournament, joinTournament]);
 
     useEffect(() => {

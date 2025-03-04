@@ -10,6 +10,7 @@ import TournamentBracket from "./TournamentBracket.js";
 import Template from '../../instance/Template.js';
 import MarioSection from './Mario.js';
 import PacmanSection from './Pacman.js';
+import { useAuth } from '../../users/AuthContext.js';
 
 function Tournament() {
     const { tournamentCode } = useParams();
@@ -18,16 +19,9 @@ function Tournament() {
     const [socket, setSocket] = useState(null);
     const navigate = useNavigate();
 
-    const token = getCookies('token');
-    let user = null;
+    const { userInfo } = useAuth();
+    const user = userInfo;
     
-    if (token) {
-        try {
-            user = jwtDecode(token);
-        } catch (error) {
-            console.error("Error decoding token:", error);
-        }
-    };
 
 //   useEffect(() => {
 //        if (tournamentStarted && !socket) {

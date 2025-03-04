@@ -120,7 +120,7 @@ function Stats({ itemsArray = [] }) {
             setupMedals(BestTimeFiltered, "BestTime", 5, 10, 15);
             console.log("best", BestTimeFiltered);
         }
-    }, [games, id, searchFriend, userInfo]);
+    }, [games, id, userInfo]);
     
     
 
