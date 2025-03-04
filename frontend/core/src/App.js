@@ -62,11 +62,11 @@ function App() {
               <Route path="/room/:roomName" element={<ProtectedRoute><Room/></ProtectedRoute>} />
               <Route path='/home_game' element={<ProtectedRoute><Home_game /></ProtectedRoute>} />
               <Route path='/game/:id' element={<ProtectedRoute><Game /></ProtectedRoute>} />
+              <Route path='/games/tournament/:tournamentCode' element={<ProtectedRoute><Tournament /></ProtectedRoute>} />
               <Route path='/profile' element={<ProtectedRoute><Profile /></ProtectedRoute>} />
               <Route path='/friends' element={<ProtectedRoute><Friends /></ProtectedRoute>} />
               <Route path='/games/:id' element={<Games />} />
               <Route path='/games/Stats'  element={<Stats />} />
-              <Route path='/games/Tournament/:tournamentCode' element={<Tournament />} />
               <Route path="/auth-success" element={<AuthSuccess />} />
             </Routes>
           

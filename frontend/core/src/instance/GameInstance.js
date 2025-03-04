@@ -67,50 +67,67 @@ function GameInstance({ children }) {
         }
     }
 
-    const socketRef = useRef(null);
-    if (!socketRef.current) {
-        socketRef.current = new WebSocket(`${process.env.REACT_APP_API_URL}ws/game/${id}`);
-    }
-    const socket = socketRef.current;
+	const socketRef = useRef(null);
+	  if (!socketRef.current) {
+		  socketRef.current = new WebSocket(`${process.env.REACT_APP_API_URL}ws/game/${id}`);
+	  }
+	  const socket = socketRef.current;
+  
+	  socket.onopen = () => {
+		  console.log("WebSocket connection established.");
+	  };
+  
+	  socket.onclose = () => {
+			finishGame();
+			console.log("WebSocket connection closed.");
+	  };
+  
+	  socket.onerror = (error) => {
+		  console.error("WebSocket error: ", error);
+	  };
+  
+	  socket.onmessage = (event) => {
+		const data = JSON.parse(event.data);
+		setGameData((prevState) => ({
+			...prevState,
+			Seconds: data.seconds,
+			Minutes: data.minutes,
+			PaddleRightY: data.paddleRightY,
+			PaddleLeftY: data.paddleLeftY,
+			PaddleRightX: data.paddleRightX,
+			PaddleLeftX: data.paddleLeftX,
+			PaddleWidth: data.width,
+			PaddleHeight: data.height,
+			Ball_Pos_x : data.new_pos_x,
+			Ball_Pos_y : data.new_pos_y,
+			Ball_Width: data.ball_width,
+			Score_P1: data.score_P1,
+			Score_P2: data.score_P2,
+			Winner: data.winner,
+			Loser: data.loser,
+			elo_Player1 : data.elo_Player1,
+    		elo_Player2 : data.elo_Player2,
+		}));
+		if (data.winner || data.loser)
+			setIsGameOngoing(false);
+		if (data.isInTournament === true){
+			patchTournament(data)
+            console.log("code2 after patch", data.code)
+			navigate(`/games/tournament/${data.code}` , { state: { makeTournament: false } });
+		}
+	};
 
-    socket.onopen = () => {
-        console.log("WebSocket connection established.");
-    };
 
-    socket.onclose = () => {
-        finishGame();
-        console.log("WebSocket connection closed.");
-    };
-
-    socket.onerror = (error) => {
-        console.error("WebSocket error: ", error);
-    };
-
-    socket.onmessage = (event) => {
-        const data = JSON.parse(event.data);
-        setGameData((prevState) => ({
-            ...prevState,
-            Seconds: data.seconds,
-            Minutes: data.minutes,
-            PaddleRightY: data.paddleRightY,
-            PaddleLeftY: data.paddleLeftY,
-            PaddleRightX: data.paddleRightX,
-            PaddleLeftX: data.paddleLeftX,
-            PaddleWidth: data.width,
-            PaddleHeight: data.height,
-            Ball_Pos_x: data.new_pos_x,
-            Ball_Pos_y: data.new_pos_y,
-            Ball_Width: data.ball_width,
-            Score_P1: data.score_P1,
-            Score_P2: data.score_P2,
-            Winner: data.winner,
-            Loser: data.loser,
-            elo_Player1: data.elo_Player1,
-            elo_Player2: data.elo_Player2,
-        }));
-        if (data.winner || data.loser) setIsGameOngoing(false);
-        if (data.isInTournament === true) navigate("/home");
-    };
+	const patchTournament = async (data) => {
+		try {
+			const response = await axiosInstance.patch(`/api/game/fetch_data_tournament_by_code/${data.code}/`, {
+				winner: data.winner
+		  });
+		} catch (error) {
+		  console.error("Error updating game:", error);
+		}
+	}
+	
 
     const finishGame = async () => {
         try {

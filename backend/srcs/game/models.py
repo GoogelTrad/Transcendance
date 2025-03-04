@@ -27,6 +27,7 @@ class Game(models.Model):
     loser = models.CharField(max_length=255, blank=True)
     date = models.DateField(auto_now=True)
     isInTournament = models.BooleanField(default=False)
+    tournamentCode = models.IntegerField(default=0)
     
 
     status = models.CharField(
