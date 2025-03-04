@@ -6,27 +6,18 @@ import axiosInstance from '../instance/AxiosInstance.js';
 import { showToast } from '../instance/ToastsInstance';
 
 function Logout() {
-    const {setIsAuthenticated} = useAuth();
+    const { logout} = useAuth();
 
     const navigate = useNavigate();
 
-    const logoutUser = async () => 
-    {
-        try 
-        {
-            const reponse = await axiosInstance.get(`/api/user/logout`)
-            localStorage.removeItem('token');
-            setIsAuthenticated(false);
-        }
-        catch (error) {
-            console.error('Erreur lors de la récupération des données utilisateur', error);
-        }
+    const handleLogout = async () => {
+        await logout();
         navigate('/home');
-    }
+    };
 
     useEffect (() => 
     {
-        logoutUser();
+        handleLogout();
     }, []);
 
     return (

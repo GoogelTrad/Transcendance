@@ -5,12 +5,12 @@ import axios from 'axios';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Modal, Button } from 'react-bootstrap';
 import { jwtDecode } from "jwt-decode";
-import { useUserInfo } from './TokenInstance';
 import { BrowserRouter as Router, Route, Routes, Link, useNavigate } from 'react-router-dom';
 import { useParams } from 'react-router-dom';
 import axiosInstance from '../instance/AxiosInstance.js';
 import useSocket from '../socket.js';
 import { throttle } from 'lodash';
+import { useAuth } from '../users/AuthContext.js';
 
 function GameInstance ( {children} ) {
     const canvasRef = useRef(null);
@@ -52,21 +52,12 @@ function GameInstance ( {children} ) {
 		elo_Player2 : 0,
 	}));
 
-	const { userInfo, tokenUser } = useUserInfo();
-	let user = null;
-	const token = tokenUser;
-
-	if (token) {
-		try {
-			user = userInfo;
-		} catch (error) {
-			console.error("Error decoding token:", error);
-		}
-	};
+	const { userInfo } = useAuth();
+	const user = userInfo;
 
 	const socketRef = useRef(null);
 	  if (!socketRef.current) {
-		  socketRef.current = new WebSocket(`${process.env.REACT_APP_SOCKET_IP}/ws/game/${id}`);
+		  socketRef.current = new WebSocket(`${process.env.REACT_APP_SOCKET_IP}ws/game/${id}`);
 	  }
 	  const socket = socketRef.current;
   
@@ -104,7 +95,6 @@ function GameInstance ( {children} ) {
 			Loser: data.loser,
 			elo_Player1 : data.elo_Player1,
     		elo_Player2 : data.elo_Player2,
-
 		}));
 		if (data.winner || data.loser)
 			setisGameOngoing(false);
@@ -222,6 +212,7 @@ function GameInstance ( {children} ) {
 		const fetchData = async () => {
 			try {
 				const response = await axiosInstance.get(`/api/game/fetch_data/${id}/`);
+				console.log(response.data)
 				setGame(response.data);
 				setWaitInput(true);
 			} catch (error) {

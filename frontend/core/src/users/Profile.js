@@ -1,11 +1,9 @@
 import "./Profile.css"
-import { useUserInfo } from '../instance/TokenInstance';
 import { useNavigate, Link, useParams } from "react-router-dom"
 import React, {useEffect, useState} from "react";
 import { jwtDecode } from "jwt-decode";
 import Button from 'react-bootstrap/Button';
 import axiosInstance from "../instance/AxiosInstance";
-import useJwt from "../instance/JwtInstance";
 import edit from "../assets/user/edit.svg";
 import x from "../assets/user/x.svg";
 import check from "../assets/user/check.svg"
@@ -13,11 +11,12 @@ import gear from "../assets/user/gear.svg"
 import { AddFriend } from "../friends/Friends"
 import { showToast } from "../instance/ToastsInstance";
 import { ToastContainer } from 'react-toastify';
+import { useAuth } from "./AuthContext";
 
 function ChangeDetails({setUser, setValue, toChange, value, toType})
 {
 	const navigate = useNavigate();
-	const { userInfo } = useUserInfo();
+	const { userInfo, refreshUserInfo } = useAuth();
 	const user = userInfo
 	const [detail, setDetails] = useState(value);
 
@@ -37,6 +36,7 @@ function ChangeDetails({setUser, setValue, toChange, value, toType})
 			})
 			setValue(false);
 			setUser(reponse.data);
+			await refreshUserInfo();
         } 
         catch (error)
         {
@@ -75,9 +75,8 @@ function Profile({id})
 	const [isPermitted, setIsPermitted] = useState(false);
 	const [isStud, setIsStud] = useState(false);
 	const [friendList, setFriendList] = useState([]);
-	const { userInfo, tokenUser } = useUserInfo();
+	const { userInfo, refreshUserInfo } = useAuth();
 	const decodeToken = userInfo;
-	const token = tokenUser;
 	let friends = friendList?.friends || [];
 
 	const fetchFriendList = async () => {
@@ -103,6 +102,7 @@ function Profile({id})
 				},
 			})
 			setUser(response.data);
+			await refreshUserInfo();
 			console.log(response);
 		} 
 		catch (error) {
@@ -134,17 +134,20 @@ function Profile({id})
 			setIsPermitted(false);
 			setIsStud(false);
 		}
-		try 
+		console.log(userInfo);
+		setUser(userInfo);
+		console.log(user);
+		if (decodeToken.id !== id)
 		{
-			if (token)
+			try 
 			{
 				const reponse = await axiosInstance.get(`/api/user/${id}`);
 				setUser(reponse.data);
 			}
-		}
-		catch (error)
-		{
-			console.error('Erreur lors de la récupération des données utilisateur', error);
+			catch (error)
+			{
+				console.error('Erreur lors de la récupération des données utilisateur', error);
+			}
 		}
 	}
 
@@ -155,6 +158,10 @@ function Profile({id})
 		friends = friendList?.friends || [];
     }, [id]);
 
+	useEffect(() => {
+        console.log('user mis à jour:', user);
+    }, [user]);
+
 	return (
 		<>
 			{user ? (
@@ -163,7 +170,7 @@ function Profile({id})
 						<div className="profile-general">
 							<label htmlFor="profile_image">
 								<img
-									src={user.profile_image ? `${process.env.REACT_APP_API_URL}${user.profile_image}` : '/default.png'}
+									src={user.profile_image_url ? `${process.env.REACT_APP_API_URL}${user.profile_image_url}` : '/default.png'}
 									alt="Profile"
 									className="profile-picture"
 								/>

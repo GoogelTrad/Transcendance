@@ -157,13 +157,13 @@ class LogoutView():
     @jwt_auth_required
     def logoutUser(request):
         
-        auth_header = request.headers.get('Authorization')
-        if not auth_header:
-            raise AuthenticationFailed('Authorization header missing!')
+        token = request.COOKIES.get('token')
+        if not token :
+            AuthenticationFailed('Token is missing!')
+        
         user = User.objects.get(name=request.user.name)
         user.status = 'offline'
         user.save()
-        token = auth_header.split(' ')[1]
         
         ValidToken.objects.filter(token=token).delete()
         
@@ -278,31 +278,22 @@ def is_token_valid(request, token):
         user.status = "offline"
         user.save()
         return Response(status=status.HTTP_404_NOT_FOUND)
-    
-@api_view(['GET'])
-@jwt_auth_required
-def set_token(request):
-    token = ValidToken.objects.filter(user=request.user).first()
-    if not token :
-        AuthenticationFailed('User not connected!')
-    response = Response()
-    response.set_cookie(key='token', value=token.token, max_age=3600, httponly=True, secure=True)
-
-    return response
 
 @api_view(['GET'])
 @jwt_auth_required
 def get_token(request):
-    token = ValidToken.objects.filter(user=request.user).first()
-    if not token :
-        AuthenticationFailed('User not connected!')
-
-    return token.token
+    token = request.COOKIES.get('token')
+    if token:
+        return Response({'token': token})
+    else:
+        return Response({'error': 'No token found'}, status=status.HTTP_401_UNAUTHORIZED)
 
 @api_view(['GET'])
 @jwt_auth_required
 def fetch_user_data(request):
     user = request.user
+    
+    profile_image_url = user.profile_image.url if user.profile_image else None
     if user.is_authenticated:
         payload = { 
             'id': user.id,
@@ -314,3 +305,21 @@ def fetch_user_data(request):
         }
         return Response({'payload': payload})
     return Response({'error': 'Not authenticated'}, status=status.HTTP_401_UNAUTHORIZED)
+
+@api_view(['GET'])
+def check_auth(request):
+    token = request.COOKIES.get('token')
+    if not token:
+        return Response({'isAuthenticated': False})
+
+    try:
+        payload = jwt.decode(token, os.getenv('JWT_KEY'), algorithms=['HS256'])
+        user = User.objects.filter(id=payload['id']).first()
+        if user:
+            return Response({'isAuthenticated': True, 'user': {'id': user.id, 'name': user.name}})
+        else:
+            return Response({'isAuthenticated': False})
+    except jwt.ExpiredSignatureError:
+        return Response({'isAuthenticated': False, 'error': 'Token expired'})
+    except jwt.InvalidTokenError:
+        return Response({'isAuthenticated': False, 'error': 'Invalid token'})

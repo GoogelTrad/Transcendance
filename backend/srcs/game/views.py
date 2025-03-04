@@ -16,11 +16,7 @@ import os
 class HomeGameView:
     @api_view(['POST'])
     def create_game(request):
-        auth_header = request.headers.get('Authorization')
-        if auth_header:
-            token = auth_header.split(' ')[1]
-        else:
-            token = None
+        token = request.COOKIES.get('token')
 
         data = request.data.copy()
 

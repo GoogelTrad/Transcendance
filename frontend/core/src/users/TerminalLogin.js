@@ -8,7 +8,7 @@ import { HandleAuth } from './AuthSchool';
 import { ValidatePassword } from './LoginForm';
 
 function TerminalLogin({ setModal, launching, setTerminal, removeLaunch }) {
-    const { setIsAuthenticated } = useAuth();
+    const { login } = useAuth();
     const navigate = useNavigate();
     const [lines, setLines] = useState(["Welcome to the Terminal."]);
     const [isTwoFactorRequired, setIsTwoFactorRequired] = useState(false);
@@ -89,7 +89,7 @@ function TerminalLogin({ setModal, launching, setTerminal, removeLaunch }) {
                 setIsTwoFactorRequired(true);
                 return "2FA required. Please enter the code sent to your email.";
             } else if (response.status === 200) {
-                setIsAuthenticated(true);
+                login();
                 setTerminal(false);
                 removeLaunch('terminal');
                 removeLaunch('forms');
@@ -108,7 +108,7 @@ function TerminalLogin({ setModal, launching, setTerminal, removeLaunch }) {
         try {
             const response = await axiosInstance.post('/api/user/code', { code: code, name: name });
             if (response.status === 200) {
-                setIsAuthenticated(true);
+                login();
                 setTerminal(false);
                 removeLaunch('terminal');
                 navigate('/home');

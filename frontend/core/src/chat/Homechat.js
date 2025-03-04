@@ -6,12 +6,10 @@ import useSocket from '../socket'
 import axiosInstance from "../instance/AxiosInstance";
 import ModalInstance from "../instance/ModalInstance";
 import Profile from "../users/Profile";
-import { useUserInfo } from "../instance/TokenInstance";
+import { useAuth } from "../users/AuthContext";
 
 import "./Homechat.css"
 import Room from './Room'
-
-import useJwt from '../instance/JwtInstance';
 
 import useNotifications from "../SocketNotif"
 
@@ -40,9 +38,7 @@ export default function HomeChat() {
 
 	const handleCreateToggle = () => { setIsCreateSwitchOn(!isCreateSwitchOn) };
 
-	const getJwt = useJwt();
-
-  	const { userInfo } = useUserInfo();
+  	const {userInfo} = useAuth();
  	const decodedToken = userInfo;
 	const userId = decodedToken.id;
 

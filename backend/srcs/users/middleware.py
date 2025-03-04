@@ -31,12 +31,8 @@ class SimpleMiddleware:
         new_token = None
         
         if not request.path == '/api/user/login' and not request.path == '/api/user/create' and not request.path == '/api/user/set_token' and not request.path == '/api/user/get_token':
-            auth_header = request.headers.get('Authorization')
-            
-            if not auth_header:
-                raise AuthenticationFailed('Authorization header missing!')
             try:
-                token = auth_header.split(' ')[1]
+                token = request.COOKIES.get('token')
                 if not token:
                     raise AuthenticationFailed('Token is invalid!')
                 

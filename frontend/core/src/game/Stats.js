@@ -7,11 +7,11 @@ import Button from 'react-bootstrap/Button';
 import { BrowserRouter as Router, Route, Routes, Link, useNavigate, useParams} from 'react-router-dom';
 import React, { useEffect, useState, useRef} from "react";
 import { jwtDecode } from "jwt-decode";
-import { useUserInfo } from '../instance/TokenInstance';
 import bronze from '../assets/game/bronze.png';
 import silver from '../assets/game/silver.png';
 import gold from '../assets/game/gold.png';
 import backgroundCollect from '../assets/game/background-collect.jpg';
+import { useAuth } from "../users/AuthContext";
 
 
 function Stats({ itemsArray = [] }) {
@@ -50,7 +50,7 @@ function Stats({ itemsArray = [] }) {
         BestTime: false,
     });
 
-    const { userInfo, tokenUser } = useUserInfo();
+    const { userInfo } = useAuth();
     const decodeToken = userInfo;
 
     const medalRules = {

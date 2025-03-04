@@ -6,8 +6,8 @@ import { Modal, Button } from 'react-bootstrap';
 import { BrowserRouter as Router, Route, Routes, Link, useNavigate} from 'react-router-dom';
 import React, { useEffect, useState, useRef } from "react";
 import { jwtDecode } from "jwt-decode";
-import { useUserInfo } from '../instance/TokenInstance';
 import axiosInstance from "../instance/AxiosInstance";
+import { useAuth } from '../users/AuthContext';
 
 function HomeGame({setModalStats, setModalCreateTournament, setModalTournament, launching, setParentItems, setParentNumberPlayer}) {
     const [player1, setPlayer1] = useState("");
@@ -38,21 +38,12 @@ function HomeGame({setModalStats, setModalCreateTournament, setModalTournament, 
         { name: 'Tournament', active: false},
     ]);
     
-    const { userInfo, tokenUser } = useUserInfo();
-    let user = null;
-    const token = tokenUser;
-
-    if (token) {
-        try {
-            user = userInfo;
-        } catch (error) {
-            console.error("Error decoding token:", error);
-        }
-    };
+    const { userInfo } = useAuth();
+    let user = userInfo;
 
        useEffect(() => {
             if (joinTournament && !socketTournament) {
-                const newSocket = new WebSocket(`ws://${window.location.hostname}:8000/ws/tournament/${gameCode}/?token=${token}`);
+                const newSocket = new WebSocket(`${process.env.REACT_APP_SOCKET_IP}/ws/tournament/${gameCode}/`);
                 setSocketTournament(newSocket);
                 newSocket.onmessage = (event) => {
                     const data = JSON.parse(event.data);
@@ -78,7 +69,7 @@ function HomeGame({setModalStats, setModalCreateTournament, setModalTournament, 
 
     useEffect(() => {
         if (!socket && waitingForPlayer) {
-            const newSocket = new WebSocket(`${process.env.REACT_APP_SOCKET_IP}/ws/matchmaking/?token=${token}`);
+            const newSocket = new WebSocket(`${process.env.REACT_APP_SOCKET_IP}ws/matchmaking/`);
             setSocket(newSocket);
         
             newSocket.onmessage = (event) => {

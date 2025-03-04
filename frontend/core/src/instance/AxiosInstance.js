@@ -1,5 +1,4 @@
 import axios from 'axios';
-import { useUserInfo, getCurrentToken, setCurrentToken } from './TokenInstance';
 
 // Créer une instance axios
 const axiosInstance = axios.create({baseURL: `${process.env.REACT_APP_API_URL}`,
@@ -8,7 +7,6 @@ const axiosInstance = axios.create({baseURL: `${process.env.REACT_APP_API_URL}`,
 
 axiosInstance.interceptors.request.use(
 
-  
   (config) => {
       if (!config.headers['Content-Type']) 
           config.headers['Content-Type'] = 'application/json';
@@ -19,9 +17,7 @@ axiosInstance.interceptors.request.use(
 
 axiosInstance.interceptors.response.use(
   (response) => {
-      if (response.data && response.data.token) {
-        setCurrentToken(response.data.token);
-      }
+      
       return response;
   },
   (error) => Promise.reject(error)

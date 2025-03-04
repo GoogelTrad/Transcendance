@@ -29,7 +29,7 @@ function LoginRegister({setModal, setTerminal, removeLaunch}) {
     const navigate = useNavigate();
     const [rulesPassword, setRulesPassword] = useState(false);
     const authChannel = new BroadcastChannel("auth_channel");
-    const {isAuthenticated, setIsAuthenticated} = useAuth();
+    const {isAuthenticated, login} = useAuth();
     const [loginData, setLoginData] = useState({
         name: 'f',
         password: 'f',
@@ -80,7 +80,7 @@ function LoginRegister({setModal, setTerminal, removeLaunch}) {
             if (response.status === 401)
                 setStep(true);
             else if (response.status === 200) {
-                setIsAuthenticated(true);
+                login();
                 setModal(false);
                 setTerminal(false);
                 removeLaunch("terminal");
@@ -100,7 +100,7 @@ function LoginRegister({setModal, setTerminal, removeLaunch}) {
             const response = await axiosInstance.post('/api/user/code' , {code, name: loginData.name});
             if (response.status === 200)
             {
-                setIsAuthenticated(true);
+                login();
                 setModal(false);
                 setTerminal(false);
                 removeLaunch("terminal");
@@ -140,8 +140,7 @@ function LoginRegister({setModal, setTerminal, removeLaunch}) {
         authChannel.onmessage = (event) => {
             const { token } = event.data;
             if (token) {
-                setToken(token)
-                setIsAuthenticated(true);
+                login();
                 setModal(false);
                 setTerminal(false);
                 removeLaunch("terminal");

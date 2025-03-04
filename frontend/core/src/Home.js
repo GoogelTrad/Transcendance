@@ -14,7 +14,6 @@ import Profile from './users/Profile';
 import HomeChat from './chat/Homechat';
 import { useAuth } from './users/AuthContext';
 import { jwtDecode } from "jwt-decode";
-import { useUserInfo } from './instance/TokenInstance';
 import P from './assets/P.png';
 import S from './assets/S.png';
 import C from './assets/C.png';
@@ -34,7 +33,7 @@ function Home() {
     const [isModalFriendProfile, setIsModalFriendProfile] = useState(false);
     const [isModalCode, setIsModalCode] = useState(false);
     const [isLaunch, setIsLaunch] = useState([]);
-    const { isAuthenticated, setIsAuthenticated } = useAuth();
+    const { isAuthenticated, userInfo } = useAuth();
 
     const navigate = useNavigate();
 
@@ -79,7 +78,6 @@ function Home() {
     const [tournamentSettings, setTournamentSettings] = useState({});
     const location = useLocation();
     const modalSend = location.state?.modalName || "";
-    const { userInfo } = useUserInfo();
     const decodeToken = userInfo;
 
     const removeLaunch = (appName) => {

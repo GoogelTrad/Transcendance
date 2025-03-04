@@ -16,7 +16,7 @@ import os
 class TournamentConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.tournament_code = self.scope['url_route']['kwargs']['tournament_code']
-        self.token = self.scope.get('query_string', b'').decode().split('=')[1]
+        self.token = self.scope['cookies'].get('token')
         self.user = await self.authenticate_user(self.token)
         self.tournament = await self.get_tournament(self.tournament_code)
 
@@ -132,7 +132,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
 
     async def authenticate_user(self, token):
         try:
-            payload = jwt.decode(token, "coucou", algorithms=["HS256"])
+            payload = jwt.decode(token, os.getenv('JWT_KEY'), algorithms=["HS256"])
             user_id = payload.get('id')
             if user_id:
                 user = await self.get_user_from_id(user_id)
@@ -186,7 +186,8 @@ matchmaking_queue = []
 
 class MatchmakingConsumer(AsyncWebsocketConsumer):
     async def connect(self):
-        token = self.scope.get('query_string', b'').decode().split('=')[1]
+        token = self.scope['cookies'].get('token')
+        print("coucou",token, flush=True)
         if token:
             user = await self.authenticate_user(token)
             if user:
@@ -222,7 +223,7 @@ class MatchmakingConsumer(AsyncWebsocketConsumer):
                 player1 = matchmaking_queue.pop(0)
                 player2 = matchmaking_queue.pop(0)
                 if player1['player_name'] != player2['player_name']:
-                    gameData = await self.create_Game_Multi(self.user.auth_token ,player1['player_name'], player2['player_name'])
+                    gameData = await self.create_Game_Multi(player1['player_name'], player2['player_name'])
                 else:
                     matchmaking_queue.append({
                     'player_name': self.user,
@@ -260,28 +261,30 @@ class MatchmakingConsumer(AsyncWebsocketConsumer):
         except User.DoesNotExist:
             return None
 
-
-    async def create_Game_Multi(self, token, player1, player2):
-        api_url = f"{os.getenv('REACT_APP_API_URL')}api/game/create_game"
-        auth_header = {'Authorization': f"Bearer {token}"}
-        data = {
-            'player1': player1,
-            'player2': player2,
-        }
-        
+    @database_sync_to_async
+    def create_game_directly(self, player1, player2):
         try:
-            print('Sending request to create game...', flush=True)
-            response = await asyncio.to_thread(requests.post, api_url, headers=auth_header, data=data, verify=False)
-            print(f"Response status code: {response.status_code}", flush=True)
+            game = Game.objects.create(
+                player1=player1,
+                player2=player2,
+            )
+            print(f"Game created directly - ID: {game.id}, Player1: {game.player1}, Player2: {game.player2}", flush=True)
+            return {
+                'id': game.id,
+                'player1': game.player1,
+                'player2': game.player2,
+            }
+        except Exception as e:
+            print(f"Error creating game directly: {e}", flush=True)
+            return None
 
-            if response.status_code == 201:
-                print('Game created successfully', flush=True)
-                game_data = response.json()
-                return game_data
-            else:
-                return None
-        except requests.exceptions.RequestException as e:
-            print(f"Error with the request: {e}", flush=True)
+    async def create_Game_Multi(self, player1, player2):
+        game_data = await self.create_game_directly(player1, player2)
+        if game_data:
+            print('Game created successfully in create_Game_Multi:', game_data, flush=True)
+            return game_data
+        else:
+            print("Failed to create game in create_Game_Multi", flush=True)
             return None
 
     async def game_update(self, event):

@@ -3,7 +3,6 @@ import React, { useEffect, useState, useRef  } from "react";
 import axiosInstance from '../instance/AxiosInstance.js';
 import { BrowserRouter as Router, Route, Routes, Link, useNavigate } from 'react-router-dom';
 import { jwtDecode } from "jwt-decode";
-import { useUserInfo } from '../instance/TokenInstance';
 import person from '../assets/game/person.svg';
 import personAdd from '../assets/game/person-fill.svg';
 import TournamentBracket from "./TournamentBracket";
@@ -18,6 +17,7 @@ import marioRun2 from '../assets/game/mario-run-2.png';
 import marioJump from '../assets/game/mario-jump.png';
 import blockAfter from '../assets/game/blockAfter.png';
 import ban from '../assets/ban.png';
+import { useAuth } from '../users/AuthContext.js';
 
 function Tournament({setSettings, tournamentSettings, modalCreateTournament, setModalCreateTournament, ModalTournament , setModalTournament, setModalResult, modalResult, launching, numberPlayer, removeLaunch }) {
     const [maxTimeMinutes, setMaxTimeMinutes] = useState("00");
@@ -54,20 +54,12 @@ function Tournament({setSettings, tournamentSettings, modalCreateTournament, set
         title: false,
     });
 
-    const { userInfo, tokenUser } = useUserInfo();
-    let user = null;
-
-    if (tokenUser) {
-        try {
-            user = userInfo;
-        } catch (error) {
-            console.error("Error decoding token:", error);
-        }
-    };
+    const { userInfo } = useAuth();
+    let user = userInfo;
 
    useEffect(() => {
         if (tournamentStarted && !socket) {
-            const newSocket = new WebSocket(`${process.env.REACT_APP_SOCKET_IP}/ws/tournament/${tournamentResponse.code}/?token=${tokenUser}`);
+            const newSocket = new WebSocket(`${process.env.REACT_APP_SOCKET_IP}/ws/tournament/${tournamentResponse.code}/`);
             setSocket(newSocket);
             newSocket.onmessage = (event) => {
                 const data = JSON.parse(event.data);
@@ -253,7 +245,6 @@ function Tournament({setSettings, tournamentSettings, modalCreateTournament, set
     }, [marioData.marioPosition]);
     
     function createCodeTournament() {
-        console.log("hello");
         return Math.floor(Math.random() * (999 - 100 + 1)) + 100;
     }
 

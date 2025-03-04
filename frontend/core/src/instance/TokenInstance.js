@@ -28,7 +28,6 @@ export function getTokenInfo() {
     const fetchUserData = async () => {
         try {
             const response = await axiosInstance.get('/api/user/get_token');
-            setCurrentToken(response.data.token);
             return response.data.token; 
         } catch (error) {
             console.log('Erreur lors de la récupération du token utilisateur:', error);

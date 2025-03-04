@@ -15,18 +15,15 @@ import ProtectedRoute from './instance/RouteInstance';
 import { jwtDecode } from 'jwt-decode';
 import HomeChat from './chat/Homechat';
 import Room from "./chat/Room";
-import useTokenValidation from './instance/EventListener';
 import LoginRegister from './users/LoginForm';
 import Tournament from './game/Tournament';
 import AuthSchool, { AuthSuccess } from './users/AuthSchool';
 import { useEffect } from 'react';
 import axiosInstance from './instance/AxiosInstance';
-import { useUserInfo } from './instance/TokenInstance';
 
 function NavBar()
 {
-  const {isAuthenticated} = useAuth();
-  const { userInfo } = useUserInfo();
+  const { userInfo } = useAuth();
   const decodeToken = userInfo;
 }
 
@@ -35,39 +32,32 @@ function App() {
   return (
     <AuthProvider>
       <Router>
-        <TokenValidationWrapper>
-          <div className='h-100'>
-            <div className='head'>
-              <NavBar />
-            </div>
-
-            <Routes>
-              <Route path="/" element={<Navigate to="/home" replace />} />
-              <Route path="/home" element={<Home />} />
-              <Route path="/login" element={<LoginRegister />} />
-              <Route path='/logout' element={<ProtectedRoute><Logout /></ProtectedRoute>} />
-              <Route path='/chat' element={<ProtectedRoute><HomeChat/></ProtectedRoute>} />
-              <Route path="/room/:roomName" element={<ProtectedRoute><Room/></ProtectedRoute>} />
-              <Route path='/home_game' element={<ProtectedRoute><Home_game /></ProtectedRoute>} />
-              <Route path='/game/:id' element={<ProtectedRoute><Game /></ProtectedRoute>} />
-              <Route path='/profile' element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-              <Route path='/friends' element={<ProtectedRoute><Friends /></ProtectedRoute>} />
-              <Route path='/games/:id' element={<Games />} />
-              <Route path='/games/Stats'  element={<Stats />} />
-              <Route path='/games/Tournament' element={<Tournament />} />
-              <Route path="/auth-success" element={<AuthSuccess />} />
-            </Routes>
-          
+        <div className='h-100'>
+          <div className='head'>
+            <NavBar />
           </div>
-        </TokenValidationWrapper>
+
+          <Routes>
+            <Route path="/" element={<Navigate to="/home" replace />} />
+            <Route path="/home" element={<Home />} />
+            <Route path="/login" element={<LoginRegister />} />
+            <Route path='/logout' element={<ProtectedRoute><Logout /></ProtectedRoute>} />
+            <Route path='/chat' element={<ProtectedRoute><HomeChat/></ProtectedRoute>} />
+            <Route path="/room/:roomName" element={<ProtectedRoute><Room/></ProtectedRoute>} />
+            <Route path='/home_game' element={<ProtectedRoute><Home_game /></ProtectedRoute>} />
+            <Route path='/game/:id' element={<ProtectedRoute><Game /></ProtectedRoute>} />
+            <Route path='/profile' element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+            <Route path='/friends' element={<ProtectedRoute><Friends /></ProtectedRoute>} />
+            <Route path='/games/:id' element={<Games />} />
+            <Route path='/games/Stats'  element={<Stats />} />
+            <Route path='/games/Tournament' element={<Tournament />} />
+            <Route path="/auth-success" element={<AuthSuccess />} />
+          </Routes>
+        
+        </div>
       </Router>
     </AuthProvider>
   );
-}
-
-function TokenValidationWrapper({ children }) {
-  useTokenValidation();
-  return children;
 }
 
 export default App;

@@ -5,10 +5,9 @@ import useSocket from '../socket'
 import useNotifications from "../SocketNotif"
 import axiosInstance from "../instance/AxiosInstance";
 import "./room.css"
-import useJwt from '../instance/JwtInstance';
-import { useUserInfo } from "../instance/TokenInstance";
 import ModalInstance from "../instance/ModalInstance";
 import Profile from "../users/Profile";
+import { useAuth } from "../users/AuthContext";
 
 export default function Room() {
 
@@ -30,8 +29,7 @@ export default function Room() {
 	const modalProfile = useRef(null);
 
 	const navigate = useNavigate();
-	const getJwt = useJwt();
-	const { userInfo } = useUserInfo();
+	const { userInfo } = useAuth();
 	const decodedToken = userInfo;
 	const userId = decodedToken.id;
 

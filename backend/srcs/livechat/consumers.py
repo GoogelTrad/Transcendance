@@ -359,7 +359,6 @@ class NotificationConsumer(AsyncWebsocketConsumer):
     async def receive_response(self, event):
         # Lorsque la réponse est reçue, on la renvoie à l'expéditeur
 
-        print("HELLO", flush=True)
         await self.send(text_data=json.dumps({
             "type": "receive_response",
             "sender_id": event["sender_id"],

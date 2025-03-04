@@ -33,7 +33,6 @@ export function AuthSuccess()
 	const [isSchoolAuth, setIsSchoolAuth] = useState(false);
 	const [isPop, setIsPop] = useState(false);
 	const [code, setCode] = useState("");
-	const {isAuthenticated, setIsAuthenticated} = useAuth();
 	const [name, setName] = useState("");
 	const { tokenUser } = useUserInfo();
 
