@@ -3,7 +3,7 @@ import React, { useEffect, useState, useRef  } from "react";
 import axiosInstance from '../../instance/AxiosInstance.js';
 import { BrowserRouter as Router, Route, Routes, Link, useNavigate, useParams } from 'react-router-dom';
 import { jwtDecode } from "jwt-decode";
-import { getCookies } from '../../App.js';
+import { useAuth } from '../../users/AuthContext.js';
 import { useLocation } from 'react-router-dom';
 import person from '../../assets/game/person.svg';
 import personAdd from '../../assets/game/person-fill.svg';
@@ -11,7 +11,6 @@ import TournamentBracket from "./TournamentBracket.js";
 import Template from '../../instance/Template.js';
 import MarioSection from './Mario.js';
 import PacmanSection from './Pacman.js';
-import { useAuth } from '../../users/AuthContext.js';
 
 function Tournament() {
     const { tournamentCode } = useParams();
@@ -25,34 +24,46 @@ function Tournament() {
     const { makeTournament } = location.state || {}; 
 
     const { userInfo } = useAuth();
-    const user = userInfo;
+    let user = userInfo;
     
+    const socketRef = useRef(null);
 
-//   useEffect(() => {
-//        if (tournamentStarted && !socket) {
-//            const newSocket = new WebSocket(`ws://${window.location.hostname}:8000/ws/tournament/${tournamentResponse.code}/?token=${token}`);
-//            setSocket(newSocket);
-//            newSocket.onmessage = (event) => {
-//                const data = JSON.parse(event.data);
-//                console.log("creator : ", data);            
-//                if (data.game_id && data.player1 === user.name || data.player2 === user.name) {
-//                    navigate(`/games/${data.game_id}`);
-//                }
-//            }
-//            newSocket.onclose = () => {
-//                console.log("Tournament webSocket closed");
-//            };
-//            newSocket.onopen = () => {
-//                console.log("Tournament websocket open")
-//                };
-//            }
-//        // return () => {
-//        //   if (socket) {
-//        //     socket.close();
-//        //     setSocket(null);
-//        //   }
-//        // };
-//      }, [socket, tournamentStarted]);
+    const fetchTournementCode = async (code) => {
+        try {
+            const response = await axiosInstance.get(`/api/game/fetch_data_tournament_by_code/${code}`);
+            setTournamentResponse(response.data);
+        } catch (error) {
+          console.error("Error fetching tournament:", error);
+        }
+    };
+  useEffect(() => {
+       if (tournamentStarted && !socketRef.current) {
+           const newSocket =  new WebSocket(`${process.env.REACT_APP_SOCKET_IP}ws/tournament/${tournamentCode}/`);
+           socketRef.current = newSocket;
+           newSocket.onmessage = (event) => {
+               const data = JSON.parse(event.data);
+               console.log("creator : ", data);            
+                if (data.game_id && data.player1 === user.name || data.player2 === user.name) {
+                   navigate(`/games/${data.game_id}`);
+                }
+                if (data.type === 'user_connected_message') {
+                    fetchTournementCode(data.message.code);
+                }
+           }
+           newSocket.onclose = () => {
+               console.log("Tournament webSocket closed");
+           };
+           newSocket.onopen = () => {
+               console.log("Tournament websocket open")
+               };
+           }
+       // return () => {
+       //   if (socket) {
+       //     socket.close();
+       //     setSocket(null);
+       //   }
+       // };
+     }, [tournamentStarted, tournamentCode, user, fetchTournementCode, navigate]);
 
 
     const fetchTournement = async () => {

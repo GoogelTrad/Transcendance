@@ -121,7 +121,7 @@ class GameView:
 class TournamentView:
     @api_view(['POST'])
     def create_tournament(request):
-        token = request.COOKIE.get('token')
+        token = request.COOKIES.get('token')
 
         payload = jwt.decode(jwt=token, key=os.getenv('JWT_KEY'), algorithms=['HS256'])
         user = get_object_or_404(User, name=payload.get('name'))

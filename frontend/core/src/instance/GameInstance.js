@@ -105,8 +105,22 @@ function GameInstance({ children }) {
 		if (data.winner || data.loser)
 			setIsGameOngoing(false);
 		if (data.isInTournament === true)
-			navigate("/home");
+		{
+			patchTournament(data)
+            console.log("code2 after patch", data.code)
+			navigate(`/games/tournament/${data.code}` , { state: { makeTournament: false } });
+		}
 	};
+
+	const patchTournament = async (data) => {
+		try {
+			const response = await axiosInstance.patch(`/api/game/fetch_data_tournament_by_code/${data.code}/`, {
+				winner: data.winner
+		  });
+		} catch (error) {
+		  console.error("Error updating game:", error);
+		}
+	}
 
     const finishGame = async () => {
         try {

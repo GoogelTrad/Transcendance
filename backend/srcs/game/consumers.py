@@ -180,58 +180,94 @@ class TournamentConsumer(AsyncWebsocketConsumer):
                 elif tournament.players_connected == 4 and tournament.size == 4 and await self.fetch_nbr_games() == 2:
                     await self.start_finale()
 
-    async def create_Game_Multi(self, token, player1, player2):
-        api_url = f"{os.getenv('REACT_APP_API_URL')}/api/game/create_game"
-        auth_header = {'Authorization': f"Bearer {token}"}
-        data = {
-            'player1': player1,
-            'player2': player2,
-            'isInTournament' : True,
-            'timeSeconds': TournamentConsumer.tournament.get(self.tournament_code).timeMaxSeconds,
-            'timeMinutes': TournamentConsumer.tournament.get(self.tournament_code).timeMaxMinutes,
-            'scoreMax': TournamentConsumer.tournament.get(self.tournament_code).scoreMax,
-            'tournamentCode': self.tournament_code,
-        }
+#   def create_game(request):
+#         auth_header = request.headers.get('Authorization')
+#         if auth_header:
+#             token = auth_header.split(' ')[1]
+#         else:
+#             token = None
+
+#         data = request.data.copy()
+
+#         serializer = GameSerializer(data=data, partial=True)
+
+#         if serializer.is_valid():
+#             game_instance = serializer.save()
+#             player1_name = data.get('player1')
+
+#             if player1_name:
+#                 try:
+#                     player1_user = get_object_or_404(User, name=player1_name)
+#                     player1_user.games.add(game_instance)
+#                     player1_user.save()
+#                 except Exception as e:
+#                     return Response({"detail": f"Player1 with name '{player1_name}' not found: {str(e)}"}, status=status.HTTP_404_NOT_FOUND)
+#             player2_name = data.get('player2')
+#             if player2_name:
+#                 try:
+#                     player2_user = get_object_or_404(User, name=player2_name)
+#                     player2_user.games.add(game_instance)
+#                     player2_user.save()
+#                 except Exception as e:
+#                     return Response({"detail": f"Player2 with name '{player2_name}' not found: {str(e)}"}, status=status.HTTP_404_NOT_FOUND)
+                
+#             tournament_code = data.get('tournamentCode')
+#             if tournament_code:
+#                 try:
+#                     tournament = get_object_or_404(Tournament, code=tournament_code)
+#                     tournament.gamesTournament.add(game_instance)
+#                     tournament.save()
+#                 except Exception as e:
+#                     return Response({"detail": f"Tournament with code '{tournament_code}' not found: {str(e)}"}, status=status.HTTP_404_NOT_FOUND)
+
+#             return Response({"id": game_instance.id, **serializer.data}, status=status.HTTP_201_CREATED)
+
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+    @database_sync_to_async
+    def create_game_directly(self, player1, player2, timeSeconds, timeMinutes, scoreMax, tournamentCode):
         try:
-            response = await asyncio.to_thread(requests.post, api_url, headers=auth_header, data=data, verify=False)
-            if response.status_code == 201:
-                print('Game created successfully', flush=True)
-                game_data = response.json()
-                return game_data
-            else:
-                return None
-        except requests.exceptions.RequestException as e:
-            print(f"Error with the request: {e}", flush=True)
+            game = Game.objects.create(
+                player1=player1,
+                player2=player2,
+                isInTournament=True,
+                timeSeconds=timeSeconds,
+                timeMinutes=timeMinutes,
+                scoreMax=scoreMax,
+                tournamentCode=tournamentCode
+            )
+            TournamentConsumer.tournament[self.tournament_code].gamesTournament.add(game) 
+            print(f"Game created directly - ID: {game.id}, Player1: {game.player1}, Player2: {game.player2}", flush=True)
+            return {
+                'id': game.id,
+                'player1': game.player1,
+                'player2': game.player2,
+            }
+        except Exception as e:
+            print(f"Error creating game directly: {e}", flush=True)
             return None
 
-
     async def create_Game_Multi(self, token, player1, player2):
-        api_url = f"{os.getenv('REACT_APP_API_URL')}/api/game/create_game"
-        auth_header = {'Authorization': f"Bearer {token}"}
-        data = {
-            'player1': player1,
-            'player2': player2,
-            'isInTournament' : True,
-            'timeSeconds': TournamentConsumer.tournament[self.tournament_code].timeMaxSeconds,
-            'timeMinutes': TournamentConsumer.tournament[self.tournament_code].timeMaxMinutes,
-            'scoreMax': TournamentConsumer.tournament[self.tournament_code].scoreMax,
-            'tournamentCode': self.tournament_code,
-        }
-        try:
-            response = await asyncio.to_thread(requests.post, api_url, headers=auth_header, data=data, verify=False)
-            if response.status_code == 201:
-                print('Game created successfully', flush=True)
-                game_data = response.json()
-                return game_data
-            else:
-                return None
-        except requests.exceptions.RequestException as e:
-            print(f"Error with the request: {e}", flush=True)
+        
+        timeSeconds = TournamentConsumer.tournament[self.tournament_code].timeMaxSeconds 
+        timeMinutes = TournamentConsumer.tournament[self.tournament_code].timeMaxMinutes
+        scoreMax = TournamentConsumer.tournament[self.tournament_code].scoreMax
+        tournement_code = self.tournament_code
+        
+        game_data = await self.create_game_directly(player1, player2, timeSeconds, timeMinutes, scoreMax, tournement_code)
+
+        if game_data:
+            print('Game created successfully in create_Game_Multi:', game_data, flush=True)
+            return game_data
+        else:
+            print("Failed to create game in create_Game_Multi", flush=True)
             return None
 
+            
     async def authenticate_user(self, token):
         try:
-            payload = jwt.decode(token, os.getenv('JWT_KEY'), algorithms=["HS256"])
+            payload = jwt.decode(token, "coucou", algorithms=["HS256"])
             user_id = payload.get('id')
             if user_id:
                 user = await self.get_user_from_id(user_id)
@@ -270,8 +306,6 @@ class TournamentConsumer(AsyncWebsocketConsumer):
         except Exception as e:
             print(f"Error fetching tournament: {e}")
             return None
-
-
 
 matchmaking_queue = []
 
@@ -697,5 +731,4 @@ class gameConsumer(AsyncWebsocketConsumer):
                 game_state.paddle_data["height_canvas"] - game_state.paddle_data["height"],
                 game_state.paddle_data["paddleRightY"] + paddle_speed,
             )
-
 
