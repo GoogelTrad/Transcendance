@@ -172,7 +172,8 @@ class TournamentView:
             winner = request.data.get('winner')
 
             if winner == tournament.winner1 or winner == tournament.winner2:
-                return Response({'detail': 'Winner is already assigned to either winner1 or winner2.'}, status=status.HTTP_200_OK)
+                tournament.winner_final = winner
+                tournament.status = "finished"
             if tournament.winner1:
                 tournament.winner2 = winner
             else:

@@ -21,7 +21,6 @@ function Tournament() {
     const navigate = useNavigate();
     const location = useLocation();
     const { join } = location.state || false;
-    const { makeTournament } = location.state || {}; 
 
     const { userInfo } = useAuth();
     let user = userInfo;
@@ -80,12 +79,10 @@ function Tournament() {
         if (socketRef.current.readyState === WebSocket.OPEN) {
             socketRef.current.send(JSON.stringify({ "Start": "Start games" }));
         }
-        console.log("onStart")
     }
 
 
     useEffect(() => {
-        console.log("j: ", join);
         if (join === true) {
             fetchTournement();
         }
@@ -99,8 +96,6 @@ function Tournament() {
     }, [tournamentCode]);
 
     useEffect(() => {
-        if (!socketRef.current)
-            console.log("aie");
         if (tournamentResponse && tournamentResponse.winner1) {
             if (socketRef.current.readyState === WebSocket.OPEN) {
                 socketRef.current.send(JSON.stringify({ "message": "Hello game 1 is over" }));

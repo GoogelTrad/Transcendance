@@ -136,8 +136,8 @@ function GameInstance({ children }) {
                 status: 'finished',
             });
             setGame(response.data);
-            if (game?.player1 === user.name) updateEloP1();
-            if (game?.player2 === user.name) updateEloP2();
+            if (game?.player1 === userInfo.name) updateEloP1();
+            if (game?.player2 === userInfo.name) updateEloP2();
         } catch (error) {
             console.error("Error updating game:", error);
         }
@@ -145,7 +145,7 @@ function GameInstance({ children }) {
 
     const updateEloP1 = async () => {
         try {
-            await axiosInstance.patch(`/api/user/${user.id}`, { elo: gameData.elo_Player1 });
+            await axiosInstance.patch(`/api/user/${userInfo.id}`, { elo: gameData.elo_Player1 });
         } catch (error) {
             console.error("Error fetching user by ID:", error);
         }
@@ -153,7 +153,7 @@ function GameInstance({ children }) {
 
     const updateEloP2 = async () => {
         try {
-            await axiosInstance.patch(`/api/user/${user.id}`, { elo: gameData.elo_Player2 });
+            await axiosInstance.patch(`/api/user/${userInfo.id}`, { elo: gameData.elo_Player2 });
         } catch (error) {
             console.error("Error fetching user by ID:", error);
         }
@@ -221,8 +221,6 @@ function GameInstance({ children }) {
 		const distance = Math.sqrt(dx * dx + dy * dy);
 		return distance < (mainBallRadius + bonusBallRadius);
 	};
-
-
 
     useEffect(() => {
         if (canvasRef.current && showModal) {
@@ -315,7 +313,7 @@ function GameInstance({ children }) {
             };
             if (!game) fetchData();
 
-            if (game && game.player1 === user.name) {
+            if (game && game.player1 === userInfo.name) {
                 const sendGameInstance = () => {
                     if (socket.readyState === WebSocket.OPEN) {
                         socket.send(JSON.stringify({ "message": "Hello from Player 1" }));
@@ -332,7 +330,7 @@ function GameInstance({ children }) {
                 }
             }
         }
-    }, [socket, backDimensions, game, user?.name, id]);
+    }, [socket, backDimensions, game, userInfo.name, id]);
 
     let keyUpdateTimeout = null;
     const throttleRate = 1;
@@ -342,7 +340,7 @@ function GameInstance({ children }) {
 
         setIsKeyDown((prev) => {
             const updatedKeyDown = { ...prev, [e.key]: true };
-            const player = user.name === game.player1 ? "P1" : (user.name === game.player2 ? "P2" : null);
+            const player = userInfo.name === game.player1 ? "P1" : (userInfo.name === game.player2 ? "P2" : null);
             const gameState = { isKeyDown: updatedKeyDown, player };
 
             if (socket.readyState === WebSocket.OPEN && !keyUpdateTimeout) {
@@ -360,7 +358,7 @@ function GameInstance({ children }) {
 
         setIsKeyDown((prev) => {
             const updatedKeyDown = { ...prev, [e.key]: false };
-            const player = user.name === game.player1 ? "P1" : (user.name === game.player2 ? "P2" : null);
+            const player = userInfo.name === game.player1 ? "P1" : (userInfo.name === game.player2 ? "P2" : null);
             const gameState = { isKeyDown: updatedKeyDown, player };
 
             if (socket.readyState === WebSocket.OPEN && !keyUpdateTimeout) {

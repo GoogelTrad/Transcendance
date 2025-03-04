@@ -180,51 +180,6 @@ class TournamentConsumer(AsyncWebsocketConsumer):
                 elif tournament.players_connected == 4 and tournament.size == 4 and await self.fetch_nbr_games() == 2:
                     await self.start_finale()
 
-#   def create_game(request):
-#         auth_header = request.headers.get('Authorization')
-#         if auth_header:
-#             token = auth_header.split(' ')[1]
-#         else:
-#             token = None
-
-#         data = request.data.copy()
-
-#         serializer = GameSerializer(data=data, partial=True)
-
-#         if serializer.is_valid():
-#             game_instance = serializer.save()
-#             player1_name = data.get('player1')
-
-#             if player1_name:
-#                 try:
-#                     player1_user = get_object_or_404(User, name=player1_name)
-#                     player1_user.games.add(game_instance)
-#                     player1_user.save()
-#                 except Exception as e:
-#                     return Response({"detail": f"Player1 with name '{player1_name}' not found: {str(e)}"}, status=status.HTTP_404_NOT_FOUND)
-#             player2_name = data.get('player2')
-#             if player2_name:
-#                 try:
-#                     player2_user = get_object_or_404(User, name=player2_name)
-#                     player2_user.games.add(game_instance)
-#                     player2_user.save()
-#                 except Exception as e:
-#                     return Response({"detail": f"Player2 with name '{player2_name}' not found: {str(e)}"}, status=status.HTTP_404_NOT_FOUND)
-                
-#             tournament_code = data.get('tournamentCode')
-#             if tournament_code:
-#                 try:
-#                     tournament = get_object_or_404(Tournament, code=tournament_code)
-#                     tournament.gamesTournament.add(game_instance)
-#                     tournament.save()
-#                 except Exception as e:
-#                     return Response({"detail": f"Tournament with code '{tournament_code}' not found: {str(e)}"}, status=status.HTTP_404_NOT_FOUND)
-
-#             return Response({"id": game_instance.id, **serializer.data}, status=status.HTTP_201_CREATED)
-
-#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
     @database_sync_to_async
     def create_game_directly(self, player1, player2, timeSeconds, timeMinutes, scoreMax, tournamentCode):
         try:
@@ -428,7 +383,6 @@ class MatchmakingConsumer(AsyncWebsocketConsumer):
         await self.channel_layer.group_add(group_name, player1)
         await self.channel_layer.group_add(group_name, player2)
 
-
 class GameState:
     def __init__(self, game):
         self.timer = {
@@ -466,6 +420,7 @@ class GameState:
         self.eloPlayer2 = game.elo_Player2
         self.isInTournament = game.isInTournament
         self.code = game.tournamentCode
+        self.gamerunning = False
 
     def is_game_over(self, game):
         if self.score["score_P1"] >= game.scoreMax:
@@ -578,14 +533,13 @@ class gameConsumer(AsyncWebsocketConsumer):
             game.save()
         except Exception as e:
             print(f"Error saving game: {e}")
-
+            
     async def connect(self):
         self.game_id = self.scope['url_route']['kwargs']['game_id']
         self.group_name = f"game_{self.game_id}"
         if self.game_id not in gameConsumer.game_states:
             game = await self.get_game(self.game_id)
             gameConsumer.game_states[self.game_id] = GameState(game)
-
         self.game_state = gameConsumer.game_states[self.game_id]
 
         await self.channel_layer.group_add(
@@ -600,8 +554,6 @@ class gameConsumer(AsyncWebsocketConsumer):
             self.group_name,
             self.channel_name
         )
-        if self.game_id in gameConsumer.game_states:
-            del gameConsumer.game_states[self.game_id]
         if self.game_id in gameConsumer.paddle_data:
             del gameConsumer.paddle_data[self.game_id]
         if self.game_id in gameConsumer.current_key_states_P1:
@@ -638,6 +590,11 @@ class gameConsumer(AsyncWebsocketConsumer):
         await self.send(text_data=json.dumps(event))
            
     async def run_game_loop(self, game_state, game):
+        print("states : ", gameConsumer.game_states[self.game_id].gamerunning, flush=True)
+        if gameConsumer.game_states[self.game_id].gamerunning == True:
+            return
+        gameConsumer.game_states[self.game_id].gamerunning = True
+        print("states after : ", gameConsumer.game_states[self.game_id].gamerunning, flush=True)
         last_time_updated = time.time()
         accumulated_time = 0
         try:
@@ -679,6 +636,7 @@ class gameConsumer(AsyncWebsocketConsumer):
                     print(f"Game Over! Winner: {game_state.winner}", flush=True)
                     print(f"Game Over! Loser: {game_state.loser}", flush=True)
                     print(f"Game Over! : {game_state.isInTournament}", flush=True)
+                    gameConsumer.game_states[self.game_id].gamerunning = False
                     game_state.update_Elo()
                     await self.send_message({
                         "type": "game_update",
