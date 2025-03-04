@@ -12,8 +12,11 @@ import check from "../assets/user/check.svg"
 import gear from "../assets/user/gear.svg"
 import { AddFriend } from "../friends/Friends"
 
+import { useTranslation } from 'react-i18next';
+
 function ChangeDetails({setUser, setValue, toChange, value, toType})
 {
+	const { t } = useTranslation();
 	const navigate = useNavigate();
 	const token = getCookies('token')
 	const user = jwtDecode(token);
@@ -51,7 +54,7 @@ function ChangeDetails({setUser, setValue, toChange, value, toType})
                             value={detail}
                             onChange={handleChange}
                             required
-                            placeholder='modify your details here'/>
+                            placeholder={t('ModifyDetails')}/>
 						<button type="submit" className='check-icon'><img src={check} alt="check"/></button>
                 </form>
 		</>
@@ -60,6 +63,8 @@ function ChangeDetails({setUser, setValue, toChange, value, toType})
 
 function Profile({id})
 {
+
+	const { t } = useTranslation();
 	const navigate = useNavigate();
 	const [user, setUser] = useState(null);
 	const [showChangeUsername, setShowChangeUsername] = useState(false);
@@ -201,8 +206,8 @@ function Profile({id})
 								/>
 							</button>
 							<ul className="dropdown-menu">
-								<li><button className="dropdown-item" type="button" onClick={() => setShowChangePassword(true)}>Change password</button></li>
-								<li><button className="dropdown-item" type="button" onClick={handleConfirm}>Enable 2FA</button></li>
+								<li><button className="dropdown-item" type="button" onClick={() => setShowChangePassword(true)}>{t('ChangePassword')}</button></li>
+								<li><button className="dropdown-item" type="button" onClick={handleConfirm}>{t('Enable2FA')}</button></li>
 							</ul>
 							{showChangePassword && <ChangeDetails setUser={setUser} setValue={setShowChangePassword} toChange={'password'} value={null} toType={'password'}/>}
 							{isPermitted && !isStud && showChangePassword && <img src={x} className="x-icon" alt="x" onClick={() => setShowChangePassword(false)}/>}
@@ -221,7 +226,7 @@ function Profile({id})
 					</div>
 				</div>
 			) : (
-				<p>No user found.</p>
+				<p>{t('NoUsers')}</p>
 			)}
 
 		</>

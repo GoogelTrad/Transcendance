@@ -12,7 +12,11 @@ import axiosInstance from '../instance/AxiosInstance.js';
 import useSocket from '../socket.js';
 import { throttle } from 'lodash';
 
+import { useTranslation } from 'react-i18next';
+
 function GameInstance ( {children} ) {
+
+	const { t } = useTranslation();
     const canvasRef = useRef(null);
 	const [isGameOngoing, setisGameOngoing] = useState(true);
 	const [waitingForPlayer, setwaitingForPlayer] = useState(false);
@@ -331,29 +335,29 @@ function GameInstance ( {children} ) {
 				<div className="d-flex backgroundGame" style={{ height: '85%', top: '5%', width: '80%', position: 'absolute', left: '10%', backgroundColor: 'white',}}>
 					<div className="game-bar w-100" style={{height: '15%'}}>
 						<div className="column">
-							<div className="red">PLAYER 1</div>
-							<div>{game?.player1 || "Player 1"}</div>
+							<div className="red">{t('PLAYER1')}</div>
+							<div>{game?.player1 || t('PLAYER1')}</div>
 						</div>
 						<div className="column">
-							<div className="red">SCORE</div>
+							<div className="red">{t('SCORE')}</div>
 							<div>{gameData.Score_P1 || "0"}</div>
 						</div>
 						<div className="column">
-							<div className="red">TIME</div>
+							<div className="red">{t('TIME')}</div>
 							{timesUp ? (
 								game?.timeMinutes != undefined && game?.timeSeconds != undefined
 								? `${gameData.Minutes}:${gameData.Seconds.toString().padStart(2, '0')}`: "3:00"
 							) : (
-							<span>Time's up</span>
+							<span>{t("Time'sUp")}</span>
 							)}
 						</div>
 						<div className="column">
-							<div className="red">SCORE</div>
+							<div className="red">{t('SCORE')}</div>
 							<div>{gameData.Score_P2 || "0"}</div>
 						</div>
 						<div className="column">
-							<div className="red">PLAYER 2</div>
-							<div>{game?.player2 || "Player 2"}</div>
+							<div className="red">{t('PLAYER2')}</div>
+							<div>{game?.player2 || t('PLAYER1')}</div>
 						</div>
 					</div>
 					<canvas
@@ -376,21 +380,21 @@ function GameInstance ( {children} ) {
 							<div className="touch-controller-right" style={{top: '37.5%', right:'5%'}}>A</div>
 							<div className="touch-controller-right" style={{left: '37.5%', bottom:'5%'}}>B</div>
 						</div>
-						<div className="w-100 d-flex" style={{ fontSize:'150%', fontStyle: 'italic', fontWeight: 'bold', position: 'absolute', bottom: '0%', height: '10%', color:'grey', alignItems: 'center', justifyContent: 'center', alignText: 'center'}}>GAME CONTROLLER</div>
+						<div className="w-100 d-flex" style={{ fontSize:'150%', fontStyle: 'italic', fontWeight: 'bold', position: 'absolute', bottom: '0%', height: '10%', color:'grey', alignItems: 'center', justifyContent: 'center', alignText: 'center'}}>{t('GAMECONTROLLER')}</div>
 						<div className="w-100" style={{ height:'10%', position: 'absolute', bottom: '27%'}}>
 							<div className="touch-btn" style={{ left: '8%'}}></div>
-							<div style={{ position: 'absolute', fontWeight: 'bold', left: '8.2%', top:'60%', color: 'black'}}>Menu</div>
+							<div style={{ position: 'absolute', fontWeight: 'bold', left: '8.2%', top:'60%', color: 'black'}}>{t('Menu')}</div>
 							<div className="touch-btn" style={{ left: '83%' }}></div>
-							<div style={{ position: 'absolute', fontWeight: 'bold', left: '83%', top:'60%', color: 'black'}}>Seclect</div>
+							<div style={{ position: 'absolute', fontWeight: 'bold', left: '83%', top:'60%', color: 'black'}}>{t('Seclect')}</div>
 							<div className="touch-btn" style={{ left: '93%' }}></div>
-							<div style={{ position: 'absolute', fontWeight: 'bold', left: '93.5%', top:'60%', color: 'black'}}>Start</div>
+							<div style={{ position: 'absolute', fontWeight: 'bold', left: '93.5%', top:'60%', color: 'black'}}>{t('Start')}</div>
 						</div>
 					</div>
 					
 			  	</div>
 			  {waitingForPlayer && (
 					<div className="waiting">
-					Waiting For Player
+					{t('WaitingPlayer')}
 					</div>)}
 				{/*<div
 				className="Show-option Rules"
@@ -453,16 +457,16 @@ function GameInstance ( {children} ) {
 			</>
 		  ) : (
 			<div className="game-over">
-			  <h1>Game Over!</h1>
+			  <h1>{t('GameOver')}</h1>
 			  
 			  <div className="final-scores">
-				<p>Player 1: {game?.score_player_1 || "0"}</p>
-				<p>Player 2: {game?.score_player_2 || "0"}</p>
-				<p>Winner: {game?.winner || "No Player"}</p>
-				<p>Loser: {game?.loser || "No Player"}</p>
-				<p>seconds: {game?.timeSeconds || "0"}</p>
-				<p>minutes: {game?.timeMinutes || "0"}</p>
-				<div className="p-2" onClick={() => quitToHome()}> EXIT </div>
+				<p>{t('Player1')}: {game?.score_player_1 || "0"}</p>
+				<p>{t('Player2')}: {game?.score_player_2 || "0"}</p>
+				<p>{t('Winner')}: {game?.winner || "No Player"}</p>
+				<p>{t('Loser')}: {game?.loser || "No Player"}</p>
+				<p>{t('seconds')}: {game?.timeSeconds || "0"}</p>
+				<p>{t('minutes')}: {game?.timeMinutes || "0"}</p>
+				<div className="p-2" onClick={() => quitToHome()}> {t('EXIT')} </div>
 			  </div>
 			</div>
 		  )}

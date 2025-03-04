@@ -11,15 +11,18 @@ import { useAuth } from '../users/AuthContext';
 import Profile from '../users/Profile';
 import "./Friends.css"
 
+import { useTranslation } from 'react-i18next';
 
 export function AddFriend({id})
 {
+	const { t } = useTranslation();
+
 	const handleAddFriend = async (id) => {
 		try {
 			await axiosInstance.post(`/api/friends/send/${id}`);
-			showToast('success', 'Friend Request sent !')
+			showToast('success', t('FriendRequestSent'))
 		} catch (error) {
-			showToast("error", error.response.data.error);
+			showToast("error", t(`Toasts.${error.response.data.error}`));
 		}
 	};
 
@@ -28,12 +31,15 @@ export function AddFriend({id})
 			onClick={() => handleAddFriend(id)} 
 			className="add-friend-btn"
 		>
-			➕ Add Friend
+			➕ {t('AddFriend')}
 		</button>
 	)
 }
 
 function SeeFriendsRequest({ toWhom, type, onResponse }) {
+
+	const { t } = useTranslation();
+
     const handleResponse = async () => {
         try {
             if (type) {
@@ -43,8 +49,7 @@ function SeeFriendsRequest({ toWhom, type, onResponse }) {
             }
             onResponse(toWhom);
         } catch (error) {
-			showToast("error", error.response.data.error);
-            console.error('Error handling friend request:', error);
+			showToast("error", t(`Toasts.${error.response.data.error}`));
         }
     };
 
@@ -58,7 +63,7 @@ function SeeFriendsRequest({ toWhom, type, onResponse }) {
                     color: 'white'
                 }}
             >
-                {type ? 'Accept' : 'Decline'}
+                {type ? t('Accept') : t('Decline')}
             </button>
         </>
     );
@@ -70,6 +75,8 @@ function FriendRequests({setModal, setIsFriends, launching}) {
 	const [friendList, setFriendList] = useState([]);
 	const [searchQuery, setSearchQuery] = useState('');
 	const [searchResults, setSearchResults] = useState([]);
+
+	const { t } = useTranslation();
 	
 	const getJwt = useJwt();
 
@@ -81,7 +88,6 @@ function FriendRequests({setModal, setIsFriends, launching}) {
                 const response = await axiosInstance.get(`/api/friends/search/${query}`);
                 setSearchResults(response.data);
             } catch (error) {
-				console.log(error);
 				setSearchResults([])
             }
         } else {
@@ -96,10 +102,9 @@ function FriendRequests({setModal, setIsFriends, launching}) {
 		try {
 			const reponse = await axiosInstance.get(`/api/friends/list/${decodeToken.id}`);
 			setFriendList(reponse.data);
-			console.log(reponse.data)
 		}
 		catch(error) {
-			console.log(error);
+			showToast("error", t(`Toasts.${error.response.data.error}`));
 		}
 	}
 
@@ -111,10 +116,10 @@ function FriendRequests({setModal, setIsFriends, launching}) {
 				...prevList,
 				friends: prevList.friends.filter((friend) => friend.id !== id),
 			}));
-			showToast('success', response.data.message);
+			showToast('success', t(`Toasts.${response.data.message}`));
 		}
 		catch(error) {
-			showToast('error', error.response.data.error);
+			showToast("error", t(`Toasts.${error.response.data.error}`));
 		}
 	}
 
@@ -122,9 +127,8 @@ function FriendRequests({setModal, setIsFriends, launching}) {
         try {
             const response = await axiosInstance.get('/api/friends/request');
             setFriendRequests(response.data);
-			console.log("hello:", response);
         } catch (error) {
-            console.log('Error fetching friend requests:', error);
+            showToast("error", t(`Toasts.${error.response.data.error}`));
         }
     };
 
@@ -150,7 +154,7 @@ function FriendRequests({setModal, setIsFriends, launching}) {
 		<div className="search-bar">
 			<input
 				type="text"
-				placeholder="Search for friends..."
+				placeholder={t('SearchFriends')}
 				value={searchQuery}
 				onChange={(e) => handleSearch(e.target.value)}
 				style={{ padding: '5px', width: '100%' }}
@@ -158,7 +162,7 @@ function FriendRequests({setModal, setIsFriends, launching}) {
 		</div>
 
 		<div className="friend-list">
-			<p>My Friends</p>
+			<p>{t('MyFriends')}</p>
 			{friendList.friends && friendList.friends.length > 0 ? (
 				<ul>
 					{friendList.friends
@@ -181,18 +185,18 @@ function FriendRequests({setModal, setIsFriends, launching}) {
 								>
 									❌
 								</button>
-								<span> - Status: {friend.status}</span>
+								<span> - {t('Status')}: {friend.status}</span>
 								</li>
 						))}
 				</ul>
 			) : (
-				<p>No friends found.</p>
+				<p>{t('NoFriend')}</p>
 			)}
 		</div>
 
 
 		<div className="search-results">
-			<p>Search Results</p>
+			<p>{t('SearchResults')}</p>
 			{searchResults.length > 0 ? (
 				<ul>
 					{searchResults.map((user) => (
@@ -213,18 +217,18 @@ function FriendRequests({setModal, setIsFriends, launching}) {
 					))}
 				</ul>
 			) : (
-				searchQuery.length > 0 && <p>No users found.</p>
+				searchQuery.length > 0 && <p>{t('NoFriend')}</p>
 			)}
 		</div>
 
 		<div className="friend-requests">
-                <p>Friend Request</p>
+                <p>{t('FriendRequest')}</p>
                 {friendRequests.length > 0 ? (
                     <ul>
                         {friendRequests.map((request) => (
                             <li key={request.id} className="request-item">
                                 {request.from_user_name} ({request.from_user_email})
-                                <span> - Send on {new Date(request.created_at).toLocaleDateString()}</span>
+                                <span> - {t("SendOn")} {new Date(request.created_at).toLocaleDateString()}</span>
                                 <div>
                                     <SeeFriendsRequest 
                                         toWhom={request.id} 
@@ -241,7 +245,7 @@ function FriendRequests({setModal, setIsFriends, launching}) {
                         ))}
                     </ul>
                 ) : (
-                    <p>No pending requests</p>
+                    <p>{t('NoPending')}</p>
                 )}
             </div>
 

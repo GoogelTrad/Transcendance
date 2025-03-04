@@ -9,6 +9,8 @@ import './LoginForm.css';
 import { useAuth } from './AuthContext';
 import AuthSchool from './AuthSchool';
 
+import { useTranslation } from 'react-i18next';
+
 export function ValidatePassword(password){
     const minLength = 8;
     const hasUpperCase = /[A-Z]/.test(password);
@@ -23,6 +25,8 @@ export function ValidatePassword(password){
 };
 
 function LoginRegister({setModal, setTerminal, removeLaunch}) {
+
+    const { t } = useTranslation();
     const [step, setStep] = useState(false);
     const [code, setCode] = useState();
     const navigate = useNavigate();
@@ -68,7 +72,7 @@ function LoginRegister({setModal, setTerminal, removeLaunch}) {
             data.append(key, value);
         }
         if(isAuthenticated)
-            return showToast('error', 'Alrealdy connected!');
+            return showToast('error', t('AlrealdyConnected'));
         try {
             const response = await axiosInstance.post('/api/user/login', data, {
                 headers: {
@@ -90,7 +94,7 @@ function LoginRegister({setModal, setTerminal, removeLaunch}) {
             if (error.response && error.response.status === 401) 
                 setStep(true); 
             else 
-                showToast('error', 'Incorrect login or password!');
+                showToast('error', t('IncorrectLoginOrPassword'));
         }
     };
 
@@ -106,7 +110,7 @@ function LoginRegister({setModal, setTerminal, removeLaunch}) {
             }
         }
         catch(error) {
-            console.log('error');
+            showToast("error", t('ToastsError'));
         }
     }
 
@@ -120,16 +124,16 @@ function LoginRegister({setModal, setTerminal, removeLaunch}) {
         // if (!ValidatePassword(data.password))
         //     setRulesPassword(true);
         if(isAuthenticated)
-            return showToast('error', 'Cannot create new account while connected!');
+            return showToast('error', t('NotCreateNewAccountWhileConnected'));
         try {
             await axiosInstance.post('/api/user/create', data, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
             });
-            showToast('success', 'Account created succesfully!');
+            showToast('success', t('AccountCreatedSuccesfully'));
         } catch (error) {
-            showToast('error', 'Cannot create the account!');
+            showToast('error', t('CannotCreateTheAccount'));
         }
     };
 
@@ -157,10 +161,10 @@ function LoginRegister({setModal, setTerminal, removeLaunch}) {
                 {step === false ? (
                     <div className="col-md-6 d-flex flex-column align-items-center justify-content-center border-end">
                         <div className='login-coucou d-flex flex-column align-items-center'>
-                            <h2 className='titre-coucou'>Login here</h2>
+                            <h2 className='titre-coucou'>{t('Login')}</h2>
                             <form className='w-75 d-flex flex-column align-items-center' onSubmit={handleLoginSubmit}>
                                 <div className='mb-3'>
-                                    <label htmlFor='name'>Username:</label>
+                                    <label htmlFor='name'>{t('Username')}:</label>
                                     <input className='login-input'
                                         type='text'
                                         id='login-name'
@@ -168,11 +172,11 @@ function LoginRegister({setModal, setTerminal, removeLaunch}) {
                                         value={loginData.name}
                                         onChange={handleLoginChange}
                                         required
-                                        placeholder='Username'>
+                                        placeholder={t('Username')}>
                                     </input>
                                 </div>
                                 <div className='mb-3'>
-                                    <label htmlFor='password'>Password:</label>
+                                    <label htmlFor='password'>{t('PasswordConnect')}:</label>
                                     <input className='login-input'
                                         type='password'
                                         id='login-password'
@@ -180,10 +184,10 @@ function LoginRegister({setModal, setTerminal, removeLaunch}) {
                                         value={loginData.password}
                                         onChange={handleLoginChange}
                                         required
-                                        placeholder='Password'>
+                                        placeholder={t('PasswordConnect')}>
                                     </input>
                                 </div>
-                                <Button type='submit' className='submit-button btn btn-primary'>Login</Button>
+                                <Button type='submit' className='submit-button btn btn-primary'>{t('LoginButton')}</Button>
                             </form>
                             <div>
                                 <AuthSchool/>
@@ -193,23 +197,23 @@ function LoginRegister({setModal, setTerminal, removeLaunch}) {
                     </div>
                 ) : (
                     <div className="col-md-6 d-flex flex-column align-items-center justify-content-center border-end">
-                        <h2>Enter Confirmation Code</h2>
+                        <h2>{t('ConfirmationCode')}</h2>
                         <input
                             type="text"
-                            placeholder="Confirmation Code"
+                            placeholder={t('ConfirmationCode')}
                             value={code}
                             onChange={(e) => setCode(e.target.value)}
                         />
-                        <button onClick={handleVerify}>Verify</button>
+                        <button onClick={handleVerify}>{t('Verify')}</button>
                         {/* <button onClick={setStep(false)}>Cancel</button> */}
                     </div>
                 )}
                 <div className="col-md-6 d-flex flex-column align-items-center justify-content-center">
                     <div className='register-coucou d-flex flex-column align-items-center'>
-                        <h2 className='titre-coucou'>Register here</h2>
+                        <h2 className='titre-coucou'>{t('RegisterHere')}</h2>
                         <form className='w-75 d-flex flex-column align-items-center' onSubmit={handleRegisterSubmit}>
                             <div className='mb-3'>
-                                <label htmlFor='name'>Username:</label>
+                                <label htmlFor='name'>{t('Username')}:</label>
                                 <input className='register-input'
                                     type='text'
                                     id='register-name'
@@ -217,23 +221,23 @@ function LoginRegister({setModal, setTerminal, removeLaunch}) {
                                     value={registerData.name}
                                     onChange={handleRegisterChange}
                                     required
-                                    placeholder='Username'>
+                                    placeholder={t('Username')}>
                                 </input>
                             </div>
                             <div className='mb-3'>
-                                <label htmlFor="email">Mail:</label>
+                                <label htmlFor="email">{t('Email')}:</label>
                                 <input className='register-input'
                                     type='email'
                                     id='register-email'
                                     name='email'
-                                    value={registerData.mail}
+                                    value={registerData.email}
                                     onChange={handleRegisterChange}
                                     required
-                                    placeholder='Email'>
+                                    placeholder={t('Email')}>
                                 </input>
                             </div>
                             <div className='mb-3'>
-                                <label htmlFor='password'>Password:</label>
+                                <label htmlFor='password'>{t('PasswordConnect')}:</label>
                                 <input className='register-input'
                                     type='password'
                                     id='register-password'
@@ -241,26 +245,26 @@ function LoginRegister({setModal, setTerminal, removeLaunch}) {
                                     value={registerData.password}
                                     onChange={handleRegisterChange}
                                     required
-                                    placeholder='Password'>
+                                    placeholder={t('PasswordConnect')}>
                                 </input>
                                 {rulesPassword && 
                                     <p className='rule-password'>
-                                        Password need to contains :
+                                        {t('PasswordContains')} :
                                         <br />
-                                            At least 8 characters long
+                                            {t('8CharactersLong')}
                                         <br />
-                                            At least 1 uppercase
+                                            {t('1Uppercase')}
                                         <br />
-                                            At least 1 lowercase
+                                            {t('1Lowercase')}
                                         <br />
-                                            At least 1 number
+                                            {t('1Number')}
                                         <br />
-                                            At least 1 special caractere (@$!%*?&)
+                                            {t('1SpecialCaractere')}
                                     </p>
                                 }
                             </div>
                             <div className='mb-3'>
-                                <label htmlFor='password_confirm'>Confirm Password:</label>
+                                <label htmlFor='password_confirm'>{t('ConfirmPassword')}:</label>
                                 <input className='register-input'
                                     type='password'
                                     id='register-password_confirm'
@@ -268,11 +272,11 @@ function LoginRegister({setModal, setTerminal, removeLaunch}) {
                                     value={registerData.password_confirm}
                                     onChange={handleRegisterChange}
                                     required
-                                    placeholder='Confirm Password'>
+                                    placeholder={t('ConfirmPassword')}>
                                 </input>
                             </div>
 
-                            <Button type='submit' className='submit-button btn'>Register</Button>
+                            <Button type='submit' className='submit-button btn'>{t('Register')}</Button>
                         </form>
                     </div>
                 </div>

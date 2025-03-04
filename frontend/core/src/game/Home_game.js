@@ -9,6 +9,8 @@ import { jwtDecode } from "jwt-decode";
 import { getCookies } from './../App.js';
 import axiosInstance from "../instance/AxiosInstance";
 
+import { useTranslation } from 'react-i18next';
+
 function HomeGame({setModalStats, setModalCreateTournament, setModalTournament, launching, setParentItems, setParentNumberPlayer}) {
     const [player1, setPlayer1] = useState("");
     const [waitingForPlayer, setWaitingForPlayer] = useState(false);
@@ -26,6 +28,8 @@ function HomeGame({setModalStats, setModalCreateTournament, setModalTournament, 
     const [joinTournament, setJoinTournament] = useState(false);
     const [socket, setSocket] = useState(null);
     const [socketTournament, setSocketTournament] = useState(null);
+
+    const { t } = useTranslation();
 
     const [items, setItems] = useState([
         { name: 'profile', active: false },
@@ -219,36 +223,36 @@ return (
             <div className="column column-left w-50 h-100">
             <div className="d-flex flex-column mb-3 h-100">
                 <div className="p-2" onClick={() => handleMenuClick("play")}>
-                <span className="arrow">►</span> PLAY <span className="tilde">_</span>
+                <span className="arrow">►</span> {t('PLAY')} <span className="tilde">_</span>
                 </div>
                 <div className="p-2" onClick={() => handleMenuClick("tournament")}>
-                <span className="arrow">►</span> TOURNAMENT <span className="tilde">_</span>
+                <span className="arrow">►</span> {t('TOURNAMENT')} <span className="tilde">_</span>
                 </div>
                 <div className="p-2" onClick={() => handleMenuClick("stats")}>
-                <span className="arrow">►</span> STATS <span className="tilde">_</span>
+                <span className="arrow">►</span> {t('STATS')} <span className="tilde">_</span>
                 </div>
             </div>
             </div>
             <div className="column column-right w-50 h-100">
             {onClickPlay && (
                 <div className="content">
-                <h3 style={{ textAlign: "center" }} onClick={() => handleMenuClick("play")}>Play</h3>
-                <div className="line" onClick={() => StartGameSolo()}> 1 player </div>
-                <div className="line" onClick={() => Matchmaking()}> 2 players - Online </div>
-                <div className="line" onClick={() => StartGameSolo()}> 2 players - Local </div>
+                <h3 style={{ textAlign: "center" }} onClick={() => handleMenuClick("play")}>{t('Play')}</h3>
+                <div className="line" onClick={() => StartGameSolo()}> {t('1Player')} </div>
+                <div className="line" onClick={() => Matchmaking()}> {t('2PlayersOnline')} </div>
+                <div className="line" onClick={() => StartGameSolo()}> {t('2PlayersLocal')} </div>
                 </div>
             )}
             {onClickTournament && (
                 <div className="content">
-                <h3 onClick={() => handleMenuClick("tournament")}>Tournament Section</h3>
+                <h3 onClick={() => handleMenuClick("tournament")}>{t('TournamentSection')}</h3>
                 <div className="section-tournament w-100">
-                    <p className="d-flex flex-direction column w-100 h-70" onClick={() => setOnClickJoin((prev) => !prev)}>Join a game
+                    <p className="d-flex flex-direction column w-100 h-70" onClick={() => setOnClickJoin((prev) => !prev)}>{t('JoinGame')}
                     {onClickJoin && (
                         <div className="h-100 w-100">
                         <input
                             type="text"
                             className="input-code"
-                            placeholder="Code"
+                            placeholder={t('Code')}
                             value={gameCode}
                             onClick={(e) => e.stopPropagation()}
                             onChange={(e) => setGameCode(e.target.value.replace(/\D/g, ""))}
@@ -257,18 +261,18 @@ return (
                         </div>
                     )}
                     </p>
-                    <p className="d-flex flex-direction column w-100 h-30" onClick={() => setOnClickCreate((prev) => !prev)}>Create game
+                    <p className="d-flex flex-direction column w-100 h-30" onClick={() => setOnClickCreate((prev) => !prev)}>{t('CreateGame')}
                     { onClickCreate && (
                         <p style={{ fontSize: 12, marginTop: "8%" }}>
-                            Number of players:
+                            {t('NumberPlayers')}:
                             <select 
                                 className="input-players" 
                                 value={numberPlayer}
                                 onClick={(e) => e.stopPropagation()}
                                 onChange={(e) => setNumberPlayer(e.target.value)}  
                             >
-                                <option value="2">2 players</option>
-                                <option value="4">4 players</option>
+                                <option value="2">{t('2Players')}</option>
+                                <option value="4">{t('4Players')}</option>
                             </select>
                             <button onClick={() => handleClickTournament("create")}> ✅ </button>
                         </p>
@@ -279,18 +283,18 @@ return (
             )}
             {onClickStats && (
                     <div className="content">
-                        <h3 className="game-home-stats-title"  onClick={() => handleMenuClick("stats")} >Stats</h3>
+                        <h3 className="game-home-stats-title"  onClick={() => handleMenuClick("stats")} >{t('Stats')}</h3>
                         <div className="text-stats">
-                            <p onClick={() => handleClickStats('profile', '...')} >Global Stats</p>
-                            <p onClick={() => handleClickStats('global', '...')} >Stats game</p>
+                            <p onClick={() => handleClickStats('profile', '...')} >{t('GlobalStats')}</p>
+                            <p onClick={() => handleClickStats('global', '...')} >{t('StatsGame')}</p>
                                 <div className="item">
-                                    <p onClick={() => handleClickStats('global', 'All games')} >► All games</p>
-                                    <p onClick={() => handleClickStats('global', 'Friends')} >► Friends</p>
-                                    <p onClick={() => handleClickStats('global', 'Win')} >► Win</p>
-                                    <p onClick={() => handleClickStats('global', 'Lose')} >► Lose</p>
-                                    <p onClick={() => handleClickStats('global', 'Tournament')} >► Tournament</p>
+                                    <p onClick={() => handleClickStats('global', 'All games')} >► {t('AllGames')}</p>
+                                    <p onClick={() => handleClickStats('global', 'Friends')} >► {t('Friends')}</p>
+                                    <p onClick={() => handleClickStats('global', 'Win')} >► {t('Win')}</p>
+                                    <p onClick={() => handleClickStats('global', 'Lose')} >► {t('Lose')}</p>
+                                    <p onClick={() => handleClickStats('global', 'Tournament')} >► {t('Tournament')}</p>
                                 </div>
-                            <p onClick={() => handleClickStats('collect', '...')} >Collection</p>
+                            <p onClick={() => handleClickStats('collect', '...')} >{t('Collection')}</p>
                         </div>
                     </div>
                 )}
@@ -299,8 +303,8 @@ return (
         </div>
     ) : (
         <div className="waiting h-100 w-100">
-            <h2 className="wait_text" > Waiting for Player...</h2>
-            <div className="line" onClick={() => exitWait()}> EXIT </div>
+            <h2 className="wait_text" > {t('WaitingPlayer')}</h2>
+            <div className="line" onClick={() => exitWait()}> {t('EXIT')} </div>
         </div>
     )
     );

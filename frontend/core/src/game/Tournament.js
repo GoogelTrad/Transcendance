@@ -266,9 +266,9 @@ function Tournament({setSettings, tournamentSettings, modalCreateTournament, set
         }
     };
 
-    useEffect(() => {
-        fetchTournement();
-    });
+    // useEffect(() => {
+    //     fetchTournement();
+    // });
 
 
     const createTournement = async () => {

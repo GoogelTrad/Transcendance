@@ -13,8 +13,12 @@ import silver from '../assets/game/silver.png';
 import gold from '../assets/game/gold.png';
 import backgroundCollect from '../assets/game/background-collect.jpg';
 
+import { useTranslation } from 'react-i18next';
+
 
 function Stats({ itemsArray = [] }) {
+
+    const { t } = useTranslation();
     const navigate = useNavigate();
     const [option, setOption] = useState([]);
     const [mode, setMode] = useState([]);
@@ -226,11 +230,11 @@ function Stats({ itemsArray = [] }) {
                     <table style={{ width: "100%", tableLayout: "relative", overflow: "hidden" }}>
                         <thead>
                             <tr>
-                                <th>Date</th>
-                                <th>Against</th>
-                                <th>Time</th>
-                                <th>Score</th>
-                                <th>Result</th>
+                                <th>{t('Date')}</th>
+                                <th>{t('Against')}</th>
+                                <th>{t('Time')}</th>
+                                <th>{t('Score')}</th>
+                                <th>{t('Result')}</th>
                             </tr>
                         </thead>  
                             <tbody>
@@ -289,7 +293,7 @@ function Stats({ itemsArray = [] }) {
                             <div className="stats-row-element empty-row flex-grow-1" style={{ height: "20%", display: "flex", alignItems: "flex-start" }}>{decodeToken.name}</div>
                             <div className="stats-row-element flex-grow-1" style={{height: `30%`}}>
                             <div className="text-center">
-                                <div className="stats-text">Winrate Ratio</div>
+                                <div className="stats-text">{t('WinrateRatio')}</div>
                                     <div className="counter">
                                         {games?.length && winGames?.length 
                                         ? Math.round((winGames?.length / games?.length) * 100) + "%"
@@ -302,19 +306,19 @@ function Stats({ itemsArray = [] }) {
                         <div className="stats-col d-flex flex-column h-100 w-50" style={{ margin: '3%', justifyContent:'space-between', alignItems:'center'}}>
                             <div className="stats-row-element flex-grow-1 w-100">
                             <div className="text-center">
-                                <div className="stats-text">Games played</div>
+                                <div className="stats-text">{t('GamesPlayed')}</div>
                                 <div className="counter">{games?.length || "0"}</div>
                             </div>
                             </div>
                             <div className="stats-row-element flex-grow-1 w-100">
                             <div className="text-center">
-                                <div className="stats-text">Win</div>
+                                <div className="stats-text">{t('Win')}</div>
                                 <div className="counter">{winGames?.length || "0"}</div>
                             </div>
                             </div>
                             <div className="stats-row-element flex-grow-1 w-100">
                             <div className="text-center">
-                                <div className="stats-text">Lose</div>
+                                <div className="stats-text">{t('Lose')}</div>
                                 <div className="counter">{loseGames?.length || "0"} </div>
                             </div>
                             </div>
@@ -395,7 +399,7 @@ function Stats({ itemsArray = [] }) {
                                 data-bs-toggle="dropdown"
                                 aria-expanded="false"
                             >
-                                <span className="visually-hidden">Toggle Dropdown</span>
+                                <span className="visually-hidden">{t('ToggleDropdown')}</span>
                             </button>
                             <ul
                                 className="dropdown-stats-menu dropdown-menu custom-dropdown-menu"
@@ -443,7 +447,7 @@ function Stats({ itemsArray = [] }) {
                                 </>
                             ) : (
                                 <>
-                                    <li>Aucun ami trouvé</li>
+                                    <li>{t('NoFriend')}</li>
                                     <div className="horizontal-line"></div>
                                 </>
                             )}
@@ -465,15 +469,15 @@ function Stats({ itemsArray = [] }) {
                             <>
                                 <div className="w-100 d-flex justify-content-between text-center" style={{ height: '10%', marginTop: '2%', marginBottom: '2%' }}>
                                     <div className="d-flex flex-column w-33">
-                                        <span className="stats-text" >Played</span>
+                                        <span className="stats-text" >{t('Played')}</span>
                                         <span className="counter" style={{fontSize:'100%'}}>CC</span>
                                     </div>
                                     <div className="d-flex flex-column w-33">
-                                        <span className="stats-text">First Place</span>
+                                        <span className="stats-text">{t('FirstPlace')}</span>
                                         <span className="counter" style={{fontSize:'100%'}}>CC</span>
                                     </div>
                                     <div className="d-flex flex-column w-33">
-                                        <span className="stats-text">Best Score</span>
+                                        <span className="stats-text">{t('BestScore')}</span>
                                         <span className="counter" style={{fontSize:'100%'}}>CC</span>
                                     </div>
                                 </div>
@@ -482,12 +486,12 @@ function Stats({ itemsArray = [] }) {
                                         <table style={{ width: "100%", tableLayout: "relative", overflow: "hidden" }}>
                                             <thead>
                                                 <tr>
-                                                    <th>Date</th>
-                                                    <th>Code</th>
-                                                    <th>Against</th>
-                                                    <th>Time</th>
-                                                    <th>Place</th>
-                                                    <th>Classement</th>
+                                                    <th>{t('Date')}</th>
+                                                    <th>{t('Code')}</th>
+                                                    <th>{t('Against')}</th>
+                                                    <th>{t('Time')}</th>
+                                                    <th>{t('Place')}</th>
+                                                    <th>{t('Classement')}</th>
                                                 </tr>
                                             </thead>
                                             <tbody>

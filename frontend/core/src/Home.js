@@ -20,7 +20,11 @@ import S from './assets/S.png';
 import C from './assets/C.png';
 import T from './assets/T.png';
 
+import { useTranslation } from 'react-i18next';
+
 function Home() {
+
+    const { t } = useTranslation();
     const [isFriends, setIsFriends] = useState([]);
     const [isModalTerminal, setIsModalTerminal] = useState(false);
     const [isModalStats, setIsModalStats] = useState(false);
@@ -242,7 +246,7 @@ function Home() {
                                 handleModal({ setModal: setIsModalTerminal, boolean: !isModalTerminal });
                             }}
                         >
-                            Terminal
+                            {t('Terminal')}
                         </button>
                     )}
                     {isLaunched(isLaunch, "forms") && (
@@ -252,7 +256,7 @@ function Home() {
                                 handleModal({ setModal: setIsModalForms, boolean: !isModalForms });
                             }}
                         >
-                            Form
+                            {t('Form')}
                         </button>
                     )}
                     {isLaunched(isLaunch, "game") && (
@@ -262,7 +266,7 @@ function Home() {
                                 handleModal({ setModal: setIsModalGame, boolean: !isModalGame });
                             }}
                         >
-                            Game
+                            {t('Game')}
                         </button>
                     )}
                     {isLaunched(isLaunch, "stats") && (
@@ -272,7 +276,7 @@ function Home() {
                                 handleModal({ setModal: setIsModalStats, boolean: !isModalStats });
                             }}
                         >
-                            Stats
+                            {t('Stats')}
                         </button>
                     )}
                     {isLaunched(isLaunch, "tournament") && (
@@ -282,7 +286,7 @@ function Home() {
                                 handleModal({ setModal: setIsModalTournament, boolean: !isModalTournament });
                             }}
                         >
-                            Tournament
+                            {t('Tournament')}
                         </button>
                     )}
                     {isLaunched(isLaunch, "profile") && (
@@ -292,7 +296,7 @@ function Home() {
                                 handleModal({ setModal: setIsModalProfile, boolean: !isModalProfile });
                             }}
                         >
-                            Profile
+                            {t('Profile')}
                         </button>
                     )}
                     {isLaunched(isLaunch, "friend") && (
@@ -302,7 +306,7 @@ function Home() {
                                 handleModal({ setModal: setIsModalFriendProfile, boolean: !isModalFriendProfile });
                             }}
                         >
-                            Friend
+                            {t('Friend')}
                         </button>
                     )}
                     {isLaunched(isLaunch, "resultTournament") && (
@@ -312,7 +316,7 @@ function Home() {
                                 handleModal({ setModal: setIsModalResult, boolean: !isModalResult });
                             }}
                         >
-                            Result tournament
+                            {t('ResultTournament')}
                         </button>
                     )}
                 </div>
@@ -335,7 +339,7 @@ function Home() {
                         style={{height: '80%'}}
                         onClick={() => launching({ newLaunch: "terminal", setModal: setIsModalTerminal })}
                     />
-                    <div style={{ position: 'absolute', alignItems:'end', textAlign: 'center', justifyContent:'center', left:'28%', bottom: '20%'}}>TERMINAL</div>
+                    <div style={{ position: 'absolute', alignItems:'end', textAlign: 'center', justifyContent:'center', left:'28%', bottom: '20%'}}>{t('TERMINAL')}</div>
                 </div>
             )}
             {isAuthenticated && (
@@ -379,7 +383,7 @@ function Home() {
                         style={{height: '80%'}}
                         onClick={() => navigate('/Chat')}
                     />
-                    <div style={{ position: 'absolute', alignItems:'end', textAlign: 'center', justifyContent:'center', left:'33%', bottom: '0%'}}>CHAT</div>
+                    <div style={{ position: 'absolute', alignItems:'end', textAlign: 'center', justifyContent:'center', left:'33%', bottom: '0%'}}>{t('CHAT')}</div>
                 </div>
             )}
             {isAuthenticated && (
@@ -401,7 +405,7 @@ function Home() {
                         style={{height: '80%'}}
                         onClick={() => launching({ newLaunch: "stats", setModal: setIsModalStats })}
                     />
-                    <div style={{ position: 'absolute', alignItems:'end', textAlign: 'center', justifyContent:'center', left:'33%', bottom: '0%'}}>STATS</div>
+                    <div style={{ position: 'absolute', alignItems:'end', textAlign: 'center', justifyContent:'center', left:'33%', bottom: '0%'}}>{t('STATS')}</div>
                 </div>
             )}
             {!isAuthenticated && isLaunched(isLaunch, "terminal") && 

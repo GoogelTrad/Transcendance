@@ -12,12 +12,17 @@ import info from '../assets/info.svg'
 import profile from '../assets/profile.svg'
 import power from '../assets/power.svg'
 
+import { useTranslation } from 'react-i18next';
+
 function Template({ children, taskBarContent, launching, appArray }) {
+    const { i18n } = useTranslation();
     const navigate = useNavigate();
     const [isDesktop, setIsDesktop] = useState(false);
     const [isSocial, setIsSocial] = useState(false);
     const { isAuthenticated } = useAuth();
     const desktopRef = useRef(null);
+
+    const { t } = useTranslation();
 
     const toggleDesktop = () => {
         setIsDesktop((prev) => !prev);
@@ -71,26 +76,47 @@ function Template({ children, taskBarContent, launching, appArray }) {
                                     className="p-2 bd-highlight flex-item"
                                     onClick={() => navigate("/Home", {state: { modalName: "terminal"}})} 
                                 >
-                                    Terminal
+                                    {t('Terminal')}
                                 </div>}
                                 {isAuthenticated && <div
                                     className="p-2 bd-highlight flex-item"
                                     onClick={() => navigate("/Home", {state: { modalName: "game"}})}
                                 >
-                                    Game
+                                    {t('Game')}
                                 </div>}
                                 {isAuthenticated && <div
-                                        className="p-2 bd-highlight flex-item"
-                                        onClick={() => navigate("/Chat")}
-                                    >
-                                    Chat
+                                    className="p-2 bd-highlight flex-item"
+                                    onClick={() => navigate("/Chat")}
+                                >
+                                    {t('Chat')}
                                 </div>}
                                 {isAuthenticated && <div
                                     className="p-2 bd-highlight flex-item"
                                     onClick={() => navigate("/Home", {state: { modalName: "stats"}})}
                                 >
-                                    Stats
+                                    {t('Stats')}
                                 </div>}
+                                {isAuthenticated && <div
+                                    className="p-2 bd-highlight flex-item"
+                                    onClick={() => i18n.changeLanguage('en')}
+                                >
+                                    🇬🇧
+                                </div>
+                                }
+                                {isAuthenticated && <div
+                                    className="p-2 bd-highlight flex-item"
+                                    onClick={() => i18n.changeLanguage('fr')}
+                                >
+                                    🇫🇷
+                                </div>
+                                }
+                                {isAuthenticated && <div
+                                    className="p-2 bd-highlight flex-item"
+                                    onClick={() => i18n.changeLanguage('it')}
+                                >
+                                    🇮🇹
+                                </div>
+                                }
                                 {isAuthenticated && 
                                     <>
                                     <div className="w-100" style={{ position: 'absolute', left:'0%', height:'10%', bottom:'10%'}}>

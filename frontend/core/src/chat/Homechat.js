@@ -15,7 +15,12 @@ import { getCookies } from '../App';
 
 import useNotifications from "../SocketNotif"
 
+import { useTranslation } from 'react-i18next';
+import Template from "../instance/Template";
+
 export default function HomeChat() {
+
+	const { t } = useTranslation();
 
 	const socket = useSocket('chat', 'public');
 
@@ -31,7 +36,6 @@ export default function HomeChat() {
 	const [isModalProfile, setIsModalProfile] = useState(false);
 	const [profileId, setProfileId] = useState(1);
 	const modalProfile = useRef(null);
-	
 
 	const navigate = useNavigate();
 
@@ -62,7 +66,7 @@ export default function HomeChat() {
 					navigate(`/room/${data.room_name}`);
 				}
 				else {
-					showToast("error", data.error);
+					showToast("error", t('ToastsError'));
 				}
 			});
 			socket.on("join_room", (data) => {
@@ -70,7 +74,7 @@ export default function HomeChat() {
 					console.log("Salle rejoint home:", data.room_name);
 					navigate(`/room/${data.room_name}`);
 				} else {
-					showToast("error", data.error);
+					showToast("error", t('ToastsError'));
 				}
 			});
 		}
@@ -78,7 +82,7 @@ export default function HomeChat() {
 
 	const createRoom = (roomName, invited_user_id = undefined) => {
 		if (roomName === "") {
-			showToast("error", "Room name cannot be empty");
+			showToast("error", t('NotEmptyName'));
 			return;
 		}
 		if (socket.ready) {
@@ -107,7 +111,6 @@ export default function HomeChat() {
 	const listroom = async () => {
 		try {
 			const response = await axiosInstance.get('/api/livechat/listroom/');
-			console.log("Liste des salles:", response.data);
 
 			const dmRooms = response.data.dmRooms.map((value) => {
 				value.dmname = value.users.filter((v) => {
@@ -120,17 +123,16 @@ export default function HomeChat() {
 			setlistrooms(response.data.publicRooms);
 			setdmrooms(dmRooms);
 		} catch (error) {
-			console.error("Erreur lors de la récupération des salles", error);
+			showToast("error", t('ToastsError'));
 		}
 	};
 
 	const users_connected = async () => {
 		try {
 			const response = await axiosInstance.get('/api/livechat/users_connected/');
-			console.log("Liste des users:", response.data);
 			setusersconnected(response.data.filter((v) => v.id !== userId));
 		} catch (error) {
-			console.error("Erreur lors de la récupération des utilisateurs", error);
+			showToast("error", t('ToastsError'));
 		}
 	};
 
@@ -143,14 +145,13 @@ export default function HomeChat() {
 				},
 			});
 
-			if (response.status === 200)
-			{
+			if (response.status === 200) {
 				listUsersBlocked();
-				showToast("message", "User block good");
+				showToast("message", t('BlockUsers'));
 			}
 
 		} catch(error) {
-			console.error("Erreur lors de la requete de bloquage", error);
+			showToast("error", t('ToastsError'));
 		}
 	}
 
@@ -166,11 +167,11 @@ export default function HomeChat() {
 			if (response.status === 200)
 			{
 				listUsersBlocked();
-				showToast("succes", "User unlock good");
+				showToast("succes", t('UnlockUsers'));
 			}
 
 		} catch(error) {
-			console.error("Erreur lors de la requete de debloquage", error);
+			showToast("error", t('ToastsError'));
 		}
 	}
 
@@ -180,7 +181,7 @@ export default function HomeChat() {
 			setBlockedUsers(response.data);
 		}
 		catch(error) {
-			console.log(error);
+			showToast("error", t('ToastsError'));
 		}
 	};
 
@@ -203,16 +204,16 @@ export default function HomeChat() {
 		e.preventDefault();
 
 		if (!room.name) {
-			showToast("error", "Room name not found");
+			showToast("error", t('NotRoomName'));
 			return;
 		}
 
 		if (room.password) {
-			const enteredPassword = prompt(`A password is required for "${room.name}" :`);
+			const enteredPassword = prompt(`${t('PasswordRequired')} "${room.name}" :`);
 			if (enteredPassword) {
 				joinRoom(room.name, enteredPassword);
 			} else {
-				showToast("error", "Enter a password for this room")
+				showToast("error", t('EnterPassword'));
 			}
 		} else {
 			joinRoom(room.name, null, dmname);
@@ -237,40 +238,40 @@ export default function HomeChat() {
 	}
 
 	return (
-		<>
+		<Template>
 			<div className="general-chat d-flex justify-content-between">
 				<div className="create-public-room">
 					{showCreatePublicRoom ? (
 						<>
 							<div className="form-check form-switch">
 								<input className="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckDefault" checked={isCreateSwitchOn} onChange={handleCreateToggle} />
-								<label className="form-check-label" htmlFor="flexSwitchCheckDefault">{isCreateSwitchOn ? 'Room is private' : 'Room is not private'}</label>
+								<label className="form-check-label" htmlFor="flexSwitchCheckDefault">{isCreateSwitchOn ? t('Private') : t('Public')}</label>
 							</div>
 
 							{!isCreateSwitchOn && (
 								<>
-									<input type="text" placeholder="Room name" value={createName} onChange={handleChangeCreateRoom} />
-									<button onClick={() => setShowCreatePublicRoom(false)}>Cancel</button>
-									<button onClick={() => createRoom(createName)}>New Room</button>
+									<input type="text" placeholder={t('RoomName')} value={createName} onChange={handleChangeCreateRoom} />
+									<button onClick={() => setShowCreatePublicRoom(false)}>{t('Cancel')}</button>
+									<button onClick={() => createRoom(createName)}>{t('NewRoom')}</button>
 									{socket && createdRoomName && <Room/>}
 								</>
 							)}
 
 							{isCreateSwitchOn && (
 								<>
-									<input type="text" placeholder="Room name" value={createName} onChange={handleChangeCreateRoom} />
-									<input type="password" placeholder="Room password" value={createpassword} onChange={handleChangeCreatePassword} />
-									<button onClick={() => setShowCreatePublicRoom(false)}>Cancel</button>
-									<button onClick={() => createRoom(createName)}>New Room</button>
+									<input type="text" placeholder={t('RoomName')} value={createName} onChange={handleChangeCreateRoom} />
+									<input type="password" placeholder={t('Password')} value={createpassword} onChange={handleChangeCreatePassword} />
+									<button onClick={() => setShowCreatePublicRoom(false)}>{t('Cancel')}</button>
+									<button onClick={() => createRoom(createName)}>{t('NewRoom')}</button>
 									{socket && createdRoomName && <Room/>}
 								</>
 							)}
 						</>
 					) : (
-						<button onClick={() => setShowCreatePublicRoom(true)}>New Room</button>
+						<button onClick={() => setShowCreatePublicRoom(true)}>{t('NewRoom')}</button>
 					)}
 
-					<h5>List of rooms</h5>
+					<h5>{t('ListRooms')}</h5>
 					<ul className="liste_salles">
 						{listrooms && listrooms.map((room, index) => (
 							<li key={index}>
@@ -280,7 +281,7 @@ export default function HomeChat() {
 							</li>
 						))}
 					</ul>
-					<h5>List of dms</h5>
+					<h5>{t('ListDms')}</h5>
 					<ul className="liste_dms"> 
 						{dmrooms && dmrooms.map((room, index) => (
 							<li key={index}>
@@ -292,7 +293,7 @@ export default function HomeChat() {
 					</ul>
 				</div>
 				<div>
-					<h5>List of users</h5>
+					<h5>{t('ListUsers')}</h5>
 					<div className="btn-group dropend">
 						<ul>
 							{usersconnected.map((user, index) => (
@@ -301,17 +302,17 @@ export default function HomeChat() {
 										{user.name}
 									</button>
 									<ul className="dropdown-menu">
-										<button className="dropdown-item" onClick={() => handleProfile(user.id)}> Profile </button>
+										<button className="dropdown-item" onClick={() => handleProfile(user.id)}> {t('Profile')} </button>
 										<button className="dropdown-item" onClick={() => {
 											const randomRoomName = makeName(8);
-											sendNotification(user.id, `${decodedToken.name} wants to start a discussion with you.`, userId, randomRoomName); 
+											sendNotification(user.id, `${decodedToken.name} ${t('Discussion')}`, userId, randomRoomName); 
 											createRoom(randomRoomName, user.id);}}
-										> Start a private discussion </button>
+										> {t('StartDiscussion')} </button>
 										{!blockedUsers.includes(user.id) && (
-											<button className="dropdown-item" onClick={() => blocked_user(user.id)}> Block </button>
+											<button className="dropdown-item" onClick={() => blocked_user(user.id)}> {t('Block')} </button>
 										)}
 										{blockedUsers.includes(user.id) && (
-											<button className="dropdown-item" onClick={() => unlocked_user(user.id)}> Unlock </button>
+											<button className="dropdown-item" onClick={() => unlocked_user(user.id)}> {t('Unlock')} </button>
 										)}
 									</ul>
 								</li>
@@ -322,12 +323,12 @@ export default function HomeChat() {
 						<Profile id={profileId}/>
 					</ModalInstance>
 					<div>
-						<h3>Notifications</h3>
+						<h3>{t('Notifications')}</h3>
 						<ul>
 							{notifications.map((notif, index) => (
 								<li key={index}>
 									{ notif.response ? (
-										<p> Response : {notif.response}</p>
+										<p> {t('Response')} : {notif.response}</p>
 									) : (
 										<>
 											{notif.message}
@@ -340,6 +341,6 @@ export default function HomeChat() {
 				</div>
 			</div>
 			<ToastContainer />
-		</>
+		</Template>
 	);
 }
