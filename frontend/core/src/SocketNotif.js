@@ -42,7 +42,7 @@ export default function useNotifications() {
 	}, []);
 
 	useEffect(() => {
-	console.log("Notifications mises à jour : ", notifications);
+		console.log("Notifications mises à jour : ", notifications);
 	}, [notifications]);
 	
 	const sendNotification = (targetId, message, userId, room_name = undefined) => {

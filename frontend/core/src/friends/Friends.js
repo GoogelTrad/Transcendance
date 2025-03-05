@@ -93,10 +93,9 @@ function FriendRequests({setModal, setIsFriends, launching}) {
     };
 
 	const fetchFriendList = async () => {
-		const decodeToken = userInfo;
 
 		try {
-			const reponse = await axiosInstance.get(`/api/friends/list/${decodeToken.id}`);
+			const reponse = await axiosInstance.get(`/api/friends/list/${userInfo.id}`);
 			setFriendList(reponse.data);
 		}
 		catch(error) {
@@ -131,19 +130,23 @@ function FriendRequests({setModal, setIsFriends, launching}) {
 
     const handleRequestResponse = (id) => {
         setFriendRequests((prevRequests) => prevRequests.filter((req) => req.id !== id));
+		if (userInfo?.id)
 		fetchFriendList();
     };
 
     useEffect(() => {
-		if (userInfo)
+		if (userInfo?.id)
 		{
 			fetchFriendList();
 			fetchFriendRequests();
 		}
 
 		const interval = setInterval(() => {
-			fetchFriendList();
-        	fetchFriendRequests();
+			if (userInfo?.id)
+			{
+				fetchFriendList();
+				fetchFriendRequests();
+			}
 		}, 5000);
 		
 		return () => clearInterval(interval);

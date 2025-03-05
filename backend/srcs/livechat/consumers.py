@@ -21,16 +21,22 @@ def is_user_blocked(from_user, to_user):
     return from_user.blocked_user.filter(id=to_user.id).exists()
 
 @sync_to_async
-def get_room_messages(room_name):
+def get_room_messages(room_name, user):
     try:
         room = Room.objects.get(name=room_name)
         messages = Message.objects.filter(room=room).order_by('timestamp')
 
+        filtered_user = user.blocked_user.values_list('id', flat=True)
+        print("user = ", filtered_user, flush=True)
+        filtered_messages = [msg for msg in messages if msg.user.id not in filtered_user]
 
         for msg in messages:
             if not isinstance(msg.user, User):
                 print(f"Message {msg.id} has invalid user: {msg.user}", flush=True)
-        serializer = MessageSerializer(messages, many=True)
+        serializer = MessageSerializer(filtered_messages, many=True)
+
+        print("history = ", serializer.data, flush=True)
+
         return serializer.data
     except Room.DoesNotExist:
         pass
@@ -86,7 +92,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         )
         await self.accept()
 
-        messages = await get_room_messages(self.room_name)
+        messages = await get_room_messages(self.room_name, self.user)
         await self.send({
             'type': 'history',
             'messages': messages
