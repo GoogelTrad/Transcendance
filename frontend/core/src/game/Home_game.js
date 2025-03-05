@@ -101,7 +101,7 @@ function HomeGame({ setModalStats, setModalCreateTournament, setModalTournament,
             setTournament(response.data);
             return 0;
         } catch (error) {
-            console.error("Error fetching tournament by code:", error);
+            console.log("Error fetching tournament by code:", error);
             return 1;
         }
     };
@@ -125,7 +125,7 @@ function HomeGame({ setModalStats, setModalCreateTournament, setModalTournament,
             const response = await axiosInstance.post(`/api/game/create_game`, { player1 });
             navigate(`/game/${response.data.id}`);
         } catch (error) {
-            console.error("Error submitting Player:", error);
+            console.log("Error submitting Player:", error);
         }
     };
 

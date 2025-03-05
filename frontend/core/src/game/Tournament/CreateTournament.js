@@ -59,7 +59,7 @@ const CreateTournament = ({ setIsModalTournament, setIsModalCreateTournament, se
             return newCode;
         } catch (error) {
             setErrorMessage("Failed to create tournament. Please try again.");
-            console.error("Error creating tournament:", error.response?.data || error.message);
+            console.log("Error creating tournament:", error.response?.data || error.message);
             return false;
         }
     };

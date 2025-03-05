@@ -32,7 +32,7 @@ function Tournament() {
             const response = await axiosInstance.get(`/api/game/fetch_data_tournament_by_code/${code}`);
             setTournamentResponse(response.data);
         } catch (error) {
-          console.error("Error fetching tournament:", error);
+          console.log("Error fetching tournament:", error);
         }
     };
   useEffect(() => {
@@ -71,7 +71,7 @@ function Tournament() {
             const response = await axiosInstance.get(`/api/game/fetch_data_tournament_by_code/${tournamentCode}`);
             setTournamentResponse(response.data);
         } catch (error) {
-          console.error("Error fetching tournament:", error);
+          console.log("Error fetching tournament:", error);
         }
     };
 

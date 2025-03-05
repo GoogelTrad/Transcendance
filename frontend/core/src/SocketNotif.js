@@ -14,7 +14,7 @@ export default function useNotifications() {
 		
 		ws.onmessage = (event) => {
 			const data = JSON.parse(event.data);
-			console.log("📩 Message1 reçu :", data);  // Vérifier que les messages arrivent bien
+			console.log("📩 Message1 reçu :", data);
 		
 			if (data.type === "send_notification") {
 				console.log("Notification reçue: ", data);
@@ -29,7 +29,6 @@ export default function useNotifications() {
 						...prevNotifications,
 						{ target_id: data.targetId, message: data.message, sender_id: data.sender_id, response: data.response }
 				]);
-				//console.log("Notifications après mise à jour : ", prevNotifications);
 			}
 		};
 
@@ -37,7 +36,6 @@ export default function useNotifications() {
 
 		setSocket(ws);
 
-		// Nettoyage lors de la déconnexion du composant
 		return () => {
 			ws.close();
 		};
@@ -45,7 +43,7 @@ export default function useNotifications() {
 
 	useEffect(() => {
 	console.log("Notifications mises à jour : ", notifications);
-	}, [notifications]); // Ce useEffect s'exécute dès que notifications change
+	}, [notifications]);
 	
 	const sendNotification = (targetId, message, userId, room_name = undefined) => {
 		if (socket && socket.readyState === WebSocket.OPEN) {
@@ -56,7 +54,7 @@ export default function useNotifications() {
 				message: message,
 				room_name
 			};
-			console.log("Envoi de la notification : ", notificationData); // Ajout d'un log
+			console.log("Envoi de la notification : ", notificationData);
 			socket.send(JSON.stringify(notificationData));
 		}
 	};

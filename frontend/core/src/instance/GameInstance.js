@@ -76,7 +76,7 @@ function GameInstance({ children }) {
 	  };
   
 	  socket.onerror = (error) => {
-		  console.error("WebSocket error: ", error);
+		  console.log("WebSocket error: ", error);
 	  };
   
 	  socket.onmessage = (event) => {
@@ -117,7 +117,7 @@ function GameInstance({ children }) {
 				winner: data.winner
 		  });
 		} catch (error) {
-		  console.error("Error updating game:", error);
+		  console.log("Error updating game:", error);
 		}
 	}
 
@@ -138,7 +138,7 @@ function GameInstance({ children }) {
             if (game?.player1 === userInfo.name) updateEloP1();
             if (game?.player2 === userInfo.name) updateEloP2();
         } catch (error) {
-            console.error("Error updating game:", error);
+            console.log("Error updating game:", error);
         }
     };
 
@@ -146,7 +146,7 @@ function GameInstance({ children }) {
         try {
             await axiosInstance.patch(`/api/user/${userInfo.id}`, { elo: gameData.elo_Player1 });
         } catch (error) {
-            console.error("Error fetching user by ID:", error);
+            console.log("Error fetching user by ID:", error);
         }
     };
 
@@ -154,7 +154,7 @@ function GameInstance({ children }) {
         try {
             await axiosInstance.patch(`/api/user/${userInfo.id}`, { elo: gameData.elo_Player2 });
         } catch (error) {
-            console.error("Error fetching user by ID:", error);
+            console.log("Error fetching user by ID:", error);
         }
     };
 
@@ -191,7 +191,7 @@ function GameInstance({ children }) {
 					setGame(response.data);
 					setWaitInput(true);
 				} catch (error) {
-					console.error("Error fetching game by ID:", error);
+					console.log("Error fetching game by ID:", error);
 				}
 			}
 		}
@@ -307,7 +307,7 @@ function GameInstance({ children }) {
                     setGame(response.data);
                     setWaitInput(true);
                 } catch (error) {
-                    console.error("Error fetching game by ID:", error);
+                    console.log("Error fetching game by ID:", error);
                 }
             };
             if (!game) fetchData();

@@ -45,7 +45,6 @@ function Stats({ itemsArray = [] }) {
     });
 
     const { userInfo } = useAuth();
-    const decodeToken = userInfo;
 
     const medalRules = {
         Played: {
@@ -82,8 +81,8 @@ function Stats({ itemsArray = [] }) {
 
     useEffect(() => {
         if (games.length > 0 && userInfo) {
-            const winGamesFiltered = games.filter(game => game.winner === decodeToken?.name);
-            const loseGamesFiltered = games.filter(game => game.loser === decodeToken?.name);
+            const winGamesFiltered = games.filter(game => game.winner === userInfo?.name);
+            const loseGamesFiltered = games.filter(game => game.loser === userInfo?.name);
             
             if (winGamesFiltered)
                 setWinGames(winGamesFiltered);
@@ -95,8 +94,8 @@ function Stats({ itemsArray = [] }) {
 
 
             const BestScoreFiltered = winGames.filter(score => 
-                (score.player2 === decodeToken?.name && score.score_player_2 === 11) || 
-                (score.player1 === decodeToken?.name && score.score_player_1 === 11)
+                (score.player2 === userInfo?.name && score.score_player_2 === 11) || 
+                (score.player1 === userInfo?.name && score.score_player_1 === 11)
             );
             setupMedals(BestScoreFiltered, "BestScore", 5, 10, 15);
 
@@ -163,16 +162,15 @@ function Stats({ itemsArray = [] }) {
 
     useEffect(() => {
         const fetchStats = async () => {
-            if (!userInfo) return;
             try {
-                const response = await axiosInstance.get(`/api/game/fetch_data_user/${decodeToken?.id}/`, {});
+                const response = await axiosInstance.get(`/api/game/fetch_data_user/${userInfo?.id}/`, {});
                 setGames(response.data);
                 } catch (error) {
-                console.error('Error fetching user stats:', error);
+                console.log('Error fetching user stats:', error);
             }
         };
-        fetchStats();
-      },[id]);
+        if (userInfo?.id) fetchStats();
+      }, [id]);
     
       function StatsTable({ data }) {
         return (
@@ -205,10 +203,10 @@ function Stats({ itemsArray = [] }) {
                                         </td>
                                         <td>{data.timeMinutes} : {data.timeSeconds}</td>
                                         <td>{data.score_player_1} - {data.score_player_2}</td>
-                                        {data.winner === decodeToken?.name && (
+                                        {data.winner === userInfo?.name && (
                                             <td>{"win" || "N/A"}</td>
                                         )}
-                                        {data.loser === decodeToken?.name && (
+                                        {data.loser === userInfo?.name && (
                                             <td>{"lose" || "N/A"}</td>
                                         )}
                                         {!data.winner && !data.loser && (
@@ -248,7 +246,7 @@ function Stats({ itemsArray = [] }) {
                             >
                                 <label htmlFor="profile_image" className="d-flex justify-content-center align-items-center w-100 h-100">
                                     <img
-                                        src={decodeToken?.profile_image_url ? `https://localhost:8000${decodeToken?.profile_image_url}` : '/default.png'}
+                                        src={userInfo?.profile_image_url ? `https://localhost:8000${userInfo?.profile_image_url}` : '/default.png'}
                                         alt="Profile"
                                         className="profile-picture img-fluid"
                                         title="profile"
@@ -273,7 +271,7 @@ function Stats({ itemsArray = [] }) {
                                 fontSize: '130%'
                                 }}
                             >
-                                {decodeToken?.name}
+                                {userInfo?.name}
                             </div>
 
                             <div 

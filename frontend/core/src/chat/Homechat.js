@@ -16,8 +16,9 @@ import useNotifications from "../SocketNotif"
 
 export default function HomeChat() {
 
+	const { userInfo, refreshUserInfo, isAuthenticated} = useAuth();
+	console.log('chat', userInfo)
 	const socket = useSocket('chat', 'public');
-
 	const [createName, setCreateRoomName] = useState("");
 	const [createpassword, setCreatePassword] = useState("");
 	const [createdRoomName, setCreatedRoomName] = useState("");
@@ -30,7 +31,6 @@ export default function HomeChat() {
 	const [isModalProfile, setIsModalProfile] = useState(false);
 	const [profileId, setProfileId] = useState(1);
 	const modalProfile = useRef(null);
-	
 
 	const navigate = useNavigate();
 
@@ -39,12 +39,8 @@ export default function HomeChat() {
 
 	const handleCreateToggle = () => { setIsCreateSwitchOn(!isCreateSwitchOn) };
 
-  	const {userInfo} = useAuth();
- 	const decodedToken = userInfo;
-	const userId = decodedToken.id;
-
 	const [blockedData, setBlockedData] = useState({
-		from_user: userId,
+		from_user: userInfo.id,
 		to_user: '',
 	});
 	
@@ -108,7 +104,7 @@ export default function HomeChat() {
 
 			const dmRooms = response.data.dmRooms.map((value) => {
 				value.dmname = value.users.filter((v) => {
-					if (v.id !== userId) return true;
+					if (v.id !== userInfo.id) return true;
 					return false;
 				})[0]?.name + ' dm' ?? value.name + ' dm';
 				return value;
@@ -117,7 +113,7 @@ export default function HomeChat() {
 			setlistrooms(response.data.publicRooms);
 			setdmrooms(dmRooms);
 		} catch (error) {
-			console.error("Erreur lors de la récupération des salles", error);
+			console.log("Erreur lors de la récupération des salles", error);
 		}
 	};
 
@@ -125,14 +121,14 @@ export default function HomeChat() {
 		try {
 			const response = await axiosInstance.get('/api/livechat/users_connected/');
 			console.log("Liste des users:", response.data);
-			setusersconnected(response.data.filter((v) => v.id !== userId));
+			setusersconnected(response.data.filter((v) => v.id !== userInfo.id));
 		} catch (error) {
-			console.error("Erreur lors de la récupération des utilisateurs", error);
+			console.log("Erreur lors de la récupération des utilisateurs", error);
 		}
 	};
 
 	const blocked_user = async (id) => {
-		const data = {'from_user': userId, 'to_user': id};
+		const data = {'from_user': userInfo.id, 'to_user': id};
 		try {
 			const response = await axiosInstance.post(`/api/livechat/block/`, data, {
 				headers: {
@@ -147,12 +143,12 @@ export default function HomeChat() {
 			}
 
 		} catch(error) {
-			console.error("Erreur lors de la requete de bloquage", error);
+			console.log("Erreur lors de la requete de bloquage", error);
 		}
 	}
 
 	const unlocked_user = async (id) => {
-		const data = {'from_user': userId, 'to_user': id};
+		const data = {'from_user': userInfo.id, 'to_user': id};
 		try {
 			const response = await axiosInstance.post(`/api/livechat/unlock/`, data, {
 				headers: {
@@ -167,13 +163,13 @@ export default function HomeChat() {
 			}
 
 		} catch(error) {
-			console.error("Erreur lors de la requete de debloquage", error);
+			console.log("Erreur lors de la requete de debloquage", error);
 		}
 	}
 
 	const listUsersBlocked = async () => {
 		try {
-			const response = await axiosInstance.get(`/api/livechat/blocked_users/${userId}`);
+			const response = await axiosInstance.get(`/api/livechat/blocked_users/${userInfo.id}`);
 			setBlockedUsers(response.data);
 		}
 		catch(error) {
@@ -301,7 +297,7 @@ export default function HomeChat() {
 										<button className="dropdown-item" onClick={() => handleProfile(user.id)}> Profile </button>
 										<button className="dropdown-item" onClick={() => {
 											const randomRoomName = makeName(8);
-											sendNotification(user.id, `${decodedToken.name} wants to start a discussion with you.`, userId, randomRoomName); 
+											sendNotification(user.id, `${userInfo.name} wants to start a discussion with you.`, userInfo.id, randomRoomName); 
 											createRoom(randomRoomName, user.id);}}
 										> Start a private discussion </button>
 										{!blockedUsers.includes(user.id) && (

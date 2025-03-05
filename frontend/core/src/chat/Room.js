@@ -95,7 +95,7 @@ export default function Room() {
 			const response = await axiosInstance.post('/api/livechat/exit-room/', {room_name: roomName});
 			console.log(response.data);
 		} catch (error) {
-			console.error("Erreur lors du clean de la room", error);
+			console.log("Erreur lors du clean de la room", error);
 		}
 	};
 
@@ -138,7 +138,7 @@ export default function Room() {
 			//console.log("DONNEES RECUES:", response.data);
 			setlistrooms(response.data.publicRooms);
 		} catch (error) {
-			console.error("Erreur lors de la récupération des salles", error);
+			console.log("Erreur lors de la récupération des salles", error);
 		}
 	}
 
@@ -177,10 +177,12 @@ export default function Room() {
 	}
 
 	useEffect(() => {
-		listroom();
-		FriendList();
-		Users_room_list();
-		get_room();
+		if(userInfo) {
+			listroom();
+			FriendList();
+			Users_room_list();
+			get_room();
+		}
 
 		const interval = setInterval(() => {
 			Users_room_list();
