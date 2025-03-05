@@ -4,204 +4,365 @@ html, body, #root {
   overflow: hidden;
 }
 
-.text-stats {
-  margin-top: 10%;
-}
-
 .game-home {
   background-color: black;
   background-image: 
-    linear-gradient(rgba(0, 0, 255, 0.2) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(138, 43, 226, 0.2) 1px, transparent 1px),
-    radial-gradient(circle, rgba(138, 43, 226, 0.15) 10%, rgba(0, 0, 255, 0.15) 30%, transparent 70%);
+      linear-gradient(rgba(0, 0, 255, 0.2) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(138, 43, 226, 0.2) 1px, transparent 1px),
+      radial-gradient(circle, rgba(138, 43, 226, 0.15) 10%, rgba(0, 0, 255, 0.15) 30%, transparent 70%);
   background-size: 50px 50px, 50px 50px, cover;
   background-position: center;
   border: 20px solid rgb(36, 36, 36);
   border-radius: 2px;
+  max-height: 100vh;
+  max-width: 100vw;
+  overflow: hidden;
+  display: flex;
   flex-direction: column;
 }
 
-@keyframes neon-glow {
-  0% { filter: drop-shadow(0 0 5px blueviolet); }
-  50% { filter: drop-shadow(0 0 15px blue); }
-  100% { filter: drop-shadow(0 0 5px blueviolet); }
-}
-
-.game-home .content-wrapper {
+.content-wrapper {
   display: flex;
-  flex: 1;
-  height: 90%;
+  flex-direction: row;
+  height: 100%;
+  width: 100%;
+  min-height: 200px;
+  min-width: min(366px, 100%); 
   animation: neon-glow 1.5s infinite alternate;
 }
 
-.game-home .line {
-  padding: 12px;
+.column-left {
+  width: 50%;
+  min-width: min(366px, 100%); 
+  height: 100%;
+  padding: 10px;
+  flex-shrink: 1; 
+  box-sizing: border-box;
+  min-height: 290px;
+  
 }
 
-.title-home-game {
-  position: relative;
-  height: 10%;
-  display: flex; 
-  align-items: center;
-  justify-content: center; 
+.column-right {
+  min-height: 290px;
+  flex: 1;
+  height: 100%;
+  width: 50%;
+  padding: 10px;
+  min-width: min(366px, 100%); 
   color: white;
-  font-size: 35px;
-  font-weight: bold;
-  text-transform: uppercase;
-  font-family: 'Press Start 2P', cursive;
 }
 
 .game-home .content {
-  height: 83%;
-  margin-top: 8%;
-  width: 80%;
-  margin-left: 8%;
+  height: 95%;
+  width: 85%;
   padding: 5%;
   border: 10px solid white;
   border-radius: 10%;
-  align-items: center;
-  justify-content: center;
   color: #ffffff;
   font-family: 'Press Start 2P', cursive;
   font-weight: bold;
   text-transform: uppercase;
-   /*animation: neon-glow 1.5s infinite alternate;*/
-}
-.game-home .column {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-
-.game-home .column-right {
-  color: white;
-}
-.game-home .column-flex {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
+  font-size: clamp(0.6rem, 1.5vw, 1.2rem);
+  min-width: 200px;
+  max-width: 100%;
+  margin: 10px auto;
+  overflow-wrap: break-word;
+  min-height: 200px;
   
-}
-.game-home .column-left {
-  padding: 10px;
+  /* Ajout des nouvelles propriétés */
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;  /* Change space-around to flex-start */
+  align-items: center;            /* Centre horizontalement */
+  gap: 2rem;                     /* Augmente l'espace entre les éléments */
 }
 
-.game-home .column-right {
-  padding: 10px;
+.game-home .text-stats, .game-home-stats-title{
+  gap: 0rem;
+  margin: 0%;
+  padding: 0%;
+}
+
+/* Style pour les éléments à l'intérieur de content */
+.game-home .content h3 {
+  margin: 0;
+  width: 100%;
+  text-align: center;
+}
+
+.game-home .content .line,
+.game-home .content .stats-item,
+.game-home .content .stats-subitem {
+  width: 100%;
+  padding: 0.5rem;
+  margin: 0.2rem 0;
+  text-align: left;
+}
+
+/* Ajustement pour les sous-items */
+.game-home .content .item {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding-left: 1rem;
+}
+
+/* Media query pour les petits écrans */
+@media (max-width: 732px) {
+  .game-home .content {
+    gap: 0.5rem;
+    padding: 3%;
+  }
+
+  .game-home .content .line,
+  .game-home .content .stats-item,
+  .game-home .content .stats-subitem {
+    padding: 0.3rem;
+    margin: 0.1rem 0;
+  }
 }
 
 .game-home .p-2 {
   height: 30%;
   font-family: 'Press Start 2P', cursive;
-  display: flex; 
+  display: flex;
   align-items: center;
   justify-content: flex-start;
   color: white;
-  font-size: 25px;
+  font-size: clamp(0.8rem, 2vw, 1.5rem);
   font-weight: bold;
   margin: 7%;
-}
-
-.game-home .d-flex {
-  padding: 3%;
 }
 
 .game-home .arrow {
   font-family: 'Arrows', sans-serif;
   font-size: 35px;
-  margin-top: 2%;
   margin-right: 25px;
-  justify-content: center;
-  align-items: center;
   display: flex;
-
+  align-items: center;
 }
 
-.game-home-stats-title {
-  /*color: blueviolet !important;*/
-  margin-left: 25%;
+/* Personnalisation des barres de défilement */
+.column-left::-webkit-scrollbar,
+.column-right::-webkit-scrollbar {
+  width: 8px;
 }
 
-.text-stats .item {
-  font-size: 12px;
-  margin-left: 4%;
+.column-left::-webkit-scrollbar-track,
+.column-right::-webkit-scrollbar-track {
+  background: transparent;
 }
 
-@media (max-width: 768px) {
-  .game-home {
-    height: auto;
-    padding: 10px;
-  }
+.column-left::-webkit-scrollbar-thumb,
+.column-right::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+}
 
+.column-left::-webkit-scrollbar-thumb:hover,
+.column-right::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+/* Ajouter après vos styles de scrollbar existants */
+.content-wrapper::-webkit-scrollbar {
+    width: 8px;
+}
+
+.content-wrapper::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.content-wrapper::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+}
+
+.content-wrapper::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
+}
+
+/* Ajuster les media queries pour une meilleure adaptation */
+@media (max-height: 600px), (max-width: 1460px) {
   .content-wrapper {
-    flex-direction: column;
-    align-items: center;
+      flex-direction: column;
+      overflow-y: auto;
+      height: auto;
   }
 
-  .column-left, .column-right {
-    width: 100%;
-    margin-bottom: 20px;
+  .column-left {
+      width: 100%;
+      height: auto;
+      max-height: 40vh;
   }
 
-  .line {
-    text-align: center;
+  .column-right {
+      width: 100%;
+      height: auto;
+      max-height: 60vh; 
+
   }
 
-  .title-game {
-    font-size: 30px;
+  .game-home .content {
+      width: 95%;
+      margin: 10px auto;
+      min-height: auto;
   }
 
-  .content {
-    width: 90%;
-    padding: 20px;
+  .game-home .p-2 {
+      margin: 5px 0;
+      height: auto;
+      min-height: 40px;
+  }
+}
+
+@media (max-width: 732px), (max-height: 600px) {
+  .content-wrapper {
+      flex-direction: column;
+      overflow-y: auto;
+      height: auto;
+  }
+
+  .column-left,
+  .column-right {
+      width: 100%;
+      min-width: unset;
+      padding: 5px;
+  }
+
+  .column-left {
+      max-height: 40vh;
+  }
+
+  .column-right {
+      max-height: 60vh;
+  }
+
+  .game-home .content {
+      width: 90%;
+      margin: 5px auto;
+      padding: 3%;
+      font-size: clamp(0.7rem, 1.5vw, 1rem);
   }
 }
 
 @media (max-width: 480px) {
-  .title-game {
-    font-size: 25px; 
-  }
-  .arrow {
-    font-size: 35px;
+  .game-home .p-2 {
+      font-size: 0.9rem;
+      margin: 2%;
   }
 
-  .line {
-    font-size: 18px; 
-    padding: 10px;
+  .game-home .arrow {
+      font-size: 1.2rem;
+      margin-right: 10px;
   }
 
-  .content {
-    padding: 10px;
+  .game-home .content {
+      font-size: 0.8rem;
+      padding: 10px;
   }
 }
 
+@media (max-width: 380px) {
+  .game-home .content {
+      width: 95%;
+      padding: 2%;
+      border-width: 5px;
+  }
+
+  .game-home .p-2 {
+      margin: 3px 0;
+      font-size: clamp(0.6rem, 4vw, 0.9rem);
+  }
+
+  .game-home .arrow {
+      font-size: clamp(1rem, 5vw, 1.2rem);
+      margin-right: 5px;
+  }
+}
+
+@media (max-height: 500px) {
+  .column-left {
+      max-height: 50vh;
+  }
+
+  .column-right {
+      max-height: 50vh;
+  }
+
+  .game-home .p-2 {
+      margin: 2px 0;
+      min-height: 30px;
+  }
+}
+
+@media (max-width: 732px) {
+  .game-home .content {
+      font-size: clamp(0.5rem, 1.2vw, 1rem);
+  }
+
+  .game-home .p-2 {
+      font-size: clamp(0.7rem, 1.8vw, 1.2rem);
+  }
+}
+
+@media (max-width: 480px) {
+  .game-home .content {
+      font-size: clamp(0.4rem, 1vw, 0.8rem);
+  }
+
+  .game-home .p-2 {
+      font-size: clamp(0.6rem, 1.5vw, 1rem);
+  }
+}
+
+@media (max-width: 380px) {
+  .game-home .content {
+      font-size: clamp(0.3rem, 0.8vw, 0.7rem);
+  }
+
+  .game-home .p-2 {
+      font-size: clamp(0.5rem, 1.2vw, 0.9rem);
+  }
+}
+
+/* Ajouter ces styles pour la section tournament */
 .section-tournament {
-  height: 75%;
-  margin-top: 5%;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
 }
 
-.input-code {
-  margin-top: 8%;
-  width: 33%;
+.tournament-item {
+    width: 100%;
+    min-height: 50px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
 }
 
+.tournament-item > div {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.5rem;
+}
+
+.input-code,
 .input-players {
-  width: 60%;
+    background: transparent;
+    border: 1px solid white;
+    color: white;
+    padding: 0.3rem;
+    margin: 0.5rem 0;
+    width: 60%;
 }
 
-.waiting {
-  justify-content: space-around;
-  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-  background-color: rgba(60, 60, 60, 0.438);
-  align-items: center;
-  z-index: 2; 
-  font-family: 'Press Start 2P', cursive;
-  font-size: 20px;
-  opacity: 1;
-}
-
-.wait_text{
-  color:red;
-  margin-top: 20%;
-  margin-left: 5%;
+/* Ajuster pour les petits écrans */
+@media (max-width: 732px) {
+    .tournament-item {
+        min-height: 40px;
+    }
 }

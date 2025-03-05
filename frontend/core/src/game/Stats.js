@@ -170,13 +170,36 @@ function Stats({ itemsArray = [] }) {
             }
         };
         if (userInfo?.id) fetchStats();
-      }, [id]);
+      }, []);
     
       function StatsTable({ data }) {
+        const [expandedCells, setExpandedCells] = useState({});
+
+        const handleCellClick = (e, cellId) => {
+            e.preventDefault();
+            e.stopPropagation();
+            e.nativeEvent.stopImmediatePropagation();
+            
+            console.log("Cell clicked:", cellId);
+            
+            setExpandedCells(prev => ({
+                ...prev,
+                [cellId]: !prev[cellId]
+            }));
+        };
+
         return (
-            <div className="stats-zone-table w-100 h-100">
-                <div className="w-100 d-flex" style={{ zIndex: 1 }}>
-                    <table style={{ width: "100%", tableLayout: "relative", overflow: "hidden" }}>
+            <div className="stats-zone-table w-100 h-100" onClick={e => {
+                e.preventDefault();
+                e.stopPropagation();
+                e.nativeEvent.stopImmediatePropagation();
+            }}>
+                <div className="w-100 d-flex">
+                    <table style={{ width: "100%", tableLayout: "relative", overflow: "hidden", zIndex: "12" }} onClick={e => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        e.nativeEvent.stopImmediatePropagation();
+                    }}>
                         <thead>
                             <tr>
                                 <th>Date</th>
@@ -190,14 +213,14 @@ function Stats({ itemsArray = [] }) {
                                 {data.map((data) => (
                                     <tr key={data.id}>
                                       <td 
-                                            onClick={(e) => { e.stopPropagation(); console.log("Clicked on td!"); handleDivClick(""); }} 
-                                            className={expandedTab ? 'expanded-cell' : ''}
+                                            onClick={(e) => handleCellClick(e, `date-${data.id}`)}
+                                            className={expandedCells[`date-${data.id}`] ? 'expanded-cell' : ''}
                                         >
                                             {data.date ? data.date.slice(-5) : "N/A"}-{data.date ? data.date.slice(0, 5) : "N/A"}
                                         </td>
                                         <td 
-                                            onClick={(e) => { e.stopPropagation(); console.log("Clicked on td!"); handleDivClick(""); }} 
-                                            className={expandedTab ? 'expanded-cell' : ''}
+                                            onClick={(e) => handleCellClick(e, `player-${data.id}`)}
+                                            className={expandedCells[`player-${data.id}`] ? 'expanded-cell' : ''}
                                         >
                                             {data.player2 || "N/A"}
                                         </td>

@@ -44,7 +44,7 @@ function Tournament() {
                const data = JSON.parse(event.data);
                console.log("creator : ", data);            
                 if (data.game_id && data.player1 === user.name || data.player2 === user.name) {
-                   navigate(`/games/${data.game_id}`);
+                   navigate(`/game/${data.game_id}`);
                 }
                 if (data.type === 'user_connected_message') {
                     fetchTournementCode(data.message.code);
@@ -129,7 +129,12 @@ function Tournament() {
 
     useEffect(() => {
         if (tournamentResponse && tournamentResponse.winner_final) {
-            navigate("/Home", { state: { modalName: "resultTournament" } });
+            navigate("/Home", { 
+                state: { 
+                    modalName: "resultTournament",
+                    tournamentCode: tournamentResponse.code
+                }
+            });
         }
     }, [tournamentResponse]);
 

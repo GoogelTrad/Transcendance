@@ -166,12 +166,11 @@ function HomeGame({ setModalStats, setModalCreateTournament, setModalTournament,
             socket.send(JSON.stringify({ type: 'leave' }));
         }
     };
-
     return (
         !waitingForPlayer ? (
             <div className="game-home w-100 h-100">
-                <div className="content-wrapper w-100 h-100">
-                    <div className="column column-left w-50 h-100">
+                <div className="content-wrapper">
+                    <div className="column-left">
                         <div className="d-flex flex-column mb-3 h-100">
                             <div className="p-2" onClick={() => handleMenuClick("play")}>
                                 <span className="arrow">►</span> PLAY <span className="tilde">_</span>
@@ -184,7 +183,7 @@ function HomeGame({ setModalStats, setModalCreateTournament, setModalTournament,
                             </div>
                         </div>
                     </div>
-                    <div className="column column-right w-50 h-100">
+                    <div className="column-right">
                         {onClickPlay && (
                             <div className="content">
                                 <h3 style={{ textAlign: "center" }} onClick={() => handleMenuClick("play")}>Play</h3>

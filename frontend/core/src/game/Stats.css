@@ -29,6 +29,8 @@ body, html {
     z-index: 1;
     box-sizing: border-box;
     transition: all 0.3s ease;
+    scrollbar-width: thin;  
+    scrollbar-color: rgba(255, 255, 255, 0.5) transparent;
 }
 
 .stats-zone-table {
@@ -73,6 +75,10 @@ body, html {
     text-transform: uppercase;
     background-color: rgba(0, 150, 255, 0.2);
     animation: scan-blue 3s infinite;
+    padding: 15px;
+    background-color: rgba(0, 0, 0, 0.5);
+    color: white;
+    font-weight: bold;
 }
 
 .stats-zone-table td {
@@ -83,8 +89,27 @@ body, html {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    padding: 5px;
-    font-size: 0.9em;
+    padding: 10px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    position: relative;
+    background-color: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transform-origin: center;
+    transition: all 0.3s ease;
+}
+
+.stats-zone-table td.expanded-cell {
+    padding: 20px;
+    background-color: rgba(0, 150, 255, 0.2);
+    font-size: 1.1em;
+    z-index: 2;
+    transform: scale(1.05);
+    box-shadow: 0 0 10px rgba(0, 150, 255, 0.3);
+}
+
+.stats-zone-table td:hover {
+    background-color: rgba(255, 255, 255, 0.1);
 }
 
 .stats-zone.right {
@@ -219,15 +244,9 @@ body, html {
     box-sizing: border-box;
     transform: scale(1);
     transition: transform 0.3s ease;
+    overflow-x: auto;
 }
 
-/*.stats-row-element {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    height: 100%;
-}*/
 
 .stats-row-element.empty-row {
     background: transparent;
@@ -328,12 +347,38 @@ body, html {
     }
 }
 
-/* Styles généraux */
 .stats-zone {
     transition: all 0.3s ease;
+    scrollbar-width: thin; 
+    scrollbar-color: rgba(255, 255, 255, 0.5) transparent;
 }
 
 .stats-row-element {
     transition: all 0.3s ease;
     font-size: 20%;
+}
+
+
+.stats-zone::-webkit-scrollbar {
+    width: 8px;
+    background-color: transparent;
+}
+
+.stats-zone::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.stats-zone::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.5);
+    border-radius: 4px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+}
+
+.stats-zone::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(255, 255, 255, 0.7);
+}
+
+.stats-zone::-webkit-scrollbar-button {
+    display: none;
 }

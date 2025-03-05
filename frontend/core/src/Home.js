@@ -47,7 +47,7 @@ function Home() {
         {name: 'social', setter: setIsModalSocial},
         {name: 'profile', setter: setIsModalProfile},
         {name: 'friend', setter: setIsModalFriendProfile},
-        {name: 'result', setter: setIsModalResult},
+        {name: 'resultTournament', setter: setIsModalResult},
     ]
 
     const [modalZIndexes, setModalZIndexes] = useState({});
@@ -79,6 +79,7 @@ function Home() {
     const [numberPlayer, setNumberPlayer] = useState("");
     const location = useLocation();
     const modalSend = location.state?.modalName || "";
+    const tournamentCodeFromLocation = location.state?.tournamentCode;
     const decodeToken = userInfo;
 
     const removeLaunch = (appName) => {
@@ -103,6 +104,7 @@ function Home() {
                 game: windowWidth * 0.5,
                 stats: windowWidth * 0.6,
                 createTournament: windowWidth * 0.25,
+                resultTournament: windowWidth * 0.2,
                 tournament: windowWidth * 0.6,
                 social: windowWidth * 0.5,
                 profile: windowWidth * 0.4,
@@ -117,6 +119,7 @@ function Home() {
                 stats: windowHeight * 0.85,
                 createTournament: windowHeight * 0.5,
                 tournament: windowHeight * 0.85,
+                resultTournament: windowHeight * 0.6,
                 social: windowHeight * 0.6,
                 profile: windowHeight * 0.13,
                 chat: windowHeight * 0.3,
@@ -154,6 +157,7 @@ function Home() {
     const isDraggingRef = useRef(false);
 
     useEffect(() => {
+        
         if (modalSend) {
             const modalSetter = setters.find(item => item.name === modalSend)?.setter;
             if (modalSetter && !isLaunched(isLaunch, modalSend)) {
@@ -162,6 +166,17 @@ function Home() {
             }
         }
     }, [modalSend, navigate]);
+
+    useEffect(() => {
+        if (modalSend === "resultTournament" && tournamentCodeFromLocation) {
+            setTournamentCode(tournamentCodeFromLocation);
+            const modalSetter = setters.find(item => item.name === modalSend)?.setter;
+            if (modalSetter && !isLaunched(isLaunch, modalSend)) {
+                launching({ newLaunch: modalSend, setModal: modalSetter });
+                navigate(location.pathname, { replace: true, state: {} });
+            }
+        }
+    }, [modalSend, tournamentCodeFromLocation]);
 
     useEffect(() => {
         const initializePosition = (ref, initialXFactor) => {
@@ -220,7 +235,7 @@ function Home() {
             el.style.top = `${newTop}px`;
             event.preventDefault();
         };
-    
+
         const handleDragEnd = () => {
             const el = ref.current;
             if (!el) return;
@@ -519,17 +534,21 @@ function Home() {
                 isModal={isModalResult}
                 modalRef={modalResultRef}
                 name="Result"
-                onLaunchUpdate={() => (removeLaunch("resultTournament"), removeLaunch("tournament"))}
-                onClose={() => (setIsModalResult(false), setIsModalTournament(false))}
+                zIndex={modalZIndexes["resultTournament"] || 1}
+                position={modalPositions["resultTournament"]}
+                onUpdatePosition={(newPos) => updatePosition("resultTournament", newPos)}
+                onBringToFront={() => bringToFront("resultTournament")}
+                onLaunchUpdate={() => (removeLaunch("resultTournament"))}
+                onClose={() => (setIsModalResult(false))}
                 >
                     <ResultTournament
                         items={items}
                         setItems={setItems}
-                        setIsModalTournament={setIsModalTournament}
                         setModalResult={setIsModalResult}
                         setModalStats={setIsModalStats}
                         removeLaunch={removeLaunch}
                         launching={launching}
+                        tournamentCode={tournamentCode}
                     />
             </ModalInstance>}
             {isAuthenticated && isLaunched(isLaunch, "social") && 
