@@ -1,33 +1,18 @@
-import { Navigate, useNavigate } from 'react-router-dom';
-import { getCookies } from '../App';
-import { AuthProvider, useAuth } from '../users/AuthContext';
+import { useLocation } from 'react-router-dom';
+import { useAuth } from '../users/AuthContext';
 import React, {useEffect, useState} from "react";
 
 
 function ProtectedRoute({ children }) {
-    const navigate = useNavigate();
-    const { isAuthenticated, setIsAuthenticated } = useAuth();
+    const { isAuthenticated, userInfo, refreshUserInfo } = useAuth();
+    const location = useLocation();
 
-	const checkToken = () => {
-		const currentToken = getCookies('token');
-		
-		if (!currentToken || typeof currentToken !== 'string') {
-			console.log('Invalid token, redirecting to login...');
-			setIsAuthenticated(false);
-			navigate('/home');
-		} else {
-			setIsAuthenticated(true);
-		}
-	};
-    
-	useEffect(() => {
-        checkToken();
-    }, [navigate, setIsAuthenticated]);
-
-    const currentToken = getCookies('token');
-    if (!currentToken || typeof currentToken !== 'string') {
-        return null;
-    }
+    useEffect(() => {
+        if (isAuthenticated && !userInfo) {
+            console.log('Rafraîchissement de userInfo suite à un changement de page:', location.pathname);
+            refreshUserInfo();
+        }
+    }, [isAuthenticated, userInfo, refreshUserInfo, location.pathname]);
 
     return children;
 }

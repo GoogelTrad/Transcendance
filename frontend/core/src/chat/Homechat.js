@@ -6,12 +6,11 @@ import useSocket from '../socket'
 import axiosInstance from "../instance/AxiosInstance";
 import ModalInstance from "../instance/ModalInstance";
 import Profile from "../users/Profile";
+import Template from "../instance/Template";
+import { useAuth } from "../users/AuthContext";
 
 import "./Homechat.css"
 import Room from './Room'
-
-import useJwt from '../instance/JwtInstance';
-import { getCookies } from '../App';
 
 import useNotifications from "../SocketNotif"
 
@@ -22,8 +21,10 @@ export default function HomeChat() {
 
 	const { t } = useTranslation();
 
-	const socket = useSocket('chat', 'public');
 
+	const { userInfo, refreshUserInfo, isAuthenticated} = useAuth();
+	console.log('chat', userInfo)
+	const socket = useSocket('chat', 'public');
 	const [createName, setCreateRoomName] = useState("");
 	const [createpassword, setCreatePassword] = useState("");
 	const [createdRoomName, setCreatedRoomName] = useState("");
@@ -44,14 +45,8 @@ export default function HomeChat() {
 
 	const handleCreateToggle = () => { setIsCreateSwitchOn(!isCreateSwitchOn) };
 
-	const getJwt = useJwt();
-
-	const token = getCookies('token');
-	const decodedToken = getJwt(token);
-	const userId = decodedToken.id;
-
 	const [blockedData, setBlockedData] = useState({
-		from_user: userId,
+		from_user: userInfo.id,
 		to_user: '',
 	});
 	
@@ -114,7 +109,7 @@ export default function HomeChat() {
 
 			const dmRooms = response.data.dmRooms.map((value) => {
 				value.dmname = value.users.filter((v) => {
-					if (v.id !== userId) return true;
+					if (v.id !== userInfo.id) return true;
 					return false;
 				})[0]?.name + ' dm' ?? value.name + ' dm';
 				return value;
@@ -130,14 +125,15 @@ export default function HomeChat() {
 	const users_connected = async () => {
 		try {
 			const response = await axiosInstance.get('/api/livechat/users_connected/');
-			setusersconnected(response.data.filter((v) => v.id !== userId));
+			console.log("Liste des users:", response.data);
+			setusersconnected(response.data.filter((v) => v.id !== userInfo.id));
 		} catch (error) {
 			showToast("error", t('ToastsError'));
 		}
 	};
 
 	const blocked_user = async (id) => {
-		const data = {'from_user': userId, 'to_user': id};
+		const data = {'from_user': userInfo.id, 'to_user': id};
 		try {
 			const response = await axiosInstance.post(`/api/livechat/block/`, data, {
 				headers: {
@@ -156,7 +152,7 @@ export default function HomeChat() {
 	}
 
 	const unlocked_user = async (id) => {
-		const data = {'from_user': userId, 'to_user': id};
+		const data = {'from_user': userInfo.id, 'to_user': id};
 		try {
 			const response = await axiosInstance.post(`/api/livechat/unlock/`, data, {
 				headers: {
@@ -177,7 +173,7 @@ export default function HomeChat() {
 
 	const listUsersBlocked = async () => {
 		try {
-			const response = await axiosInstance.get(`/api/livechat/blocked_users/${userId}`);
+			const response = await axiosInstance.get(`/api/livechat/blocked_users/${userInfo.id}`);
 			setBlockedUsers(response.data);
 		}
 		catch(error) {
@@ -305,7 +301,7 @@ export default function HomeChat() {
 										<button className="dropdown-item" onClick={() => handleProfile(user.id)}> {t('Profile')} </button>
 										<button className="dropdown-item" onClick={() => {
 											const randomRoomName = makeName(8);
-											sendNotification(user.id, `${decodedToken.name} ${t('Discussion')}`, userId, randomRoomName); 
+											sendNotification(user.id, `${userInfo.name} ${t('Discussion')}`, userInfo.id, randomRoomName); 
 											createRoom(randomRoomName, user.id);}}
 										> {t('StartDiscussion')} </button>
 										{!blockedUsers.includes(user.id) && (

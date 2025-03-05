@@ -27,6 +27,7 @@ class Game(models.Model):
     loser = models.CharField(max_length=255, blank=True)
     date = models.DateField(auto_now=True)
     isInTournament = models.BooleanField(default=False)
+    tournamentCode = models.IntegerField(default=0)
     
 
     status = models.CharField(
@@ -34,9 +35,9 @@ class Game(models.Model):
         choices=STATUS_CHOICES,
         default=WAITING
     )
-
+    
     def __str__(self):
-        return f"Game between {self.player1} and {self.player2} - Status: {self.status}"
+        return f"Game between {self.player1} and {self.player2} - Status: {self.status}, Winner: {self.winner}, score player 1 : {self.score_player_1}, score player 2: {self.score_player_2}"
 
     def is_waiting(self):
         return self.status == self.WAITING
@@ -72,7 +73,15 @@ class Tournament(models.Model):
     size = models.IntegerField(default=4)
     winner1 = models.CharField(max_length=255, blank=True)
     winner2 = models.CharField(max_length=255, blank=True)
+    winner_final = models.CharField(max_length=255, blank=True)
     players_connected = models.IntegerField(default=0)
+    date = models.DateField(auto_now=True)
+    first = models.CharField(max_length=255, blank=True)
+    second = models.CharField(max_length=255, blank=True)
+    third = models.CharField(max_length=255, blank=True)
+    fourth = models.CharField(max_length=255, blank=True)
+    tie = models.BooleanField(default=False)
+
     status = models.CharField(
         max_length=10,
         choices=STATUS_CHOICES,

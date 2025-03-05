@@ -1,11 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import axiosInstance from '../instance/AxiosInstance';
-import { getCookies } from '../App';
 import { jwtDecode } from 'jwt-decode';
 import { showToast } from '../instance/ToastsInstance';
 import { ToastContainer } from 'react-toastify';
 import { Link } from 'react-router-dom';
-import useJwt from '../instance/JwtInstance';
 import ModalInstance from '../instance/ModalInstance';
 import { useAuth } from '../users/AuthContext'; 
 import Profile from '../users/Profile';
@@ -77,8 +75,7 @@ function FriendRequests({setModal, setIsFriends, launching}) {
 	const [searchResults, setSearchResults] = useState([]);
 
 	const { t } = useTranslation();
-	
-	const getJwt = useJwt();
+	const { userInfo } = useAuth();
 
     const handleSearch = async (query) => {
         setSearchQuery(query);
@@ -96,8 +93,7 @@ function FriendRequests({setModal, setIsFriends, launching}) {
     };
 
 	const fetchFriendList = async () => {
-		const token = getCookies('token');
-		const decodeToken = getJwt(token);
+		const decodeToken = userInfo;
 
 		try {
 			const reponse = await axiosInstance.get(`/api/friends/list/${decodeToken.id}`);
@@ -138,9 +134,12 @@ function FriendRequests({setModal, setIsFriends, launching}) {
     };
 
     useEffect(() => {
+		if (userInfo)
+		{
+			fetchFriendList();
+			fetchFriendRequests();
+		}
 
-		fetchFriendList();
-        fetchFriendRequests();
 		const interval = setInterval(() => {
 			fetchFriendList();
         	fetchFriendRequests();
@@ -170,7 +169,7 @@ function FriendRequests({setModal, setIsFriends, launching}) {
 						.map((friend) => (
 							<li key={friend.id} className="friend-item">
 								<img 
-									src={friend.profile_image ? `http://localhost:8000${friend.profile_image}` : '/default.png'}
+									src={friend.profile_image_url ? `${process.env.REACT_APP_API_URL}${friend.profile_image_url}` : '/default.png'}
 									alt={`${friend.name}'s profile`} 
 									className="friend-avatar"
 									onClick={() => {
@@ -202,7 +201,7 @@ function FriendRequests({setModal, setIsFriends, launching}) {
 					{searchResults.map((user) => (
 						<li key={user.id} className="search-user-item">
 							<img 
-								src={user.profile_image ? `http://localhost:8000${user.profile_image}` : '/default.png'}
+								src={user.profile_image_url ? `${process.env.REACT_APP_API_URL}${user.profile_image_url}` : '/default.png'}
 								alt={`${user.name}'s profile`} 
 								className="friend-avatar"
 								onClick={() => {

@@ -25,20 +25,15 @@ class SimpleMiddleware:
 
     def __call__(self, request):
         
-        print(f'path = {request.path}', flush=True)
-        
-        if request.path.startswith(('/media/', '/static/', '/auth/', '/api/user/code', '/api/user/token')):
+        if request.path.startswith(('/media/', '/static/', '/api/auth/', '/api/user/code', '/api/user/token')):
             return self.get_response(request)
         
         new_token = None
         
         if not request.path == '/api/user/login' and not request.path == '/api/user/create':
-            auth_header = request.headers.get('Authorization')
-            
-            if not auth_header:
-                raise AuthenticationFailed('Authorization header missing!')
             try:
-                token = auth_header.split(' ')[1]
+                token = request.COOKIES.get('token')
+                
                 if not token:
                     raise AuthenticationFailed('Token is invalid!')
                 
@@ -49,7 +44,7 @@ class SimpleMiddleware:
                 user = User.objects.filter(id=payload['id']).first()
                 if user is not None:
                     request.user = user
-                if not request.path.startswith('/api/user/') and request.POST:
+                if not request.path.startswith('/api/user/') and (request.method == 'POST' or request.method == 'PATCH'):
                     new_token = refresh_token(user, token)
                     
             except jwt.ExpiredSignatureError:
@@ -62,6 +57,6 @@ class SimpleMiddleware:
         response = self.get_response(request)
         
         if new_token:
-            response.set_cookie(key='token', value=new_token, max_age=3600)
-
+            response.set_cookie(key='token', value=new_token, max_age=3600, httponly=True, secure=True)
+            
         return response

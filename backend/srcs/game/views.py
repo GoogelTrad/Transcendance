@@ -12,16 +12,12 @@ from .models import Game, Tournament
 from users.models import User
 import jwt
 import os
+from users.decorator import jwt_auth_required
+import random
 
 class HomeGameView:
     @api_view(['POST'])
     def create_game(request):
-        auth_header = request.headers.get('Authorization')
-        if auth_header:
-            token = auth_header.split(' ')[1]
-        else:
-            token = None
-
         data = request.data.copy()
 
         serializer = GameSerializer(data=data, partial=True)
@@ -29,7 +25,6 @@ class HomeGameView:
         if serializer.is_valid():
             game_instance = serializer.save()
             player1_name = data.get('player1')
-
             if player1_name:
                 try:
                     player1_user = get_object_or_404(User, name=player1_name)
@@ -45,6 +40,7 @@ class HomeGameView:
                     player2_user.save()
                 except Exception as e:
                     return Response({"detail": f"Player2 with name '{player2_name}' not found: {str(e)}"}, status=status.HTTP_404_NOT_FOUND)
+                
 
             return Response({"id": game_instance.id, **serializer.data}, status=status.HTTP_201_CREATED)
 
@@ -118,16 +114,25 @@ class GameView:
 class TournamentView:
     @api_view(['POST'])
     def create_tournament(request):
-        auth_header = request.headers.get('Authorization')
-        if auth_header:
-            token = auth_header.split(' ')[1]
-        else:
-            token = None
-
+        token = request.COOKIES.get('token')
         payload = jwt.decode(jwt=token, key=os.getenv('JWT_KEY'), algorithms=['HS256'])
         user = get_object_or_404(User, name=payload.get('name'))
         data = request.data.copy()
+        verif_tournament = Tournament.objects.count()
+        print(verif_tournament, flush=True)
+        if verif_tournament >= 100 :
+            tournament_to_del = Tournament.objects.first()
+            tournament_to_del.delete()
+            verif_tournament = Tournament.objects.count()
+        tournament_code = random.randint(1, 9999)
 
+        if Tournament.objects.filter(code=tournament_code).exists():
+            tournament_code_save = tournament_code
+            while tournament_code == tournament_code_save:
+                tournament_code = random.randint(1, 9999)
+        print(tournament_code, flush=True)
+        data["code"] = tournament_code
+        print(data["code"], flush=True)
         serializer = TournamentSerializer(data=data, partial=True)
 
         if serializer.is_valid():
@@ -159,6 +164,7 @@ class TournamentView:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
     @api_view(['GET', 'PATCH'])
+    @jwt_auth_required
     def fetch_data_tournament_by_code(request, code):
         try:
             tournament = Tournament.objects.get(code=code)
@@ -170,6 +176,29 @@ class TournamentView:
             return Response(serializer.data, status=status.HTTP_200_OK)
 
         elif request.method == 'PATCH':
+            if 'winner' in request.data:
+                games = list(tournament.gamesTournament.all().order_by('id'))
+                print("games states :", games, flush=True)
+                if len(games) >= 1:
+                    tournament.winner1 = games[0].winner
+                if len(games) >= 2:
+                    tournament.winner2 = games[1].winner
+                if len(games) == 3:
+                    score_game_1 = min(games[0].score_player_1, games[0].score_player_2)
+                    score_game_2 = min(games[1].score_player_1, games[1].score_player_2)
+                    if score_game_1 < score_game_2:
+                        tournament.fourth = games[0].loser
+                        tournament.third = games[1].loser
+                    if score_game_1 > score_game_2:
+                        tournament.fourth = games[1].loser
+                        tournament.third = games[0].loser
+                    if score_game_1 == score_game_2:
+                        tournament.fourth = games[1].loser
+                        tournament.third = games[0].loser
+                        tournament.tie = True
+                    tournament.winner_final = games[2].winner
+                    tournament.first = games[2].winner
+                    tournament.second = games[2].loser
             serializer = TournamentSerializer(tournament, data=request.data, partial=True)
             if serializer.is_valid():
                 serializer.save()

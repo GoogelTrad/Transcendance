@@ -1,20 +1,11 @@
 import React from "react";
 import { useEffect, useState } from "react";
 import axiosInstance from "../instance/AxiosInstance";
-import { useNavigate } from 'react-router-dom';
 import { useAuth } from './AuthContext';
-import { getCookies } from "../App";
 
 export function HandleAuth() 
 {
-	const popup = window.open("https://localhost:8000/auth/code", "42Auth", "width=600,height=800");
-	
-	console.log(popup.opener);
-
-	if (popup) 
-		console.log("✅ window.opener défini manuellement !");
-	else
-		alert("Veuillez autoriser les pop-ups !");
+	window.open( `${process.env.REACT_APP_API_URL}/api/auth/code`, "42Auth", "width=600,height=800");
 };
 
 
@@ -33,14 +24,12 @@ export default function AuthSchool()
     );
 }
 
-
 export function AuthSuccess() 
 {
 	const [isSchoolAuth, setIsSchoolAuth] = useState(false);
-	const [isPop, setIsPop] = useState(false);
 	const [code, setCode] = useState("");
-	const {isAuthenticated, setIsAuthenticated} = useAuth();
 	const [name, setName] = useState("");
+	const { setIsAuthenticated, login } = useAuth();
 
 
 	const handleVerify = async () => 	
@@ -48,11 +37,10 @@ export function AuthSuccess()
 		try {
 			const response = await axiosInstance.post('/api/user/code' , {code, name: name});
 			if (response.status === 200) {
-				const authChannel = new BroadcastChannel("auth_channel");
-				const token = getCookies('token');
-				authChannel.postMessage({ token });
-           	 	authChannel.close();
+				setIsAuthenticated(true);
+				localStorage.setItem('isAuthenticated', 'true');
             	window.close();
+				login();
 			}
 		}
 		catch(error) {
@@ -63,18 +51,17 @@ export function AuthSuccess()
     useEffect(() => 
 	{
         const urlParams = new URLSearchParams(window.location.search);
-        const token = urlParams.get("token");
 		const status = urlParams.get("status");
 		setName(urlParams.get("name"));
 
 		if (status === "2FA_REQUIRED" && isSchoolAuth === false)
 			setIsSchoolAuth(true);
-        else if (token && status !== "2FA_REQUIRED") 
+        else if (status === "SUCCESS") 
 		{
-            const authChannel = new BroadcastChannel("auth_channel");
-            authChannel.postMessage({ token });
-            authChannel.close();
+            setIsAuthenticated(true);
+			localStorage.setItem('isAuthenticated', 'true');
             window.close();
+			login();
         }
 
     }, []);
