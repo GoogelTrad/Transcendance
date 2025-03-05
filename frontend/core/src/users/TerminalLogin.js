@@ -111,6 +111,7 @@ function TerminalLogin({ setModal, launching, setTerminal, removeLaunch }) {
                 login();
                 setTerminal(false);
                 removeLaunch('terminal');
+                removeLaunch('forms');
                 navigate('/home');
                 return "2FA verification successful! You are now logged in.";
             } else {

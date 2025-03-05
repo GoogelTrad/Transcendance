@@ -323,3 +323,19 @@ def check_auth(request):
         return Response({'isAuthenticated': False, 'error': 'Token expired'})
     except jwt.InvalidTokenError:
         return Response({'isAuthenticated': False, 'error': 'Invalid token'})
+
+@api_view(['POST'])
+def set_token(request):
+    token = request.data.get('token')
+    if not token:
+        return Response({'error': 'Invalid Token'}, status=400)
+    
+    try:
+        payload = jwt.decode(token, os.getenv('JWT_KEY'), algorithms=['HS256'])
+        user = User.objects.get(id=payload['id'])
+        ValidToken.objects.create(user=user, token=token)
+        response = Response({'message': 'Token défini'}, status=200)
+        response.set_cookie(key='token', value=token, max_age=3600, httponly=True, secure=True,)
+        return response
+    except (jwt.InvalidTokenError, User.DoesNotExist):
+        return Response({'error': 'User not found'}, status=400)
