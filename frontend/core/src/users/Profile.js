@@ -1,16 +1,17 @@
 import "./Profile.css"
-import { getCookies } from "../App"
 import { useNavigate, Link, useParams } from "react-router-dom"
 import React, {useEffect, useState} from "react";
 import { jwtDecode } from "jwt-decode";
 import Button from 'react-bootstrap/Button';
 import axiosInstance from "../instance/AxiosInstance";
-import useJwt from "../instance/JwtInstance";
 import edit from "../assets/user/edit.svg";
 import x from "../assets/user/x.svg";
 import check from "../assets/user/check.svg"
 import gear from "../assets/user/gear.svg"
 import { AddFriend } from "../friends/Friends"
+import { showToast } from "../instance/ToastsInstance";
+import { ToastContainer } from 'react-toastify';
+import { useAuth } from "./AuthContext";
 
 import { useTranslation } from 'react-i18next';
 
@@ -18,8 +19,8 @@ function ChangeDetails({setUser, setValue, toChange, value, toType})
 {
 	const { t } = useTranslation();
 	const navigate = useNavigate();
-	const token = getCookies('token')
-	const user = jwtDecode(token);
+	const { userInfo, refreshUserInfo } = useAuth();
+	const user = userInfo
 	const [detail, setDetails] = useState(value);
 
 	const handleChange = (e) => {
@@ -33,30 +34,33 @@ function ChangeDetails({setUser, setValue, toChange, value, toType})
         e.preventDefault();
         try 
         {
-			const reponse = await axiosInstance.patch(`/api/api/user/${user.id}`, {
+			const reponse = await axiosInstance.patch(`/api/user/${user.id}`, {
 				[toChange] : detail
 			})
 			setValue(false);
 			setUser(reponse.data);
+			await refreshUserInfo();
         } 
         catch (error)
         {
-            console.error(error);
+			if (error.status === 400)
+				showToast('error', t('Toasts.UsernameAlreadyInUse'));
         }
 	}
 	return (
 		<>
 			<form className='userchange-form' onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "row", gap: "0.7rem"}}>
-                        <input className='input-form'
-                            type={toType}
-                            id={toChange}
-                            name={toChange}
-                            value={detail}
-                            onChange={handleChange}
-                            required
-                            placeholder={t('ModifyDetails')}/>
-						<button type="submit" className='check-icon'><img src={check} alt="check"/></button>
-                </form>
+				<input className='input-form'
+					type={toType}
+					id={toChange}
+					name={toChange}
+					value={detail}
+					onChange={handleChange}
+					required
+					placeholder={t('ModifyDetails')}/>
+				<button type="submit" className='check-icon'><img src={check} alt="check"/></button>
+            </form>
+			<ToastContainer />
 		</>
 	) 
 }
@@ -74,10 +78,10 @@ function Profile({id})
 	const [isSettings, setIsSettings] = useState(false);
 	const [isPermitted, setIsPermitted] = useState(false);
 	const [isStud, setIsStud] = useState(false);
+	const [is2fa, setIs2fa] = useState(false);
 	const [friendList, setFriendList] = useState([]);
-	const token = getCookies('token');
-	const getJwt = useJwt();
-	const decodeToken = getJwt(token);
+	const { userInfo, refreshUserInfo } = useAuth();
+	const decodeToken = userInfo;
 	let friends = friendList?.friends || [];
 
 	const fetchFriendList = async () => {
@@ -94,7 +98,6 @@ function Profile({id})
     const handleFileChange = async (e) => {
 		e.preventDefault();
 		const selectedImage = e.target.files[0];
-		
 		try {
 			const response = await axiosInstance.patch(`/api/user/${decodeToken.id}`, { 
 				'profile_image' : selectedImage 
@@ -104,20 +107,23 @@ function Profile({id})
 				},
 			})
 			setUser(response.data);
-			console.log(response);
+			await refreshUserInfo();
 		} 
 		catch (error) {
-			console.error("Error uploading profile image:", error);
+			showToast("error", t(`Toasts.${error.response.data}`));
 		}
 	};
 
 	const handleConfirm = async () =>
 	{
 		try {
-			axiosInstance.post(`/api/user/perms/${decodeToken.id}`);
+			const response = await axiosInstance.post(`/api/user/perms/${decodeToken.id}`);
+			console.log(response.data.message);
+			setIs2fa(response.data.message === "EnableTo2FA" ? true : false);
+			showToast("message", t(`Toasts.${response.data.message}`))
 		}
 		catch(error){
-			console.log("Error while changing perms on 2FA!");
+			showToast("error", t('Toasts.Error2FA'));
 		}
 	}
 
@@ -135,17 +141,20 @@ function Profile({id})
 			setIsPermitted(false);
 			setIsStud(false);
 		}
-		try 
+		console.log(userInfo);
+		setUser(userInfo);
+		console.log(user);
+		if (decodeToken.id !== id)
 		{
-			if (token)
+			try 
 			{
 				const reponse = await axiosInstance.get(`/api/user/${id}`);
 				setUser(reponse.data);
 			}
-		}
-		catch (error)
-		{
-			console.error('Erreur lors de la récupération des données utilisateur', error);
+			catch (error)
+			{
+				showToast("error", t('ToastsError'));
+			}
 		}
 	}
 
@@ -156,6 +165,10 @@ function Profile({id})
 		friends = friendList?.friends || [];
     }, [id]);
 
+	useEffect(() => {
+        console.log('user mis à jour:', user);
+    }, [user]);
+
 	return (
 		<>
 			{user ? (
@@ -164,7 +177,7 @@ function Profile({id})
 						<div className="profile-general">
 							<label htmlFor="profile_image">
 								<img
-									src={user.profile_image ? `http://localhost:8000${user.profile_image}` : '/default.png'}
+									src={user.profile_image_url ? `${process.env.REACT_APP_API_URL}${user.profile_image_url}` : '/default.png'}
 									alt="Profile"
 									className="profile-picture"
 								/>
@@ -173,7 +186,7 @@ function Profile({id})
 									id="profile_image"
 									accept="image/*"
 									style={{ display: 'none' }}
-									onChange={(e) => handleFileChange(e)}
+									onChange={handleFileChange}
 								/>
 							</label>
 
@@ -207,7 +220,7 @@ function Profile({id})
 							</button>
 							<ul className="dropdown-menu">
 								<li><button className="dropdown-item" type="button" onClick={() => setShowChangePassword(true)}>{t('ChangePassword')}</button></li>
-								<li><button className="dropdown-item" type="button" onClick={handleConfirm}>{t('Enable2FA')}</button></li>
+								<li><button className="dropdown-item" type="button" onClick={handleConfirm}>{is2fa ? t('Disable2FA') : t('Enable2FA')}</button></li>
 							</ul>
 							{showChangePassword && <ChangeDetails setUser={setUser} setValue={setShowChangePassword} toChange={'password'} value={null} toType={'password'}/>}
 							{isPermitted && !isStud && showChangePassword && <img src={x} className="x-icon" alt="x" onClick={() => setShowChangePassword(false)}/>}
@@ -228,7 +241,7 @@ function Profile({id})
 			) : (
 				<p>{t('NoUsers')}</p>
 			)}
-
+			<ToastContainer />
 		</>
 	);
 }

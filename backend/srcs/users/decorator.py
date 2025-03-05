@@ -7,13 +7,8 @@ import os
 def jwt_auth_required(view_func):
     @wraps(view_func)
     def wrapped_view(request, *args, **kwargs):
-        # Récupère le header d'authentification contenant le token JWT
-        auth_header = request.headers.get('Authorization')
-        if not auth_header:
-            raise AuthenticationFailed('Authorization header missing!')
-
         try:
-            token = auth_header.split(' ')[1]
+            token = request.COOKIES.get('token')
             payload = jwt.decode(token, os.getenv('JWT_KEY'), algorithms=['HS256'])
             user = get_user_model().objects.get(id=payload['id'])
             request.user = user

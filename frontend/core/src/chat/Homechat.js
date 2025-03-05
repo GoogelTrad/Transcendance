@@ -6,17 +6,15 @@ import useSocket from '../socket'
 import axiosInstance from "../instance/AxiosInstance";
 import ModalInstance from "../instance/ModalInstance";
 import Profile from "../users/Profile";
+import Template from "../instance/Template";
+import { useAuth } from "../users/AuthContext";
 
 import "./Homechat.css"
 import Room from './Room'
 
-import useJwt from '../instance/JwtInstance';
-import { getCookies } from '../App';
-
 import useNotifications from "../SocketNotif"
 
 import { useTranslation } from 'react-i18next';
-import Template from "../instance/Template";
 
 export default function HomeChat() {
 
@@ -44,10 +42,8 @@ export default function HomeChat() {
 
 	const handleCreateToggle = () => { setIsCreateSwitchOn(!isCreateSwitchOn) };
 
-	const getJwt = useJwt();
-
-	const token = getCookies('token');
-	const decodedToken = getJwt(token);
+  	const {userInfo} = useAuth();
+ 	const decodedToken = userInfo;
 	const userId = decodedToken.id;
 
 	const [blockedData, setBlockedData] = useState({
@@ -82,7 +78,7 @@ export default function HomeChat() {
 
 	const createRoom = (roomName, invited_user_id = undefined) => {
 		if (roomName === "") {
-			showToast("error", t('NotEmptyName'));
+			showToast("error", t('Toasts.NotEmptyName'));
 			return;
 		}
 		if (socket.ready) {
@@ -97,7 +93,6 @@ export default function HomeChat() {
 	};
 
 	const joinRoom = (name, password = null, dmname = null) => {
-		console.log("join room dmname", dmname);
 		if (socket.ready) {
 			socket.send({
 				type: "join_room",
@@ -147,7 +142,7 @@ export default function HomeChat() {
 
 			if (response.status === 200) {
 				listUsersBlocked();
-				showToast("message", t('BlockUsers'));
+				showToast("message", t('Toasts.BlockUsers'));
 			}
 
 		} catch(error) {
@@ -167,7 +162,7 @@ export default function HomeChat() {
 			if (response.status === 200)
 			{
 				listUsersBlocked();
-				showToast("succes", t('UnlockUsers'));
+				showToast("succes", t('Toasts.UnlockUsers'));
 			}
 
 		} catch(error) {
@@ -204,7 +199,7 @@ export default function HomeChat() {
 		e.preventDefault();
 
 		if (!room.name) {
-			showToast("error", t('NotRoomName'));
+			showToast("error", t('Toasts.NotRoomName'));
 			return;
 		}
 
@@ -213,7 +208,7 @@ export default function HomeChat() {
 			if (enteredPassword) {
 				joinRoom(room.name, enteredPassword);
 			} else {
-				showToast("error", t('EnterPassword'));
+				showToast("error", t('Toasts.EnterPassword'));
 			}
 		} else {
 			joinRoom(room.name, null, dmname);

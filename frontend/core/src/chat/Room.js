@@ -5,13 +5,12 @@ import useSocket from '../socket'
 import useNotifications from "../SocketNotif"
 import axiosInstance from "../instance/AxiosInstance";
 import "./room.css"
-import useJwt from '../instance/JwtInstance';
-import { getCookies } from '../App';
 import ModalInstance from "../instance/ModalInstance";
 import Profile from "../users/Profile";
 import { ToastContainer } from "react-toastify";
 
 import { useTranslation } from 'react-i18next';
+import { useAuth } from "../users/AuthContext";
 
 export default function Room() {
 
@@ -35,9 +34,8 @@ export default function Room() {
 	const modalProfile = useRef(null);
 
 	const navigate = useNavigate();
-	const getJwt = useJwt();
-	const token = getCookies('token');
-	const decodedToken = getJwt(token);
+	const { userInfo } = useAuth();
+	const decodedToken = userInfo;
 	const userId = decodedToken.id;
 
 	const { notifications, sendNotification, respondNotification } = useNotifications();
@@ -84,7 +82,7 @@ export default function Room() {
 		e.preventDefault();
 		setCaracteresRestants(maxLength);
 		if (message.trim() === "") {
-			showToast("error", t('NotBlankMessage'));
+			showToast("error", t('Toasts.NotBlankMessage'));
 			return;
 		}
 		if (socket.ready) {
@@ -100,7 +98,6 @@ export default function Room() {
 	const clearRoom = async () => {
 		try {
 			const response = await axiosInstance.post('/api/livechat/exit-room/', {room_name: roomName});
-			console.log(response.data);
 		} catch (error) {
 			showToast("error", t('ToastsError'));
 		}
@@ -121,7 +118,7 @@ export default function Room() {
 		console.log("name:", room.name);
 
 		if (!room.name) {
-			showToast("error", t('NotRoomName'));
+			showToast("error", t('Toasts.NotRoomName'));
 			return;
 		}
 
@@ -131,7 +128,7 @@ export default function Room() {
 				clearRoom();
 				joinRoom(room.name, enteredPassword);
 			} else {
-				showToast("error", t('EnterPassword'));
+				showToast("error", t('Toasts.EnterPassword'));
 			}
 		} else {
 			clearRoom();
@@ -221,7 +218,6 @@ export default function Room() {
 				</div>
 				<div className="chat">
 					<div className="titre">
-						{console.log("ROOM DMNAME:", dmname)}
 						<h3>{t('RoomName')}: { dmname ? dmname : roomName }</h3>
 					</div>
 					<div className="chat-messages" style={{ height: '400px', overflowY: 'scroll', border: '1px solid #ccc', padding: '10px' }}>

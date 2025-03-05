@@ -27,6 +27,7 @@ class Game(models.Model):
     loser = models.CharField(max_length=255, blank=True)
     date = models.DateField(auto_now=True)
     isInTournament = models.BooleanField(default=False)
+    tournamentCode = models.IntegerField(default=0)
     
 
     status = models.CharField(
@@ -72,6 +73,7 @@ class Tournament(models.Model):
     size = models.IntegerField(default=4)
     winner1 = models.CharField(max_length=255, blank=True)
     winner2 = models.CharField(max_length=255, blank=True)
+    winner_final = models.CharField(max_length=255, blank=True)
     players_connected = models.IntegerField(default=0)
     status = models.CharField(
         max_length=10,

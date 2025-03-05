@@ -24,7 +24,7 @@ def oauth_callback(request):
 
 def oauth_login(request):
 	if 'code' not in request.GET:
-		return JsonResponse({'error': 'Code non fourni'}, status=400)
+		return JsonResponse({'error': 'Missing Code'}, status=400)
 
 	code = request.GET['code']
 	payload = {
@@ -38,6 +38,7 @@ def oauth_login(request):
 	response = requests.post(TOKEN_URL, data=payload)
 
 	if response.status_code == 200:
+		print("coucou", flush=True);
 		token_data = response.json()
 		access_token = token_data['access_token']
 
@@ -67,7 +68,7 @@ def oauth_login(request):
 					user.save()
 					send_confirmation_email(user)
 					params = urlencode({'status': '2FA_REQUIRED', 'name': user.name})
-					return HttpResponseRedirect(f"{os.getenv('REACT_APP_API_URL')}:3000/auth-success?{params}")
+					return HttpResponseRedirect(f"{os.getenv('REACT_APP_URL_REACT')}:3000/auth-success?{params}")
 
 			user.ip_user = ip
 			user.status = 'online'
@@ -107,9 +108,11 @@ def oauth_login(request):
 			ValidToken.objects.create(user=user, token=jwt_token)
 
 			params = urlencode({'status': 'SUCCESS', 'token': jwt_token})
-			return HttpResponseRedirect(f"{os.getenv('REACT_APP_API_URL')}:3000/auth-success?{params}")
+			response = HttpResponseRedirect(f"{os.getenv('REACT_APP_URL_REACT')}:3000/auth-success?{params}")
+			response.set_cookie(key='token', value=jwt_token, max_age=3600, httponly=True, secure=True)
+			return response
 
 		else:
-			return JsonResponse({'error': 'Impossible de récupérer les infos utilisateur'}, status=400)
+			return JsonResponse({'error': 'Failed to fetch user data'}, status=400)
 	else:
-		return JsonResponse({'error': 'Echec lors de l\'échange du code'}, status=400)
+		return JsonResponse({'error': 'Cannot exchange code'}, status=400)

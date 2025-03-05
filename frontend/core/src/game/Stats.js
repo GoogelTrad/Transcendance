@@ -7,13 +7,14 @@ import Button from 'react-bootstrap/Button';
 import { BrowserRouter as Router, Route, Routes, Link, useNavigate, useParams} from 'react-router-dom';
 import React, { useEffect, useState, useRef} from "react";
 import { jwtDecode } from "jwt-decode";
-import { getCookies } from './../App.js';
 import bronze from '../assets/game/bronze.png';
 import silver from '../assets/game/silver.png';
 import gold from '../assets/game/gold.png';
 import backgroundCollect from '../assets/game/background-collect.jpg';
+import { useAuth } from "../users/AuthContext";
 
 import { useTranslation } from 'react-i18next';
+import { showToast } from "../instance/ToastsInstance";
 
 
 function Stats({ itemsArray = [] }) {
@@ -26,33 +27,30 @@ function Stats({ itemsArray = [] }) {
     const [winGames, setWinGames] = useState([]);
     const [loseGames, setLoseGames] = useState([]);
     const [tournamentGames, setTournamentGames] = useState([]);
-    const [friendName, setFriendsNames] = useState([]);
-    const [friendList, setFriendList] = useState([]);
-    const [searchFriend, setSearchFriend] = useState("");
     const { id } = useParams();
     const [games, setGames] = useState([]);
     const [expandedTab, setExpandedTab] = useState(false);
     const [medalBronze, setMedalBronze] = useState({
         Played: false,
         Win: false,
-        Friend: false,
         BestScore: false,
         BestTime: false,
     });
     const [medalSilver, setMedalSilver] = useState({
         Played: false,
         Win: false,
-        Friend: false,
         BestScore: false,
         BestTime: false,
     });
     const [medalGold, setMedalGold] = useState({
         Played: false,
         Win: false,
-        Friend: false,
         BestScore: false,
         BestTime: false,
     });
+
+    const { userInfo } = useAuth();
+    const decodeToken = userInfo;
 
     const medalRules = {
         Played: {
@@ -62,10 +60,6 @@ function Stats({ itemsArray = [] }) {
         Win: {
             thresholds: [5, 10, 15],
             titles: ["5 games win", "10 games win", "15 games win"]
-        },
-        Friend: {
-            thresholds: [5, 10, 15],
-            titles: ["5 friends in the friends list", "10 friends in the friends list", "15 friends in the friends list"]
         },
         BestScore: {
             thresholds: [5, 10, 15],
@@ -108,26 +102,22 @@ function Stats({ itemsArray = [] }) {
     
     
     useEffect(() => {
-        if (games.length > 0) {
-            const winGamesFiltered = games.filter(game => game.winner === decodeToken.name);
-            const loseGamesFiltered = games.filter(game => game.loser === decodeToken.name);
+        if (games.length > 0 && userInfo) {
+            const winGamesFiltered = games.filter(game => game.winner === decodeToken?.name);
+            const loseGamesFiltered = games.filter(game => game.loser === decodeToken?.name);
             
             if (winGamesFiltered)
                 setWinGames(winGamesFiltered);
             if (loseGamesFiltered)
                 setLoseGames(loseGamesFiltered);
-            if (searchFriend) {
-                const friendGamesFiltered = games.filter(game => game.player2 === searchFriend);
-                setFriendsNames(friendGamesFiltered);
-            }
 
             setupMedals(games, "Played", 10, 20, 30);
             setupMedals(winGames, "Win", 5, 10, 15);
-            setupMedals(friendList, "Friennds", 5, 10, 15);
+
 
             const BestScoreFiltered = winGames.filter(score => 
-                (score.player2 === decodeToken.name && score.score_player_2 === 11) || 
-                (score.player1 === decodeToken.name && score.score_player_1 === 11)
+                (score.player2 === decodeToken?.name && score.score_player_2 === 11) || 
+                (score.player1 === decodeToken?.name && score.score_player_1 === 11)
             );
             setupMedals(BestScoreFiltered, "BestScore", 5, 10, 15);
 
@@ -135,7 +125,7 @@ function Stats({ itemsArray = [] }) {
             setupMedals(BestTimeFiltered, "BestTime", 5, 10, 15);
             console.log("best", BestTimeFiltered);
         }
-    }, [games, id, searchFriend]);
+    }, [games, id, userInfo]);
     
     
 
@@ -176,7 +166,7 @@ function Stats({ itemsArray = [] }) {
         setMode(filteredModes);
     
         const filteredOptions = itemsArray
-            .filter(itemsArray => ['All games', 'Tournament', 'Friends', 'Win', 'Lose'].includes(itemsArray.name))
+            .filter(itemsArray => ['All games', 'Tournament', 'Win', 'Lose'].includes(itemsArray.name))
             .map(itemsArray => ({
                 name: itemsArray.name,
                 active: itemsArray.active || false,
@@ -187,40 +177,21 @@ function Stats({ itemsArray = [] }) {
     useEffect(() => {
         const activeOption = option.find(option => option.active);
         setSelectedOption(activeOption || null);
-
     }, [option]);
 
-    const token = getCookies('token');
-    let decodeToken = ("");
-
-    useEffect(() => {
-        const token = getCookies('token');
-        if (token)
-            decodeToken = jwtDecode(token);
-    }, [])
-
+    
 
     useEffect(() => {
         const fetchStats = async () => {
-          try {
-            const response = await axiosInstance.get(`/api/game/fetch_data_user/${decodeToken.id}/`, {});
-            setGames(response.data);
-          } catch (error) {
-            console.error('Error fetching user stats:', error);
-          }
+            if (!userInfo) return;
+            try {
+                const response = await axiosInstance.get(`/api/game/fetch_data_user/${decodeToken?.id}/`, {});
+                setGames(response.data);
+            } catch (error) {
+                showToast("error", t('ToastsError'));
+            }
         };
         fetchStats();
-
-        const fetchFriendList = async () => {
-            try {
-                const reponse = await axiosInstance.get(`/api/friends/list/${decodeToken.id}`);
-                setFriendList(reponse.data);
-            }
-            catch(error) {
-                console.log(error);
-            }
-        };
-        fetchFriendList();
       },[id]);
     
     function StatsTable({ data }) {
@@ -254,10 +225,10 @@ function Stats({ itemsArray = [] }) {
                                         </td>
                                         <td>{data.timeMinutes} : {data.timeSeconds}</td>
                                         <td>{data.score_player_1} - {data.score_player_2}</td>
-                                        {data.winner === decodeToken.name && (
+                                        {data.winner === decodeToken?.name && (
                                             <td>{"win" || "N/A"}</td>
                                         )}
-                                        {data.loser === decodeToken.name && (
+                                        {data.loser === decodeToken?.name && (
                                             <td>{"lose" || "N/A"}</td>
                                         )}
                                         {!data.winner && !data.loser && (
@@ -282,7 +253,7 @@ function Stats({ itemsArray = [] }) {
                             <div className="stats-row-element empty-row flex-grow-1" style={{height: `50%`}}>
                                 <label htmlFor="profile_image" >
                                     <img
-                                        src={decodeToken.profile_image_url ? `http://localhost:8000${decodeToken.profile_image_url}` : '/default.png'}
+                                        src={decodeToken?.profile_image_url ? `https://localhost:8000${decodeToken?.profile_image_url}` : '/default.png'}
                                         alt="Profile"
                                         className="profile-picture"
                                         title='profile'
@@ -290,7 +261,7 @@ function Stats({ itemsArray = [] }) {
                                     />
                                 </label>
                             </div>
-                            <div className="stats-row-element empty-row flex-grow-1" style={{ height: "20%", display: "flex", alignItems: "flex-start" }}>{decodeToken.name}</div>
+                            <div className="stats-row-element empty-row flex-grow-1" style={{ height: "20%", display: "flex", alignItems: "flex-start" }}>{decodeToken?.name}</div>
                             <div className="stats-row-element flex-grow-1" style={{height: `30%`}}>
                             <div className="text-center">
                                 <div className="stats-text">{t('WinrateRatio')}</div>
@@ -354,7 +325,6 @@ function Stats({ itemsArray = [] }) {
                                 {[
                                     { key: "Played" },
                                     { key: "Win" },
-                                    { key: "Friend" },
                                     { key: "BestScore" },
                                     { key: "BestTime" }
                                     ].map((medal, index) => (
@@ -425,39 +395,6 @@ function Stats({ itemsArray = [] }) {
 
                         {option.find(option => option.name === 'All games')?.active && (
                             <StatsTable data={games} />
-                        )}
-                        {option.find(option => option.name === 'Friends')?.active && (
-                            <>
-                            <div className="dropdown-friends d-flex w-100" style={{ height: '8%' }}
-                                onClick={(e) => e.stopPropagation()}>
-                                <button className="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                    ...
-                                </button>
-                                <ul className="dropdown-menu">
-                                {Array.isArray(friendList) ? (
-                                <>
-                                    {friendList.map((friend) => (
-                                        <li key={friend.name}>
-                                            <a href="#" onClick={(e) => { e.preventDefault(); setSearchFriend(friend.name); }}>
-                                                {friend.name}
-                                            </a>
-                                        </li>
-                                    ))}
-                                    <div className="horizontal-line"></div>
-                                </>
-                            ) : (
-                                <>
-                                    <li>{t('NoFriend')}</li>
-                                    <div className="horizontal-line"></div>
-                                </>
-                            )}
-
-                                </ul>
-                            </div>
-                            {searchFriend &&
-                                <StatsTable data={friendName} />
-                            }
-                            </>
                         )}
                         {option.find(option => option.name === 'Win')?.active && (
                             <StatsTable data={winGames} />

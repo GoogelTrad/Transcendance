@@ -5,13 +5,13 @@ import axios from 'axios';
 import { useState, useEffect, useRef } from 'react';
 import { Modal, Button } from 'react-bootstrap';
 import { jwtDecode } from "jwt-decode";
-import { getCookies } from './../App.js';
 import { BrowserRouter as Router, Route, Routes, Link, useNavigate } from 'react-router-dom';
 import { useParams } from 'react-router-dom';
 import axiosInstance from '../instance/AxiosInstance.js';
 import useSocket from '../socket.js';
 import Template from '../instance/Template.js';
 import GameInstance from '../instance/GameInstance.js';
+import { useAuth } from '../users/AuthContext.js';
 import { useTranslation } from 'react-i18next';
 
 const Games = () => {
@@ -167,18 +167,16 @@ const Games = () => {
 function Game() {
 	const [game, setGame] = useState('');
 	const { id } = useParams();
-	const token = getCookies('token');
+	
+	const { userInfo } = useAuth();
 
 	const { t } = useTranslation();
 	
 	
 	const fetch_data = async () => {
 		try {
-			const response = await axios.get(`http://localhost:8000/game/fetch_data/${id}/`, {
-				headers: {
-					'Content-Type': 'application/json',
-					'Authorization': `Bearer ${token}`,
-				}
+			const response = await axiosInstance.get(`/api/game/fetch_data/${id}/`, {
+
 			});
 			setGame(response.data);
 		} catch (error) {
@@ -197,7 +195,7 @@ function Game() {
 				<h1 className="position-absolute title text-center text-white title-overlay w-100" style={{ top: "120px" }}>{t('TIME')} : {game?.time}</h1>
 				<div className="d-flex justify-content-center align-items-center w-100 h-100">
 					<div className="d-flex flex-column align-items-center justify-content-center col-12 col-md-5 flex-grow-1">
-						<p> {t('Player1')} : {game?.player1}</p>
+						<p style={{color: 'red !important'}}> {t('Player1')} : {game?.player1}</p>
 						<p> {t('Score1')} : {game?.score1} </p>
 						<h2 className="position-absolute title text-center text-white title-overlay w-100" style={{ bottom: "120px" }} >{t('WINNER')} : {game?.winner}</h2>
 					</div>

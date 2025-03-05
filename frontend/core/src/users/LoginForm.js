@@ -8,6 +8,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import './LoginForm.css';
 import { useAuth } from './AuthContext';
 import AuthSchool from './AuthSchool';
+import { setToken } from '../instance/TokenInstance';
 
 import { useTranslation } from 'react-i18next';
 
@@ -28,11 +29,11 @@ function LoginRegister({setModal, setTerminal, removeLaunch}) {
 
     const { t } = useTranslation();
     const [step, setStep] = useState(false);
-    const [code, setCode] = useState();
+    const [code, setCode] = useState('');
     const navigate = useNavigate();
     const [rulesPassword, setRulesPassword] = useState(false);
     const authChannel = new BroadcastChannel("auth_channel");
-    const {isAuthenticated, setIsAuthenticated} = useAuth();
+    const {isAuthenticated, login} = useAuth();
     const [loginData, setLoginData] = useState({
         name: 'f',
         password: 'f',
@@ -72,7 +73,7 @@ function LoginRegister({setModal, setTerminal, removeLaunch}) {
             data.append(key, value);
         }
         if(isAuthenticated)
-            return showToast('error', t('AlrealdyConnected'));
+            return showToast('error', t('Toasts.AlrealdyConnected'));
         try {
             const response = await axiosInstance.post('/api/user/login', data, {
                 headers: {
@@ -83,7 +84,7 @@ function LoginRegister({setModal, setTerminal, removeLaunch}) {
             if (response.status === 401)
                 setStep(true);
             else if (response.status === 200) {
-                setIsAuthenticated(true);
+                login();
                 setModal(false);
                 setTerminal(false);
                 removeLaunch("terminal");
@@ -94,7 +95,7 @@ function LoginRegister({setModal, setTerminal, removeLaunch}) {
             if (error.response && error.response.status === 401) 
                 setStep(true); 
             else 
-                showToast('error', t('IncorrectLoginOrPassword'));
+                showToast('error', t('Toasts.IncorrectLoginOrPassword'));
         }
     };
 
@@ -103,9 +104,11 @@ function LoginRegister({setModal, setTerminal, removeLaunch}) {
             const response = await axiosInstance.post('/api/user/code' , {code, name: loginData.name});
             if (response.status === 200)
             {
-                setIsAuthenticated(true);
+                login();
                 setModal(false);
                 setTerminal(false);
+                removeLaunch("terminal");
+                removeLaunch("forms");
                 navigate('/home');
             }
         }
@@ -124,16 +127,16 @@ function LoginRegister({setModal, setTerminal, removeLaunch}) {
         // if (!ValidatePassword(data.password))
         //     setRulesPassword(true);
         if(isAuthenticated)
-            return showToast('error', t('NotCreateNewAccountWhileConnected'));
+            return showToast('error', t('Toasts.NotCreateNewAccountWhileConnected'));
         try {
             await axiosInstance.post('/api/user/create', data, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
             });
-            showToast('success', t('AccountCreatedSuccesfully'));
+            showToast("info", t('Toasts.AccountCreatedSuccesfully'));
         } catch (error) {
-            showToast('error', t('CannotCreateTheAccount'));
+            showToast("error", t("Toasts.CannotCreateTheAccount"));
         }
     };
 
@@ -141,8 +144,7 @@ function LoginRegister({setModal, setTerminal, removeLaunch}) {
         authChannel.onmessage = (event) => {
             const { token } = event.data;
             if (token) {
-                document.cookie = `token=${token}`;
-                setIsAuthenticated(true);
+                login();
                 setModal(false);
                 setTerminal(false);
                 removeLaunch("terminal");
