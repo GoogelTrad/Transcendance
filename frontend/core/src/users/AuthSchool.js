@@ -1,10 +1,7 @@
 import React from "react";
 import { useEffect, useState } from "react";
 import axiosInstance from "../instance/AxiosInstance";
-import { useNavigate } from 'react-router-dom';
 import { useAuth } from './AuthContext';
-import { useUserInfo } from '../instance/TokenInstance';
-import { setToken } from "../instance/TokenInstance";
 
 export function HandleAuth() 
 {
@@ -27,14 +24,12 @@ export default function AuthSchool()
     );
 }
 
-
 export function AuthSuccess() 
 {
 	const [isSchoolAuth, setIsSchoolAuth] = useState(false);
-	const [isPop, setIsPop] = useState(false);
 	const [code, setCode] = useState("");
 	const [name, setName] = useState("");
-	const { tokenUser } = useUserInfo();
+	const { setIsAuthenticated, login } = useAuth();
 
 
 	const handleVerify = async () => 	
@@ -42,11 +37,10 @@ export function AuthSuccess()
 		try {
 			const response = await axiosInstance.post('/api/user/code' , {code, name: name});
 			if (response.status === 200) {
-				const authChannel = new BroadcastChannel("auth_channel");
-				setToken(token);
-				const token = tokenUser;
-           	 	authChannel.close();
+				setIsAuthenticated(true);
+				localStorage.setItem('isAuthenticated', 'true');
             	window.close();
+				login();
 			}
 		}
 		catch(error) {
@@ -57,19 +51,17 @@ export function AuthSuccess()
     useEffect(() => 
 	{
         const urlParams = new URLSearchParams(window.location.search);
-        const token = urlParams.get("token");
 		const status = urlParams.get("status");
 		setName(urlParams.get("name"));
 
 		if (status === "2FA_REQUIRED" && isSchoolAuth === false)
 			setIsSchoolAuth(true);
-        else if (token && status !== "2FA_REQUIRED") 
+        else if (status === "SUCCESS") 
 		{
-            const authChannel = new BroadcastChannel("auth_channel");
-            authChannel.postMessage({ token });
-			setToken(token);
-            authChannel.close();
+            setIsAuthenticated(true);
+			localStorage.setItem('isAuthenticated', 'true');
             window.close();
+			login();
         }
 
     }, []);
