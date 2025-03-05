@@ -11,13 +11,17 @@ import TournamentBracket from "./TournamentBracket.js";
 import Template from '../../instance/Template.js';
 import MarioSection from './Mario.js';
 import PacmanSection from './Pacman.js';
+import { showToast } from '../../instance/ToastsInstance.js';
+
+import { useTranslation } from 'react-i18next';
 
 function Tournament() {
     const { tournamentCode } = useParams();
     const [tournamentResponse, setTournamentResponse] = useState(null);
     const [tournamentStarted, setTournamentStarted] = useState(false);
     
-    
+    const { t } = useTranslation();
+
     const navigate = useNavigate();
     const location = useLocation();
     const { join } = location.state || false;
@@ -33,10 +37,10 @@ function Tournament() {
             const response = await axiosInstance.get(`/api/game/fetch_data_tournament_by_code/${code}`);
             setTournamentResponse(response.data);
         } catch (error) {
-          console.log("Error fetching tournament:", error);
+            showToast("error", t('ToastsError'));
         }
     };
-  useEffect(() => {
+    useEffect(() => {
        if (tournamentStarted && !socketRef.current) {
            const newSocket =  new WebSocket(`${process.env.REACT_APP_SOCKET_IP}ws/tournament/${tournamentCode}/`);
            socketRef.current = newSocket;
@@ -66,7 +70,7 @@ function Tournament() {
             const response = await axiosInstance.get(`/api/game/fetch_data_tournament_by_code/${tournamentCode}`);
             setTournamentResponse(response.data);
         } catch (error) {
-          console.log("Error fetching tournament:", error);
+            showToast("error", t('ToastsError'));
         }
     };
 

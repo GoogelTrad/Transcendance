@@ -15,7 +15,6 @@ import Room from './Room'
 import useNotifications from "../SocketNotif"
 
 import { useTranslation } from 'react-i18next';
-import Template from "../instance/Template";
 
 export default function HomeChat() {
 
@@ -77,7 +76,7 @@ export default function HomeChat() {
 
 	const createRoom = (roomName, invited_user_id = undefined) => {
 		if (roomName === "") {
-			showToast("error", t('NotEmptyName'));
+			showToast("error", t('Toasts.NotEmptyName'));
 			return;
 		}
 		if (socket.ready) {
@@ -92,7 +91,6 @@ export default function HomeChat() {
 	};
 
 	const joinRoom = (name, password = null, dmname = null) => {
-		console.log("join room dmname", dmname);
 		if (socket.ready) {
 			socket.send({
 				type: "join_room",
@@ -143,7 +141,7 @@ export default function HomeChat() {
 
 			if (response.status === 200) {
 				listUsersBlocked();
-				showToast("message", t('BlockUsers'));
+				showToast("message", t('Toasts.BlockUsers'));
 			}
 
 		} catch(error) {
@@ -163,7 +161,7 @@ export default function HomeChat() {
 			if (response.status === 200)
 			{
 				listUsersBlocked();
-				showToast("succes", t('UnlockUsers'));
+				showToast("succes", t('Toasts.UnlockUsers'));
 			}
 
 		} catch(error) {
@@ -200,7 +198,7 @@ export default function HomeChat() {
 		e.preventDefault();
 
 		if (!room.name) {
-			showToast("error", t('NotRoomName'));
+			showToast("error", t('Toasts.NotRoomName'));
 			return;
 		}
 
@@ -209,7 +207,7 @@ export default function HomeChat() {
 			if (enteredPassword) {
 				joinRoom(room.name, enteredPassword);
 			} else {
-				showToast("error", t('EnterPassword'));
+				showToast("error", t('Toasts.EnterPassword'));
 			}
 		} else {
 			joinRoom(room.name, null, dmname);

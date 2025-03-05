@@ -18,7 +18,7 @@ export function AddFriend({id})
 	const handleAddFriend = async (id) => {
 		try {
 			await axiosInstance.post(`/api/friends/send/${id}`);
-			showToast('success', t('FriendRequestSent'))
+			showToast('success', t('Toasts.FriendRequestSent'))
 		} catch (error) {
 			showToast("error", t(`Toasts.${error.response.data.error}`));
 		}
@@ -112,7 +112,8 @@ function FriendRequests({setModal, setIsFriends, launching}) {
 				...prevList,
 				friends: prevList.friends.filter((friend) => friend.id !== id),
 			}));
-			showToast('success', t(`Toasts.${response.data.message}`));
+			console.log(response.data.message);
+			showToast("message", t(`Toasts.${response.data.message}`));
 		}
 		catch(error) {
 			showToast("error", t(`Toasts.${error.response.data.error}`));

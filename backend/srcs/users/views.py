@@ -127,8 +127,7 @@ class UserView():
                     }
                     
                     return reponse
-                
-                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                return Response("ErrorUploadingProfileImage", status=status.HTTP_400_BAD_REQUEST)
         
             elif request.method == 'DELETE':
                 user.delete()
@@ -258,11 +257,12 @@ def permission_verif(request, id):
     user.last_verified = None
     user.save()
 
-    result = "enable!" if user.enable_verified else "disable!"
-    message = f"2fa has been {result}"
-    response = Response(message)
-    
-    return response
+    result = True if user.enable_verified else False
+    if result :
+        message = 'EnableTo2FA'
+    else :
+        message = 'DisableTo2FA'
+    return Response({'message': message})
 
     
     

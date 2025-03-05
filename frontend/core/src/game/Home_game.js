@@ -10,6 +10,9 @@ import axiosInstance from "../instance/AxiosInstance";
 import { useAuth } from '../users/AuthContext';
 
 import { useTranslation } from 'react-i18next';
+import { showToast } from '../instance/ToastsInstance';
+
+import { useTranslation } from 'react-i18next';
 
 function HomeGame({ setModalStats, setModalCreateTournament, setModalTournament, launching, setParentItems, setParentNumberPlayer }) {
     const [player1, setPlayer1] = useState("");
@@ -106,7 +109,7 @@ function HomeGame({ setModalStats, setModalCreateTournament, setModalTournament,
             setTournament(response.data);
             return 0;
         } catch (error) {
-            console.log("Error fetching tournament by code:", error);
+            showToast("error", t('ToastsError'));
             return 1;
         }
     };
@@ -130,7 +133,7 @@ function HomeGame({ setModalStats, setModalCreateTournament, setModalTournament,
             const response = await axiosInstance.post(`/api/game/create_game`, { player1 });
             navigate(`/game/${response.data.id}`);
         } catch (error) {
-            console.log("Error submitting Player:", error);
+            showToast("error", t('ToastsError'));
         }
     };
 
@@ -139,7 +142,6 @@ function HomeGame({ setModalStats, setModalCreateTournament, setModalTournament,
             if (socket && socket.readyState === WebSocket.OPEN && send_Info) {
                 socket.send(JSON.stringify({ type: 'join' }));
                 setSend_Info(false);
-                console.log("Message sent successfully!");
             } else {
                 console.log("Socket is not open, retrying...");
             }

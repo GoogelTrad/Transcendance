@@ -82,7 +82,7 @@ export default function Room() {
 		e.preventDefault();
 		setCaracteresRestants(maxLength);
 		if (message.trim() === "") {
-			showToast("error", t('NotBlankMessage'));
+			showToast("error", t('Toasts.NotBlankMessage'));
 			return;
 		}
 		if (socket.ready) {
@@ -98,7 +98,6 @@ export default function Room() {
 	const clearRoom = async () => {
 		try {
 			const response = await axiosInstance.post('/api/livechat/exit-room/', {room_name: roomName});
-			console.log(response.data);
 		} catch (error) {
 			showToast("error", t('ToastsError'));
 		}
@@ -119,7 +118,7 @@ export default function Room() {
 		console.log("name:", room.name);
 
 		if (!room.name) {
-			showToast("error", t('NotRoomName'));
+			showToast("error", t('Toasts.NotRoomName'));
 			return;
 		}
 
@@ -129,7 +128,7 @@ export default function Room() {
 				clearRoom();
 				joinRoom(room.name, enteredPassword);
 			} else {
-				showToast("error", t('EnterPassword'));
+				showToast("error", t('Toasts.EnterPassword'));
 			}
 		} else {
 			clearRoom();
@@ -221,7 +220,6 @@ export default function Room() {
 				</div>
 				<div className="chat">
 					<div className="titre">
-						{console.log("ROOM DMNAME:", dmname)}
 						<h3>{t('RoomName')}: { dmname ? dmname : roomName }</h3>
 					</div>
 					<div className="chat-messages" style={{ height: '400px', overflowY: 'scroll', border: '1px solid #ccc', padding: '10px' }}>

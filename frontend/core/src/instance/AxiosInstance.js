@@ -12,12 +12,14 @@ axiosInstance.interceptors.request.use(
           config.headers['Content-Type'] = 'application/json';
       return config;
   },
-  (error) => Promise.reject(error)
+  (error) => {
+    console.log("request error")
+    Promise.reject(error)
+  }
 );
 
 axiosInstance.interceptors.response.use(
   (response) => {
-      
       return response;
   },
   (error) => Promise.reject(error)

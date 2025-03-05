@@ -136,6 +136,7 @@
 	"ModifyDetails": "modify your details here",
 	"ChangePassword": "Change password",
 	"Enable2FA": "Enable 2FA",
+	"Disable2FA": "Disable 2FA",
 	
 	
 	"Form": "Form",
@@ -174,13 +175,22 @@
 		"LoginRequiredForAcceptFriendRequest": "You must be connected to accept friends request!",
 		"FriendRequestDeclined": "Friend request declined!",
 		"NotInYourFriendsList": "User not in your friends list",
-		"FriendsSuccesfullyRemoved!": "Friends succesfully removed!",
+		"FriendsSuccesfullyRemoved": "Friends succesfully removed!",
 		"UserNotAuthenticated": "User not authenticated",
 		"AlrealdyConnected": "Alrealdy connected!",
 		"IncorrectLoginOrPassword": "Incorrect login or password!",
 		"NotCreateNewAccountWhileConnected": "Cannot create new account while connected!",
 		"AccountCreatedSuccesfully": "Account created succesfully!",
-		"CannotCreateTheAccount": "Cannot create the account!"
+		"CannotCreateTheAccount": "Cannot create the account!",
+		
+		"UsernameAlreadyInUse": "Username already in use",
+		"FailedToCreateTournament": "Failed to create tournament. Please try again.",
+		"PleaseEnterAScoreAndTime": "Please enter a score and time!",
+		"WebSocketConnectionClosed": "WebSocket connection closed.",
+		"ErrorUploadingProfileImage": "Upload a valid image. The file you uploaded was either not an image or a corrupted image.",
+		"EnableTo2FA": "2FA has been enable!",
+		"DisableTo2FA": "2FA has been disable!",
+		"Error2FA": "Error while changing perms on 2FA!"
 	},
 
 	"ToastsError": "An error has occurred."

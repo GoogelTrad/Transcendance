@@ -28,7 +28,7 @@ function LoginRegister({setModal, setTerminal, removeLaunch}) {
 
     const { t } = useTranslation();
     const [step, setStep] = useState(false);
-    const [code, setCode] = useState();
+    const [code, setCode] = useState('');
     const navigate = useNavigate();
     const [rulesPassword, setRulesPassword] = useState(false);
     const {isAuthenticated, login} = useAuth();
@@ -71,7 +71,7 @@ function LoginRegister({setModal, setTerminal, removeLaunch}) {
             data.append(key, value);
         }
         if(isAuthenticated)
-            return showToast('error', t('AlrealdyConnected'));
+            return showToast('error', t('Toasts.AlrealdyConnected'));
         try {
             const response = await axiosInstance.post('/api/user/login', data, {
                 headers: {
@@ -93,7 +93,7 @@ function LoginRegister({setModal, setTerminal, removeLaunch}) {
             if (error.response && error.response.status === 401) 
                 setStep(true); 
             else 
-                showToast('error', t('IncorrectLoginOrPassword'));
+                showToast('error', t('Toasts.IncorrectLoginOrPassword'));
         }
     };
 
@@ -125,16 +125,16 @@ function LoginRegister({setModal, setTerminal, removeLaunch}) {
         // if (!ValidatePassword(data.password))
         //     setRulesPassword(true);
         if(isAuthenticated)
-            return showToast('error', t('NotCreateNewAccountWhileConnected'));
+            return showToast('error', t('Toasts.NotCreateNewAccountWhileConnected'));
         try {
             await axiosInstance.post('/api/user/create', data, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
             });
-            showToast('success', t('AccountCreatedSuccesfully'));
+            showToast("info", t('Toasts.AccountCreatedSuccesfully'));
         } catch (error) {
-            showToast('error', t('CannotCreateTheAccount'));
+            showToast("error", t("Toasts.CannotCreateTheAccount"));
         }
     };
     

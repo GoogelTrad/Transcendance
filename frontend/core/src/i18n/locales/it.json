@@ -169,7 +169,8 @@
 	  "IncorrectLoginOrPassword": "Nome utente o password errati!",
 	  "NotCreateNewAccountWhileConnected": "Non puoi creare un nuovo account mentre sei connesso!",
 	  "AccountCreatedSuccesfully": "Account creato con successo!",
-	  "CannotCreateTheAccount": "Impossibile creare l'account!"
+	  "CannotCreateTheAccount": "Impossibile creare l'account!",
+	  "ErrorUploadingProfileImage": "Carica un'immagine valida. Il file che hai caricato non è un'immagine o è un'immagine corrotta."
 	},
   
 	"ToastsError": "Si è verificato un errore."

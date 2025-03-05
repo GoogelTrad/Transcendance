@@ -44,8 +44,7 @@ function ChangeDetails({setUser, setValue, toChange, value, toType})
         catch (error)
         {
 			if (error.status === 400)
-				showToast('error', 'Username already in use');
-            console.log(error);
+				showToast('error', t('Toasts.UsernameAlreadyInUse'));
         }
 	}
 	return (
@@ -79,6 +78,7 @@ function Profile({id})
 	const [isSettings, setIsSettings] = useState(false);
 	const [isPermitted, setIsPermitted] = useState(false);
 	const [isStud, setIsStud] = useState(false);
+	const [is2fa, setIs2fa] = useState(false);
 	const [friendList, setFriendList] = useState([]);
 	const { userInfo, refreshUserInfo } = useAuth();
 	const decodeToken = userInfo;
@@ -108,20 +108,22 @@ function Profile({id})
 			})
 			setUser(response.data);
 			await refreshUserInfo();
-			console.log(response);
 		} 
 		catch (error) {
-			console.log("Error uploading profile image:", error);
+			showToast("error", t(`Toasts.${error.response.data}`));
 		}
 	};
 
 	const handleConfirm = async () =>
 	{
 		try {
-			axiosInstance.post(`/api/user/perms/${decodeToken.id}`);
+			const response = await axiosInstance.post(`/api/user/perms/${decodeToken.id}`);
+			console.log(response.data.message);
+			setIs2fa(response.data.message === "EnableTo2FA" ? true : false);
+			showToast("message", t(`Toasts.${response.data.message}`))
 		}
 		catch(error){
-			console.log("Error while changing perms on 2FA!");
+			showToast("error", t('Toasts.Error2FA'));
 		}
 	}
 
@@ -151,7 +153,7 @@ function Profile({id})
 			}
 			catch (error)
 			{
-				console.log('Erreur lors de la récupération des données utilisateur', error);
+				showToast("error", t('ToastsError'));
 			}
 		}
 	}
@@ -184,7 +186,7 @@ function Profile({id})
 									id="profile_image"
 									accept="image/*"
 									style={{ display: 'none' }}
-									onChange={(e) => handleFileChange(e)}
+									onChange={handleFileChange}
 								/>
 							</label>
 
@@ -218,7 +220,7 @@ function Profile({id})
 							</button>
 							<ul className="dropdown-menu">
 								<li><button className="dropdown-item" type="button" onClick={() => setShowChangePassword(true)}>{t('ChangePassword')}</button></li>
-								<li><button className="dropdown-item" type="button" onClick={handleConfirm}>{t('Enable2FA')}</button></li>
+								<li><button className="dropdown-item" type="button" onClick={handleConfirm}>{is2fa ? t('Disable2FA') : t('Enable2FA')}</button></li>
 							</ul>
 							{showChangePassword && <ChangeDetails setUser={setUser} setValue={setShowChangePassword} toChange={'password'} value={null} toType={'password'}/>}
 							{isPermitted && !isStud && showChangePassword && <img src={x} className="x-icon" alt="x" onClick={() => setShowChangePassword(false)}/>}

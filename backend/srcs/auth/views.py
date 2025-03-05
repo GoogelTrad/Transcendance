@@ -24,7 +24,7 @@ def oauth_callback(request):
 
 def oauth_login(request):
 	if 'code' not in request.GET:
-		return JsonResponse({'error': 'Code non fourni'}, status=400)
+		return JsonResponse({'error': 'Missing Code'}, status=400)
 
 	code = request.GET['code']
 	payload = {
@@ -112,6 +112,6 @@ def oauth_login(request):
 			return response
 
 		else:
-			return JsonResponse({'error': 'Impossible de récupérer les infos utilisateur'}, status=400)
+			return JsonResponse({'error': 'Failed to fetch user data'}, status=400)
 	else:
-		return JsonResponse({'error': 'Echec lors de l\'échange du code'}, status=400)
+		return JsonResponse({'error': 'Cannot exchange code'}, status=400)
