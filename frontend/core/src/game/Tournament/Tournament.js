@@ -114,8 +114,8 @@ function Tournament() {
 
 
     useEffect(() => {
-        if (tournamentResponse && tournamentResponse.winner) {
-            navigate("/Home", { state: { modalName: "stats" } });
+        if (tournamentResponse && tournamentResponse.winner_final) {
+            navigate("/Home", { state: { modalName: "resultTournament" } });
         }
     }, [tournamentResponse]);
 

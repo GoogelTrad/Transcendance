@@ -33,11 +33,11 @@ const TournamentBracket = ({ numberPlayer, tournamentResponse }) => {
             tournamentResponse?.player4 ? tournamentResponse.player4 : waiting,
         ]);
         rounds.unshift([
-            isBox.winnerRound1[0].box1 ? isBox.winnerRound1[0].box1 : waiting,
-            isBox.winnerRound1[0].box2 ? isBox.winnerRound1[0].box2 : waiting,
+            tournamentResponse?.winner1 ? tournamentResponse.winner1 : waiting,
+            tournamentResponse?.winner2 ? tournamentResponse.winner2 : waiting,
         ]);
         rounds.unshift([
-            isBox.winner[0].box1 ? isBox.winner[0].box1 : waiting,
+          tournamentResponse?.winner_final ? tournamentResponse.winner_final : waiting,
         ]);
     }
 
@@ -51,7 +51,7 @@ const TournamentBracket = ({ numberPlayer, tournamentResponse }) => {
       {rounds.map((round, roundIndex) => (
         <div key={roundIndex} className="round">
           {round.map((player, playerIndex) => (
-            <div key={playerIndex} className="match">
+            <div key={playerIndex} className="match tournament-text">
               {player === waiting ? (
                 <img src={waiting} alt="waiting" />
               ) : (

@@ -123,7 +123,7 @@ function HomeGame({ setModalStats, setModalCreateTournament, setModalTournament,
     const StartGameSolo = async () => {
         try {
             const response = await axiosInstance.post(`/api/game/create_game`, { player1 });
-            navigate(`/games/${response.data.id}`);
+            navigate(`/game/${response.data.id}`);
         } catch (error) {
             console.error("Error submitting Player:", error);
         }

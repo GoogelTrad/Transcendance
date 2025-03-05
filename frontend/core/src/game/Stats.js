@@ -80,22 +80,6 @@ function Stats({ itemsArray = [] }) {
         }
     };
 
-    //useEffect(() => {
-    //    setTournamentGames([ // Mettre les données dans un tableau
-    //        {
-    //            id: 1, // Toujours utile d'avoir un identifiant unique
-    //            date: '00/00/00',
-    //            code: 25,
-    //            against: 'jacques, paul, fred',
-    //            time: '0',
-    //            place: '1',
-    //            classement: '1 paul, 2 fred, 3 jacques, 4 bertrand'
-    //        }
-    //    ]);
-    //}, []);
-    
-    
-    
     useEffect(() => {
         if (games.length > 0 && userInfo) {
             const winGamesFiltered = games.filter(game => game.winner === decodeToken?.name);
@@ -125,6 +109,7 @@ function Stats({ itemsArray = [] }) {
     
 
     const handleDivClick = (name) => {
+        console.log("name : ", name);
         if(name != "")
         {
                 setMode(prevMode => 
@@ -189,10 +174,10 @@ function Stats({ itemsArray = [] }) {
         fetchStats();
       },[id]);
     
-    function StatsTable({ data }) {
+      function StatsTable({ data }) {
         return (
             <div className="stats-zone-table w-100 h-100">
-                <div className="w-100 d-flex">
+                <div className="w-100 d-flex" style={{ zIndex: 1 }}>
                     <table style={{ width: "100%", tableLayout: "relative", overflow: "hidden" }}>
                         <thead>
                             <tr>
@@ -207,13 +192,13 @@ function Stats({ itemsArray = [] }) {
                                 {data.map((data) => (
                                     <tr key={data.id}>
                                       <td 
-                                            onClick={(e) => { e.stopPropagation(); handleDivClick(""); }} 
+                                            onClick={(e) => { e.stopPropagation(); console.log("Clicked on td!"); handleDivClick(""); }} 
                                             className={expandedTab ? 'expanded-cell' : ''}
                                         >
                                             {data.date ? data.date.slice(-5) : "N/A"}-{data.date ? data.date.slice(0, 5) : "N/A"}
                                         </td>
                                         <td 
-                                            onClick={(e) => { e.stopPropagation(); handleDivClick(""); }} 
+                                            onClick={(e) => { e.stopPropagation(); console.log("Clicked on td!"); handleDivClick(""); }} 
                                             className={expandedTab ? 'expanded-cell' : ''}
                                         >
                                             {data.player2 || "N/A"}
@@ -238,57 +223,105 @@ function Stats({ itemsArray = [] }) {
         );
     }
     
+    
     return (
             <div  className="stats-home h-100 w-100 d-flex flex-reverse">
                 <div className="stats-element one h-100 w-50">
                 <div className="stats-row h-50 w-100" onClick={() => handleDivClick('profile')}>
                     <div className={`stats-zone ${mode.find(mode => mode.name === 'profile')?.active ? 'expanded left' : ''} left d-flex flex-reverse`}>
-                        <div className="stats-zone-content d-flex flex-row w-100 h-100">
-                        <div className="stats-col d-flex flex-column h-100 w-50" style={{ justifyContent:'space-between', alignItems:'center'}}>
-                            <div className="stats-row-element empty-row flex-grow-1" style={{height: `50%`}}>
-                                <label htmlFor="profile_image" >
+                        <div className="stats-zone-content d-flex flex-column flex-md-row w-100 h-100">
+                        <div 
+                            className="stats-col d-flex flex-column h-100 w-100 w-md-50"
+                            style={{ 
+                                justifyContent: 'space-between', 
+                                alignItems: 'center',
+                                padding: '15px'
+                            }}
+                            >
+                            <div 
+                                className="stats-row-element empty-row d-flex justify-content-center align-items-center" 
+                                style={{
+                                    height: '45%',
+                                    width: '100%',
+                                    marginTop: '5%'
+                                }}
+                            >
+                                <label htmlFor="profile_image" className="d-flex justify-content-center align-items-center w-100 h-100">
                                     <img
                                         src={decodeToken?.profile_image_url ? `https://localhost:8000${decodeToken?.profile_image_url}` : '/default.png'}
                                         alt="Profile"
-                                        className="profile-picture"
-                                        title='profile'
-                                        onClick={(e) => {e.stopPropagation(); navigate("/Home", {state: { modalName: "profile"}}); }}
+                                        className="profile-picture img-fluid"
+                                        title="profile"
+                                        onClick={(e) => { e.stopPropagation(); navigate("/Home", { state: { modalName: "profile" } }); }}
+                                        style={{
+                                            width: mode.find(mode => mode.name === 'profile')?.active ? '50%' : '70%',
+                                            height: 'auto',
+                                            objectFit: 'cover'
+                                        }}
                                     />
                                 </label>
                             </div>
-                            <div className="stats-row-element empty-row flex-grow-1" style={{ height: "20%", display: "flex", alignItems: "flex-start" }}>{decodeToken?.name}</div>
-                            <div className="stats-row-element flex-grow-1" style={{height: `30%`}}>
-                            <div className="text-center">
+
+                            <div 
+                                className="stats-row-element text-center counter"
+                                style={{
+                                height: '15%',
+                                width: '100%',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                fontSize: '130%'
+                                }}
+                            >
+                                {decodeToken?.name}
+                            </div>
+
+                            <div 
+                                className="stats-row-element w-100"
+                                style={{
+                                height: '35%',
+                                width: '100%',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center'
+                                }}
+                            >
+                                <div className="text-center">
                                 <div className="stats-text">Winrate Ratio</div>
-                                    <div className="counter">
-                                        {games?.length && winGames?.length 
-                                        ? Math.round((winGames?.length / games?.length) * 100) + "%"
-                                        : "0%"
-                                        }
+                                <div className="counter">
+                                    {games?.length && winGames?.length 
+                                    ? Math.round((winGames?.length / games?.length) * 100) + "%"
+                                    : "0%"
+                                    }
+                                </div>
+                                </div>
+                            </div>
+                            </div>
+                            <div className="stats-col d-flex flex-column h-100 w-100 w-md-50" 
+                                style={{ 
+                                    justifyContent: 'space-around',
+                                    alignItems: 'center',
+                                    padding: '15px'
+                                }}>
+                                <div className="stats-row-element w-100">
+                                    <div className="text-center">
+                                        <div className="stats-text">Games played</div>
+                                        <div className="counter">{games?.length || "0"}</div>
+                                    </div>
+                                </div>
+                                <div className="stats-row-element w-100">
+                                    <div className="text-center">
+                                        <div className="stats-text">Win</div>
+                                        <div className="counter">{winGames?.length || "0"}</div>
+                                    </div>
+                                </div>
+                                <div className="stats-row-element w-100">
+                                    <div className="text-center">
+                                        <div className="stats-text">Lose</div>
+                                        <div className="counter">{loseGames?.length || "0"}</div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                        <div className="stats-col d-flex flex-column h-100 w-50" style={{ margin: '3%', justifyContent:'space-between', alignItems:'center'}}>
-                            <div className="stats-row-element flex-grow-1 w-100">
-                            <div className="text-center">
-                                <div className="stats-text">Games played</div>
-                                <div className="counter">{games?.length || "0"}</div>
-                            </div>
-                            </div>
-                            <div className="stats-row-element flex-grow-1 w-100">
-                            <div className="text-center">
-                                <div className="stats-text">Win</div>
-                                <div className="counter">{winGames?.length || "0"}</div>
-                            </div>
-                            </div>
-                            <div className="stats-row-element flex-grow-1 w-100">
-                            <div className="text-center">
-                                <div className="stats-text">Lose</div>
-                                <div className="counter">{loseGames?.length || "0"} </div>
-                            </div>
-                            </div>
-                        </div>
                         </div>
                     </div>
                     </div>
@@ -323,28 +356,29 @@ function Stats({ itemsArray = [] }) {
                                     { key: "BestScore" },
                                     { key: "BestTime" }
                                     ].map((medal, index) => (
-                                    <div key={index} className="d-flex row w-100 mb-2" style={{ height: '18%' }}>
-                                        <div className="h-100 d-flex justify-content-center align-items-center" style={{ width: '33%' }}>
+                                    <div key={index} className="d-flex row w-100 mb-2" style={{ height: '20%', paddingTop: '2%' }}>                                        
+                                    <div className="h-100 d-flex justify-content-center align-items-center" style={{ width: '33%' }}>
                                             <img
-                                                src={bronze}
-                                                style={{ height: '100%', width: '50%', opacity: !medalBronze[medal.key] ? 1 : 0.5 }}
-                                                title={medalRules[medal.key].titles[0]}
+                                                src={gold}
+                                                style={{ height: '100%', width: 'auto', opacity: !medalGold[medal.key] ? 1 : 0.5 }}
+                                                title={medalRules[medal.key].titles[2]}
                                             />
                                         </div>
                                         <div className="h-100 d-flex justify-content-center align-items-center" style={{ width: '33%' }}>
                                             <img
                                                 src={silver}
-                                                style={{ height: '100%', width: '50%', opacity: !medalSilver[medal.key] ? 1 : 0.5 }}
+                                                style={{ height: '100%', width: 'auto', opacity: !medalSilver[medal.key] ? 1 : 0.5 }}
                                                 title={medalRules[medal.key].titles[1]}
                                             />
                                         </div>
                                         <div className="h-100 d-flex justify-content-center align-items-center" style={{ width: '33%' }}>
                                             <img
-                                                src={gold}
-                                                style={{ height: '100%', width: '50%', opacity: !medalGold[medal.key] ? 1 : 0.5 }}
-                                                title={medalRules[medal.key].titles[2]}
+                                                src={bronze}
+                                                style={{ height: '100%', width: 'auto', opacity: !medalBronze[medal.key] ? 1 : 0.5 }}
+                                                title={medalRules[medal.key].titles[0]}
                                             />
                                         </div>
+                                        
                                     </div>
                                 ))}
                             </div>

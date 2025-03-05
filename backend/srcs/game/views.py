@@ -171,7 +171,7 @@ class TournamentView:
         elif request.method == 'PATCH':
             winner = request.data.get('winner')
 
-            if winner == tournament.winner1 or winner == tournament.winner2:
+            if winner == tournament.winner1 and winner == tournament.winner2:
                 tournament.winner_final = winner
                 tournament.status = "finished"
             if tournament.winner1:
