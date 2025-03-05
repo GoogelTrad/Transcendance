@@ -41,25 +41,20 @@ const CreateTournament = ({ setIsModalTournament, setIsModalCreateTournament, se
         }
     };
 
-    function createCodeTournament() {
-        return Math.floor(Math.random() * (999 - 100 + 1)) + 100;
-    }
-
     const createTournament = async () => {
         try {
-            const newCode = createCodeTournament();
             const response = await axiosInstance.post(`/api/game/create_tournament`, {
-                code: newCode,
                 timeMaxMinutes: tournamentSettings.maxTimeMinutes,
                 timeMaxSeconds: tournamentSettings.maxTimeSecondes,
                 scoreMax: tournamentSettings.maxScore,
                 size: tournamentSettings.numberPlayer,
             });
+            const newCode = response.data.code
+            console.log(response.data.code)
             setTournamentSettings(prev => ({ ...prev, tournamentCode: newCode }));
             return newCode;
         } catch (error) {
-            setErrorMessage("Failed to create tournament. Please try again.");
-            console.log("Error creating tournament:", error.response?.data || error.message);
+            console.log("Error creating tournament: ", error.response.data.error);
             return false;
         }
     };

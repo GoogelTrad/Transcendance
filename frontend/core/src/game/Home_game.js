@@ -188,9 +188,9 @@ function HomeGame({ setModalStats, setModalCreateTournament, setModalTournament,
                         {onClickPlay && (
                             <div className="content">
                                 <h3 style={{ textAlign: "center" }} onClick={() => handleMenuClick("play")}>Play</h3>
-                                <div className="line" onClick={() => StartGameSolo()}> 1 player </div>
-                                <div className="line" onClick={() => Matchmaking()}> 2 players - Online </div>
+                                {/* <div className="line" onClick={() => StartGameSolo()}> 1 player </div> */}
                                 <div className="line" onClick={() => StartGameSolo()}> 2 players - Local </div>
+                                <div className="line" onClick={() => Matchmaking()}> 2 players - Online </div>
                             </div>
                         )}
                         {onClickTournament && (

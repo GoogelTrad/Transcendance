@@ -98,8 +98,6 @@ function Tournament() {
                 if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
                     socketRef.current.send(JSON.stringify({ "message": "Updating Tournament ..." }));
                     clearInterval(retryTimer);
-                } else {
-                    console.log("WebSocket is not open yet, retrying...");
                 }
             };
     
@@ -124,6 +122,8 @@ function Tournament() {
             }
         }
         console.log("tournamentRes : ", tournamentResponse);
+        console.log("game 1 : ", tournamentResponse?.gamesTournament?.[0]);
+
     }, [tournamentResponse]);
 
 

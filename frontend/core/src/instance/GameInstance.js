@@ -330,43 +330,40 @@ function GameInstance({ children }) {
     }, [socket, backDimensions, game, userInfo.name, id]);
 
     let keyUpdateTimeout = null;
-    const throttleRate = 1;
-
+    const throttleRate = 5;
+    
+    const sendGameState = (updatedKeyDown) => {
+        const player = userInfo.name === game.player1 ? "P1" : (userInfo.name === game.player2 ? "P2" : null);
+        const gameState = { isKeyDown: updatedKeyDown, player };
+    
+        if (socket.readyState === WebSocket.OPEN && !keyUpdateTimeout) {
+            keyUpdateTimeout = setTimeout(() => {
+                socket.send(JSON.stringify(gameState));
+                keyUpdateTimeout = null;
+            }, throttleRate);
+        }
+    };
+    
     const handleKeyPress = (e) => {
         if (isKeyDown[e.key] === undefined || !waitInput) return;
-
+    
         setIsKeyDown((prev) => {
             const updatedKeyDown = { ...prev, [e.key]: true };
-            const player = userInfo.name === game.player1 ? "P1" : (userInfo.name === game.player2 ? "P2" : null);
-            const gameState = { isKeyDown: updatedKeyDown, player };
-
-            if (socket.readyState === WebSocket.OPEN && !keyUpdateTimeout) {
-                keyUpdateTimeout = setTimeout(() => {
-                    socket.send(JSON.stringify(gameState));
-                    keyUpdateTimeout = null;
-                }, throttleRate);
-            }
+            sendGameState(updatedKeyDown);
             return updatedKeyDown;
         });
     };
-
+    
     const handleKeyUp = (e) => {
         if (isKeyDown[e.key] === undefined || !waitInput) return;
-
+    
         setIsKeyDown((prev) => {
             const updatedKeyDown = { ...prev, [e.key]: false };
-            const player = userInfo.name === game.player1 ? "P1" : (userInfo.name === game.player2 ? "P2" : null);
-            const gameState = { isKeyDown: updatedKeyDown, player };
-
-            if (socket.readyState === WebSocket.OPEN && !keyUpdateTimeout) {
-                keyUpdateTimeout = setTimeout(() => {
-                    socket.send(JSON.stringify(gameState));
-                    keyUpdateTimeout = null;
-                }, throttleRate);
-            }
+            sendGameState(updatedKeyDown);
             return updatedKeyDown;
         });
     };
+    
 
     const quitToHome = () => {
         navigate(`/home`);

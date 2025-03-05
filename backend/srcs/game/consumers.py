@@ -184,7 +184,6 @@ class TournamentConsumer(AsyncWebsocketConsumer):
                 if tournament.players_connected == 4 and tournament.size == 4 and await self.fetch_nbr_games() < 2:
                     await self.start_first_match()
                 if tournament.players_connected == 4 and tournament.size == 4 and await self.fetch_nbr_games() == 2:
-                    print("p_co :", tournament.players_connected,"size :" ,tournament.size, "nbr : ",await self.fetch_nbr_games())
                     await self.start_finale()
 
     @database_sync_to_async
@@ -199,7 +198,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
                 scoreMax=scoreMax,
                 tournamentCode=tournamentCode
             )
-            TournamentConsumer.tournament[self.tournament_code].gamesTournament.add(game) 
+            TournamentConsumer.tournament[self.tournament_code].gamesTournament.add(game)
             print(f"Game created directly - ID: {game.id}, Player1: {game.player1}, Player2: {game.player2}", flush=True)
             return {
                 'id': game.id,
@@ -274,7 +273,6 @@ matchmaking_queue = []
 class MatchmakingConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         token = self.scope['cookies'].get('token')
-        print("coucou",token, flush=True)
         if token:
             user = await self.authenticate_user(token)
             if user:
@@ -323,7 +321,12 @@ class MatchmakingConsumer(AsyncWebsocketConsumer):
             if (len(matchmaking_queue) >= 1):
                 matchmaking_queue = [player for player in matchmaking_queue if player['player_name'] != self.user]
 
-
+    @database_sync_to_async
+    def get_user_from_id(self, user_id):
+        try:
+            return User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            return None
 
     async def authenticate_user(self, token):
         try:
@@ -355,12 +358,23 @@ class MatchmakingConsumer(AsyncWebsocketConsumer):
                 player1=player1,
                 player2=player2,
             )
+            
+            player1_object = User.objects.get(name=player1) 
+            player2_object = User.objects.get(name=player2)
+    
+            player1_object.games.add(game)
+            player2_object.games.add(game)
+
+            player1_object.save()
+            player2_object.save()
+
             print(f"Game created directly - ID: {game.id}, Player1: {game.player1}, Player2: {game.player2}", flush=True)
             return {
                 'id': game.id,
                 'player1': game.player1,
                 'player2': game.player2,
             }
+            
         except Exception as e:
             print(f"Error creating game directly: {e}", flush=True)
             return None
@@ -485,7 +499,7 @@ class GameState:
         ):
             self.pong_data["velocity_x"] *= -1
             if self.pong_data["velocity_x"] >= -16 and self.pong_data["velocity_x"] <= 16:
-                self.pong_data["velocity_x"] *= 1.1
+                self.pong_data["velocity_x"] *= 1.25
             self.pong_data["pos_x"] = self.paddle_data["paddleLeftX"] + self.paddle_data["width"] + 0.1
 
         if (
@@ -495,7 +509,7 @@ class GameState:
         ):
             self.pong_data["velocity_x"] *= -1
             if self.pong_data["velocity_x"] >= -16 and self.pong_data["velocity_x"] <= 16:
-                self.pong_data["velocity_x"] *= 1.1
+                self.pong_data["velocity_x"] *= 1.25
             self.pong_data["pos_x"] = self.paddle_data["paddleRightX"] - self.paddle_data["width"] - 0.1
 
         if self.paddle_data["paddleLeftY"] < 0:
@@ -669,39 +683,54 @@ class gameConsumer(AsyncWebsocketConsumer):
             gameConsumer.current_key_states_P1[self.game_id] = key_states.get("isKeyDown")
         elif gameConsumer.player[self.game_id] == "P2" :
             gameConsumer.current_key_states_P2[self.game_id] = key_states.get("isKeyDown")
+        if gameConsumer.game_states[self.game_id].player2 == "" :
+            gameConsumer.current_key_states_P2[self.game_id] = key_states.get("isKeyDown")
         if self.game_id in gameConsumer.paddle_data:
             del gameConsumer.paddle_data[self.game_id]
 
     def process_key_states_P1(self, key_states, game_state):
         paddle_speed = 15
-        if key_states.get("ArrowUp", False):
-            game_state.paddle_data["paddleLeftY"] = max(
-                0, game_state.paddle_data["paddleLeftY"] - paddle_speed
+        if game_state.player2 != "" :
+            if key_states.get("ArrowUp", False):
+                game_state.paddle_data["paddleLeftY"] = max(
+                    0, game_state.paddle_data["paddleLeftY"] - paddle_speed
+                )
+            if key_states.get("ArrowDown", False):
+                game_state.paddle_data["paddleLeftY"] = min(
+                    game_state.paddle_data["height_canvas"] - game_state.paddle_data["height"],
+                    game_state.paddle_data["paddleLeftY"] + paddle_speed,
+                )
+        if game_state.player2 == "" :
+            if key_states.get("ArrowUp", False):
+                    game_state.paddle_data["paddleRightY"] = max(
+                        0, game_state.paddle_data["paddleRightY"] - paddle_speed
             )
-        if key_states.get("ArrowDown", False):
-            game_state.paddle_data["paddleLeftY"] = min(
-                game_state.paddle_data["height_canvas"] - game_state.paddle_data["height"],
-                game_state.paddle_data["paddleLeftY"] + paddle_speed,
-            )
-        if gameConsumer.game_states[self.game_id].player2 is None :
-            if key_states.get("z", False):
-                game_state.paddle_data["paddleRightY"] = max(
-                0, game_state.paddle_data["paddleRightY"] - paddle_speed
-            )
-            if key_states.get("s", False):
+            if key_states.get("ArrowDown", False):
                 game_state.paddle_data["paddleRightY"] = min(
-                game_state.paddle_data["height_canvas"] - game_state.paddle_data["height"],
-                game_state.paddle_data["paddleRightY"] + paddle_speed,
+                    game_state.paddle_data["height_canvas"] - game_state.paddle_data["height"],
+                    game_state.paddle_data["paddleRightY"] + paddle_speed,
             )
+
     def process_key_states_P2(self, key_states, game_state):
         paddle_speed = 15
-        if key_states.get("ArrowUp", False):
-            game_state.paddle_data["paddleRightY"] = max(
-                0, game_state.paddle_data["paddleRightY"] - paddle_speed
+        if game_state.player2 != "" :
+            if key_states.get("ArrowUp", False):
+                game_state.paddle_data["paddleRightY"] = max(
+                    0, game_state.paddle_data["paddleRightY"] - paddle_speed
+                )
+            if key_states.get("ArrowDown", False):
+                game_state.paddle_data["paddleRightY"] = min(
+                    game_state.paddle_data["height_canvas"] - game_state.paddle_data["height"],
+                    game_state.paddle_data["paddleRightY"] + paddle_speed,
+                )
+        if game_state.player2 == "" :
+            if key_states.get("z", False):
+                game_state.paddle_data["paddleLeftY"] = max(
+                0, game_state.paddle_data["paddleLeftY"] - paddle_speed
             )
-        if key_states.get("ArrowDown", False):
-            game_state.paddle_data["paddleRightY"] = min(
+            if key_states.get("s", False):
+                game_state.paddle_data["paddleLeftY"] = min(
                 game_state.paddle_data["height_canvas"] - game_state.paddle_data["height"],
-                game_state.paddle_data["paddleRightY"] + paddle_speed,
+                game_state.paddle_data["paddleLeftY"] + paddle_speed,
             )
 
