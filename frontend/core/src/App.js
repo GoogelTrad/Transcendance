@@ -6,9 +6,8 @@ import Friends from './friends/Friends';
 import Logout from './users/Logout';
 import TerminalLogin from './users/TerminalLogin';
 import Home_game from './game/Home_game';
-import Stats from './game/Stats';
 import Tournament from './game/Tournament/Tournament';
-import { Game, Games} from './game/game';
+import GameInstance from './instance/GameInstance';
 import { AuthProvider, useAuth } from './users/AuthContext';
 import { BrowserRouter as Router, Route, Routes, Link, Navigate } from 'react-router-dom';
 import Profile from './users/Profile';
@@ -40,13 +39,10 @@ function App() {
             <Route path='/chat' element={<ProtectedRoute><HomeChat/></ProtectedRoute>} />
             <Route path="/room/:roomName" element={<ProtectedRoute><Room/></ProtectedRoute>} />
             <Route path='/home_game' element={<ProtectedRoute><Home_game /></ProtectedRoute>} />
-            <Route path='/game/:id' element={<ProtectedRoute><Game /></ProtectedRoute>} />
+            <Route path='/game/:id' element={<ProtectedRoute><GameInstance /></ProtectedRoute>} />
             <Route path='/profile' element={<ProtectedRoute><Profile /></ProtectedRoute>} />
             <Route path='/friends' element={<ProtectedRoute><Friends /></ProtectedRoute>} />
             <Route path='/games/tournament/:tournamentCode' element={<ProtectedRoute><Tournament /></ProtectedRoute>} />
-            <Route path='/games/:id' element={<Games />} />
-            <Route path='/games/Stats'  element={<Stats />} />
-            <Route path='/games/Tournament' element={<Tournament />} />
             <Route path="/auth-success" element={<AuthSuccess />} />
           </Routes>
       </Router>

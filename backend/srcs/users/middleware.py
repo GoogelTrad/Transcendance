@@ -30,7 +30,7 @@ class SimpleMiddleware:
         
         new_token = None
         
-        if not request.path == '/api/user/login' and not request.path == '/api/user/create' and not request.path == '/api/user/set_token' and not request.path == '/api/user/get_token':
+        if not request.path == '/api/user/login' and not request.path == '/api/user/create':
             try:
                 token = request.COOKIES.get('token')
                 
@@ -58,8 +58,5 @@ class SimpleMiddleware:
         
         if new_token:
             response.set_cookie(key='token', value=new_token, max_age=3600, httponly=True, secure=True)
-            response.data = {
-                'token': new_token
-            }
             
         return response

@@ -38,7 +38,6 @@ def oauth_login(request):
 	response = requests.post(TOKEN_URL, data=payload)
 
 	if response.status_code == 200:
-		print("coucou", flush=True);
 		token_data = response.json()
 		access_token = token_data['access_token']
 
@@ -109,7 +108,7 @@ def oauth_login(request):
 
 			params = urlencode({'status': 'SUCCESS', 'token': jwt_token})
 			response = HttpResponseRedirect(f"{os.getenv('REACT_APP_URL_REACT')}:3000/auth-success?{params}")
-			response.set_cookie(key='token', value=jwt_token, max_age=3600, httponly=True, secure=True)
+			response.set_cookie(key='token', value=jwt_token, max_age=3600, httponly=True, secure=True, domain=os.getenv('REACT_APP_DOMAIN'))
 			return response
 
 		else:

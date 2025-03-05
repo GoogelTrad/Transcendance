@@ -1,10 +1,11 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import axiosInstance from '../instance/AxiosInstance';
 
-const AuthContext = React.createContext();
+
+const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-    const [userInfo, setUserInfo] = useState(null);
+    const [userInfo, setUserInfo] = useState({});
     const [isAuthenticated, setIsAuthenticated] = useState(() => {
         return localStorage.getItem('isAuthenticated') === 'true';
     });
@@ -18,18 +19,19 @@ export const AuthProvider = ({ children }) => {
                 setUserInfo(userResponse.data.payload);
                 setIsAuthenticated(true);
                 localStorage.setItem('isAuthenticated', 'true');
+                return true;
             } else {
                 throw new Error('Utilisateur non authentifié après login');
             }
         } catch (err) {
             setIsAuthenticated(false);
             localStorage.setItem('isAuthenticated', 'false');
+            return false;
         }
     };
 
     const refreshUserInfo = async () => {
         if (!isAuthenticated) {
-            console.log('refreshUserInfo annulé: utilisateur non authentifié');
             return;
         }
 
@@ -43,34 +45,35 @@ export const AuthProvider = ({ children }) => {
 
     useEffect(() => {
         const initializeAuth = async () => {
-            try {
-                const response = await axiosInstance.get('/api/user/check_auth');
-    
-                if (response.data.isAuthenticated) {
-                    const userResponse = await axiosInstance.get('/api/user/fetch_user_data');
-                    setUserInfo(userResponse.data.payload);
-                    setIsAuthenticated(true);
-                    localStorage.setItem('isAuthenticated', 'true');
-                } 
-                else
-                {
-                    localStorage.setItem('isAuthenticated', 'false');
-                    setIsAuthenticated(false);
-                }
-
-            } 
-            catch (err) {
-                localStorage.setItem('isAuthenticated', 'false');
+            const authenticated = await login();
+            if (authenticated) {
+                await refreshUserInfo();
+                setIsAuthenticated(true);
+                localStorage.setItem('isAuthenticated', 'true');
+            } else {
                 setIsAuthenticated(false);
+                localStorage.setItem('isAuthenticated', 'false');
+                setUserInfo(null);
             }
         };
         initializeAuth();
-    }, [isAuthenticated]); 
+
+        const handleStorageChange = (event) => {
+            if (event.key === 'isAuthenticated' && event.newValue === 'true') {
+                login(); 
+            }
+        };
+        window.addEventListener('storage', handleStorageChange);
+
+        return () => {
+            window.removeEventListener('storage', handleStorageChange);
+        };
+    }, []);
 
     const logout = async () => {
         try {
             await axiosInstance.get('/api/user/logout');
-            console.log('API logout appelée avec succès');
+            // window.location.href = '/';
         } catch (err) {
             console.log('Erreur lors de la déconnexion API:', err);
         }
@@ -93,4 +96,4 @@ export const useAuth = () => {
         throw new Error("useAuth must be used within an AuthProvider");
     }
     return context;
-}
+};

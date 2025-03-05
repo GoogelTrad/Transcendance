@@ -42,7 +42,7 @@ function SeeFriendsRequest({ toWhom, type, onResponse }) {
             onResponse(toWhom);
         } catch (error) {
 			showToast("error", error.response.data.error);
-            console.error('Error handling friend request:', error);
+            console.log('Error handling friend request:', error);
         }
     };
 
@@ -130,9 +130,12 @@ function FriendRequests({setModal, setIsFriends, launching}) {
     };
 
     useEffect(() => {
+		if (userInfo)
+		{
+			fetchFriendList();
+			fetchFriendRequests();
+		}
 
-		fetchFriendList();
-        fetchFriendRequests();
 		const interval = setInterval(() => {
 			fetchFriendList();
         	fetchFriendRequests();

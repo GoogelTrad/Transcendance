@@ -24,11 +24,11 @@ body, html {
         0 0 50px rgba(0, 150, 255, 0.3); 
     font-family: "Courier New", Courier, monospace; 
     color: #0096ff; 
-    padding: 2%;
     border-radius: 10px; 
     overflow: hidden;
     z-index: 1;
     box-sizing: border-box;
+    transition: all 0.3s ease;
 }
 
 .stats-zone-table {
@@ -80,6 +80,11 @@ body, html {
     background-color: rgba(0, 0, 0, 0.5);
     font-family: "Digital-7", monospace;
     color: #0096ff;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    padding: 5px;
+    font-size: 0.9em;
 }
 
 .stats-zone.right {
@@ -211,19 +216,18 @@ body, html {
 .stats-zone-content {
     justify-content: space-between;
     align-items: center;
-    padding: 10px;
     box-sizing: border-box;
     transform: scale(1);
     transition: transform 0.3s ease;
 }
 
-.stats-row-element {
+/*.stats-row-element {
     display: flex;
     justify-content: center;
     align-items: center;
     text-align: center;
     height: 100%;
-}
+}*/
 
 .stats-row-element.empty-row {
     background: transparent;
@@ -256,7 +260,6 @@ body, html {
     left: 10% !important;
     width: 80%;
 }
-
 
 .stats-zone-table .expanded-cell {
     white-space: normal; 
@@ -292,34 +295,45 @@ body, html {
 }
 
 @media (max-width: 768px) {
-    .stats-zone-table {
-        overflow-x: auto;
+    .stats-zone-content {
+        flex-direction: column !important;
     }
-
-    .stats-zone-table table {
-        min-width: 100%; 
-        display: block;
-        overflow-x: auto;
+    .stats-text
+    {
+        min-width: auto;
+        max-width: auto;
     }
-
-    .stats-zone-table th, .stats-zone-table td {
-        font-size: 0.9rem;
-        padding: 6px;
-    }    
-    
-    .stats-home {
-        flex-direction: column;
-        height: auto;
-        width: auto;
-    }
-
     .stats-col {
-        display: flex;
-        flex-direction: column;
+        width: 100% !important;
+        margin: 10px 0 !important;
     }
 
-    .stats-zone.right, .stats-zone.left {
-        width: 100%;
+    .profile-picture {
+        max-width: 120px;
+        margin: 0 auto;
+    }
+
+    .stats-text {
+        font-size: 0.9rem;
+    }
+
+    .counter {
+        font-size: 1.1rem;
+    }
+
+    .stats-zone-table td,
+    .stats-zone-table th {
+        font-size: 0.8em;
+        padding: 3px;
     }
 }
 
+/* Styles généraux */
+.stats-zone {
+    transition: all 0.3s ease;
+}
+
+.stats-row-element {
+    transition: all 0.3s ease;
+    font-size: 20%;
+}

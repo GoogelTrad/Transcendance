@@ -121,7 +121,6 @@ class UserView():
                     
                     filtered_user = {key: value for key, value in serializer.data.items() if key not in ['password']}
                     reponse.delete_cookie('token')
-                    token = jwt.encode(payload, os.getenv('JWT_KEY'), 'HS256')
                     reponse.set_cookie(key='token', value=new_token, max_age=3600, httponly=True, secure=True)
                     reponse.data = {
                         **filtered_user
@@ -278,16 +277,6 @@ def is_token_valid(request, token):
         user.status = "offline"
         user.save()
         return Response(status=status.HTTP_404_NOT_FOUND)
-
-@api_view(['GET'])
-@jwt_auth_required
-def get_token(request):
-    token = request.COOKIES.get('token')
-    if token:
-        return Response({'token': token})
-    else:
-        return Response({'error': 'No token found'}, status=status.HTTP_401_UNAUTHORIZED)
-
 @api_view(['GET'])
 @jwt_auth_required
 def fetch_user_data(request):

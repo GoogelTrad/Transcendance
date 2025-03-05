@@ -204,7 +204,7 @@ function Home() {
         };
     
         isDraggingRef.current = false;
-        document.body.style.cursor = 'grabbing';
+        //document.body.style.cursor = 'grabbing';
         element.dataset.dragging = "true";
     
         const handleDragMove = (event) => {
@@ -225,7 +225,7 @@ function Home() {
             const el = ref.current;
             if (!el) return;
     
-            document.body.style.cursor = 'grab';
+            //document.body.style.cursor = 'grab';
             el.dataset.dragging = "false";
             window.removeEventListener('mousemove', handleDragMove);
             window.removeEventListener('mouseup', handleDragEnd);
@@ -359,7 +359,6 @@ function Home() {
                         ref={gameRef}
                         style={{
                             position: 'absolute',
-                            cursor: 'grab',
                             height: '20%',
                             width: '10%',
                             userSelect: 'none',
@@ -384,7 +383,6 @@ function Home() {
                         ref={chatRef}
                         style={{
                             position: 'absolute',
-                            cursor: 'grab',
                             height: '20%',
                             width: '10%',
                             userSelect: 'none',
@@ -409,7 +407,6 @@ function Home() {
                         ref={statsRef}
                         style={{
                             position: 'absolute',
-                            cursor: 'grab',
                             height: '20%',
                             width: '10%',
                             userSelect: 'none',
