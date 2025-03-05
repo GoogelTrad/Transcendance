@@ -48,7 +48,7 @@ function HomeGame({ setModalStats, setModalCreateTournament, setModalTournament,
                 console.log("join : ", data);
                 if (data.game_id) {
                     setGame(data);
-                    navigate(`/games/${data.game_id}`);
+                    navigate(`/game/${data.game_id}`);
                 }
             };
             newSocket.onclose = () => {
