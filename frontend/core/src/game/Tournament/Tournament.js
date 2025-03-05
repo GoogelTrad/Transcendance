@@ -57,12 +57,6 @@ function Tournament() {
                console.log("Tournament websocket open")
                };
            }
-    //        return () => {
-    //         if (socketRef.current) {
-    //             socketRef.current.close();
-    //             socketRef.current = null;
-    //         }
-    //    };
      }, [tournamentStarted]);
 
 
@@ -77,7 +71,7 @@ function Tournament() {
     };
 
     const startTournament = () => {
-        if (socketRef.current.readyState === WebSocket.OPEN) {
+        if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
             socketRef.current.send(JSON.stringify({ "Start": "Start games" }));
         }
     }
@@ -102,7 +96,6 @@ function Tournament() {
     
             const attemptToSendMessage = () => {
                 if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
-                    console.log("helloeee");
                     socketRef.current.send(JSON.stringify({ "message": "Updating Tournament ..." }));
                     clearInterval(retryTimer);
                 } else {
@@ -123,6 +116,13 @@ function Tournament() {
     }, [makeTournament, socketRef.current]);
     
     useEffect(() => {
+        if (tournamentResponse && tournamentResponse.status == "finished")
+        {
+            if (socketRef.current) {
+                socketRef.current.close();
+                socketRef.current = null;
+            }
+        }
         console.log("tournamentRes : ", tournamentResponse);
     }, [tournamentResponse]);
 

@@ -26,6 +26,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
             self.group_name = None
 
     async def connect(self):
+        await self.accept()
         self.tournament_code = self.scope['url_route']['kwargs']['tournament_code']
         self.token = self.scope['cookies'].get('token')
         self.user = await self.authenticate_user(self.token)
@@ -48,10 +49,9 @@ class TournamentConsumer(AsyncWebsocketConsumer):
             return
 
         if self.user.name in [tournament.player1, tournament.player2, tournament.player3, tournament.player4]:
-            await self.accept()
+            pass
         else:
             await self.add_user_to_tournament()
-            await self.accept()
             await self.send_user_connected_message()
             game_group = f"game_{self.tournament_code}"
             await self.channel_layer.group_add(game_group, self.channel_name)
@@ -73,6 +73,11 @@ class TournamentConsumer(AsyncWebsocketConsumer):
             print(f"Games count: {count}", flush=True)
             return count
         return 0
+    
+    @database_sync_to_async
+    def finish_tournament(self, tournament):
+        tournament.status = "finished"
+        tournament.save()
 
     @database_sync_to_async
     def add_user_to_tournament(self):
@@ -155,8 +160,6 @@ class TournamentConsumer(AsyncWebsocketConsumer):
     async def start_finale(self):
         tournament = TournamentConsumer.tournament.get(self.tournament_code)
         if tournament:
-            print("winner1 : ", tournament.winner1, flush=True)
-            print("winner2 : ", tournament.winner2, flush=True)
             if tournament.winner1 and tournament.winner2:
                 final_game_data = await self.create_Game_Multi(self.token, tournament.winner1, tournament.winner2)
                 if final_game_data:
@@ -169,10 +172,12 @@ class TournamentConsumer(AsyncWebsocketConsumer):
             print("Error decoding JSON data")
             return
         print("receive :", data_dict, flush=True)
+        tournament = TournamentConsumer.tournament.get(self.tournament_code)
         if "message" in data_dict:
+            if tournament.winner_final != "":
+                await self.finish_tournament(tournament)
             await self.send_user_connected_message()
         if "Start" in data_dict:  
-            tournament = TournamentConsumer.tournament.get(self.tournament_code)
             if tournament:
                 if tournament.players_connected == 2 and tournament.size == 2 and await self.fetch_nbr_games() < 3:
                     await self.start_first_match()
