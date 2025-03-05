@@ -21,6 +21,7 @@ function Tournament() {
     const navigate = useNavigate();
     const location = useLocation();
     const { join } = location.state || false;
+    const { makeTournament } = location.state || false;
 
     const { userInfo } = useAuth();
     let user = userInfo;
@@ -56,13 +57,13 @@ function Tournament() {
                console.log("Tournament websocket open")
                };
            }
-       // return () => {
-       //   if (socket) {
-       //     socket.close();
-       //     setSocket(null);
-       //   }
-       // };
-     }, [tournamentStarted, tournamentCode, user, fetchTournementCode, navigate]);
+    //        return () => {
+    //         if (socketRef.current) {
+    //             socketRef.current.close();
+    //             socketRef.current = null;
+    //         }
+    //    };
+     }, [tournamentStarted]);
 
 
     const fetchTournement = async () => {
@@ -81,7 +82,6 @@ function Tournament() {
         }
     }
 
-
     useEffect(() => {
         if (join === true) {
             fetchTournement();
@@ -96,18 +96,32 @@ function Tournament() {
     }, [tournamentCode]);
 
     useEffect(() => {
-        if (tournamentResponse && tournamentResponse.winner1) {
-            if (socketRef.current.readyState === WebSocket.OPEN) {
-                socketRef.current.send(JSON.stringify({ "message": "Hello game 1 is over" }));
-            }
+        if (makeTournament === true) {
+            const retryInterval = 3000;
+            let retryTimer = null;
+    
+            const attemptToSendMessage = () => {
+                if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
+                    console.log("helloeee");
+                    socketRef.current.send(JSON.stringify({ "message": "Updating Tournament ..." }));
+                    clearInterval(retryTimer);
+                } else {
+                    console.log("WebSocket is not open yet, retrying...");
+                }
+            };
+    
+            retryTimer = setInterval(() => {
+                attemptToSendMessage();
+            }, retryInterval);
+    
+            return () => {
+                if (retryTimer) {
+                    clearInterval(retryTimer);
+                }
+            };
         }
-        if (tournamentResponse && tournamentResponse.winner2) {
-            if (socketRef.current.readyState === WebSocket.OPEN) {
-                socketRef.current.send(JSON.stringify({ "message": "Hello game 2 is over" }));
-            }
-        }
-    }, [tournamentResponse]);
-
+    }, [makeTournament, socketRef.current]);
+    
     useEffect(() => {
         console.log("tournamentRes : ", tournamentResponse);
     }, [tournamentResponse]);

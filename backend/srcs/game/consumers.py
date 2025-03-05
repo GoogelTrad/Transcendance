@@ -155,8 +155,8 @@ class TournamentConsumer(AsyncWebsocketConsumer):
     async def start_finale(self):
         tournament = TournamentConsumer.tournament.get(self.tournament_code)
         if tournament:
-            print(tournament.winner1, flush=True)
-            print(tournament.winner2, flush=True)
+            print("winner1 : ", tournament.winner1, flush=True)
+            print("winner2 : ", tournament.winner2, flush=True)
             if tournament.winner1 and tournament.winner2:
                 final_game_data = await self.create_Game_Multi(self.token, tournament.winner1, tournament.winner2)
                 if final_game_data:
@@ -169,15 +169,17 @@ class TournamentConsumer(AsyncWebsocketConsumer):
             print("Error decoding JSON data")
             return
         print("receive :", data_dict, flush=True)
-        
+        if "message" in data_dict:
+            await self.send_user_connected_message()
         if "Start" in data_dict:  
             tournament = TournamentConsumer.tournament.get(self.tournament_code)
             if tournament:
                 if tournament.players_connected == 2 and tournament.size == 2 and await self.fetch_nbr_games() < 3:
                     await self.start_first_match()
-                elif tournament.players_connected == 4 and tournament.size == 4 and await self.fetch_nbr_games() < 2:
+                if tournament.players_connected == 4 and tournament.size == 4 and await self.fetch_nbr_games() < 2:
                     await self.start_first_match()
-                elif tournament.players_connected == 4 and tournament.size == 4 and await self.fetch_nbr_games() == 2:
+                if tournament.players_connected == 4 and tournament.size == 4 and await self.fetch_nbr_games() == 2:
+                    print("p_co :", tournament.players_connected,"size :" ,tournament.size, "nbr : ",await self.fetch_nbr_games())
                     await self.start_finale()
 
     @database_sync_to_async
@@ -590,11 +592,9 @@ class gameConsumer(AsyncWebsocketConsumer):
         await self.send(text_data=json.dumps(event))
            
     async def run_game_loop(self, game_state, game):
-        print("states : ", gameConsumer.game_states[self.game_id].gamerunning, flush=True)
         if gameConsumer.game_states[self.game_id].gamerunning == True:
             return
         gameConsumer.game_states[self.game_id].gamerunning = True
-        print("states after : ", gameConsumer.game_states[self.game_id].gamerunning, flush=True)
         last_time_updated = time.time()
         accumulated_time = 0
         try:
@@ -649,7 +649,7 @@ class gameConsumer(AsyncWebsocketConsumer):
                         "elo_Player1" : game_state.eloPlayer1,
                         "elo_Player2" : game_state.eloPlayer2,
                         "isInTournament" : game_state.isInTournament,
-                        "code" : game_state.code,
+                        "tournamentCode" : game_state.code,
                     })
                     break
 
@@ -677,6 +677,16 @@ class gameConsumer(AsyncWebsocketConsumer):
             game_state.paddle_data["paddleLeftY"] = min(
                 game_state.paddle_data["height_canvas"] - game_state.paddle_data["height"],
                 game_state.paddle_data["paddleLeftY"] + paddle_speed,
+            )
+        if gameConsumer.game_states[self.game_id].player2 is None :
+            if key_states.get("z", False):
+                game_state.paddle_data["paddleRightY"] = max(
+                0, game_state.paddle_data["paddleRightY"] - paddle_speed
+            )
+            if key_states.get("s", False):
+                game_state.paddle_data["paddleRightY"] = min(
+                game_state.paddle_data["height_canvas"] - game_state.paddle_data["height"],
+                game_state.paddle_data["paddleRightY"] + paddle_speed,
             )
     def process_key_states_P2(self, key_states, game_state):
         paddle_speed = 15

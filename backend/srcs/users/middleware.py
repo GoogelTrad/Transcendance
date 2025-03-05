@@ -33,6 +33,7 @@ class SimpleMiddleware:
         if not request.path == '/api/user/login' and not request.path == '/api/user/create' and not request.path == '/api/user/set_token' and not request.path == '/api/user/get_token':
             try:
                 token = request.COOKIES.get('token')
+                
                 if not token:
                     raise AuthenticationFailed('Token is invalid!')
                 
@@ -43,7 +44,7 @@ class SimpleMiddleware:
                 user = User.objects.filter(id=payload['id']).first()
                 if user is not None:
                     request.user = user
-                if not request.path.startswith('/api/user/') and request.POST:
+                if not request.path.startswith('/api/user/') and (request.method == 'POST' or request.method == 'PATCH'):
                     new_token = refresh_token(user, token)
                     
             except jwt.ExpiredSignatureError:

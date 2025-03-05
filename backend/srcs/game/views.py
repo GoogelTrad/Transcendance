@@ -12,6 +12,7 @@ from .models import Game, Tournament
 from users.models import User
 import jwt
 import os
+from users.decorator import jwt_auth_required
 
 class HomeGameView:
     @api_view(['POST'])
@@ -158,6 +159,7 @@ class TournamentView:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
     @api_view(['GET', 'PATCH'])
+    @jwt_auth_required
     def fetch_data_tournament_by_code(request, code):
         try:
             tournament = Tournament.objects.get(code=code)
@@ -169,15 +171,15 @@ class TournamentView:
             return Response(serializer.data, status=status.HTTP_200_OK)
 
         elif request.method == 'PATCH':
-            winner = request.data.get('winner')
-
-            if winner == tournament.winner1 or winner == tournament.winner2:
-                tournament.winner_final = winner
-                tournament.status = "finished"
-            if tournament.winner1:
-                tournament.winner2 = winner
-            else:
-                tournament.winner1 = winner
+            if 'winner' in request.data:
+                games = list(tournament.gamesTournament.all().order_by('id'))
+                print("games states :", games, flush=True)
+                if len(games) >= 1:
+                    tournament.winner1 = games[0].winner
+                if len(games) >= 2:
+                    tournament.winner2 = games[1].winner
+                if len(games) == 3:
+                    tournament.winner_final = games[2].winner
             serializer = TournamentSerializer(tournament, data=request.data, partial=True)
             if serializer.is_valid():
                 serializer.save()

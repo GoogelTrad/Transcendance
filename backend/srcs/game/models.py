@@ -35,9 +35,9 @@ class Game(models.Model):
         choices=STATUS_CHOICES,
         default=WAITING
     )
-
+    
     def __str__(self):
-        return f"Game between {self.player1} and {self.player2} - Status: {self.status}"
+        return f"Game between {self.player1} and {self.player2} - Status: {self.status}, Winner: {self.winner}"
 
     def is_waiting(self):
         return self.status == self.WAITING

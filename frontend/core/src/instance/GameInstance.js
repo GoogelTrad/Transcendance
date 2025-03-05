@@ -56,6 +56,8 @@ function GameInstance({ children }) {
         Loser: "",
         elo_Player1: 0,
         elo_Player2: 0,
+        isInTournament: false,
+        tournamentCode: 0,
     }));
 
 	const { userInfo } = useAuth();
@@ -101,21 +103,18 @@ function GameInstance({ children }) {
 			Loser: data.loser,
 			elo_Player1 : data.elo_Player1,
     		elo_Player2 : data.elo_Player2,
+            isInTournament: data.isInTournament,
+            tournamentCode: data.tournamentCode
 		}));
-		if (data.winner || data.loser)
+		if (data.winner || data.loser){
 			setIsGameOngoing(false);
-		if (data.isInTournament === true)
-		{
-			patchTournament(data)
-            console.log("code2 after patch", data.code)
-			navigate(`/games/tournament/${data.code}` , { state: { makeTournament: false } });
-		}
+        }
 	};
 
-	const patchTournament = async (data) => {
+	const patchTournament = async () => {
 		try {
-			const response = await axiosInstance.patch(`/api/game/fetch_data_tournament_by_code/${data.code}/`, {
-				winner: data.winner
+			const response = await axiosInstance.patch(`/api/game/fetch_data_tournament_by_code/${gameData.tournamentCode}/`, {
+				winner: "game_over"
 		  });
 		} catch (error) {
 		  console.error("Error updating game:", error);
@@ -123,6 +122,8 @@ function GameInstance({ children }) {
 	}
 
     const finishGame = async () => {
+        console.log("cc");
+        console.log(gameData);
         try {
             const response = await axiosInstance.patch(`/api/game/fetch_data/${id}/`, {
                 score_player_1: gameData.Score_P1,
@@ -136,8 +137,13 @@ function GameInstance({ children }) {
                 status: 'finished',
             });
             setGame(response.data);
-            if (game?.player1 === userInfo.name) updateEloP1();
-            if (game?.player2 === userInfo.name) updateEloP2();
+            // if (game?.player1 === userInfo.name) updateEloP1();
+            // if (game?.player2 === userInfo.name) updateEloP2();
+            if (gameData.isInTournament === true)
+                {
+                    await patchTournament()
+                    navigate(`/games/tournament/${gameData.tournamentCode}` , { state: { makeTournament: true } });
+                }
         } catch (error) {
             console.error("Error updating game:", error);
         }
@@ -175,13 +181,6 @@ function GameInstance({ children }) {
 			createdAt: Date.now(),
 		};
 	};
-
-	useEffect(() => {
-		if (isGameOngoing === false && socket.readyState !== WebSocket.CLOSED){
-			finishGame();
-			socket.close();
-		}
-	}, [isGameOngoing]);
 
 	useEffect(() => {
 		if (gameStart === false) {
@@ -295,7 +294,6 @@ function GameInstance({ children }) {
 
     useEffect(() => {
         if (!isGameOngoing && socket.readyState !== WebSocket.CLOSED) {
-            finishGame();
             socket.close();
         }
     }, [isGameOngoing]);
