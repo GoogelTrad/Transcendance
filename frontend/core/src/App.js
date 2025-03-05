@@ -23,7 +23,6 @@ import axiosInstance from './instance/AxiosInstance';
 function NavBar()
 {
   const { userInfo } = useAuth();
-  const decodeToken = userInfo;
 }
 
 function App() {

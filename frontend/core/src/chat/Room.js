@@ -27,11 +27,11 @@ export default function Room() {
 	const [isModalProfile, setIsModalProfile] = useState(false);
 	const [profileId, setProfileId] = useState(1);
 	const modalProfile = useRef(null);
+	const messagesEndRef = useRef(null);
 
 	const navigate = useNavigate();
 	const { userInfo } = useAuth();
-	const decodedToken = userInfo;
-	const userId = decodedToken.id;
+	const userId = userInfo.id;
 
 	const { notifications, sendNotification, respondNotification } = useNotifications();
 
@@ -144,7 +144,7 @@ export default function Room() {
 
 	const FriendList = async () => {
 		try {
-			const reponse = await axiosInstance.get(`/api/friends/list/${decodedToken.id}`);
+			const reponse = await axiosInstance.get(`/api/friends/list/${userInfo.id}`);
 			setFriendList(reponse.data);
 			//console.log(reponse.data)
 		}
@@ -191,6 +191,12 @@ export default function Room() {
 		return () => clearInterval(interval);
 	}, [roomName]);
 
+	useEffect(() => {
+        if (messagesEndRef.current) {
+            messagesEndRef.current.scrollTop = messagesEndRef.current.scrollHeight;
+        }
+    }, [chat]);
+
 	const handleProfile = (user_id) => {
 		setIsModalProfile(!isModalProfile);
 		setProfileId(user_id);
@@ -223,11 +229,11 @@ export default function Room() {
 						{console.log("ROOM DMNAME:", dmname)}
 						<h3>Room Name: { dmname ? dmname : roomName }</h3>
 					</div>
-					<div className="chat-messages" style={{ height: '400px', overflowY: 'scroll', border: '1px solid #ccc', padding: '10px' }}>
+					<div ref={messagesEndRef} className="chat-messages" style={{ height: '400px', overflowY: 'scroll', border: '1px solid #ccc', padding: '10px' }}>
 						{chat.map((msg, index) => (
 							<div key={index} style={{ marginBottom: '10px' }}>
-								<strong>{msg.username}:</strong> {msg.message}{' '}
 								<small>({new Date(msg.timestamp).toLocaleTimeString()})</small>
+								{' '}<strong>{msg.username}:</strong> {msg.message}{' '}
 							</div>
 						))}
 					</div>
@@ -267,7 +273,7 @@ export default function Room() {
 									</button>
 									<ul className="dropdown-menu">
 										<button className="dropdown-item" onClick={() => handleProfile(user.id)}> Profile </button>
-										<button className="dropdown-item" onClick={() => sendNotification(user.id, `${decodedToken.name} invites you to play a game of pong`, userId)}> Send an invitation to play </button>
+										<button className="dropdown-item" onClick={() => sendNotification(user.id, `${userInfo.name} invites you to play a game of pong`, userId)}> Send an invitation to play </button>
 									</ul>
 								</li>
 							))}

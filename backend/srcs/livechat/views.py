@@ -20,7 +20,6 @@ def get_me(request, room_name):
     dmname = None
     room = Room.objects.get(name=room_name)
     me = request.user
-    # print(room.users.all(), flush=True)
     if room.dm:
         friend = [user for user in room.users.all() if user.id != me.id]
         print("FRIEND:", friend, flush=True)
@@ -35,9 +34,10 @@ def get_me(request, room_name):
 @api_view(['GET'])
 @jwt_auth_required
 def get_list_rooms(request):
-    print(request.user.id, flush=True)
+    user = request.user
+
     rooms = Room.objects.all()
-    dmRooms = rooms.filter(dm=True)
+    dmRooms = Room.objects.filter(dm=True, users=user)
     rooms = rooms.filter(dm=False)
     roomSerializer = RoomSerializer(rooms, many=True)
     dmSerializer = RoomSerializer(dmRooms, many=True)
@@ -74,33 +74,26 @@ def save_chat_msg(request):
 @api_view(['POST'])
 @jwt_auth_required
 def exit_room(request):
-    print("Début de la requête exit_room", flush=True)
     if not request.user.is_authenticated:
-        print("Utilisateur non authentifié", flush=True)
         return JsonResponse({'success': False, 'message': 'Utilisateur non authentifié'}, status=401)
     
     try:
         data = json.loads(request.body)
         room_name = data.get('room_name')
         user = request.user
-        print(f"Utilisateur {user} demande de quitter la salle {room_name}", flush=True)
 
         room = Room.objects.get(name=room_name)
 
         if user not in room.users.all():
-            print(f"L'utilisateur {user} n'est pas dans la salle {room_name}", flush=True)
             return JsonResponse({'success': False, 'message': 'L\'utilisateur n\'est pas dans cette salle'}, status=400)
         
         room.users.remove(user)
-        print(f"Utilisateur {user} retiré de la salle {room_name}", flush=True)
 
         return JsonResponse({'success': True, 'message': 'Utilisateur retiré de la salle avec succès'})
 
     except Room.DoesNotExist:
-        print(f"Salle {room_name} non trouvée", flush=True)
         return JsonResponse({'success': False, 'message': 'Salle non trouvée'}, status=404)
     except Exception as e:
-        print(f"Erreur dans exit_room: {e}", flush=True)
         return JsonResponse({'success': False, 'message1': str(e)}, status=500)
 
 @jwt_auth_required

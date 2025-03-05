@@ -42,7 +42,7 @@ function ChangeDetails({setUser, setValue, toChange, value, toType})
         {
 			if (error.status === 400)
 				showToast('error', 'Username already in use');
-            console.log(error);
+            console.error(error);
         }
 	}
 	return (
@@ -106,7 +106,7 @@ function Profile({id})
 			console.log(response);
 		} 
 		catch (error) {
-			console.log("Error uploading profile image:", error);
+			console.error("Error uploading profile image:", error);
 		}
 	};
 
@@ -146,7 +146,7 @@ function Profile({id})
 			}
 			catch (error)
 			{
-				console.log('Erreur lors de la récupération des données utilisateur', error);
+				console.error('Erreur lors de la récupération des données utilisateur', error);
 			}
 		}
 	}

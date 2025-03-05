@@ -43,7 +43,6 @@
 }
 
 .delete-friend-btn, .add-friend-btn {
-    background-color: red;
     color: white;
     border: none;
     border-radius: 50%;

@@ -178,9 +178,12 @@ export default function HomeChat() {
 	};
 
 	useEffect(() => {
-		users_connected();
-		listroom();
-		listUsersBlocked();
+		if (userInfo)
+		{
+			users_connected();
+			listroom();
+			listUsersBlocked();
+		}
 
 		const interval = setInterval(() => {
 			users_connected();
@@ -311,7 +314,14 @@ export default function HomeChat() {
 							))}
 						</ul>
 					</div>
-					<ModalInstance height="30%" width="40%" isModal={isModalProfile} modalRef={modalProfile} name="Profile" onLaunchUpdate={null} onClose={() => setIsModalProfile(false)}>
+					<ModalInstance
+						height="13%"
+						width="40%"
+						isModal={isModalProfile}
+						modalRef={modalProfile}
+						name="Profile"
+						onClose={() => setIsModalProfile(false)}
+					>
 						<Profile id={profileId}/>
 					</ModalInstance>
 					<div>
