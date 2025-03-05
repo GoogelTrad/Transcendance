@@ -264,7 +264,7 @@ function Stats({ itemsArray = [] }) {
                                     />
                                 </label>
                             </div>
-                            <div className="stats-row-element empty-row flex-grow-1" style={{ height: "20%", display: "flex", alignItems: "flex-start" }}>{decodeToken?.name}</div>
+                            <div className="stats-row-element empty-row flex-grow-1" style={{ height: "20%", display: "flex", alignItems: "flex-start" }}>{userInfo?.name}</div>
                             <div className="stats-row-element flex-grow-1" style={{height: `30%`}}>
                             <div className="text-center">
                                 <div className="stats-text">{t('WinrateRatio')}</div>

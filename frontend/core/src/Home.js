@@ -15,6 +15,8 @@ import FriendRequests from './friends/Friends';
 import Profile from './users/Profile';
 import HomeChat from './chat/Homechat';
 import { useAuth } from './users/AuthContext';
+
+import { ToastContainer } from 'react-toastify';
 import { jwtDecode } from "jwt-decode";
 import P from './assets/P.png';
 import S from './assets/S.png';
@@ -23,6 +25,7 @@ import T from './assets/T.png';
 
 import { useTranslation } from 'react-i18next';
 import DragableInstance from './instance/DragableInstance';
+import { showToast } from './instance/ToastsInstance';
 
 function Home() {
 

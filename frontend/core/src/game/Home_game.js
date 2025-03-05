@@ -8,11 +8,8 @@ import React, { useEffect, useState, useRef } from "react";
 import { jwtDecode } from "jwt-decode";
 import axiosInstance from "../instance/AxiosInstance";
 import { useAuth } from '../users/AuthContext';
-
 import { useTranslation } from 'react-i18next';
 import { showToast } from '../instance/ToastsInstance';
-
-import { useTranslation } from 'react-i18next';
 
 function HomeGame({ setModalStats, setModalCreateTournament, setModalTournament, launching, setParentItems, setParentNumberPlayer }) {
     const [player1, setPlayer1] = useState("");

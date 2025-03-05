@@ -81,13 +81,12 @@ function Profile({id})
 	const [is2fa, setIs2fa] = useState(false);
 	const [friendList, setFriendList] = useState([]);
 	const { userInfo, refreshUserInfo } = useAuth();
-	const decodeToken = userInfo;
 	let friends = friendList?.friends || [];
 
 	const fetchFriendList = async () => {
 
 		try {
-			const reponse = await axiosInstance.get(`/api/friends/list/${decodeToken.id}`);
+			const reponse = await axiosInstance.get(`/api/friends/list/${userInfo.id}`);
 			setFriendList(reponse.data);
 		}
 		catch(error) {
@@ -99,7 +98,7 @@ function Profile({id})
 		e.preventDefault();
 		const selectedImage = e.target.files[0];
 		try {
-			const response = await axiosInstance.patch(`/api/user/${decodeToken.id}`, { 
+			const response = await axiosInstance.patch(`/api/user/${userInfo.id}`, { 
 				'profile_image' : selectedImage 
 				}, {
 				headers: {
@@ -117,7 +116,7 @@ function Profile({id})
 	const handleConfirm = async () =>
 	{
 		try {
-			const response = await axiosInstance.post(`/api/user/perms/${decodeToken.id}`);
+			const response = await axiosInstance.post(`/api/user/perms/${userInfo.id}`);
 			console.log(response.data.message);
 			setIs2fa(response.data.message === "EnableTo2FA" ? true : false);
 			showToast("message", t(`Toasts.${response.data.message}`))
@@ -129,11 +128,11 @@ function Profile({id})
 
 	const fetchUserData = async () => 
 	{
-		if (decodeToken.id == id && decodeToken.is_stud == false) {
+		if (userInfo.id == id && userInfo.is_stud == false) {
 			setIsStud(false);
 			setIsPermitted(true);
 		}
-		else if (decodeToken.id == id && decodeToken.is_stud == true) {
+		else if (userInfo.id == id && userInfo.is_stud == true) {
 			setIsStud(true);
 			setIsPermitted(false);
 		}
@@ -144,7 +143,7 @@ function Profile({id})
 		console.log(userInfo);
 		setUser(userInfo);
 		console.log(user);
-		if (decodeToken.id !== id)
+		if (userInfo.id !== id)
 		{
 			try 
 			{

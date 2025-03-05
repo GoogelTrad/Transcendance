@@ -272,7 +272,7 @@ export default function Room() {
 									</button>
 									<ul className="dropdown-menu">
 										<button className="dropdown-item" onClick={() => handleProfile(user.id)}> {t('Profile')} </button>
-										<button className="dropdown-item" onClick={() => sendNotification(user.id, `${decodedToken.name} ${t('Pong')}`, userId)}> {t('PongInvitation')} </button>
+										<button className="dropdown-item" onClick={() => sendNotification(user.id, `${userInfo.name} ${t('Pong')}`, userId)}> {t('PongInvitation')} </button>
 									</ul>
 								</li>
 							))}

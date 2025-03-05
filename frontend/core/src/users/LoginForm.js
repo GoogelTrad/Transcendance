@@ -172,7 +172,7 @@ function LoginRegister({setModal, setTerminal, removeLaunch}) {
                                 <Button type='submit' className='submit-button btn btn-primary'>{t('LoginButton')}</Button>
                             </form>
                             <div>
-                                <AuthSchool/>
+                                <AuthSchool noButton={false}/>
                                 {/* <Button type="submit" className='submit-button btn btn-primary' onClick={AuthSchool}>42</Button> */}
                             </div>
                         </div>
