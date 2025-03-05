@@ -8,7 +8,6 @@ import 'react-toastify/dist/ReactToastify.css';
 import './LoginForm.css';
 import { useAuth } from './AuthContext';
 import AuthSchool from './AuthSchool';
-import { setToken } from '../instance/TokenInstance';
 
 export function ValidatePassword(password){
     const minLength = 8;
@@ -28,7 +27,6 @@ function LoginRegister({setModal, setTerminal, removeLaunch}) {
     const [code, setCode] = useState();
     const navigate = useNavigate();
     const [rulesPassword, setRulesPassword] = useState(false);
-    const authChannel = new BroadcastChannel("auth_channel");
     const {isAuthenticated, login} = useAuth();
     const [loginData, setLoginData] = useState({
         name: 'f',
@@ -135,24 +133,6 @@ function LoginRegister({setModal, setTerminal, removeLaunch}) {
             showToast('error', 'Cannot create the account!');
         }
     };
-
-    useEffect(() => {
-        authChannel.onmessage = (event) => {
-            const { token } = event.data;
-            if (token) {
-                login();
-                setModal(false);
-                setTerminal(false);
-                removeLaunch("terminal");
-                removeLaunch("forms");
-                navigate('/');
-            }
-        };
-
-        return () => {
-            authChannel.close();
-        };
-    }, []);
     
     return (
             <div className="coucou row">

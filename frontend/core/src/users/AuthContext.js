@@ -43,29 +43,21 @@ export const AuthProvider = ({ children }) => {
 
     useEffect(() => {
         const initializeAuth = async () => {
-            try {
-                const response = await axiosInstance.get('/api/user/check_auth');
-    
-                if (response.data.isAuthenticated) {
-                    const userResponse = await axiosInstance.get('/api/user/fetch_user_data');
-                    setUserInfo(userResponse.data.payload);
-                    setIsAuthenticated(true);
-                    localStorage.setItem('isAuthenticated', 'true');
-                } 
-                else
-                {
-                    localStorage.setItem('isAuthenticated', 'false');
-                    setIsAuthenticated(false);
-                }
-
-            } 
-            catch (err) {
-                localStorage.setItem('isAuthenticated', 'false');
-                setIsAuthenticated(false);
-            }
+            await login();
         };
         initializeAuth();
-    }, [isAuthenticated]); 
+
+        const handleStorageChange = (event) => {
+            if (event.key === 'isAuthenticated' && event.newValue === 'true') {
+                login(); 
+            }
+        };
+        window.addEventListener('storage', handleStorageChange);
+
+        return () => {
+            window.removeEventListener('storage', handleStorageChange);
+        };
+    }, []);
 
     const logout = async () => {
         try {
@@ -93,4 +85,4 @@ export const useAuth = () => {
         throw new Error("useAuth must be used within an AuthProvider");
     }
     return context;
-}
+};
