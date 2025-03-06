@@ -10,11 +10,14 @@ import { jwtDecode } from "jwt-decode";
 import bronze from '../assets/game/bronze.png';
 import silver from '../assets/game/silver.png';
 import gold from '../assets/game/gold.png';
-import backgroundCollect from '../assets/game/background-collect.jpg';
 import { useAuth } from "../users/AuthContext";
+import { useTranslation } from 'react-i18next';
+import { showToast } from "../instance/ToastsInstance";
 
 
 function Stats({ itemsArray = [] }) {
+    
+    const { t } = useTranslation();
     const navigate = useNavigate();
     const [option, setOption] = useState([]);
     const [mode, setMode] = useState([]);
@@ -22,6 +25,7 @@ function Stats({ itemsArray = [] }) {
     const [winGames, setWinGames] = useState([]);
     const [loseGames, setLoseGames] = useState([]);
     const [tournamentGames, setTournamentGames] = useState([]);
+    
     const { id } = useParams();
     const [games, setGames] = useState([]);
     const [expandedTab, setExpandedTab] = useState(false);
@@ -99,11 +103,10 @@ function Stats({ itemsArray = [] }) {
             );
             setupMedals(BestScoreFiltered, "BestScore", 5, 10, 15);
 
-            const BestTimeFiltered = winGames.filter(time => time.timeMinutes === '2');
+            const BestTimeFiltered = winGames.filter(time => (time.timeMinutes === '1' && time.timeSeconds === '0'));
             setupMedals(BestTimeFiltered, "BestTime", 5, 10, 15);
-            console.log("best", BestTimeFiltered);
         }
-    }, [games, id, userInfo]);
+    }, [games, userInfo, winGames]);
     
     
 
@@ -165,12 +168,12 @@ function Stats({ itemsArray = [] }) {
             try {
                 const response = await axiosInstance.get(`/api/game/fetch_data_user/${userInfo?.id}/`, {});
                 setGames(response.data);
-                } catch (error) {
-                console.log('Error fetching user stats:', error);
+            } catch (error) {
+                showToast("error", t('ToastsError'));
             }
         };
         if (userInfo?.id) fetchStats();
-      }, []);
+      }, [id]);
     
       function StatsTable({ data }) {
         const [expandedCells, setExpandedCells] = useState({});
@@ -348,16 +351,15 @@ function Stats({ itemsArray = [] }) {
                     </div>
 
                     <div className="stats-row h-50 w-100"  onClick={() => handleDivClick('collect')}>
-                        <div className={`stats-zone ${mode.find(mode => mode.name === 'collect')?.active ? 'expanded left' : ''} left d-flex flex-reverse`}> 
+                        <div className={`stats-zone ${mode.find(mode => mode.name === 'collect')?.active ? 'expanded left' : ''} collect left d-flex flex-reverse`}> 
                             <div
                                 className="d-flex h-100 w-100 flex-column"
                                 style={{
                                     padding: '5%',
-                                    backgroundImage: `url(${backgroundCollect})`,
-                                    backgroundSize: 'cover',
-                                    backgroundPosition: 'center',
-                                    backgroundRepeat: 'no-repeat',
-                                    position: 'relative'
+                                    position: 'relative',
+                                    justifyContent: 'center',
+                                    alignItems: 'center',
+                                    display: 'flex',
                                 }}
                                 >
                                 <div
@@ -367,8 +369,6 @@ function Stats({ itemsArray = [] }) {
                                     left: 0,
                                     width: '100%',
                                     height: '100%',
-                                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                                    zIndex: 0 
                                     }}
                                 ></div>
                                 {[
@@ -377,27 +377,28 @@ function Stats({ itemsArray = [] }) {
                                     { key: "BestScore" },
                                     { key: "BestTime" }
                                     ].map((medal, index) => (
-                                    <div key={index} className="d-flex row w-100 mb-2" style={{ height: '20%', paddingTop: '2%' }}>                                        
-                                    <div className="h-100 d-flex justify-content-center align-items-center" style={{ width: '33%' }}>
-                                            <img
-                                                src={gold}
-                                                style={{ height: '100%', width: 'auto', opacity: !medalGold[medal.key] ? 1 : 0.5 }}
-                                                title={medalRules[medal.key].titles[2]}
+                                    <div key={index} className="d-flex row w-100 mb-2" style={{ flex: '1', height: '20%', paddingTop: '2%' }}>                                        
+                                    <div className="h-100 d-flex justify-content-center align-items-center" style={{ width: '33.3%', flex: '1' }}>
+                                        <img
+                                                src={bronze}
+                                                style={{ height: '100%', width: 'auto', zIndex:'0', opacity: medalBronze[medal.key] ? 1 : 0.5 }}
+                                                title={medalRules[medal.key].titles[0]}
                                             />
                                         </div>
-                                        <div className="h-100 d-flex justify-content-center align-items-center" style={{ width: '33%' }}>
+                                        <div className="h-100 d-flex justify-content-center align-items-center" style={{ width: '33.3%', flex: '1' }}>
                                             <img
                                                 src={silver}
-                                                style={{ height: '100%', width: 'auto', opacity: !medalSilver[medal.key] ? 1 : 0.5 }}
+                                                style={{ height: '100%', width: 'auto', zIndex:'0', opacity: medalSilver[medal.key] ? 1 : 0.5 }}
                                                 title={medalRules[medal.key].titles[1]}
                                             />
                                         </div>
-                                        <div className="h-100 d-flex justify-content-center align-items-center" style={{ width: '33%' }}>
+                                        <div className="h-100 d-flex justify-content-center align-items-center" style={{ width: '33.3%', flex: '1' }}>
                                             <img
-                                                src={bronze}
-                                                style={{ height: '100%', width: 'auto', opacity: !medalBronze[medal.key] ? 1 : 0.5 }}
-                                                title={medalRules[medal.key].titles[0]}
+                                                src={gold}
+                                                style={{ height: '100%', width: 'auto', zIndex:'0', opacity: medalGold[medal.key] ? 1 : 0.5 }}
+                                                title={medalRules[medal.key].titles[2]}
                                             />
+                                            
                                         </div>
                                         
                                     </div>
@@ -454,20 +455,7 @@ function Stats({ itemsArray = [] }) {
                         )}
                         {option.find(option => option.name === 'Tournament')?.active && (
                             <>
-                                <div className="w-100 d-flex justify-content-between text-center" style={{ height: '10%', marginTop: '2%', marginBottom: '2%' }}>
-                                    <div className="d-flex flex-column w-33">
-                                        <span className="stats-text" >Played</span>
-                                        <span className="counter" style={{fontSize:'100%'}}>CC</span>
-                                    </div>
-                                    <div className="d-flex flex-column w-33">
-                                        <span className="stats-text">First Place</span>
-                                        <span className="counter" style={{fontSize:'100%'}}>CC</span>
-                                    </div>
-                                    <div className="d-flex flex-column w-33">
-                                        <span className="stats-text">Best Score</span>
-                                        <span className="counter" style={{fontSize:'100%'}}>CC</span>
-                                    </div>
-                                </div>
+                
                                 <div className="stats-zone-table w-100 h-100">
                                     <div className="w-100 d-flex">
                                         <table style={{ width: "100%", tableLayout: "relative", overflow: "hidden" }}>

@@ -216,7 +216,7 @@ function HomeGame({ setModalStats, setModalCreateTournament, setModalTournament,
                                         <span>Create game</span>
                                         {onClickCreate && (
                                             <div style={{ fontSize: 12, marginTop: "8%" }}>
-                                                <span>Number of players:</span>
+                                                <span style={{fontSize: 'clamp(0.2rem, 1.8vw, 1.2rem)'}}>Number of players:</span>
                                                 <select
                                                     className="input-players"
                                                     value={numberPlayer}

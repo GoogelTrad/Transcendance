@@ -1,333 +1,119 @@
+
 html, body, #root {
-  height: 100%;
-  margin: 0;
-  overflow: hidden;
+    height: 100%;
+    margin: 0;
+    overflow: hidden;
 }
 
 .game-home {
-  background-color: black;
-  background-image: 
-      linear-gradient(rgba(0, 0, 255, 0.2) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(138, 43, 226, 0.2) 1px, transparent 1px),
-      radial-gradient(circle, rgba(138, 43, 226, 0.15) 10%, rgba(0, 0, 255, 0.15) 30%, transparent 70%);
-  background-size: 50px 50px, 50px 50px, cover;
-  background-position: center;
-  border: 20px solid rgb(36, 36, 36);
-  border-radius: 2px;
-  max-height: 100vh;
-  max-width: 100vw;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
+    background-color: black;
+    background-image: 
+        linear-gradient(rgba(0, 0, 255, 0.2) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(138, 43, 226, 0.2) 1px, transparent 1px),
+        radial-gradient(circle, rgba(138, 43, 226, 0.15) 10%, rgba(0, 0, 255, 0.15) 30%, transparent 70%);
+    background-size: 50px 50px, 50px 50px, cover;
+    background-position: center;
+    border: 20px solid rgba(0, 0, 0, 0.116);
+    border-radius: 2px;
+    max-height: 100vh;
+    max-width: 100vw;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
 }
 
 .content-wrapper {
-  display: flex;
-  flex-direction: row;
-  height: 100%;
-  width: 100%;
-  min-height: 200px;
-  min-width: min(366px, 100%); 
-  animation: neon-glow 1.5s infinite alternate;
+    display: flex;
+    flex-direction: row;
+    height: 100%;
+    width: 100%;
+    margin-bottom: 1%;
+    min-height: 200px;
+    min-width: min(366px, 100%);
+    animation: neon-glow 1.5s infinite alternate;
+}
+
+.column-left, .column-right {
+    width: 50%;
+    min-width: min(366px, 100%);
+    height: 100%;
+    padding: 10px;
+    box-sizing: border-box;
 }
 
 .column-left {
-  width: 50%;
-  min-width: min(366px, 100%); 
-  height: 100%;
-  padding: 10px;
-  flex-shrink: 1; 
-  box-sizing: border-box;
-  min-height: 290px;
-  
+    flex-shrink: 1;
+    min-height: 290px;
 }
 
 .column-right {
-  min-height: 290px;
-  flex: 1;
-  height: 100%;
-  width: 50%;
-  padding: 10px;
-  min-width: min(366px, 100%); 
-  color: white;
+    flex: 1;
+    min-height: auto;
+    color: white;
 }
+
 
 .game-home .content {
-  height: 95%;
-  width: 85%;
-  padding: 5%;
-  border: 10px solid white;
-  border-radius: 10%;
-  color: #ffffff;
-  font-family: 'Press Start 2P', cursive;
-  font-weight: bold;
-  text-transform: uppercase;
-  font-size: clamp(0.6rem, 1.5vw, 1.2rem);
-  min-width: 200px;
-  max-width: 100%;
-  margin: 10px auto;
-  overflow-wrap: break-word;
-  min-height: 200px;
-  
-  /* Ajout des nouvelles propriétés */
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;  /* Change space-around to flex-start */
-  align-items: center;            /* Centre horizontalement */
-  gap: 2rem;                     /* Augmente l'espace entre les éléments */
+    border: 10px solid white;
+    border-radius: 10%;
+    color: #ffffff;
+    font-family: 'Press Start 2P', cursive;
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: clamp(0.6rem, 1.5vw, 1.2rem);
+    margin: 10px auto;
+    overflow-wrap: break-word;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 2rem;
+    height: 100%;
+    padding: 2%;
 }
 
-.game-home .text-stats, .game-home-stats-title{
-  gap: 0rem;
-  margin: 0%;
-  padding: 0%;
+.game-home .p-2 {
+    height: 30%;
+    font-family: 'Press Start 2P', cursive;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    color: white;
+    font-size: clamp(0.8rem, 2vw, 1.5rem);
+    font-weight: bold;
+    margin: 7%;
 }
 
-/* Style pour les éléments à l'intérieur de content */
+.game-home .arrow {
+    font-family: 'Arrows', sans-serif;
+    font-size: 35px;
+    margin-right: 25px;
+    display: flex;
+    align-items: center;
+}
+
+.game-home .text-stats,
+.game-home-stats-title {
+    gap: 0;
+    margin: 0;
+    padding: 0;
+}
+
 .game-home .content h3 {
-  margin: 0;
-  width: 100%;
-  text-align: center;
+    margin: 0;
+    width: 100%;
+    text-align: center;
 }
 
 .game-home .content .line,
 .game-home .content .stats-item,
 .game-home .content .stats-subitem {
-  width: 100%;
-  padding: 0.5rem;
-  margin: 0.2rem 0;
-  text-align: left;
+    width: 100%;
+    padding: 0.5rem;
+    margin: 0.2rem 0;
+    text-align: left;
 }
 
-/* Ajustement pour les sous-items */
-.game-home .content .item {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  padding-left: 1rem;
-}
-
-/* Media query pour les petits écrans */
-@media (max-width: 732px) {
-  .game-home .content {
-    gap: 0.5rem;
-    padding: 3%;
-  }
-
-  .game-home .content .line,
-  .game-home .content .stats-item,
-  .game-home .content .stats-subitem {
-    padding: 0.3rem;
-    margin: 0.1rem 0;
-  }
-}
-
-.game-home .p-2 {
-  height: 30%;
-  font-family: 'Press Start 2P', cursive;
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  color: white;
-  font-size: clamp(0.8rem, 2vw, 1.5rem);
-  font-weight: bold;
-  margin: 7%;
-}
-
-.game-home .arrow {
-  font-family: 'Arrows', sans-serif;
-  font-size: 35px;
-  margin-right: 25px;
-  display: flex;
-  align-items: center;
-}
-
-/* Personnalisation des barres de défilement */
-.column-left::-webkit-scrollbar,
-.column-right::-webkit-scrollbar {
-  width: 8px;
-}
-
-.column-left::-webkit-scrollbar-track,
-.column-right::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.column-left::-webkit-scrollbar-thumb,
-.column-right::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.3);
-  border-radius: 4px;
-}
-
-.column-left::-webkit-scrollbar-thumb:hover,
-.column-right::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.5);
-}
-
-/* Ajouter après vos styles de scrollbar existants */
-.content-wrapper::-webkit-scrollbar {
-    width: 8px;
-}
-
-.content-wrapper::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-.content-wrapper::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.3);
-    border-radius: 4px;
-}
-
-.content-wrapper::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.5);
-}
-
-/* Ajuster les media queries pour une meilleure adaptation */
-@media (max-height: 600px), (max-width: 1460px) {
-  .content-wrapper {
-      flex-direction: column;
-      overflow-y: auto;
-      height: auto;
-  }
-
-  .column-left {
-      width: 100%;
-      height: auto;
-      max-height: 40vh;
-  }
-
-  .column-right {
-      width: 100%;
-      height: auto;
-      max-height: 60vh; 
-
-  }
-
-  .game-home .content {
-      width: 95%;
-      margin: 10px auto;
-      min-height: auto;
-  }
-
-  .game-home .p-2 {
-      margin: 5px 0;
-      height: auto;
-      min-height: 40px;
-  }
-}
-
-@media (max-width: 732px), (max-height: 600px) {
-  .content-wrapper {
-      flex-direction: column;
-      overflow-y: auto;
-      height: auto;
-  }
-
-  .column-left,
-  .column-right {
-      width: 100%;
-      min-width: unset;
-      padding: 5px;
-  }
-
-  .column-left {
-      max-height: 40vh;
-  }
-
-  .column-right {
-      max-height: 60vh;
-  }
-
-  .game-home .content {
-      width: 90%;
-      margin: 5px auto;
-      padding: 3%;
-      font-size: clamp(0.7rem, 1.5vw, 1rem);
-  }
-}
-
-@media (max-width: 480px) {
-  .game-home .p-2 {
-      font-size: 0.9rem;
-      margin: 2%;
-  }
-
-  .game-home .arrow {
-      font-size: 1.2rem;
-      margin-right: 10px;
-  }
-
-  .game-home .content {
-      font-size: 0.8rem;
-      padding: 10px;
-  }
-}
-
-@media (max-width: 380px) {
-  .game-home .content {
-      width: 95%;
-      padding: 2%;
-      border-width: 5px;
-  }
-
-  .game-home .p-2 {
-      margin: 3px 0;
-      font-size: clamp(0.6rem, 4vw, 0.9rem);
-  }
-
-  .game-home .arrow {
-      font-size: clamp(1rem, 5vw, 1.2rem);
-      margin-right: 5px;
-  }
-}
-
-@media (max-height: 500px) {
-  .column-left {
-      max-height: 50vh;
-  }
-
-  .column-right {
-      max-height: 50vh;
-  }
-
-  .game-home .p-2 {
-      margin: 2px 0;
-      min-height: 30px;
-  }
-}
-
-@media (max-width: 732px) {
-  .game-home .content {
-      font-size: clamp(0.5rem, 1.2vw, 1rem);
-  }
-
-  .game-home .p-2 {
-      font-size: clamp(0.7rem, 1.8vw, 1.2rem);
-  }
-}
-
-@media (max-width: 480px) {
-  .game-home .content {
-      font-size: clamp(0.4rem, 1vw, 0.8rem);
-  }
-
-  .game-home .p-2 {
-      font-size: clamp(0.6rem, 1.5vw, 1rem);
-  }
-}
-
-@media (max-width: 380px) {
-  .game-home .content {
-      font-size: clamp(0.3rem, 0.8vw, 0.7rem);
-  }
-
-  .game-home .p-2 {
-      font-size: clamp(0.5rem, 1.2vw, 0.9rem);
-  }
-}
-
-/* Ajouter ces styles pour la section tournament */
 .section-tournament {
     width: 100%;
     display: flex;
@@ -352,17 +138,102 @@ html, body, #root {
 
 .input-code,
 .input-players {
-    background: transparent;
+    background-color: transparent;
     border: 1px solid white;
-    color: white;
+    color: #0096ff;
+    text-shadow: 0 0 5px rgba(0, 150, 255, 0.8);
     padding: 0.3rem;
     margin: 0.5rem 0;
     width: 60%;
 }
 
-/* Ajuster pour les petits écrans */
-@media (max-width: 732px) {
-    .tournament-item {
+.column-left::-webkit-scrollbar,
+.column-right::-webkit-scrollbar,
+.content-wrapper::-webkit-scrollbar {
+    width: 8px;
+}
+
+.column-left::-webkit-scrollbar-track,
+.column-right::-webkit-scrollbar-track,
+.content-wrapper::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.column-left::-webkit-scrollbar-thumb,
+.column-right::-webkit-scrollbar-thumb,
+.content-wrapper::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+}
+
+.column-left::-webkit-scrollbar-thumb:hover,
+.column-right::-webkit-scrollbar-thumb:hover,
+.content-wrapper::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
+}
+
+@media (max-height: 600px), (max-width: 1460px) {
+    .content-wrapper {
+        flex-direction: column;
+        overflow-y: auto;
+        height: auto;
+    }
+
+    .column-left {
+        width: 100%;
+        height: auto;
+        max-height: 40vh;
+    }
+
+    .column-right {
+        width: 100%;
+        height: auto;
+    }
+
+    .game-home .content {
+        font-size: clamp(0.5rem, 1.2vw, 1rem);
+    }
+
+    .game-home .p-2 {
+        margin: 5px 0;
+        height: auto;
         min-height: 40px;
+        font-size: clamp(0.7rem, 1.8vw, 1.2rem);
+    }
+}
+
+@media (max-width: 480px) {
+    .game-home .content {
+        width: 90%;
+        padding: 3%;
+        font-size: clamp(0.4rem, 1vw, 0.8rem);
+    }
+
+    .game-home .p-2 {
+        font-size: clamp(0.6rem, 1.5vw, 1rem);
+    }
+
+    .game-home .arrow {
+        font-size: 1.2rem;
+        margin-right: 10px;
+    }
+}
+
+@media (max-width: 380px) {
+    .game-home .content {
+        width: 95%;
+        padding: 2%;
+        border-width: 5px;
+        font-size: clamp(0.3rem, 0.8vw, 0.7rem);
+    }
+
+    .game-home .p-2 {
+        margin: 3px 0;
+        font-size: clamp(0.5rem, 1.2vw, 0.9rem);
+    }
+
+    .game-home .arrow {
+        font-size: clamp(1rem, 5vw, 1.2rem);
+        margin-right: 5px;
     }
 }
