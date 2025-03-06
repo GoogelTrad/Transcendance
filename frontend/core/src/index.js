@@ -4,6 +4,7 @@ import './index.css';
 import './game/Tournament/Tournament.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
+import './i18n/i18nConfig';
 
 // if (typeof browser === "undefined") {
 //   var browser = chrome;

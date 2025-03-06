@@ -7,9 +7,14 @@ import axiosInstance from "../instance/AxiosInstance";
 import "./room.css"
 import ModalInstance from "../instance/ModalInstance";
 import Profile from "../users/Profile";
+import { ToastContainer } from "react-toastify";
+
+import { useTranslation } from 'react-i18next';
 import { useAuth } from "../users/AuthContext";
 
 export default function Room() {
+
+	const { t } = useTranslation();
 
 	const { roomName } = useParams();
 	const query = new URLSearchParams(useLocation().search);
@@ -27,11 +32,11 @@ export default function Room() {
 	const [isModalProfile, setIsModalProfile] = useState(false);
 	const [profileId, setProfileId] = useState(1);
 	const modalProfile = useRef(null);
+	const messagesEndRef = useRef(null);
 
 	const navigate = useNavigate();
 	const { userInfo } = useAuth();
-	const decodedToken = userInfo;
-	const userId = decodedToken.id;
+	const userId = userInfo.id;
 
 	const { notifications, sendNotification, respondNotification } = useNotifications();
 
@@ -66,7 +71,7 @@ export default function Room() {
 					console.log("Salle rejoint room:", data.room_name);
 					navigate(`/room/${data.room_name}`);
 				} else {
-					showToast("error", data.error);
+					showToast("error", t('ToastsError'));
 				}
 			});
 			return () => {}
@@ -77,7 +82,7 @@ export default function Room() {
 		e.preventDefault();
 		setCaracteresRestants(maxLength);
 		if (message.trim() === "") {
-			showToast("error", "Unable to send a blank message");
+			showToast("error", t('Toasts.NotBlankMessage'));
 			return;
 		}
 		if (socket.ready) {
@@ -93,9 +98,8 @@ export default function Room() {
 	const clearRoom = async () => {
 		try {
 			const response = await axiosInstance.post('/api/livechat/exit-room/', {room_name: roomName});
-			console.log(response.data);
 		} catch (error) {
-			console.log("Erreur lors du clean de la room", error);
+			showToast("error", t('ToastsError'));
 		}
 	};
 
@@ -114,17 +118,17 @@ export default function Room() {
 		console.log("name:", room.name);
 
 		if (!room.name) {
-			showToast("error", "Room name not found");
+			showToast("error", t('Toasts.NotRoomName'));
 			return;
 		}
 
 		if (room.password) {
-			const enteredPassword = prompt(`A password is required for "${room.name}" :`);
+			const enteredPassword = prompt(`${t('PasswordRequired')} "${room.name}" :`);
 			if (enteredPassword) {
 				clearRoom();
 				joinRoom(room.name, enteredPassword);
 			} else {
-				showToast("error", "Enter a password for this room")
+				showToast("error", t('Toasts.EnterPassword'));
 			}
 		} else {
 			clearRoom();
@@ -135,21 +139,19 @@ export default function Room() {
 	const listroom = async () => {
 		try {
 			const response = await axiosInstance.get('/api/livechat/listroom/');
-			//console.log("DONNEES RECUES:", response.data);
 			setlistrooms(response.data.publicRooms);
 		} catch (error) {
-			console.log("Erreur lors de la récupération des salles", error);
+			showToast("error", t('ToastsError'));
 		}
 	}
 
 	const FriendList = async () => {
 		try {
-			const reponse = await axiosInstance.get(`/api/friends/list/${decodedToken.id}`);
+			const reponse = await axiosInstance.get(`/api/friends/list/${userInfo.id}`);
 			setFriendList(reponse.data);
-			//console.log(reponse.data)
 		}
 		catch(error) {
-			console.log(error);
+			showToast("error", t('ToastsError'));
 		}
 	}
 
@@ -157,10 +159,9 @@ export default function Room() {
 		try {
 			const response = await axiosInstance.get(`/api/livechat/users_room/${roomName}`);
 			setUsersRoom(response.data.filter((value) => value.id !== userId));
-			console.log("USERS ROOMS :", response.data);
 		}
 		catch(error) {
-			console.log(error);
+			showToast("error", t('ToastsError'));
 		}
 	}
 
@@ -169,10 +170,9 @@ export default function Room() {
 			const response = await axiosInstance.get(`/api/livechat/room/${roomName}`);
 			const { dmname: roomPseudo } = response.data
 			setdmname(roomPseudo);
-			console.log("DMNAME:", roomPseudo);
 		}
 		catch(error) {
-			console.log(error);
+			showToast("error", t('ToastsError'));
 		}
 	}
 
@@ -191,6 +191,12 @@ export default function Room() {
 		return () => clearInterval(interval);
 	}, [roomName]);
 
+	useEffect(() => {
+        if (messagesEndRef.current) {
+            messagesEndRef.current.scrollTop = messagesEndRef.current.scrollHeight;
+        }
+    }, [chat]);
+
 	const handleProfile = (user_id) => {
 		setIsModalProfile(!isModalProfile);
 		setProfileId(user_id);
@@ -207,7 +213,7 @@ export default function Room() {
 		<>
 			<div className="general-room d-flex justify-content-between">
 				<div className="listroom">
-					<h5>List of rooms</h5>
+					<h5>{t('ListRooms')}</h5>
 					<ul>
 						{listrooms.map((room, index) => (
 							<li key={index}>
@@ -220,29 +226,28 @@ export default function Room() {
 				</div>
 				<div className="chat">
 					<div className="titre">
-						{console.log("ROOM DMNAME:", dmname)}
-						<h3>Room Name: { dmname ? dmname : roomName }</h3>
+						<h3>{t('RoomName')}: { dmname ? dmname : roomName }</h3>
 					</div>
-					<div className="chat-messages" style={{ height: '400px', overflowY: 'scroll', border: '1px solid #ccc', padding: '10px' }}>
+					<div ref={messagesEndRef} className="chat-messages" style={{ height: '400px', overflowY: 'scroll', border: '1px solid #ccc', padding: '10px' }}>
 						{chat.map((msg, index) => (
 							<div key={index} style={{ marginBottom: '10px' }}>
-								<strong>{msg.username}:</strong> {msg.message}{' '}
 								<small>({new Date(msg.timestamp).toLocaleTimeString()})</small>
+								{' '}<strong>{msg.username}:</strong> {msg.message}{' '}
 							</div>
 						))}
 					</div>
 					<div className="saisi">
 						<form onSubmit={sendMessage}>
 							<input id="chat-message-input" type="text" size="100" maxLength={maxLength} value={message} onChange={handleChange}/>
-							<p>Remaining characters: {caracteresRestants}</p>
-							<button className="send" type='submit'> Send </button>
+							<p>{t('Characters')}: {caracteresRestants}</p>
+							<button className="send" type='submit'> {t('Send')} </button>
 						</form>
-						<button className="exit" onClick={() => navigate(`/chat/`)}> Exit </button>
+						<button className="exit" onClick={() => navigate(`/chat/`)}> {t('Exit')} </button>
 					</div>
 				</div>
 				<div className="List">
 					<div className="User_list">
-						<h5>Friends</h5>
+						<h5>{t('Friends')}</h5>
 						<ul>
 							{friendList?.friends?.length > 0 ? (
 								friendList.friends.map((friend) => (
@@ -251,12 +256,12 @@ export default function Room() {
 									</li>
 								))
 							) : (
-								<li>No friend found</li>
+								<li>{t('NoFriend')}</li>
 							)}
 						</ul>
 					</div>
 					<div>
-						<h5>Other users</h5>
+						<h5>{t('OthersUsers')}</h5>
 					</div>
 					<div className="btn-group dropend">
 						<ul>
@@ -266,8 +271,8 @@ export default function Room() {
 										{user.username}
 									</button>
 									<ul className="dropdown-menu">
-										<button className="dropdown-item" onClick={() => handleProfile(user.id)}> Profile </button>
-										<button className="dropdown-item" onClick={() => sendNotification(user.id, `${decodedToken.name} invites you to play a game of pong`, userId)}> Send an invitation to play </button>
+										<button className="dropdown-item" onClick={() => handleProfile(user.id)}> {t('Profile')} </button>
+										<button className="dropdown-item" onClick={() => sendNotification(user.id, `${userInfo.name} ${t('Pong')}`, userId)}> {t('PongInvitation')} </button>
 									</ul>
 								</li>
 							))}
@@ -277,12 +282,12 @@ export default function Room() {
 						<Profile id={profileId}/>
 					</ModalInstance>
 					<div>
-						<h3>Notifications</h3>
+						<h3>{t('Notifications')}</h3>
 						<ul>
 							{notifications.map((notif, index) => (
 								<li key={index}>
 									{notif.response ? (
-										<p>Response : {notif.response}</p>
+										<p>{t('Response')} : {notif.response}</p>
 									) : (
 										<>
 											{notif.message}
@@ -290,13 +295,13 @@ export default function Room() {
 												onClick={() => handleResponse(notif.id, "accepté", notif.sender_id)}
 												disabled={clickedNotifications[notif.id]}
 											>
-												✅ Accept
+												✅ {t('Accept')}
 											</button>
 											<button
 												onClick={() => handleResponse(notif.id, "refusé", notif.sender_id)}
 												disabled={clickedNotifications[notif.id]}
 											>
-												❌ Refuse
+												❌ {t('Decline')}
 											</button>
 										</>
 									)}
@@ -306,6 +311,7 @@ export default function Room() {
 					</div>
 				</div>
 			</div>
+			<ToastContainer />
 		</>
 	);
 }

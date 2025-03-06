@@ -5,7 +5,11 @@ import secondPrize from '../../assets/2prize.png';
 import thirdPrize from '../../assets/3prize.png';
 import star from '../../assets/star.png';
 
+import { useTranslation } from 'react-i18next';
+
 function ResultTournament({ items, setItems, setIsModalTournament, setModalResult, setModalStats, removeLaunch, launching }) {
+
+    const { t } = useTranslation();
 
     const [tournamentResponse, setTournamentResponse] = useState({});
 
@@ -52,10 +56,10 @@ function ResultTournament({ items, setItems, setIsModalTournament, setModalResul
             </div>
             <div className="w-100 d-flex flex-column align-items-center" style={{ position: 'absolute', height: '34%', top: '19%' }}>
                 <div className="d-flex justify-content-center align-items-center w-100" style={{ height: '36%', marginTop:'7%' }}>
-                    <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontSize:'150%', width:'30%'}} className="tournament-text podium d-flex h-100 justify-content-center align-items-center ">{tournamentResponse.first || "first player"}</div>
+                    <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontSize:'150%', width:'30%'}} className="tournament-text podium d-flex h-100 justify-content-center align-items-center ">{tournamentResponse.first || t('FirstPlayer')}</div>
                 </div>
                 <div className="d-flex justify-content-center w-100" style={{ height: '32%'}}>
-                    <div  style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontSize:'130%', width:'30%'}}  className="tournament-text podium d-flex h-100 justify-content-center align-items-center">{tournamentResponse.second || "second player"}</div>
+                    <div  style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontSize:'130%', width:'30%'}}  className="tournament-text podium d-flex h-100 justify-content-center align-items-center">{tournamentResponse.second || t('SecondPlayer')}</div>
                     <div  style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontSize:'110%', width:'30%'}}  className="tournament-text podium d-flex h-100 justify-content-center align-items-center">{tournamentResponse.third || ""}</div>
                 </div>
             </div>
@@ -63,11 +67,11 @@ function ResultTournament({ items, setItems, setIsModalTournament, setModalResul
             <div className="tournament-text w-100 d-flex flex-column" 
                 style={{ paddingLeft: '8%', paddingRight: '8%', position: 'absolute', textTransform: 'none', height: '45%', top: '55%' }}>
                 {[
-                    { place: "RANKING", name: "PSEUDO", score: "SCORE" },
-                    { place: "1st", name: tournamentResponse.first, score: tournamentResponse.scoreFirst },
-                    { place: "2nd", name: tournamentResponse.second, score: tournamentResponse.scoreSecond },
-                    { place: "3rd", name: tournamentResponse.third, score: tournamentResponse.scoreThird },
-                    { place: "4th", name: tournamentResponse.fourth, score: tournamentResponse.scoreFourth }
+                    { place: t('RANKING'), name: t('PSEUDO'), score: t('SCORE') },
+                    { place: t('1st'), name: tournamentResponse.first, score: tournamentResponse.scoreFirst },
+                    { place: t('2st'), name: tournamentResponse.second, score: tournamentResponse.scoreSecond },
+                    { place: t('3st'), name: tournamentResponse.third, score: tournamentResponse.scoreThird },
+                    { place: t('4st'), name: tournamentResponse.fourth, score: tournamentResponse.scoreFourth }
                 ].map((player, index) => (
                     <div key={index} 
                         className="d-flex justify-content-between" 
@@ -90,7 +94,7 @@ function ResultTournament({ items, setItems, setIsModalTournament, setModalResul
 
                 <div className="d-flex flex-column tournament-text text-center" 
                     style={{ color: 'rgba(0, 150, 255, 0.8)', fontWeight:'bold', fontSize: '100%', fontWeight: 'bold', top: '15%', position: 'relative', zIndex: 1 }}>
-                    <span>STATS</span>
+                    <span>{t('STATS')}</span>
                 </div>
 
             </div>

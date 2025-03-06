@@ -16,7 +16,7 @@ class Room(models.Model):
         await self.users.aadd(member)
 
     def __str__(self):
-        return f"Room privée créée par {self.createur.username} - {self.creation}"
+        return f"Room privée créée par {self.createur.name} - {self.creation}"
 
 class Message(models.Model):
     """Modèle représentant un message de chat."""
