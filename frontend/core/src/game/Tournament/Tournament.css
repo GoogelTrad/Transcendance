@@ -4,6 +4,7 @@
         0 0 10px rgba(0, 150, 255, 0.8), 
         inset 0 0 15px rgba(0, 150, 255, 0.5),
         0 0 50px rgba(0, 150, 255, 0.3); 
+    pointer-events: none;
 }
 
 .tournament .line {
@@ -11,6 +12,7 @@
     align-items: center;
     justify-content: center;
     margin-left: 2%;
+    pointer-events: none;
 }
 
 .tournament-text {
@@ -33,7 +35,7 @@
 
 .tournament .cell-left {
     font-family: "Courier New", Courier, monospace;
-    font-size: 1.2rem;
+    font-size: clamp(0.5rem, 1vw, 1rem);
     color: #ff0000;
     text-shadow: 0 0 5px rgba(255, 0, 0, 0.8);
     font-weight: bold;
@@ -43,9 +45,11 @@
 
 .tournament .cell-right {
     font-family: "Digital-7", monospace;
+    font-size: clamp(0.5rem, 1vw, 1rem);
     font-size: 1.2rem;
     color: #0096ff;
     text-shadow: 0 0 5px rgba(0, 150, 255, 0.8);
+    overflow: hidden;
 }
 
 .tournament .input-max {
@@ -54,7 +58,7 @@
     border: 0px;
     width: 10%;
     font-family: "Digital-7", monospace;
-    font-size: 1.2rem;
+    font-size: clamp(0.5rem, 1vw, 1rem);
     color: #0096ff;
     text-shadow: 0 0 5px rgba(0, 150, 255, 0.8);
 }
@@ -88,6 +92,9 @@
         inset 0 0 15px rgba(0, 150, 255, 0.5),
         0 0 50px rgba(0, 150, 255, 0.3);
     color: #0096ff;
+    position: relative;
+    z-index: 9999;
+    pointer-events: all !important;
 }
 
 .tournament .error-message-time-score {
@@ -133,8 +140,12 @@
     min-height: 60px;
     text-align: center;
 }
-
-
+.column-create {
+    justify-content: center;
+    align-items: center;
+    min-height: 50px;
+    pointer-events: all;
+}
 .start{
     color: red;
 }
@@ -145,9 +156,91 @@
     animation: neon-glow 1.5s infinite alternate;
     background-color: transparent;
 }
+.mario-section {
+    pointer-events: all !important;
+}
+.pacman {
+    pointer-events: all !important;
+}
 
 @keyframes neon-glow {
     0% { filter: drop-shadow(0 0 5px blueviolet); }
     50% { filter: drop-shadow(0 0 15px blue); }
     100% { filter: drop-shadow(0 0 5px blueviolet); }
+  }
+
+  @media (max-width: 1150px) {
+    .tournament .line {
+        flex-direction: row;
+        height: auto;
+        max-height: 100vh;
+        overflow-y: auto;
+        padding: 20px;
+        gap: 20px; 
+    }
+    .tournament .cell {
+        font-size: 1rem; /* Assurez-vous que le texte reste visible */
+        padding: 10px;
+    }
+
+    .tournament.background {
+        overflow: hidden;
+        height: 100vh;
+    }
+
+
+    .column-create {
+        flex-direction: column !important;
+        width: 100% !important;
+        min-height: fit-content;
+        margin: 10px 0 !important;
+        padding: 10px;
+    }
+
+    .column-create p {
+        width: 100% !important;
+        text-align: center;
+        margin: 5px 0;
+    }
+
+    .cell-left, .cell-right {
+        font-size: 1rem;
+    }
+
+    .tournament .input-max {
+        position: relative;
+        width: 50px;
+        text-align: center;
+        margin: 0 5px;
+    }
+
+    .tournament .input-max.minutes,
+    .tournament .input-max.secondes,
+    .tournament .input-max.score {
+        position: relative;
+        left: auto;
+        right: auto;
+    }
+
+    .column-create:last-child {
+        margin-top: auto !important;
+        margin-left: 0 !important;
+        justify-content: center;
+        padding-bottom: 20px;
+    }
+
+    .tournament .line::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    .tournament .line::-webkit-scrollbar-track {
+        background: rgba(0, 0, 0, 0.3);
+        border-radius: 4px;
+    }
+
+    .tournament .line::-webkit-scrollbar-thumb {
+        background: rgba(0, 150, 255, 0.5);
+        border-radius: 4px;
+        box-shadow: 0 0 5px rgba(0, 150, 255, 0.3);
+    }
   }

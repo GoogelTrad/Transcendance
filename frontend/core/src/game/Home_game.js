@@ -170,12 +170,11 @@ function HomeGame({ setModalStats, setModalCreateTournament, setModalTournament,
             socket.send(JSON.stringify({ type: 'leave' }));
         }
     };
-
     return (
         !waitingForPlayer ? (
             <div className="game-home w-100 h-100">
-                <div className="content-wrapper w-100 h-100">
-                    <div className="column column-left w-50 h-100">
+                <div className="content-wrapper">
+                    <div className="column-left">
                         <div className="d-flex flex-column mb-3 h-100">
                             <div className="p-2" onClick={() => handleMenuClick("play")}>
                                 <span className="arrow">►</span> PLAY <span className="tilde">_</span>
@@ -188,7 +187,7 @@ function HomeGame({ setModalStats, setModalCreateTournament, setModalTournament,
                             </div>
                         </div>
                     </div>
-                    <div className="column column-right w-50 h-100">
+                    <div className="column-right">
                         {onClickPlay && (
                             <div className="content">
                                 <h3 style={{ textAlign: "center" }} onClick={() => handleMenuClick("play")}>Play</h3>
@@ -221,7 +220,7 @@ function HomeGame({ setModalStats, setModalCreateTournament, setModalTournament,
                                         <span>Create game</span>
                                         {onClickCreate && (
                                             <div style={{ fontSize: 12, marginTop: "8%" }}>
-                                                <span>Number of players:</span>
+                                                <span style={{  fontSize: 'clamp(0.5rem, 1vw, 1rem)'}}>Number of players:</span>
                                                 <select
                                                     className="input-players"
                                                     value={numberPlayer}
@@ -240,7 +239,7 @@ function HomeGame({ setModalStats, setModalCreateTournament, setModalTournament,
                         )}
                         {onClickStats && (
                             <div className="content">
-                                <h3 className="game-home-stats-title" onClick={() => handleMenuClick("stats")}>Stats</h3>
+                                <p className="game-home-stats-title" onClick={() => handleMenuClick("stats")}>Stats</p>
                                 <div className="text-stats">
                                     <div className="stats-item" onClick={() => handleClickStats('profile', '...')}>Global Stats</div>
                                     <div className="stats-item" onClick={() => handleClickStats('global', '...')}>Stats game</div>

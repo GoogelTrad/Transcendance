@@ -106,7 +106,7 @@ const PacmanSection = ({ tournamentResponse, renderImageWithClick }) => {
     }, [pacmanData.isPacmanEating]);
 
     return(
-        <div style={{ position: 'absolute', height: '65%', top: '15%', right: '0%', width: '16%', overflow: "hidden", backgroundColor:'transparent'}}>
+        <div className="pacman" style={{ position: 'absolute', height: '65%', top: '15%', right: '0%', width: '16%', overflow: "hidden", backgroundColor:'transparent'}}>
         <div className="w-100 h-100" style={{ position: 'relative'}}>
             {pacmanData.dots.map((dot, index) => (
                 <span key={index} style={{ position: 'absolute', top: '6%', left: `${dot}%`, color: 'white', zIndex: 10 }}>•</span>
@@ -117,10 +117,10 @@ const PacmanSection = ({ tournamentResponse, renderImageWithClick }) => {
             {pacmanData.gameOver && (
                 <>
                     <div className="w-100 h-100 tournament-text" style={{ color:  '#0079bf',fontWeight:'none', position: 'absolute', top: '11%', right: '0%'}}>
-                        <div className="explications title d-flex p-2">
+                        <div className="explications title d-flex p-2" style={{ fontSize: 'clamp(0.2rem, 2.5vw, 1.0rem)'}}>
                             <p>Tournament PONG</p>
                         </div>
-                        <div className="explications one d-flex p-2" style={{fontSize: '55%', height: '25%', width:'96%', marginLeft:'2%'}}>
+                        <div className="explications one d-flex p-2" style={{ height: '25%', width:'96%', marginLeft:'2%',  fontSize: 'clamp(0.2rem, 0.6vw, 1.0rem)'}}>
                             The {tournamentResponse.size} players compete 2 against 2. The first to reach {tournamentResponse.maxScore} points or the one who has the most points at the end of the defined time ({tournamentResponse.maxTimeMinutes} : {tournamentResponse.maxTimeSecondes}) qualifies for the next phase. Dans le cas de 2 joueurs, les deux joueurs s'affrontent jusqu'à la finale. Le joueur qui a le meilleur score à la fin du tournoi le remporte. Le classement se fait donc en fonction du score.
                         </div>
                         <div className="border-top border-2 border-white w-75 mx-auto"></div>
@@ -138,10 +138,10 @@ const PacmanSection = ({ tournamentResponse, renderImageWithClick }) => {
                                         </div>
                                     </div>
                                 </div>
-                                <div className="player-touch p-2 w-100 h-50">TOUCH</div>
+                                <div className="player-touch p-2 w-100 h-50" style={{fontSize: 'clamp(1.2rem, 1.7vw, 1rem)'}}>TOUCH</div>
                             </div>
                         </div>
-                        <div className="w-100" style={{ position: "relative", top: "2%" }}>
+                        <div className="w-100" style={{ position: "relative", top: "2%", fontSize: 'clamp(0.5rem, 1.7vw, 1rem)' }}>
                             <div className="w-100 d-flex justify-content-center" style={{ height: "25%" }}>
                                 <div className="w-100 text-center" style={{ marginBottom : '5%'}}>BONUS BALL</div>
                             </div>
@@ -223,6 +223,7 @@ const PacmanSection = ({ tournamentResponse, renderImageWithClick }) => {
                         overflow: "none",
                         top: '6%',
                         color: '#9632ab',
+                        fontSize: 'clamp(0.5rem, 1.7vw, 1rem)',
                     }}
                 >
                     ••• Rules •••

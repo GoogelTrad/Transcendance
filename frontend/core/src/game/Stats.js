@@ -12,7 +12,6 @@ import silver from '../assets/game/silver.png';
 import gold from '../assets/game/gold.png';
 import backgroundCollect from '../assets/game/background-collect.jpg';
 import { useAuth } from "../users/AuthContext";
-
 import { useTranslation } from 'react-i18next';
 import { showToast } from "../instance/ToastsInstance";
 
@@ -29,6 +28,7 @@ function Stats({ itemsArray = [] }) {
     const [tournamentGames, setTournamentGames] = useState([]);
     const { id } = useParams();
     const [games, setGames] = useState([]);
+    const [isSmallScreen, setIsSmallScreen] = useState(false);
     const [expandedTab, setExpandedTab] = useState(false);
     const [medalBronze, setMedalBronze] = useState({
         Played: false,
@@ -66,7 +66,7 @@ function Stats({ itemsArray = [] }) {
         },
         BestTime: {
             thresholds: [5, 10, 15],
-            titles: ["5 games won in less than 1 minute", "10 games won in less than 1 minute", "15 games won in less than 1 minute"]
+            titles: ["5 games won in less than 2 minutes", "10 games won in less than 2 minutes", "15 games won in less than 2 minutes"]
         }
     };
 
@@ -83,6 +83,17 @@ function Stats({ itemsArray = [] }) {
             }
         }
     };
+
+    useEffect(() => {
+        const handleResize = () => {
+            setIsSmallScreen(window.innerWidth < 1115);
+        };
+        handleResize();
+        window.addEventListener('resize', handleResize);
+
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
 
     useEffect(() => {
         if (games.length > 0 && userInfo) {
@@ -109,11 +120,10 @@ function Stats({ itemsArray = [] }) {
             console.log("best", BestTimeFiltered);
         }
     }, [games, id, userInfo]);
-    
-    
 
+    const [expandedCells, setExpandedCells] = useState(false);
+    
     const handleDivClick = (name) => {
-        console.log("name : ", name);
         if(name != "")
         {
                 setMode(prevMode => 
@@ -175,48 +185,61 @@ function Stats({ itemsArray = [] }) {
             }
         };
         if (userInfo?.id) fetchStats();
-      }, [id]);
+      }, [!games.length, userInfo?.id]);
     
       function StatsTable({ data }) {
         return (
             <div className="stats-zone-table w-100 h-100">
-                <div className="w-100 d-flex" style={{ zIndex: 1 }}>
-                    <table style={{ width: "100%", tableLayout: "relative", overflow: "hidden" }}>
+                <div className="w-100 d-flex">
+                    <table style={{ width: "100%", tableLayout: "relative", overflow: "hidden", zIndex: "12", pointerEvent:'cursor' }} >
                         <thead>
                             <tr>
-                                <th>{t('Date')}</th>
-                                <th>{t('Against')}</th>
-                                <th>{t('Time')}</th>
-                                <th>{t('Score')}</th>
-                                <th>{t('Result')}</th>
+                                <th
+                                    title={isSmallScreen ? t('Date') : ""}
+                                >{t('Date')}</th>
+                                <th
+                                    title={isSmallScreen ? t('Against') : ""}
+                                >{t('Against')}</th>
+                                <th
+                                    title={isSmallScreen ? t('Time') : ""}
+                                >{t('Time')}</th>
+                                <th
+                                    title={isSmallScreen ? t('Score') : ""}
+                                >{t('Score')}</th>
+                                <th
+                                    title={isSmallScreen ? t('Result') : ""}
+                                >{t('Result')}</th>
                             </tr>
                         </thead>  
                             <tbody>
                                 {data.map((data) => (
                                     <tr key={data.id}>
                                       <td 
-                                            onClick={(e) => { e.stopPropagation(); console.log("Clicked on td!"); handleDivClick(""); }} 
-                                            className={expandedTab ? 'expanded-cell' : ''}
+                                            title={`${data.date ? data.date.slice(-5) : "N/A"}-${data.date ? data.date.slice(0, 4) : "N/A"}`}
+                                            className={expandedCells[`date-${data.id}`] ? 'expanded-cell' : ''}
                                         >
-                                            {data.date ? data.date.slice(-5) : "N/A"}-{data.date ? data.date.slice(0, 5) : "N/A"}
+                                            {data.date ? data.date.slice(-5) : "N/A"}-{data.date ? data.date.slice(0, 4) : "N/A"}
                                         </td>
                                         <td 
-                                            onClick={(e) => { e.stopPropagation(); console.log("Clicked on td!"); handleDivClick(""); }} 
-                                            className={expandedTab ? 'expanded-cell' : ''}
+                                            title={data.player2 || 'player2'}
+                                            className={expandedCells[`player-${data.id}`] ? 'expanded-cell' : ''}
                                         >
-                                            {data.player2 || "N/A"}
+                                            {data.player2 || "player2"}
                                         </td>
-                                        <td>{data.timeMinutes} : {data.timeSeconds}</td>
-                                        <td>{data.score_player_1} - {data.score_player_2}</td>
-                                        {data.winner === userInfo?.name && (
-                                            <td>{"win" || "N/A"}</td>
-                                        )}
-                                        {data.loser === userInfo?.name && (
-                                            <td>{"lose" || "N/A"}</td>
-                                        )}
-                                        {!data.winner && !data.loser && (
-                                            <td>{"N/A"}</td>
-                                        )}
+                                        <td
+                                            title={isSmallScreen ? data.timeMinutes + " : " + data.timeSeconds : ""}
+                                        >{data.timeMinutes} : {data.timeSeconds}</td>
+                                        <td
+                                           title={isSmallScreen ? `${data.score_player_1} - ${data.score_player_2}` : ""}
+                                        >
+                                            {data.score_player_1} - {data.score_player_2}
+                                        </td>
+                                        <td
+                                            title={isSmallScreen ? data.winner === userInfo?.name ? "win" : data.loser === userInfo?.name ? "lose" : "N/A" : ""}
+                                        >
+                                            {data.winner === userInfo?.name ? "win" :
+                                            data.loser === userInfo?.name ? "lose" : "N/A"}
+                                        </td>
                                     </tr>
                                 ))}
                         </tbody>
@@ -234,7 +257,7 @@ function Stats({ itemsArray = [] }) {
                     <div className={`stats-zone ${mode.find(mode => mode.name === 'profile')?.active ? 'expanded left' : ''} left d-flex flex-reverse`}>
                         <div className="stats-zone-content d-flex flex-column flex-md-row w-100 h-100">
                         <div 
-                            className="stats-col d-flex flex-column h-100 w-100 w-md-50"
+                            className="stats-col d-flex flex-column h-100 w-50"
                             style={{ 
                                 justifyContent: 'space-between', 
                                 alignItems: 'center',
@@ -244,7 +267,7 @@ function Stats({ itemsArray = [] }) {
                             <div 
                                 className="stats-row-element empty-row d-flex justify-content-center align-items-center" 
                                 style={{
-                                    height: '45%',
+                                    height: '34%',
                                     width: '100%',
                                     marginTop: '5%'
                                 }}
@@ -264,8 +287,8 @@ function Stats({ itemsArray = [] }) {
                                     />
                                 </label>
                             </div>
-                            <div className="stats-row-element empty-row flex-grow-1" style={{ height: "20%", display: "flex", alignItems: "flex-start" }}>{userInfo?.name}</div>
-                            <div className="stats-row-element flex-grow-1" style={{height: `30%`}}>
+                            <div className="stats-row-element empty-row flex-grow-1" style={{ height: "12%", display: "flex", alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>{userInfo?.name}</div>
+                            <div className="stats-row-element d-flex flex-grow-1" style={{height: `30%`, alignItems: 'center', justifyContent: 'center', textAlign: 'center'}}>
                             <div className="text-center">
                                 <div className="stats-text">{t('WinrateRatio')}</div>
                                     <div className="counter">
@@ -277,7 +300,7 @@ function Stats({ itemsArray = [] }) {
                                 </div>
                             </div>
                         </div>
-                        <div className="stats-col d-flex flex-column h-100 w-50" style={{ margin: '3%', justifyContent:'space-between', alignItems:'center'}}>
+                        <div className="stats-col d-flex flex-column w-50" style={{  height: '100%', justifyContent:'space-between', alignItems:'center'}}>
                             <div className="stats-row-element flex-grow-1 w-100">
                             <div className="text-center">
                                 <div className="stats-text">{t('GamesPlayed')}</div>
@@ -302,16 +325,15 @@ function Stats({ itemsArray = [] }) {
                     </div>
 
                     <div className="stats-row h-50 w-100"  onClick={() => handleDivClick('collect')}>
-                        <div className={`stats-zone ${mode.find(mode => mode.name === 'collect')?.active ? 'expanded left' : ''} left d-flex flex-reverse`}> 
+                        <div className={`stats-zone ${mode.find(mode => mode.name === 'collect')?.active ? 'expanded left' : ''} collect left d-flex flex-reverse`}> 
                             <div
                                 className="d-flex h-100 w-100 flex-column"
                                 style={{
                                     padding: '5%',
-                                    backgroundImage: `url(${backgroundCollect})`,
-                                    backgroundSize: 'cover',
-                                    backgroundPosition: 'center',
-                                    backgroundRepeat: 'no-repeat',
-                                    position: 'relative'
+                                    position: 'relative',
+                                    justifyContent: 'center',
+                                    alignItems: 'center',
+                                    display: 'flex',
                                 }}
                                 >
                                 <div
@@ -321,8 +343,6 @@ function Stats({ itemsArray = [] }) {
                                     left: 0,
                                     width: '100%',
                                     height: '100%',
-                                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                                    zIndex: 0 
                                     }}
                                 ></div>
                                 {[
@@ -331,27 +351,28 @@ function Stats({ itemsArray = [] }) {
                                     { key: "BestScore" },
                                     { key: "BestTime" }
                                     ].map((medal, index) => (
-                                    <div key={index} className="d-flex row w-100 mb-2" style={{ height: '20%', paddingTop: '2%' }}>                                        
-                                    <div className="h-100 d-flex justify-content-center align-items-center" style={{ width: '33%' }}>
-                                            <img
-                                                src={gold}
-                                                style={{ height: '100%', width: 'auto', opacity: !medalGold[medal.key] ? 1 : 0.5 }}
-                                                title={medalRules[medal.key].titles[2]}
+                                    <div key={index} className="d-flex row w-100 mb-2" style={{ flex: '1', height: '20%', paddingTop: '2%' }}>                                        
+                                    <div className="h-100 d-flex justify-content-center align-items-center" style={{ width: '33.3%', flex: '1' }}>
+                                        <img
+                                                src={bronze}
+                                                style={{ height: '100%', width: 'auto', zIndex:'0', opacity: medalBronze[medal.key] ? 1 : 0.5 }}
+                                                title={medalRules[medal.key].titles[0]}
                                             />
                                         </div>
-                                        <div className="h-100 d-flex justify-content-center align-items-center" style={{ width: '33%' }}>
+                                        <div className="h-100 d-flex justify-content-center align-items-center" style={{ width: '33.3%', flex: '1' }}>
                                             <img
                                                 src={silver}
-                                                style={{ height: '100%', width: 'auto', opacity: !medalSilver[medal.key] ? 1 : 0.5 }}
+                                                style={{ height: '100%', width: 'auto', zIndex:'0', opacity: medalSilver[medal.key] ? 1 : 0.5 }}
                                                 title={medalRules[medal.key].titles[1]}
                                             />
                                         </div>
-                                        <div className="h-100 d-flex justify-content-center align-items-center" style={{ width: '33%' }}>
+                                        <div className="h-100 d-flex justify-content-center align-items-center" style={{ width: '33.3%', flex: '1' }}>
                                             <img
                                                 src={gold}
-                                                style={{ height: '100%', width: '50%', opacity: !medalGold[medal.key] ? 1 : 0.5 }}
+                                                style={{ height: '100%', width: 'auto', zIndex:'0', opacity: medalGold[medal.key] ? 1 : 0.5 }}
                                                 title={medalRules[medal.key].titles[2]}
                                             />
+                                            
                                         </div>
                                     </div>
                                 ))}
@@ -375,7 +396,7 @@ function Stats({ itemsArray = [] }) {
                                 <span className="visually-hidden">{t('ToggleDropdown')}</span>
                             </button>
                             <ul
-                                className="dropdown-stats-menu dropdown-menu custom-dropdown-menu"
+                                className="dropdown-stats-menu dropdown-menu custom-dropdown-menu w-100" 
                                 onClick={(e) => e.stopPropagation()} 
                             >
                                 {option.map((option) => (
@@ -407,20 +428,7 @@ function Stats({ itemsArray = [] }) {
                         )}
                         {option.find(option => option.name === 'Tournament')?.active && (
                             <>
-                                <div className="w-100 d-flex justify-content-between text-center" style={{ height: '10%', marginTop: '2%', marginBottom: '2%' }}>
-                                    <div className="d-flex flex-column w-33">
-                                        <span className="stats-text" >{t('Played')}</span>
-                                        <span className="counter" style={{fontSize:'100%'}}>CC</span>
-                                    </div>
-                                    <div className="d-flex flex-column w-33">
-                                        <span className="stats-text">{t('FirstPlace')}</span>
-                                        <span className="counter" style={{fontSize:'100%'}}>CC</span>
-                                    </div>
-                                    <div className="d-flex flex-column w-33">
-                                        <span className="stats-text">{t('BestScore')}</span>
-                                        <span className="counter" style={{fontSize:'100%'}}>CC</span>
-                                    </div>
-                                </div>
+                
                                 <div className="stats-zone-table w-100 h-100">
                                     <div className="w-100 d-flex">
                                         <table style={{ width: "100%", tableLayout: "relative", overflow: "hidden" }}>

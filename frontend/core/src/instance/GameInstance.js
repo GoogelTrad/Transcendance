@@ -455,11 +455,11 @@ function GameInstance({ children }) {
                             </div>
                             <div className="w-100" style={{ height: '10%', position: 'absolute', bottom: '27%' }}>
                                 <div className="touch-btn" style={{ left: '8%' }}></div>
-                                <div style={{ position: 'absolute', fontWeight: 'bold', left: '8.2%', top: '60%', color: 'black' }}>{t('Menu')}</div>
+                                <div style={{ position: 'absolute', fontWeight: 'bold', left: '8.2%', top: '60%', color: 'black', fontSize: 'clamp(0.7rem, 1vw, 1.5rem)'  }}>{t('Menu')}</div>
                                 <div className="touch-btn" style={{ left: '83%' }}></div>
-                                <div style={{ position: 'absolute', fontWeight: 'bold', left: '83%', top: '60%', color: 'black' }}>{t('Select')}</div>
+                                <div style={{ position: 'absolute', fontWeight: 'bold', left: '83%', top: '60%', color: 'black', fontSize: 'clamp(0.7rem, 1vw, 1.5rem)'  }}>{t('Select')}</div>
                                 <div className="touch-btn" style={{ left: '93%' }}></div>
-                                <div style={{ position: 'absolute', fontWeight: 'bold', left: '93.5%', top: '60%', color: 'black' }}>{t('Start')}</div>
+                                <div style={{ position: 'absolute', fontWeight: 'bold', left: '93.5%', top: '60%', color: 'black', fontSize: 'clamp(0.7rem, 1vw, 1.5rem)'  }}>{t('Start')}</div>
                             </div>
                         </div>
                     </div>
@@ -470,16 +470,42 @@ function GameInstance({ children }) {
                     )}
                 </>
             ) : (
-                <div className="game-over">
-                    <h1>{t('GameOver')}</h1>
-                    <div className="final-scores">
-                        <p>{t('Player1')}: {game?.score_player_1 || "0"}</p>
-                        <p>{t('Player2')}: {game?.score_player_2 || "0"}</p>
-                        <p>{t('Winner')}: {game?.winner || "No Player"}</p>
-                        <p>{t('Loser')}: {game?.loser || "No Player"}</p>
-                        <p>{t('Seconds')}: {game?.timeSeconds || "0"}</p>
-                        <p>{t('Minutes')}: {game?.timeMinutes || "0"}</p>
-                        <div className="p-2" onClick={() => quitToHome()}> {t('EXIT')} </div>
+                <div className="game-over d-flex flex-column w-100 h-100">
+                    <div className="d-flex justify-content-center align-items-center w-100" style={{ height: '40%' }}>
+                        <h1 className="title-gameOver" >{t('GameOver')}</h1>
+                    </div>
+                    <div className="d-flex justify-content-center align-items-center w-100" style={{ height: '30%' }}>
+                        <div className="final-scores d-flex justify-content-around w-100">
+                            <div className="score-column text-center">
+                                <p className="title-column">{t('Player1')}</p>
+                                <p>{game?.score_player_1 || "0"}</p>
+                            </div>
+                            <div className="score-column text-center">
+                                <p className="title-column">{t('Player2')}</p>
+                                <p>{game?.score_player_2 || "0"}</p>
+                            </div>
+                            <div className="score-column text-center">
+                                <p className="title-column">{t('Winner')}</p>
+                                <p>{game?.winner || "No Player"}</p>
+                            </div>
+                            <div className="score-column text-center">
+                                <p className="title-column">{t('Loser')}</p>
+                                <p>{game?.loser || "No Player"}</p>
+                            </div>
+                            <div className="score-column text-center">
+                                <p className="title-column">{t('Time')}</p>
+                                <p>{game?.timeMinutes || "0"}:{game?.timeSeconds || "0"}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="d-flex justify-content-center align-items-center w-100" style={{ height: '30%' }}>
+                        <div 
+                            className="exit-button p-3" 
+                            onClick={() => quitToHome()}
+                            style={{ cursor: 'pointer' }}
+                        > 
+                            {t('EXIT')} 
+                        </div>
                     </div>
                 </div>
             )}

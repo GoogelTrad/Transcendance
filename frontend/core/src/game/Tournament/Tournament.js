@@ -131,11 +131,16 @@ function Tournament() {
     }, [tournamentResponse]);
 
 
-    // useEffect(() => {
-    //     if (tournamentResponse && tournamentResponse.winner_final) {
-    //         navigate("/Home", { state: { modalName: "resultTournament" } });
-    //     }
-    // }, [tournamentResponse]);
+    useEffect(() => {
+        if (tournamentResponse && tournamentResponse.winner_final) {
+            navigate("/Home", { 
+                state: { 
+                    modalName: "resultTournament",
+                    tournamentCode: tournamentResponse.code
+                }
+            });
+        }
+    }, [tournamentResponse]);
 
         const renderImageWithClick = (src, alt, style, onClick, title) => (
             <img
