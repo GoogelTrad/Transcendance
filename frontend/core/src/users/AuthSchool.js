@@ -1,26 +1,37 @@
 import React from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import axiosInstance from "../instance/AxiosInstance";
 import { useAuth } from './AuthContext';
 
-export function HandleAuth() 
-{
-	window.open( `${process.env.REACT_APP_API_URL}/api/auth/code`, "42Auth", "width=600,height=800");
-};
+export default function AuthSchool({ noButton = false }) {
+    let popupRef = useRef(null);
 
+    const handleAuthPopup = () => {
+		if (popupRef.current)
+			popupRef = null;
+        else if (!popupRef.current) {
+            popupRef.current = window.open(
+                `${process.env.REACT_APP_API_URL}/api/auth/code`,
+                "42Auth",
+                "width=600,height=800"
+            );
+        }
+    };
 
-export default function AuthSchool() 
-{
-    return (
-		<>
-			<button 
-				type="button" 
-				className='submit-button btn btn-primary' 
-				onClick={HandleAuth}
-			>
-				42
-			</button>
-		</>
+    useEffect(() => {
+        if (noButton) {
+            handleAuthPopup();
+        }
+    }, [noButton]);
+
+    return noButton ? null : (
+        <button
+            type="button"
+            className="submit-button btn btn-primary"
+            onClick={handleAuthPopup}
+        >
+            Connexion avec 42
+        </button>
     );
 }
 
@@ -52,7 +63,8 @@ export function AuthSuccess()
 	{
         const urlParams = new URLSearchParams(window.location.search);
 		const status = urlParams.get("status");
-		setName(urlParams.get("name"));
+		const bc = new BroadcastChannel("taken");
+		setName(urlParams.get("name") ? urlParams.get("name") : null);
 
 		if (status === "2FA_REQUIRED" && isSchoolAuth === false)
 			setIsSchoolAuth(true);
@@ -63,6 +75,13 @@ export function AuthSuccess()
             window.close();
 			login();
         }
+		else if (status === "EMAIL_TAKEN")
+		{
+			bc.postMessage("Email already taken");
+			window.close();
+		}
+
+		bc.close();
 
     }, []);
 

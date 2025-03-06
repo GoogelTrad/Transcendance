@@ -2,10 +2,15 @@ import React, { useState, useEffect } from 'react';
 import axiosInstance from "../../instance/AxiosInstance";
 import { useNavigate } from 'react-router-dom';
 import './Tournament.css';
+import { showToast } from '../../instance/ToastsInstance';
+
+import { useTranslation } from 'react-i18next';
 
 const CreateTournament = ({ setIsModalTournament, setIsModalCreateTournament, setTournamentCode, launching, removeLaunch, numberPlayer }) => {
     const [errorMessage, setErrorMessage] = useState("");
     const navigate = useNavigate();
+
+    const { t } = useTranslation();
 
     const [tournamentSettings, setTournamentSettings] = useState({
         maxTimeMinutes: "00",
@@ -41,25 +46,20 @@ const CreateTournament = ({ setIsModalTournament, setIsModalCreateTournament, se
         }
     };
 
-    function createCodeTournament() {
-        return Math.floor(Math.random() * (999 - 100 + 1)) + 100;
-    }
-
     const createTournament = async () => {
         try {
-            const newCode = createCodeTournament();
             const response = await axiosInstance.post(`/api/game/create_tournament`, {
-                code: newCode,
                 timeMaxMinutes: tournamentSettings.maxTimeMinutes,
                 timeMaxSeconds: tournamentSettings.maxTimeSecondes,
                 scoreMax: tournamentSettings.maxScore,
                 size: tournamentSettings.numberPlayer,
             });
+            const newCode = response.data.code
+            console.log(response.data.code)
             setTournamentSettings(prev => ({ ...prev, tournamentCode: newCode }));
             return newCode;
         } catch (error) {
-            setErrorMessage("Failed to create tournament. Please try again.");
-            console.log("Error creating tournament:", error.response?.data || error.message);
+            showToast("error", t('Toasts.FailedToCreateTournament'));
             return false;
         }
     };
@@ -73,7 +73,7 @@ const CreateTournament = ({ setIsModalTournament, setIsModalCreateTournament, se
 
     const handleClick = async () => {
         if (tournamentSettings.maxScore === 0 || tournamentSettings.maxTimeMinutes === "00") {
-            setErrorMessage("Please enter a score and time!");
+            showToast("error", ('Toasts.PleaseEnterAScoreAndTime'));
             return;
         }
 
@@ -89,7 +89,7 @@ const CreateTournament = ({ setIsModalTournament, setIsModalCreateTournament, se
             launching({ newLaunch: 'tournament', setModal: setIsModalTournament });
             navigate(`/games/Tournament/${newTournamentCode}` , { state: { makeTournament: true } });
         } else {
-            setErrorMessage("Failed to create tournament. Please try again.");
+            showToast("error", t('Toasts.FailedToCreateTournament'));
         }
     };
 

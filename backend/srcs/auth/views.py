@@ -24,7 +24,7 @@ def oauth_callback(request):
 
 def oauth_login(request):
 	if 'code' not in request.GET:
-		return JsonResponse({'error': 'Code non fourni'}, status=400)
+		return JsonResponse({'error': 'Missing Code'}, status=400)
 
 	code = request.GET['code']
 	payload = {
@@ -45,17 +45,35 @@ def oauth_login(request):
 		if user_info.status_code == 200:
 			user_data = user_info.json()
 
-			user, created = User.objects.get_or_create(
-				email=user_data['email'], 
-				defaults={
-					'name': user_data['login'],
-					'status': 'online',
-					'is_stud': True,
-				}
-			)
+			if  User.objects.filter(email=user_data['email']).exists():
+				params = urlencode({'status': 'EMAIL_TAKEN', 'name': None})
+				return HttpResponseRedirect(f"{os.getenv('REACT_APP_URL_REACT')}:3000/auth-success?{params}")
+
+			if User.objects.filter(name=user_data['login']).exists() and not User.objects.filter(email=user_data['email']).exists():
+				number = 1
+				while User.objects.filter(name=user_data['login']).exists() and not User.objects.filter(email=user_data['email']).exists():
+					new_name = user_data['login']
+					user_data['login'] = new_name + str(number)
+					number += 1
+
+
+			if User.objects.filter(name=user_data['login']).exists() and User.objects.filter(email=user_data['email']).exists():
+
+				user = User.objects.get(email=user_data['email'])
+				user_data['login'] = user.name
+			else :
+				user, created = User.objects.get_or_create(
+					email=user_data['email'], 
+					defaults={
+						'name': user_data['login'],
+						'status': 'online',
+						'is_stud': True,
+					}
+				)
    
 			ip, routable = get_client_ip(request)
-			
+	
+
 			if user.ip_user is not ip and not user.enable_verified:
 				user.last_verified = None
 				user.save()
@@ -112,6 +130,6 @@ def oauth_login(request):
 			return response
 
 		else:
-			return JsonResponse({'error': 'Impossible de récupérer les infos utilisateur'}, status=400)
+			return JsonResponse({'error': 'Failed to fetch user data'}, status=400)
 	else:
-		return JsonResponse({'error': 'Echec lors de l\'échange du code'}, status=400)
+		return JsonResponse({'error': 'Cannot exchange code'}, status=400)

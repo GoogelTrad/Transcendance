@@ -1,11 +1,14 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 import axiosInstance from '../instance/AxiosInstance';
 import logo from '../assets/user/logo.png';
 import './TerminalLogin.css';
-import { HandleAuth } from './AuthSchool';
+import AuthSchool from './AuthSchool';
 import { ValidatePassword } from './LoginForm';
+import { ToastContainer } from 'react-toastify';
+import { showToast } from '../instance/ToastsInstance';
+
 
 function TerminalLogin({ setModal, launching, setTerminal, removeLaunch }) {
     const { login } = useAuth();
@@ -140,6 +143,18 @@ function TerminalLogin({ setModal, launching, setTerminal, removeLaunch }) {
     const handleSchoolLogin = () => {
         setIsSchool(true);
     };
+
+    useEffect(() => {
+        const bc = new BroadcastChannel("taken");
+
+        bc.onmessage = (event) => {
+            console.log("mesage recu", event)
+            showToast("error", event);
+          };
+
+        bc.close();
+
+    }, [])
 
     const cancelCommand = () => {
         setCurrentCommand(null);
@@ -279,7 +294,8 @@ function TerminalLogin({ setModal, launching, setTerminal, removeLaunch }) {
                 </div>
             )}
 
-            {isSchool ? (<HandleAuth />) : (null)}
+            {isSchool ? (<AuthSchool noButton={true}/>) : (null)}
+            <ToastContainer/>
         </div>
     );
 }

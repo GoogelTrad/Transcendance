@@ -13,8 +13,11 @@ import { showToast } from "../instance/ToastsInstance";
 import { ToastContainer } from 'react-toastify';
 import { useAuth } from "./AuthContext";
 
+import { useTranslation } from 'react-i18next';
+
 function ChangeDetails({setUser, setValue, toChange, value, toType})
 {
+	const { t } = useTranslation();
 	const navigate = useNavigate();
 	const { userInfo, refreshUserInfo } = useAuth();
 	const user = userInfo
@@ -41,8 +44,7 @@ function ChangeDetails({setUser, setValue, toChange, value, toType})
         catch (error)
         {
 			if (error.status === 400)
-				showToast('error', 'Username already in use');
-            console.log(error);
+				showToast('error', t('Toasts.UsernameAlreadyInUse'));
         }
 	}
 	return (
@@ -55,7 +57,7 @@ function ChangeDetails({setUser, setValue, toChange, value, toType})
 					value={detail}
 					onChange={handleChange}
 					required
-					placeholder='modify your details here'/>
+					placeholder={t('ModifyDetails')}/>
 				<button type="submit" className='check-icon'><img src={check} alt="check"/></button>
             </form>
 			<ToastContainer />
@@ -65,6 +67,8 @@ function ChangeDetails({setUser, setValue, toChange, value, toType})
 
 function Profile({id})
 {
+
+	const { t } = useTranslation();
 	const navigate = useNavigate();
 	const [user, setUser] = useState(null);
 	const [showChangeUsername, setShowChangeUsername] = useState(false);
@@ -74,15 +78,15 @@ function Profile({id})
 	const [isSettings, setIsSettings] = useState(false);
 	const [isPermitted, setIsPermitted] = useState(false);
 	const [isStud, setIsStud] = useState(false);
+	const [is2fa, setIs2fa] = useState(false);
 	const [friendList, setFriendList] = useState([]);
 	const { userInfo, refreshUserInfo } = useAuth();
-	const decodeToken = userInfo;
 	let friends = friendList?.friends || [];
 
 	const fetchFriendList = async () => {
 
 		try {
-			const reponse = await axiosInstance.get(`/api/friends/list/${decodeToken.id}`);
+			const reponse = await axiosInstance.get(`/api/friends/list/${userInfo.id}`);
 			setFriendList(reponse.data);
 		}
 		catch(error) {
@@ -94,7 +98,7 @@ function Profile({id})
 		e.preventDefault();
 		const selectedImage = e.target.files[0];
 		try {
-			const response = await axiosInstance.patch(`/api/user/${decodeToken.id}`, { 
+			const response = await axiosInstance.patch(`/api/user/${userInfo.id}`, { 
 				'profile_image' : selectedImage 
 				}, {
 				headers: {
@@ -103,30 +107,32 @@ function Profile({id})
 			})
 			setUser(response.data);
 			await refreshUserInfo();
-			console.log(response);
 		} 
 		catch (error) {
-			console.log("Error uploading profile image:", error);
+			showToast("error", t(`Toasts.${error.response.data}`));
 		}
 	};
 
 	const handleConfirm = async () =>
 	{
 		try {
-			axiosInstance.post(`/api/user/perms/${decodeToken.id}`);
+			const response = await axiosInstance.post(`/api/user/perms/${userInfo.id}`);
+			console.log(response.data.message);
+			setIs2fa(response.data.message === "EnableTo2FA" ? true : false);
+			showToast("message", t(`Toasts.${response.data.message}`))
 		}
 		catch(error){
-			console.log("Error while changing perms on 2FA!");
+			showToast("error", t('Toasts.Error2FA'));
 		}
 	}
 
 	const fetchUserData = async () => 
 	{
-		if (decodeToken.id == id && decodeToken.is_stud == false) {
+		if (userInfo.id == id && userInfo.is_stud == false) {
 			setIsStud(false);
 			setIsPermitted(true);
 		}
-		else if (decodeToken.id == id && decodeToken.is_stud == true) {
+		else if (userInfo.id == id && userInfo.is_stud == true) {
 			setIsStud(true);
 			setIsPermitted(false);
 		}
@@ -137,7 +143,7 @@ function Profile({id})
 		console.log(userInfo);
 		setUser(userInfo);
 		console.log(user);
-		if (decodeToken.id !== id)
+		if (userInfo.id !== id)
 		{
 			try 
 			{
@@ -146,7 +152,7 @@ function Profile({id})
 			}
 			catch (error)
 			{
-				console.log('Erreur lors de la récupération des données utilisateur', error);
+				showToast("error", t('ToastsError'));
 			}
 		}
 	}
@@ -179,7 +185,7 @@ function Profile({id})
 									id="profile_image"
 									accept="image/*"
 									style={{ display: 'none' }}
-									onChange={(e) => handleFileChange(e)}
+									onChange={handleFileChange}
 								/>
 							</label>
 
@@ -212,8 +218,8 @@ function Profile({id})
 								/>
 							</button>
 							<ul className="dropdown-menu">
-								<li><button className="dropdown-item" type="button" onClick={() => setShowChangePassword(true)}>Change password</button></li>
-								<li><button className="dropdown-item" type="button" onClick={handleConfirm}>Enable 2FA</button></li>
+								<li><button className="dropdown-item" type="button" onClick={() => setShowChangePassword(true)}>{t('ChangePassword')}</button></li>
+								<li><button className="dropdown-item" type="button" onClick={handleConfirm}>{is2fa ? t('Disable2FA') : t('Enable2FA')}</button></li>
 							</ul>
 							{showChangePassword && <ChangeDetails setUser={setUser} setValue={setShowChangePassword} toChange={'password'} value={null} toType={'password'}/>}
 							{isPermitted && !isStud && showChangePassword && <img src={x} className="x-icon" alt="x" onClick={() => setShowChangePassword(false)}/>}
@@ -232,7 +238,7 @@ function Profile({id})
 					</div>
 				</div>
 			) : (
-				<p>Aucun utilisateur trouvé.</p>
+				<p>{t('NoUsers')}</p>
 			)}
 			<ToastContainer />
 		</>

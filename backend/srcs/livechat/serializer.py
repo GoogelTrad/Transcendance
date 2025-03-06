@@ -16,7 +16,6 @@ class UserConnectedSerializer(serializers.ModelSerializer):
 
 class MessageSerializer(serializers.ModelSerializer):
     user = serializers.CharField(source='user.name')
-    print("USER:", user, flush=True)
 
     class Meta:
         model = Message

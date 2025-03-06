@@ -8,6 +8,8 @@ import React, { useEffect, useState, useRef } from "react";
 import { jwtDecode } from "jwt-decode";
 import axiosInstance from "../instance/AxiosInstance";
 import { useAuth } from '../users/AuthContext';
+import { useTranslation } from 'react-i18next';
+import { showToast } from '../instance/ToastsInstance';
 
 function HomeGame({ setModalStats, setModalCreateTournament, setModalTournament, launching, setParentItems, setParentNumberPlayer }) {
     const [player1, setPlayer1] = useState("");
@@ -24,6 +26,9 @@ function HomeGame({ setModalStats, setModalCreateTournament, setModalTournament,
     const [game, setGame] = useState(null);
     const [tournament, setTournament] = useState(null);
     const [socket, setSocket] = useState(null);
+    const [socketTournament, setSocketTournament] = useState(null);
+
+    const { t } = useTranslation();
 
     const [items, setItems] = useState([
         { name: 'profile', active: false },
@@ -101,7 +106,7 @@ function HomeGame({ setModalStats, setModalCreateTournament, setModalTournament,
             setTournament(response.data);
             return 0;
         } catch (error) {
-            console.log("Error fetching tournament by code:", error);
+            showToast("error", t('ToastsError'));
             return 1;
         }
     };
@@ -125,7 +130,7 @@ function HomeGame({ setModalStats, setModalCreateTournament, setModalTournament,
             const response = await axiosInstance.post(`/api/game/create_game`, { player1 });
             navigate(`/game/${response.data.id}`);
         } catch (error) {
-            console.log("Error submitting Player:", error);
+            showToast("error", t('ToastsError'));
         }
     };
 
@@ -134,7 +139,6 @@ function HomeGame({ setModalStats, setModalCreateTournament, setModalTournament,
             if (socket && socket.readyState === WebSocket.OPEN && send_Info) {
                 socket.send(JSON.stringify({ type: 'join' }));
                 setSend_Info(false);
-                console.log("Message sent successfully!");
             } else {
                 console.log("Socket is not open, retrying...");
             }
@@ -187,9 +191,9 @@ function HomeGame({ setModalStats, setModalCreateTournament, setModalTournament,
                         {onClickPlay && (
                             <div className="content">
                                 <h3 style={{ textAlign: "center" }} onClick={() => handleMenuClick("play")}>Play</h3>
-                                <div className="line" onClick={() => StartGameSolo()}> 1 player </div>
-                                <div className="line" onClick={() => Matchmaking()}> 2 players - Online </div>
+                                {/* <div className="line" onClick={() => StartGameSolo()}> 1 player </div> */}
                                 <div className="line" onClick={() => StartGameSolo()}> 2 players - Local </div>
+                                <div className="line" onClick={() => Matchmaking()}> 2 players - Online </div>
                             </div>
                         )}
                         {onClickTournament && (

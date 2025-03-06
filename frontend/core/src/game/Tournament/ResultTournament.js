@@ -4,10 +4,13 @@ import fisrtPrize from '../../assets/1prize.png';
 import secondPrize from '../../assets/2prize.png';
 import thirdPrize from '../../assets/3prize.png';
 import star from '../../assets/star.png';
+
+import { useTranslation } from 'react-i18next';
 import axiosInstance from "../../instance/AxiosInstance";
 
 function ResultTournament({ items, setItems, setModalResult, setModalStats, removeLaunch, launching, tournamentCode }) {
 
+    const { t } = useTranslation();
     const [tournamentResponse, setTournamentResponse] = useState({});
     
         useEffect(() => {
@@ -62,7 +65,7 @@ function ResultTournament({ items, setItems, setModalResult, setModalStats, remo
                     <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontSize:'150%', width:'30%'}} className="tournament-text podium d-flex h-100 justify-content-center align-items-center ">{tournamentResponse.winner_final || "first player"}</div>
                 </div>
                 <div className="d-flex justify-content-center w-100" style={{ height: '32%'}}>
-                    <div  style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontSize:'130%', width:'30%'}}  className="tournament-text podium d-flex h-100 justify-content-center align-items-center">{tournamentResponse.second || "second player"}</div>
+                    <div  style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontSize:'130%', width:'30%'}}  className="tournament-text podium d-flex h-100 justify-content-center align-items-center">{tournamentResponse.second || t('SecondPlayer')}</div>
                     <div  style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontSize:'110%', width:'30%'}}  className="tournament-text podium d-flex h-100 justify-content-center align-items-center">{tournamentResponse.third || ""}</div>
                 </div>
             </div>
@@ -97,7 +100,7 @@ function ResultTournament({ items, setItems, setModalResult, setModalStats, remo
 
                 <div className="d-flex flex-column tournament-text text-center" 
                     style={{ color: 'rgba(0, 150, 255, 0.8)', fontWeight:'bold', fontSize: '100%', fontWeight: 'bold', top: '15%', position: 'relative', zIndex: 1 }}>
-                    <span>STATS</span>
+                    <span>{t('STATS')}</span>
                 </div>
 
             </div>
