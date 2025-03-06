@@ -55,7 +55,7 @@ function Home() {
         {name: 'social', setter: setIsModalSocial},
         {name: 'profile', setter: setIsModalProfile},
         {name: 'friend', setter: setIsModalFriendProfile},
-        {name: 'resultTournament', setter: setIsModalResult},
+        {name: 'result', setter: setIsModalResult},
     ]
 
     const [modalZIndexes, setModalZIndexes] = useState({});
@@ -86,8 +86,6 @@ function Home() {
     const [numberPlayer, setNumberPlayer] = useState("");
     const location = useLocation();
     const modalSend = location.state?.modalName || "";
-    const tournamentCodeFromLocation = location.state?.tournamentCode;
-    const decodeToken = userInfo;
 
     const removeLaunch = (appName) => {
         setIsLaunch((prevLaunch) => prevLaunch.filter((app) => app !== appName));
@@ -100,7 +98,6 @@ function Home() {
         
         const maxZIndex = Math.max(...Object.values(modalZIndexes), 0);
         setModalZIndexes((prev) => ({ ...prev, [newLaunch]: maxZIndex + 1 }));
-
         handleModal({ setModal, boolean: true });
     };
 
@@ -118,7 +115,6 @@ function Home() {
     const statsRef = useRef(null);
 
     useEffect(() => {
-        
         if (modalSend) {
             console.log(location.pathname)
             const modalSetter = setters.find(item => item.name === modalSend)?.setter;
@@ -130,16 +126,34 @@ function Home() {
     }, [modalSend, navigate]);
 
     useEffect(() => {
-        if (modalSend === "resultTournament" && tournamentCodeFromLocation) {
-            setTournamentCode(tournamentCodeFromLocation);
-            const modalSetter = setters.find(item => item.name === modalSend)?.setter;
-            if (modalSetter && !isLaunched(isLaunch, modalSend)) {
-                launching({ newLaunch: modalSend, setModal: modalSetter });
-                navigate(location.pathname, { replace: true, state: {} });
-            }
-        }
-    }, [modalSend, tournamentCodeFromLocation]);
-
+        const initializePosition = (ref, initialXFactor) => {
+            const element = ref.current;
+            if (!element) return;
+    
+            const windowWidth = window.innerWidth;
+            const windowHeight = window.innerHeight;
+    
+            const initialLeft = windowWidth * initialXFactor;
+            const initialTop = windowHeight * 0.35;
+    
+            element.style.left = `${initialLeft}px`;
+            element.style.top = `${initialTop}px`;
+            element.style.position = 'absolute';
+        };
+    
+        if (gameRef.current) initializePosition(gameRef, 0.05);
+        if (chatRef.current) initializePosition(chatRef, 0.84);
+        if (statsRef.current) initializePosition(statsRef, 0.45);
+    
+        const handleResize = () => {
+            if (gameRef.current) initializePosition(gameRef, 0.05);
+            if (chatRef.current) initializePosition(chatRef, 0.84);
+            if (statsRef.current) initializePosition(statsRef, 0.45);
+        };
+    
+        window.addEventListener("resize", handleResize);
+        return () => window.removeEventListener("resize", handleResize);
+    }, [isAuthenticated]);
 
 
     return (
@@ -232,7 +246,6 @@ function Home() {
             }
             >
             {!isAuthenticated && (
-                 <DragableInstance>
                 <div
                     style={{
                         position: 'absolute',
@@ -251,7 +264,6 @@ function Home() {
                     />
                     <div style={{ position: 'absolute', alignItems:'end', textAlign: 'center', justifyContent:'center', textAlign: 'center'}}>{t('TERMINAL')}</div>
                 </div>
-                </DragableInstance>
             )}
             {isAuthenticated && (
                 <DragableInstance>
@@ -279,30 +291,28 @@ function Home() {
                 </DragableInstance>
             )}
             {isAuthenticated && (
-                <DragableInstance>
-                    <div
-                        ref={chatRef}
-                        style={{
-                            position: 'absolute',
-                            height: '20%',
-                            width: '10%',
-                            userSelect: 'none',
-                            textAlign: 'center',
-                            justifyContent: 'center',
-                            alignItems:'center'
-                        }}
-                    >
-                        
-                        <img
-                            src={C}
-                            alt="icon chat"
-                            className=""
-                            style={{height: '80%', width:'auto'}}
-                            onClick={() => navigate('/Chat')}
-                        />
-                        <div className="tournament-text" style={{color:'rgba(13, 53, 82, 0.8)'}}>CHAT</div>
-                    </div>
-                </DragableInstance>
+                <div
+                    ref={chatRef}
+                    style={{
+                        position: 'absolute',
+                        height: '20%',
+                        width: '10%',
+                        userSelect: 'none',
+                        textAlign: 'center',
+                        justifyContent: 'center',
+                        alignItems:'center'
+                    }}
+
+                >
+                    <img
+                        src={C}
+                        alt="icon chat"
+                        className=""
+                        style={{height: '80%', width:'auto'}}
+                        onClick={() => navigate('/Chat')}
+                    />
+                    <div className="tournament-text" style={{color:'rgba(13, 53, 82, 0.8)'}}>CHAT</div>
+                </div>
             )}
             {isAuthenticated && (
                 <div
@@ -316,7 +326,6 @@ function Home() {
                         justifyContent: 'center',
                         alignItems:'center'
                     }}
-                    onMouseDown={(e) => handleDragStart(e, statsRef)}
                 >
                     <img
                         src={S}
@@ -411,21 +420,17 @@ function Home() {
                 isModal={isModalResult}
                 modalRef={modalResultRef}
                 name="Result"
-                zIndex={modalZIndexes["resultTournament"] || 1}
-                position={modalPositions["resultTournament"]}
-                onUpdatePosition={(newPos) => updatePosition("resultTournament", newPos)}
-                onBringToFront={() => bringToFront("resultTournament")}
-                onLaunchUpdate={() => (removeLaunch("resultTournament"))}
-                onClose={() => (setIsModalResult(false))}
+                onLaunchUpdate={() => (removeLaunch("resultTournament"), removeLaunch("tournament"))}
+                onClose={() => (setIsModalResult(false), setIsModalTournament(false))}
                 >
                     <ResultTournament
                         items={items}
                         setItems={setItems}
+                        setIsModalTournament={setIsModalTournament}
                         setModalResult={setIsModalResult}
                         setModalStats={setIsModalStats}
                         removeLaunch={removeLaunch}
                         launching={launching}
-                        tournamentCode={tournamentCode}
                     />
             </ModalInstance>}
             {isAuthenticated && isLaunched(isLaunch, "social") && 

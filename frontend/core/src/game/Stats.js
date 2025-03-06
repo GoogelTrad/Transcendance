@@ -10,8 +10,8 @@ import { jwtDecode } from "jwt-decode";
 import bronze from '../assets/game/bronze.png';
 import silver from '../assets/game/silver.png';
 import gold from '../assets/game/gold.png';
+import backgroundCollect from '../assets/game/background-collect.jpg';
 import { useAuth } from "../users/AuthContext";
-
 import { useTranslation } from 'react-i18next';
 import { showToast } from "../instance/ToastsInstance";
 
@@ -26,9 +26,9 @@ function Stats({ itemsArray = [] }) {
     const [winGames, setWinGames] = useState([]);
     const [loseGames, setLoseGames] = useState([]);
     const [tournamentGames, setTournamentGames] = useState([]);
-    
     const { id } = useParams();
     const [games, setGames] = useState([]);
+    const [isSmallScreen, setIsSmallScreen] = useState(false);
     const [expandedTab, setExpandedTab] = useState(false);
     const [medalBronze, setMedalBronze] = useState({
         Played: false,
@@ -66,7 +66,7 @@ function Stats({ itemsArray = [] }) {
         },
         BestTime: {
             thresholds: [5, 10, 15],
-            titles: ["5 games won in less than 1 minute", "10 games won in less than 1 minute", "15 games won in less than 1 minute"]
+            titles: ["5 games won in less than 2 minutes", "10 games won in less than 2 minutes", "15 games won in less than 2 minutes"]
         }
     };
 
@@ -83,6 +83,17 @@ function Stats({ itemsArray = [] }) {
             }
         }
     };
+
+    useEffect(() => {
+        const handleResize = () => {
+            setIsSmallScreen(window.innerWidth < 1115);
+        };
+        handleResize();
+        window.addEventListener('resize', handleResize);
+
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
 
     useEffect(() => {
         if (games.length > 0 && userInfo) {
@@ -104,15 +115,15 @@ function Stats({ itemsArray = [] }) {
             );
             setupMedals(BestScoreFiltered, "BestScore", 5, 10, 15);
 
-            const BestTimeFiltered = winGames.filter(time => (time.timeMinutes === '1' && time.timeSeconds === '0'));
+            const BestTimeFiltered = winGames.filter(time => time.timeMinutes === '2');
             setupMedals(BestTimeFiltered, "BestTime", 5, 10, 15);
+            console.log("best", BestTimeFiltered);
         }
-    }, [games, userInfo, winGames]);
-    
-    
+    }, [games, id, userInfo]);
 
+    const [expandedCells, setExpandedCells] = useState(false);
+    
     const handleDivClick = (name) => {
-        console.log("name : ", name);
         if(name != "")
         {
                 setMode(prevMode => 
@@ -174,71 +185,61 @@ function Stats({ itemsArray = [] }) {
             }
         };
         if (userInfo?.id) fetchStats();
-      }, [id]);
+      }, [!games.length, userInfo?.id]);
     
       function StatsTable({ data }) {
-        const [expandedCells, setExpandedCells] = useState({});
-
-        const handleCellClick = (e, cellId) => {
-            e.preventDefault();
-            e.stopPropagation();
-            e.nativeEvent.stopImmediatePropagation();
-            
-            console.log("Cell clicked:", cellId);
-            
-            setExpandedCells(prev => ({
-                ...prev,
-                [cellId]: !prev[cellId]
-            }));
-        };
-
         return (
-            <div className="stats-zone-table w-100 h-100" onClick={e => {
-                e.preventDefault();
-                e.stopPropagation();
-                e.nativeEvent.stopImmediatePropagation();
-            }}>
+            <div className="stats-zone-table w-100 h-100">
                 <div className="w-100 d-flex">
-                    <table style={{ width: "100%", tableLayout: "relative", overflow: "hidden", zIndex: "12" }} onClick={e => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        e.nativeEvent.stopImmediatePropagation();
-                    }}>
+                    <table style={{ width: "100%", tableLayout: "relative", overflow: "hidden", zIndex: "12", pointerEvent:'cursor' }} >
                         <thead>
                             <tr>
-                                <th>{t('Date')}</th>
-                                <th>{t('Against')}</th>
-                                <th>{t('Time')}</th>
-                                <th>{t('Score')}</th>
-                                <th>{t('Result')}</th>
+                                <th
+                                    title={isSmallScreen ? t('Date') : ""}
+                                >{t('Date')}</th>
+                                <th
+                                    title={isSmallScreen ? t('Against') : ""}
+                                >{t('Against')}</th>
+                                <th
+                                    title={isSmallScreen ? t('Time') : ""}
+                                >{t('Time')}</th>
+                                <th
+                                    title={isSmallScreen ? t('Score') : ""}
+                                >{t('Score')}</th>
+                                <th
+                                    title={isSmallScreen ? t('Result') : ""}
+                                >{t('Result')}</th>
                             </tr>
                         </thead>  
                             <tbody>
                                 {data.map((data) => (
                                     <tr key={data.id}>
                                       <td 
-                                            onClick={(e) => handleCellClick(e, `date-${data.id}`)}
+                                            title={`${data.date ? data.date.slice(-5) : "N/A"}-${data.date ? data.date.slice(0, 4) : "N/A"}`}
                                             className={expandedCells[`date-${data.id}`] ? 'expanded-cell' : ''}
                                         >
-                                            {data.date ? data.date.slice(-5) : "N/A"}-{data.date ? data.date.slice(0, 5) : "N/A"}
+                                            {data.date ? data.date.slice(-5) : "N/A"}-{data.date ? data.date.slice(0, 4) : "N/A"}
                                         </td>
                                         <td 
-                                            onClick={(e) => handleCellClick(e, `player-${data.id}`)}
+                                            title={data.player2 || 'player2'}
                                             className={expandedCells[`player-${data.id}`] ? 'expanded-cell' : ''}
                                         >
-                                            {data.player2 || "N/A"}
+                                            {data.player2 || "player2"}
                                         </td>
-                                        <td>{data.timeMinutes} : {data.timeSeconds}</td>
-                                        <td>{data.score_player_1} - {data.score_player_2}</td>
-                                        {data.winner === userInfo?.name && (
-                                            <td>{"win" || "N/A"}</td>
-                                        )}
-                                        {data.loser === userInfo?.name && (
-                                            <td>{"lose" || "N/A"}</td>
-                                        )}
-                                        {!data.winner && !data.loser && (
-                                            <td>{"N/A"}</td>
-                                        )}
+                                        <td
+                                            title={isSmallScreen ? data.timeMinutes + " : " + data.timeSeconds : ""}
+                                        >{data.timeMinutes} : {data.timeSeconds}</td>
+                                        <td
+                                           title={isSmallScreen ? `${data.score_player_1} - ${data.score_player_2}` : ""}
+                                        >
+                                            {data.score_player_1} - {data.score_player_2}
+                                        </td>
+                                        <td
+                                            title={isSmallScreen ? data.winner === userInfo?.name ? "win" : data.loser === userInfo?.name ? "lose" : "N/A" : ""}
+                                        >
+                                            {data.winner === userInfo?.name ? "win" :
+                                            data.loser === userInfo?.name ? "lose" : "N/A"}
+                                        </td>
                                     </tr>
                                 ))}
                         </tbody>
@@ -256,7 +257,7 @@ function Stats({ itemsArray = [] }) {
                     <div className={`stats-zone ${mode.find(mode => mode.name === 'profile')?.active ? 'expanded left' : ''} left d-flex flex-reverse`}>
                         <div className="stats-zone-content d-flex flex-column flex-md-row w-100 h-100">
                         <div 
-                            className="stats-col d-flex flex-column h-100 w-100 w-md-50"
+                            className="stats-col d-flex flex-column h-100 w-50"
                             style={{ 
                                 justifyContent: 'space-between', 
                                 alignItems: 'center',
@@ -266,7 +267,7 @@ function Stats({ itemsArray = [] }) {
                             <div 
                                 className="stats-row-element empty-row d-flex justify-content-center align-items-center" 
                                 style={{
-                                    height: '45%',
+                                    height: '34%',
                                     width: '100%',
                                     marginTop: '5%'
                                 }}
@@ -286,8 +287,8 @@ function Stats({ itemsArray = [] }) {
                                     />
                                 </label>
                             </div>
-                            <div className="stats-row-element empty-row flex-grow-1" style={{ height: "20%", display: "flex", alignItems: "flex-start" }}>{userInfo?.name}</div>
-                            <div className="stats-row-element flex-grow-1" style={{height: `30%`}}>
+                            <div className="stats-row-element empty-row flex-grow-1" style={{ height: "12%", display: "flex", alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>{userInfo?.name}</div>
+                            <div className="stats-row-element d-flex flex-grow-1" style={{height: `30%`, alignItems: 'center', justifyContent: 'center', textAlign: 'center'}}>
                             <div className="text-center">
                                 <div className="stats-text">{t('WinrateRatio')}</div>
                                     <div className="counter">
@@ -299,7 +300,7 @@ function Stats({ itemsArray = [] }) {
                                 </div>
                             </div>
                         </div>
-                        <div className="stats-col d-flex flex-column h-100 w-50" style={{ margin: '3%', justifyContent:'space-between', alignItems:'center'}}>
+                        <div className="stats-col d-flex flex-column w-50" style={{  height: '100%', justifyContent:'space-between', alignItems:'center'}}>
                             <div className="stats-row-element flex-grow-1 w-100">
                             <div className="text-center">
                                 <div className="stats-text">{t('GamesPlayed')}</div>
@@ -395,7 +396,7 @@ function Stats({ itemsArray = [] }) {
                                 <span className="visually-hidden">{t('ToggleDropdown')}</span>
                             </button>
                             <ul
-                                className="dropdown-stats-menu dropdown-menu custom-dropdown-menu"
+                                className="dropdown-stats-menu dropdown-menu custom-dropdown-menu w-100" 
                                 onClick={(e) => e.stopPropagation()} 
                             >
                                 {option.map((option) => (

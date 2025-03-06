@@ -121,7 +121,7 @@ const MarioSection = ({ tournamentResponse, renderImageWithClick, onKickPlayer, 
                                     top: '10%', 
                                     left: '4%', 
                                     cursor: 'pointer', 
-                                    zIndex: 10 
+                                    zIndex: 10,
                                 }, handleClickMario)}
                             </>
                         )}
@@ -181,6 +181,7 @@ const MarioSection = ({ tournamentResponse, renderImageWithClick, onKickPlayer, 
                                     overflow: "hidden",
                                     color: '#9632ab',
                                     paddingLeft: "15px",
+                                    fontSize: 'clamp(0.5rem, 1.7vw, 1rem)',
                                 }}
                             >
                                 ••• players •••

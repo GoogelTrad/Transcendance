@@ -38,6 +38,8 @@ body, html {
     padding: 10px;
     box-sizing: border-box;
     overflow-x: auto;
+    position: relative;
+    z-index: 15;
 }
 
 .stats-zone-table table {
@@ -47,12 +49,15 @@ body, html {
     color: #ffffff;
     table-layout: fixed;
     font-family: "Courier New", Courier, monospace;
+    overflow: hidden;
+    z-index: 12;
+    pointer-events: auto;
 }
 
 .stats-zone-table th, 
 .stats-zone-table td {
-    padding: 6px;
     width: 20%;
+    z-index: 30;
     border: 1px solid rgba(0, 150, 255, 0.5);
     background-color: transparent;
     text-shadow: 0 0 3px rgba(0, 102, 255, 0.7);
@@ -60,32 +65,35 @@ body, html {
     overflow: hidden;
     text-overflow: ellipsis;
     transition: all 0.3s ease;
+
 }
 
 .stats-zone-table th {
-    font-size: 90%;
+    font-size: clamp(0.5rem, 0.8vw, 0.8rem);
     text-transform: uppercase;
     background-color: rgba(0, 150, 255, 0.2);
     animation: scan-blue 3s infinite;
-    padding: 15px;
     font-weight: bold;
 }
 
 .stats-zone-table td {
-    font-size: 90%;
+    font-size: clamp(0.5rem, 0.8vw, 0.8rem);
     font-family: "Digital-7", monospace;
     color: #0096ff;
     cursor: pointer;
     border: 1px solid rgba(255, 255, 255, 0.1);
     transform-origin: center;
+    position: relative;
+    z-index: 20;
+    transition: all 0.3s ease;
 }
 
 .stats-zone-table td.expanded-cell {
     padding: 20px;
     background-color: rgba(0, 150, 255, 0.2);
     font-size: 1.1em;
-    z-index: 2;
-    transform: scale(1.05);
+    z-index: 25;
+    transform: scale(1.1);
     box-shadow: 0 0 10px rgba(0, 150, 255, 0.3);
     white-space: normal; 
     width: auto;
@@ -106,6 +114,9 @@ body, html {
     top: 7%;
     left: 10%;
     width: 80%;
+    position: relative;
+    z-index: 10;
+    overflow: visible;
 }
 
 .stats-zone.left {
@@ -128,17 +139,20 @@ body, html {
     background-color: rgb(78, 78, 78);
 }
 .expanded.right {
-    width: 45%;
+    width: 100%;
     height: 106%;
-    left: 32% !important;
+    left: -55% !important;
     top: -3% !important;
 }
 .expanded .stats-zone-content {
     transform: scale(1.2);
     transform-origin: center;
-    width: 100%;
-    height: 100%;
-    transition: transform 0.3s ease;
+    width: 83%;
+    margin-top: 5%;
+    margin-left: 8%;
+
+    height: 83%;
+    transition: transform 0.3sease;
 }
 .expanded.left {
     left: 10% !important;
@@ -164,15 +178,6 @@ body, html {
     background-color: rgba(255, 255, 255, 0.486);
 }
 
-.dropdown-stats-menu {
-    position: absolute !important;
-    width: 85%;
-    top: 100% !important;
-    left: 0% !important;
-    border-radius: 0% !important;
-    transform: none !important;
-}
-
 .stats-zone-content {
     justify-content: space-between;
     align-items: center;
@@ -180,6 +185,7 @@ body, html {
     transform: scale(1);
     transition: transform 0.3s ease;
     overflow-x: auto;
+    padding: 5%;
 }
 
 .stats-text {
@@ -190,6 +196,11 @@ body, html {
     text-shadow: 0 0 5px rgba(255, 0, 0, 0.8);
     font-weight: bold;
     text-transform: uppercase;
+}
+
+.stats-zone .expanded .stats-zone-content {
+    height: 100%;
+    width: 100%;
 }
 
 .stats-zone.collect {
@@ -203,6 +214,22 @@ body, html {
     padding: 0%;
 
 }
+
+.table-responsive-title {
+    display: none;
+    color: #0096ff;
+    text-align: center;
+    font-family: "Press Start 2P", cursive;
+    font-size: 1rem;
+    margin: 10px 0;
+    text-transform: uppercase;
+    text-shadow: 0 0 5px rgba(0, 150, 255, 0.8);
+}
+
+.custom-dropdown-menu {
+    transform: translate3d(0px, 41px, 0px) !important;
+}
+
 @keyframes scan-blue {
     0% { left: -100%; }
     50% { left: 100%; }
@@ -218,7 +245,6 @@ body, html {
 @media (max-width: 1024px) {
     .stats-home {
         width: 90%;
-        left: 5%;
     }
 
     .stats-zone {
@@ -244,6 +270,7 @@ body, html {
         font-size: 0.8em;
         padding: 3px;
     }
+
 }
 
 .stats-zone::-webkit-scrollbar {

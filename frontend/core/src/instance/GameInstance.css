@@ -24,6 +24,17 @@ canvas.gamebar {
 	/*background-color: rgba(0, 0, 0, 0.7);*/
 	z-index: 1; 
 }
+.exit-button {
+	background-image: url('../assets/game/EXIT.png');
+    background-position: center;
+    width: 20%;
+    height: 77%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+}
   
 .game-bar {
 	position: absolute;
@@ -33,8 +44,8 @@ canvas.gamebar {
  	color:grey;
 	z-index: 2; 
 	font-family: 'Press Start 2P', cursive;
-	font-size: 20px;
 	opacity: 1;
+	font-size: clamp(1rem, 1vw, 1rem);
 }
 
 .controller.left {
@@ -47,7 +58,8 @@ canvas.gamebar {
     border-radius: 100%;
 	border: 10px solid #a33d46;
 	box-shadow: inset 0 0 20px #000000, 
-	0 10px 25px rgba(0, 0, 0, 0.8); 
+	0 10px 25px rgba(0, 0, 0, 0.8);
+
 }
 
 .controller.right {
@@ -56,6 +68,7 @@ canvas.gamebar {
 	width: 10%;
 	top: 35%;
 	right: 4%;
+	
 }
 
 .touch-controller-right {
@@ -71,6 +84,7 @@ canvas.gamebar {
 	text-align: center;
 	font-weight: bold;
 	color: white;
+	font-size: clamp(1rem, 1vw, 1rem);
 }
 
 .touch-controller-left {
@@ -142,6 +156,85 @@ canvas.gamebar {
 	text-transform: uppercase;
 }
 
+.final-scores {
+	font-size: clamp(0.6rem, 1.5vw, 1.2rem);
+}
+
+.title-column {
+    background: linear-gradient(to bottom, #ff4d00, #ff9100);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    font-weight: bold;
+    font-size: 1.2em;
+    text-shadow: 0 2px 4px rgba(255, 77, 0, 0.3);
+    animation: fireText 3s ease-in-out infinite;
+    padding: 5px;
+    margin: 0;
+}
+
+
+.title-gameOver {
+	background: linear-gradient(to bottom, #ff4d00, #ff9100, #ffffff);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    font-weight: bold;
+    font-size: 1.2em;
+    text-shadow: 0 2px 4px rgba(255, 77, 0, 0.3);
+    animation: fireTextGame 4s ease-in-out infinite;
+    padding: 5px;
+    margin: 0;
+}
+
+@keyframes fireTextGame {
+    0% {
+        background: linear-gradient(to bottom, #ff4d00 0%, #ff7400 30%, #ff9100 60%, #ffffff 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+    }
+    25% {
+        background: linear-gradient(to bottom, #ff6000 0%, #ff8400 30%, #ffa000 60%, #ffffff 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+    }
+    50% {
+        background: linear-gradient(to bottom, #ff7400 0%, #ff9100 30%, #ffb000 60%, #ffffff 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+    }
+    75% {
+        background: linear-gradient(to bottom, #ff6000 0%, #ff8400 30%, #ffa000 60%, #ffffff 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+    }
+    100% {
+        background: linear-gradient(to bottom, #ff4d00 0%, #ff7400 30%, #ff9100 60%, #ffffff 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+    }
+}
+
+@keyframes fireText {
+    0%, 100% {
+        background: linear-gradient(to bottom, #ff4d00, #ff9100);
+        -webkit-background-clip: text;
+        background-clip: text;
+    }
+    50% {
+        background: linear-gradient(to bottom, #ff9100, #ff4d00);
+        -webkit-background-clip: text;
+        background-clip: text;
+    }
+}
+
+@supports not (background-clip: text) {
+    .title-column {
+        color: #ff4d00;
+        text-shadow: 0 0 2px #ff9100;
+    }
+}
+
 .Show-option.Rules {
     width: 9%;
     right: 0%;
@@ -162,8 +255,6 @@ canvas.gamebar {
 	background-color: black;
 	display: block;
 	position: fixed;
-    /*height: 50%;
-    width: 13%;*/
     right: 0%;
 	z-index: 2; 
 	border-top-left-radius: 10px;
@@ -186,7 +277,6 @@ canvas.gamebar {
 	width: 100%;
 	align-items: center;
 	justify-content: center;
-	/* padding: 0 !important; */
 }
 
 .explications.title {
@@ -199,10 +289,7 @@ canvas.gamebar {
 	height: 70%;
 	width: 90%;
 }
-/* 
-.player-touch {
-	height: 30%;
-} */
+
 
 .explications.one {
 	font-size: 6px;
@@ -284,7 +371,17 @@ canvas.gamebar {
 	font-size: 20px;
 }
 
+@media (max-width: 650px), (max-height: 400px) {
+	.game-over {
+		padding: 0%;
+	}
+}
 
+@media (max-width: 520px), (max-height: 590px) {
+	.game-bar {
+		font-size: clamp(0.4rem, 1vw, 0.4rem);
+	}
+}
 @media (min-width: 576px) {
     .modal-dialog {
         max-width: 100%;

@@ -71,7 +71,11 @@ const CreateTournament = ({ setIsModalTournament, setIsModalCreateTournament, se
         }));
     }, [numberPlayer]);
 
-    const handleClick = async () => {
+    const handleClick = async (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        e.nativeEvent.stopImmediatePropagation();
+
         if (tournamentSettings.maxScore === 0 || tournamentSettings.maxTimeMinutes === "00") {
             showToast("error", ('Toasts.PleaseEnterAScoreAndTime'));
             return;
@@ -94,13 +98,19 @@ const CreateTournament = ({ setIsModalTournament, setIsModalCreateTournament, se
     };
 
     return (
-        <div className="tournament background h-100 w-100">
-            <div className="line d-flex flex-direction row w-100 h-100">
-                <div className="column d-flex w-100">
+        <div 
+            className="tournament background h-100 w-100" 
+            onClick={(e) => e.stopPropagation()}
+        >
+            <div 
+                className="line d-flex flex-direction row w-100 h-100"
+                onClick={(e) => e.stopPropagation()}
+            >
+                <div className="column-create column d-flex w-100">
                     <p className="cell-left w-50 text-center">Number of players:</p>
                     <p className="cell-right w-50 text-center text">{numberPlayer}</p>
                 </div>
-                <div className="column d-flex w-100">
+                <div className="column-create column d-flex w-100">
                     <p className="cell-left w-50 text-center">Max time:</p>
                     <p className="cell-right w-50 text-center">
                         <input
@@ -111,7 +121,7 @@ const CreateTournament = ({ setIsModalTournament, setIsModalCreateTournament, se
                             onChange={(e) => setTournament("maxTimeMinutes", 1, 3, e, true)}
                             min="1"
                             max="3"
-                        /> :  
+                        /> <span style={{fontSize:'clamp(0.5rem, 1vw, 1rem)'}}>:</span>  
                         <input
                             type="number"
                             className="input-max secondes"
@@ -124,7 +134,7 @@ const CreateTournament = ({ setIsModalTournament, setIsModalCreateTournament, se
                         />
                     </p>
                 </div>
-                <div className="column d-flex w-100">
+                <div className="column-create column d-flex w-100">
                     <p className="cell-left w-50 text-center">Max score:</p>
                     <p className="cell-right w-50 text-center">
                         <input
@@ -132,15 +142,32 @@ const CreateTournament = ({ setIsModalTournament, setIsModalCreateTournament, se
                             className="input-max score"
                             placeholder="00"
                             value={tournamentSettings.maxScore}
-                            onChange={(e) => setTournament("maxScore", 1, 11, e, true)}
+                            onChange={(e) => {
+                                e.stopPropagation();
+                                setTournament("maxScore", 1, 11, e, true);
+                            }}
                             min="1"
                             max="11"
                         />
                     </p>
                 </div>
-                <div className="column d-flex w-100" style={{ marginLeft: "65%" }}>
-                    {errorMessage && <p className="error-message-time-score" style={{ color: "red", textAlign: "center" }}>{errorMessage}</p>}
-                    <button onClick={handleClick} className="cell">Create tournament</button>
+                <div 
+                    className="column-create column d-flex w-100" 
+                    style={{ marginLeft: "0%" }} 
+                    onClick={(e) => e.stopPropagation()}
+                >
+                    {errorMessage && (
+                        <p className="error-message-time-score" style={{ color: "red", textAlign: "center" }}>
+                            {errorMessage}
+                        </p>
+                    )}
+                    <button 
+                        onClick={handleClick}
+                        className="cell"
+                        style={{ position: 'relative', zIndex: 9999 }}
+                    >
+                        Create tournament
+                    </button>
                 </div>
             </div>
         </div>

@@ -95,6 +95,7 @@ html, body, #root {
 .game-home .text-stats,
 .game-home-stats-title {
     gap: 0;
+    font-size: clamp(0.5rem, 1vw, 1rem);
     margin: 0;
     padding: 0;
 }
@@ -122,11 +123,10 @@ html, body, #root {
 }
 
 .tournament-item {
-    width: 100%;
     min-height: 50px;
-    display: flex;
     flex-direction: column;
     gap: 0.5rem;
+    font-size: clamp(0.5rem, 1vw, 1rem);
 }
 
 .tournament-item > div {
