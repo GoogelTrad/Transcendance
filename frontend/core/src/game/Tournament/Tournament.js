@@ -133,10 +133,30 @@ function Tournament() {
 
     useEffect(() => {
         if (tournamentResponse && tournamentResponse.winner_final) {
+            if (socketRef.current) {
+                socketRef.current.close();
+                socketRef.current = null;
+            }
+
             navigate("/Home", { 
                 state: { 
-                    modalName: "resultTournament",
+                    modalName: "result", 
                     tournamentCode: tournamentResponse.code
+                }
+            });
+        }
+    }, [tournamentResponse, navigate]);
+
+    useEffect(() => {
+        if (tournamentResponse && tournamentResponse.winner_final) {
+            if (socketRef.current) {
+                socketRef.current.close();
+            }
+            
+            navigate("/Home", { 
+                state: { 
+                    modalName: 'resultTournament',
+                    tournamentCode: tournamentCode 
                 }
             });
         }

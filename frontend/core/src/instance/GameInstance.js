@@ -401,115 +401,117 @@ function GameInstance({ children }) {
     }, [gameData, game, waitInput]);
 
     return (
-        <div className="content-1">
-            {isGameOngoing ? (
-                <>
-                    <div className="dark-background"></div>
-                    <div className="d-flex backgroundGame" style={{ height: '85%', top: '5%', width: '80%', position: 'absolute', left: '10%', backgroundColor: 'white' }}>
-                        <div className="game-bar w-100" style={{ height: '15%' }}>
-                            <div className="column">
-                                <div className="red">{t('PLAYER1')}</div>
-                                <div>{game?.player1 || "Player 1"}</div>
+        <Template>
+            <div className="content-1">
+                {isGameOngoing ? (
+                    <>
+                        <div className="dark-background"></div>
+                        <div className="d-flex backgroundGame" style={{ height: '85%', top: '5%', width: '80%', position: 'absolute', left: '10%', backgroundColor: 'white' }}>
+                            <div className="game-bar w-100" style={{ height: '15%' }}>
+                                <div className="column">
+                                    <div className="red">{t('PLAYER1')}</div>
+                                    <div>{game?.player1 || "Player 1"}</div>
+                                </div>
+                                <div className="column">
+                                    <div className="red">{t('SCORE')}</div>
+                                    <div>{gameData.Score_P1 || "0"}</div>
+                                </div>
+                                <div className="column">
+                                    <div className="red">{t('TIME')}</div>
+                                    {timesUp ? (
+                                        game?.timeMinutes !== undefined && game?.timeSeconds !== undefined
+                                            ? `${gameData.Minutes}:${gameData.Seconds.toString().padStart(2, '0')}`
+                                            : "3:00"
+                                    ) : (
+                                        <span>{t("Time'sUp")}</span>
+                                    )}
+                                </div>
+                                <div className="column">
+                                    <div className="red">{t('SCORE')}</div>
+                                    <div>{gameData.Score_P2 || "0"}</div>
+                                </div>
+                                <div className="column">
+                                    <div className="red">{t('PLAYER2')}</div>
+                                    <div>{game?.player2 || "Player 2"}</div>
+                                </div>
                             </div>
-                            <div className="column">
-                                <div className="red">{t('SCORE')}</div>
-                                <div>{gameData.Score_P1 || "0"}</div>
-                            </div>
-                            <div className="column">
-                                <div className="red">{t('TIME')}</div>
-                                {timesUp ? (
-                                    game?.timeMinutes !== undefined && game?.timeSeconds !== undefined
-                                        ? `${gameData.Minutes}:${gameData.Seconds.toString().padStart(2, '0')}`
-                                        : "3:00"
-                                ) : (
-                                    <span>{t("Time'sUp")}</span>
-                                )}
-                            </div>
-                            <div className="column">
-                                <div className="red">{t('SCORE')}</div>
-                                <div>{gameData.Score_P2 || "0"}</div>
-                            </div>
-                            <div className="column">
-                                <div className="red">{t('PLAYER2')}</div>
-                                <div>{game?.player2 || "Player 2"}</div>
+                            <canvas className="gameCanva" ref={canvasRef} id="gameCanvas"></canvas>
+                            <div className="w-100" style={{ height: '2%', backgroundColor: 'black', bottom: '15%', position: 'absolute' }}></div>
+                            <div className="w-100" style={{ height: '2%', backgroundColor: 'black', bottom: '20%', position: 'absolute' }}></div>
+                            <div className="w-100 h-100 d-flex">
+                                <div className="controller left d-flex">
+                                    <div className="touch-controller-left d-flex" style={{ height: '50%', width: '20%', left: '37.5%', top: '5%', fontSize: '110%', alignItems: 'flex-start' }}>▲</div>
+                                    <div className="touch-controller-left d-flex" style={{ height: '20%', width: '50%', top: '37.5%', left: '5%', alignItems: 'center', justifyContent: 'start' }}>◀</div>
+                                    <div className="touch-controller-left d-flex" style={{ height: '20%', width: '50%', top: '37.5%', right: '5%', alignItems: 'center', justifyContent: 'end' }}>▶</div>
+                                    <div className="touch-controller-left d-flex" style={{ height: '50%', width: '20%', left: '37.5%', bottom: '5%', fontSize: '110%', alignItems: 'flex-end' }}>▼</div>
+                                </div>
+                                <div className="controller right d-flex">
+                                    <div className="touch-controller-right" style={{ left: '37.5%', top: '5%' }}>X</div>
+                                    <div className="touch-controller-right" style={{ top: '37.5%', left: '5%' }}>Y</div>
+                                    <div className="touch-controller-right" style={{ top: '37.5%', right: '5%' }}>A</div>
+                                    <div className="touch-controller-right" style={{ left: '37.5%', bottom: '5%' }}>B</div>
+                                </div>
+                                <div className="w-100 d-flex" style={{ fontSize: '150%', fontStyle: 'italic', fontWeight: 'bold', position: 'absolute', bottom: '0%', height: '10%', color: 'grey', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
+                                    {t('GAMECONTROLLER')}
+                                </div>
+                                <div className="w-100" style={{ height: '10%', position: 'absolute', bottom: '27%' }}>
+                                    <div className="touch-btn" style={{ left: '8%' }}></div>
+                                    <div style={{ position: 'absolute', fontWeight: 'bold', left: '8.2%', top: '60%', color: 'black', fontSize: 'clamp(0.7rem, 1vw, 1.5rem)'  }}>{t('Menu')}</div>
+                                    <div className="touch-btn" style={{ left: '83%' }}></div>
+                                    <div style={{ position: 'absolute', fontWeight: 'bold', left: '83%', top: '60%', color: 'black', fontSize: 'clamp(0.7rem, 1vw, 1.5rem)'  }}>{t('Select')}</div>
+                                    <div className="touch-btn" style={{ left: '93%' }}></div>
+                                    <div style={{ position: 'absolute', fontWeight: 'bold', left: '93.5%', top: '60%', color: 'black', fontSize: 'clamp(0.7rem, 1vw, 1.5rem)'  }}>{t('Start')}</div>
+                                </div>
                             </div>
                         </div>
-                        <canvas className="gameCanva" ref={canvasRef} id="gameCanvas"></canvas>
-                        <div className="w-100" style={{ height: '2%', backgroundColor: 'black', bottom: '15%', position: 'absolute' }}></div>
-                        <div className="w-100" style={{ height: '2%', backgroundColor: 'black', bottom: '20%', position: 'absolute' }}></div>
-                        <div className="w-100 h-100 d-flex">
-                            <div className="controller left d-flex">
-                                <div className="touch-controller-left d-flex" style={{ height: '50%', width: '20%', left: '37.5%', top: '5%', fontSize: '110%', alignItems: 'flex-start' }}>▲</div>
-                                <div className="touch-controller-left d-flex" style={{ height: '20%', width: '50%', top: '37.5%', left: '5%', alignItems: 'center', justifyContent: 'start' }}>◀</div>
-                                <div className="touch-controller-left d-flex" style={{ height: '20%', width: '50%', top: '37.5%', right: '5%', alignItems: 'center', justifyContent: 'end' }}>▶</div>
-                                <div className="touch-controller-left d-flex" style={{ height: '50%', width: '20%', left: '37.5%', bottom: '5%', fontSize: '110%', alignItems: 'flex-end' }}>▼</div>
+                        {waitingForPlayer && (
+                            <div className="waiting">
+                                {t('WaitingPlayer')}
                             </div>
-                            <div className="controller right d-flex">
-                                <div className="touch-controller-right" style={{ left: '37.5%', top: '5%' }}>X</div>
-                                <div className="touch-controller-right" style={{ top: '37.5%', left: '5%' }}>Y</div>
-                                <div className="touch-controller-right" style={{ top: '37.5%', right: '5%' }}>A</div>
-                                <div className="touch-controller-right" style={{ left: '37.5%', bottom: '5%' }}>B</div>
+                        )}
+                    </>
+                ) : (
+                    <div className="game-over d-flex flex-column w-100 h-100">
+                        <div className="d-flex justify-content-center align-items-center w-100" style={{ height: '40%' }}>
+                            <h1 className="title-gameOver" >{t('GameOver')}</h1>
+                        </div>
+                        <div className="d-flex justify-content-center align-items-center w-100" style={{ height: '30%' }}>
+                            <div className="final-scores d-flex justify-content-around w-100">
+                                <div className="score-column text-center">
+                                    <p className="title-column">{t('Player1')}</p>
+                                    <p>{game?.score_player_1 || "0"}</p>
+                                </div>
+                                <div className="score-column text-center">
+                                    <p className="title-column">{t('Player2')}</p>
+                                    <p>{game?.score_player_2 || "0"}</p>
+                                </div>
+                                <div className="score-column text-center">
+                                    <p className="title-column">{t('Winner')}</p>
+                                    <p>{game?.winner || "No Player"}</p>
+                                </div>
+                                <div className="score-column text-center">
+                                    <p className="title-column">{t('Loser')}</p>
+                                    <p>{game?.loser || "No Player"}</p>
+                                </div>
+                                <div className="score-column text-center">
+                                    <p className="title-column">{t('Time')}</p>
+                                    <p>{game?.timeMinutes || "0"}:{game?.timeSeconds || "0"}</p>
+                                </div>
                             </div>
-                            <div className="w-100 d-flex" style={{ fontSize: '150%', fontStyle: 'italic', fontWeight: 'bold', position: 'absolute', bottom: '0%', height: '10%', color: 'grey', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
-                                {t('GAMECONTROLLER')}
-                            </div>
-                            <div className="w-100" style={{ height: '10%', position: 'absolute', bottom: '27%' }}>
-                                <div className="touch-btn" style={{ left: '8%' }}></div>
-                                <div style={{ position: 'absolute', fontWeight: 'bold', left: '8.2%', top: '60%', color: 'black', fontSize: 'clamp(0.7rem, 1vw, 1.5rem)'  }}>{t('Menu')}</div>
-                                <div className="touch-btn" style={{ left: '83%' }}></div>
-                                <div style={{ position: 'absolute', fontWeight: 'bold', left: '83%', top: '60%', color: 'black', fontSize: 'clamp(0.7rem, 1vw, 1.5rem)'  }}>{t('Select')}</div>
-                                <div className="touch-btn" style={{ left: '93%' }}></div>
-                                <div style={{ position: 'absolute', fontWeight: 'bold', left: '93.5%', top: '60%', color: 'black', fontSize: 'clamp(0.7rem, 1vw, 1.5rem)'  }}>{t('Start')}</div>
+                        </div>
+                        <div className="d-flex justify-content-center align-items-center w-100" style={{ height: '30%' }}>
+                            <div 
+                                className="exit-button p-3" 
+                                onClick={() => quitToHome()}
+                                style={{ cursor: 'pointer' }}
+                            > 
+                                {t('EXIT')} 
                             </div>
                         </div>
                     </div>
-                    {waitingForPlayer && (
-                        <div className="waiting">
-                            {t('WaitingPlayer')}
-                        </div>
-                    )}
-                </>
-            ) : (
-                <div className="game-over d-flex flex-column w-100 h-100">
-                    <div className="d-flex justify-content-center align-items-center w-100" style={{ height: '40%' }}>
-                        <h1 className="title-gameOver" >{t('GameOver')}</h1>
-                    </div>
-                    <div className="d-flex justify-content-center align-items-center w-100" style={{ height: '30%' }}>
-                        <div className="final-scores d-flex justify-content-around w-100">
-                            <div className="score-column text-center">
-                                <p className="title-column">{t('Player1')}</p>
-                                <p>{game?.score_player_1 || "0"}</p>
-                            </div>
-                            <div className="score-column text-center">
-                                <p className="title-column">{t('Player2')}</p>
-                                <p>{game?.score_player_2 || "0"}</p>
-                            </div>
-                            <div className="score-column text-center">
-                                <p className="title-column">{t('Winner')}</p>
-                                <p>{game?.winner || "No Player"}</p>
-                            </div>
-                            <div className="score-column text-center">
-                                <p className="title-column">{t('Loser')}</p>
-                                <p>{game?.loser || "No Player"}</p>
-                            </div>
-                            <div className="score-column text-center">
-                                <p className="title-column">{t('Time')}</p>
-                                <p>{game?.timeMinutes || "0"}:{game?.timeSeconds || "0"}</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="d-flex justify-content-center align-items-center w-100" style={{ height: '30%' }}>
-                        <div 
-                            className="exit-button p-3" 
-                            onClick={() => quitToHome()}
-                            style={{ cursor: 'pointer' }}
-                        > 
-                            {t('EXIT')} 
-                        </div>
-                    </div>
-                </div>
-            )}
-        </div>
+                )}
+            </div>
+        </Template>
     );
 }
 
