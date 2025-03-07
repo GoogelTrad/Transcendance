@@ -21,7 +21,7 @@ function ResultTournament({ items, setItems, setModalResult, setModalStats, remo
                     setTournamentResponse(response.data);
                     console.log(tournamentResponse?.gamesTournament[0].score_player_1);
                 } catch (error) {
-                console.log("Error fetching tournament:", error);
+                    console.log("Error fetching tournament:", error);
                 }
             };
             fetchTournement();

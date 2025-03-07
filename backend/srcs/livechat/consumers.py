@@ -19,7 +19,6 @@ def get_user_by_name(username):
 @sync_to_async
 def is_user_blocked(from_user, to_user):
     return from_user.blocked_user.filter(id=to_user.id).exists()
-
 @sync_to_async
 def get_room_messages(room_name, user):
     try:
@@ -70,6 +69,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             return None
 
     async def connect(self):
+        print("oui", flush=True)
         if not self.scope['cookies']['token']:
             print("Aucun token trouvé !", flush=True)
             await self.close()
@@ -128,8 +128,14 @@ class ChatConsumer(AsyncWebsocketConsumer):
             return []
         invited_user: User = User.objects.get(id=invited_id)
 
-        result = Room.objects.filter(createur=invited_user, dm=True) | Room.objects.filter(createur=self.user, dm=True)
-        print(result, flush=True)
+        room = Room.objects.filter(createur=self.user, dm=True)
+        result = room.filter(users=invited_user)
+
+        if not result:
+            room = Room.objects.filter(createur=invited_user, dm=True)
+            result = room.filter(users=self.user)
+
+        print("coucou", result, flush=True)
         return list(result)
         
     
@@ -195,6 +201,16 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 "error": f"Room '{room_name}' does not exist."
             })
             return
+        
+        if room.dm:
+            room_users = await sync_to_async(list)(room.users.all())
+            if self.user not in room_users:
+                await self.send({
+                    "type": "join_room",
+                    "status": False,
+                    "error": "You are not authorized to join this DM."
+                })
+                return
        
         if room.password and (not password or password != room.password):
             await self.send({
@@ -220,7 +236,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             "message": f"You have successfully joined the room '{room.name}'."
         })
 
-        messages = await get_room_messages(self.room_name)
+        messages = await get_room_messages(self.room_name, self.user)
         await self.send({
             'type': 'history',
             'messages': messages
