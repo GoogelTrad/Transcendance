@@ -126,12 +126,13 @@ function LoginRegister({setModal, setTerminal, removeLaunch}) {
         if(isAuthenticated)
             return showToast('error', t('Toasts.NotCreateNewAccountWhileConnected'));
         try {
-            await axiosInstance.post('/api/user/create', data, {
+            const reponse = await axiosInstance.post('/api/user/create', data, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
             });
-            showToast("info", t('Toasts.AccountCreatedSuccesfully'));
+            if (reponse.status !== 400)
+                showToast("info", t('Toasts.AccountCreatedSuccesfully'));
         } catch (error) {
             showToast("error", t("Toasts.CannotCreateTheAccount"));
         }
