@@ -19,12 +19,10 @@ function Tournament() {
     const { tournamentCode } = useParams();
     const [tournamentResponse, setTournamentResponse] = useState(null);
     const [tournamentStarted, setTournamentStarted] = useState(false);
-    
     const { t } = useTranslation();
 
     const navigate = useNavigate();
     const location = useLocation();
-    const { join } = location.state || false;
     const { makeTournament } = location.state || false;
 
     const { userInfo } = useAuth();
@@ -41,13 +39,12 @@ function Tournament() {
         }
     };
     useEffect(() => {
-       if (tournamentStarted && !socketRef.current) {
-           const newSocket =  new WebSocket(`${process.env.REACT_APP_SOCKET_IP}ws/tournament/${tournamentCode}/`);
-           socketRef.current = newSocket;
-           newSocket.onmessage = (event) => {
-               const data = JSON.parse(event.data);
-               console.log("creator : ", data);            
-                if (data.game_id && data.player1 === user.name || data.player2 === user.name) {
+       if (tournamentStarted && !socketRef.current && userInfo.name) {
+            const newSocket =  new WebSocket(`${process.env.REACT_APP_SOCKET_IP}ws/tournament/${tournamentCode}/`);
+            socketRef.current = newSocket;
+            newSocket.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                if (data.game_id && (data.player1 === userInfo.name || data.player2 === userInfo.name)) {
                    navigate(`/game/${data.game_id}`);
                 }
                 if (data.type === 'user_connected_message') {
@@ -61,7 +58,13 @@ function Tournament() {
                console.log("Tournament websocket open")
                };
            }
-     }, [tournamentStarted]);
+           return () => {
+            if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
+                socketRef.current.close();
+                socketRef.current = null;
+            }
+        };
+     }, [tournamentCode, tournamentStarted, userInfo]);
 
 
     const fetchTournement = async () => {
@@ -80,11 +83,11 @@ function Tournament() {
         }
     }
 
-    useEffect(() => {
-        if (join === true) {
-            fetchTournement();
-        }
-    }, [join]);
+    // useEffect(() => {
+    //     if (join === true) {
+    //         fetchTournement();
+    //     }
+    // }, [join]);
 
     useEffect(() => {
         if (tournamentCode) {
@@ -126,21 +129,19 @@ function Tournament() {
             }
         }
         console.log("tournamentRes : ", tournamentResponse);
-        console.log("game 1 : ", tournamentResponse?.gamesTournament?.[0]);
-
     }, [tournamentResponse]);
 
 
-    useEffect(() => {
-        if (tournamentResponse && tournamentResponse.winner_final) {
-            navigate("/Home", { 
-                state: { 
-                    modalName: "resultTournament",
-                    tournamentCode: tournamentResponse.code
-                }
-            });
-        }
-    }, [tournamentResponse]);
+    // useEffect(() => {
+    //     if (tournamentResponse && tournamentResponse.winner_final) {
+    //         navigate("/Home", { 
+    //             state: { 
+    //                 modalName: "resultTournament",
+    //                 tournamentCode: tournamentResponse.code
+    //             }
+    //         });
+    //     }
+    // }, [tournamentResponse]);
 
         const renderImageWithClick = (src, alt, style, onClick, title) => (
             <img

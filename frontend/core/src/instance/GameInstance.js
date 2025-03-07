@@ -62,58 +62,70 @@ function GameInstance({ children }) {
         elo_Player2: 0,
         isInTournament: false,
         tournamentCode: 0,
+        status: "started"
     }));
 
 	const { userInfo } = useAuth();
-	const user = userInfo;
+    const socketRef = useRef(null);
 
-	const socketRef = useRef(null);
-	  if (!socketRef.current) {
-		  socketRef.current = new WebSocket(`${process.env.REACT_APP_SOCKET_IP}ws/game/${id}`);
-	  }
-	  const socket = socketRef.current;
-  
-	  socket.onopen = () => {
-		  console.log("WebSocket connection established.");
-	  };
-  
-	  socket.onclose = () => {
-			finishGame();
-			console.log("WebSocket connection closed.");
-	  };
-  
-	  socket.onerror = (error) => {
-        showToast("error", t('ToastsError'));
-	  };
-  
-	  socket.onmessage = (event) => {
-		const data = JSON.parse(event.data);
-		setGameData((prevState) => ({
-			...prevState,
-			Seconds: data.seconds,
-			Minutes: data.minutes,
-			PaddleRightY: data.paddleRightY,
-			PaddleLeftY: data.paddleLeftY,
-			PaddleRightX: data.paddleRightX,
-			PaddleLeftX: data.paddleLeftX,
-			PaddleWidth: data.width,
-			PaddleHeight: data.height,
-			Ball_Pos_x : data.new_pos_x,
-			Ball_Pos_y : data.new_pos_y,
-			Ball_Width: data.ball_width,
-			Score_P1: data.score_P1,
-			Score_P2: data.score_P2,
-			Winner: data.winner,
-			Loser: data.loser,
-			elo_Player1 : data.elo_Player1,
-    		elo_Player2 : data.elo_Player2,
-            isInTournament: data.isInTournament,
-            tournamentCode: data.tournamentCode
-		}));
-		if (data.winner || data.loser){
-			setIsGameOngoing(false);
+    useEffect(() => {
+        if (!socketRef.current) {
+            fetchData();
+            socketRef.current = new WebSocket(`${process.env.REACT_APP_SOCKET_IP}ws/game/${id}`);
         }
-	};
+        socketRef.current.onopen = () => {
+            console.log("WebSocket connection established.");
+        };
+
+        socketRef.current.onclose = () => {
+            console.log("WebSocket connection closed.");
+        };
+
+        socketRef.current.onerror = (error) => {
+            showToast("error", t('ToastsError'));
+        };
+
+        socketRef.current.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            setGameData((prevState) => ({
+                ...prevState,
+                Seconds: data.seconds,
+                Minutes: data.minutes,
+                PaddleRightY: data.paddleRightY,
+                PaddleLeftY: data.paddleLeftY,
+                PaddleRightX: data.paddleRightX,
+                PaddleLeftX: data.paddleLeftX,
+                PaddleWidth: data.width,
+                PaddleHeight: data.height,
+                Ball_Pos_x: data.new_pos_x,
+                Ball_Pos_y: data.new_pos_y,
+                Ball_Width: data.ball_width,
+                Score_P1: data.score_P1,
+                Score_P2: data.score_P2,
+                Winner: data.winner,
+                Loser: data.loser,
+                elo_Player1: data.elo_Player1,
+                elo_Player2: data.elo_Player2,
+                isInTournament: data.isInTournament,
+                tournamentCode: data.tournamentCode,
+                status: data.status,
+            }));
+            if (data.winner || data.loser) {
+                setIsGameOngoing(false);
+            }
+            if (data.status === "aborted"){
+                setIsGameOngoing(false);
+            }
+
+        };
+        return () => {
+            if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
+                socketRef.current.close();
+                socketRef.current = null;
+                console.log("WebSocket connection closed due to component unmount.");
+            }
+        };
+    }, [id]);
 
 	const patchTournament = async () => {
 		try {
@@ -126,8 +138,6 @@ function GameInstance({ children }) {
 	}
 
     const finishGame = async () => {
-        console.log("cc");
-        console.log(gameData);
         try {
             const response = await axiosInstance.patch(`/api/game/fetch_data/${id}/`, {
                 score_player_1: gameData.Score_P1,
@@ -138,8 +148,9 @@ function GameInstance({ children }) {
                 timeMinutes: gameData.Minutes,
                 elo_Player1: gameData.elo_Player1,
                 elo_Player2: gameData.elo_Player2,
-                status: 'finished',
+                status: gameData.status,
             });
+            console.log("gamedata :", response.data)
             setGame(response.data);
             // if (game?.player1 === userInfo.name) updateEloP1();
             // if (game?.player2 === userInfo.name) updateEloP2();
@@ -185,6 +196,15 @@ function GameInstance({ children }) {
 			createdAt: Date.now(),
 		};
 	};
+
+    const fetchData = async () => {
+        try {
+            const response = await axiosInstance.get(`/api/game/fetch_data/${id}/`);
+        } catch (error) {
+            showToast("error", t('ToastsError'));
+            navigate('/home');
+        }
+    }
 
 	useEffect(() => {
 		if (gameStart === false) {
@@ -297,8 +317,10 @@ function GameInstance({ children }) {
 	}, [backDimensions]);
 
     useEffect(() => {
-        if (!isGameOngoing && socket.readyState !== WebSocket.CLOSED) {
-            socket.close();
+        if (!isGameOngoing && socketRef.current.readyState === WebSocket.OPEN) {
+            finishGame();
+            socketRef.current.close();
+            socketRef.current = null;
         }
     }, [isGameOngoing]);
 
@@ -317,8 +339,8 @@ function GameInstance({ children }) {
 
             if (game && game.player1 === userInfo.name) {
                 const sendGameInstance = () => {
-                    if (socket.readyState === WebSocket.OPEN) {
-                        socket.send(JSON.stringify({ "message": "Hello from Player 1" }));
+                    if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
+                        socketRef.current.send(JSON.stringify({ "message": "Hello from Player 1" }));
                         setGameStart(true);
                         return true;
                     }
@@ -332,7 +354,7 @@ function GameInstance({ children }) {
                 }
             }
         }
-    }, [socket, backDimensions, game, userInfo.name, id]);
+    }, [backDimensions, game, userInfo.name, id]);
 
     let keyUpdateTimeout = null;
     const throttleRate = 5;
@@ -341,9 +363,9 @@ function GameInstance({ children }) {
         const player = userInfo.name === game.player1 ? "P1" : (userInfo.name === game.player2 ? "P2" : null);
         const gameState = { isKeyDown: updatedKeyDown, player };
     
-        if (socket.readyState === WebSocket.OPEN && !keyUpdateTimeout) {
+        if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN && !keyUpdateTimeout) {
             keyUpdateTimeout = setTimeout(() => {
-                socket.send(JSON.stringify(gameState));
+                socketRef.current?.send(JSON.stringify(gameState));
                 keyUpdateTimeout = null;
             }, throttleRate);
         }
@@ -370,26 +392,14 @@ function GameInstance({ children }) {
     };
     
 
-    const quitToHome = () => {
-        navigate(`/home`);
+    const  quitToHome = async () => {
+        if (gameData.isInTournament === true){
+            await patchTournament()
+            navigate(`/games/tournament/${gameData.tournamentCode}` , { state: { makeTournament: true } });
+        }
+        else
+            navigate(`/home`);
     };
-
-    useEffect(() => {
-        const handleBeforeUnload = (event) => {
-            if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
-                socketRef.current.close();
-            }
-            event.preventDefault();
-            event.returnValue = '';
-        };
-        window.addEventListener('beforeunload', handleBeforeUnload);
-        return () => {
-            window.removeEventListener('beforeunload', handleBeforeUnload);
-            if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
-                socketRef.current.close();
-            }
-        };
-    }, []);
 
     useEffect(() => {
         window.addEventListener('keydown', handleKeyPress);
@@ -495,6 +505,10 @@ function GameInstance({ children }) {
                             <div className="score-column text-center">
                                 <p className="title-column">{t('Time')}</p>
                                 <p>{game?.timeMinutes || "0"}:{game?.timeSeconds || "0"}</p>
+                            </div>
+                            <div className="score-column text-center">
+                                <p className="title-column">{t('Status')}</p>
+                                <p>{game?.status || "Finished"}</p>
                             </div>
                         </div>
                     </div>

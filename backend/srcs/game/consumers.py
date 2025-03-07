@@ -26,7 +26,6 @@ class TournamentConsumer(AsyncWebsocketConsumer):
             self.group_name = None
 
     async def connect(self):
-        await self.accept()
         self.tournament_code = self.scope['url_route']['kwargs']['tournament_code']
         self.token = self.scope['cookies'].get('token')
         self.user = await self.authenticate_user(self.token)
@@ -47,30 +46,35 @@ class TournamentConsumer(AsyncWebsocketConsumer):
         if not self.user:
             await self.close()
             return
-
+            
         if self.user.name in [tournament.player1, tournament.player2, tournament.player3, tournament.player4]:
-            pass
+            game_group = f"game_{self.tournament_code}"
+            await self.channel_layer.group_add(game_group, self.channel_name)
+            await self.accept()
+            await self.save_tournament(tournament)
+            return
         else:
             await self.add_user_to_tournament()
             await self.send_user_connected_message()
             game_group = f"game_{self.tournament_code}"
             await self.channel_layer.group_add(game_group, self.channel_name)
-            print(f"User {self.user.name} added to group {game_group}", flush=True)
 
             if self.tournament_code not in TournamentConsumer.tournament_states:
                 TournamentConsumer.tournament_states[self.tournament_code] = {"games_finished": 0}
+        print("hhh", flush=True)
+        await self.accept()
+
+
 
     async def disconnect(self, close_code):
-        print(f"Removed from tournament", flush=True)
-        if self.tournament_code in TournamentConsumer.tournament:
-            del TournamentConsumer.tournament[self.tournament_code]
+        tournament = await self.get_tournament(self.tournament_code)
+        print("Disconnected with code :", close_code, flush=True)
 
     @database_sync_to_async
     def fetch_nbr_games(self):
         tournament = TournamentConsumer.tournament.get(self.tournament_code)
         if tournament:
             count = tournament.gamesTournament.count()
-            print(f"Games count: {count}", flush=True)
             return count
         return 0
     
@@ -94,7 +98,12 @@ class TournamentConsumer(AsyncWebsocketConsumer):
             tournament.players_connected += 1
             tournament.save()
 
-
+    @database_sync_to_async
+    def save_tournament(self, tournament):
+        try:
+            tournament.save()
+        except Exception as e:
+            print(f"Error saving game: {e}")
     async def send_user_connected_message(self):
         tournament = TournamentConsumer.tournament.get(self.tournament_code)
         if tournament:
@@ -121,7 +130,6 @@ class TournamentConsumer(AsyncWebsocketConsumer):
 
     async def start_game(self, game_id, player1, player2):
         group_name = f"game_{self.tournament_code}"
-        print(f"Starting game {game_id} for group {group_name}", flush=True)
         await self.channel_layer.group_send(
             group_name,
             {
@@ -169,15 +177,15 @@ class TournamentConsumer(AsyncWebsocketConsumer):
         try:
             data_dict = json.loads(text_data)
         except json.JSONDecodeError:
-            print("Error decoding JSON data")
+            print("Error decoding JSON data", flush=True)
             return
-        print("receive :", data_dict, flush=True)
         tournament = TournamentConsumer.tournament.get(self.tournament_code)
         if "message" in data_dict:
             if tournament.winner_final != "":
                 await self.finish_tournament(tournament)
             await self.send_user_connected_message()
-        if "Start" in data_dict:  
+        if "Start" in data_dict:
+            print("pc", tournament.players_connected, flush=True)
             if tournament:
                 if tournament.players_connected == 2 and tournament.size == 2 and await self.fetch_nbr_games() < 3:
                     await self.start_first_match()
@@ -198,8 +206,16 @@ class TournamentConsumer(AsyncWebsocketConsumer):
                 scoreMax=scoreMax,
                 tournamentCode=tournamentCode
             )
+            player1_object = User.objects.get(name=player1) 
+            player2_object = User.objects.get(name=player2)
+    
+            player1_object.games.add(game)
+            player2_object.games.add(game)
+
+            player1_object.save()
+            player2_object.save()
+
             TournamentConsumer.tournament[self.tournament_code].gamesTournament.add(game)
-            print(f"Game created directly - ID: {game.id}, Player1: {game.player1}, Player2: {game.player2}", flush=True)
             return {
                 'id': game.id,
                 'player1': game.player1,
@@ -219,7 +235,6 @@ class TournamentConsumer(AsyncWebsocketConsumer):
         game_data = await self.create_game_directly(player1, player2, timeSeconds, timeMinutes, scoreMax, tournement_code)
 
         if game_data:
-            print('Game created successfully in create_Game_Multi:', game_data, flush=True)
             return game_data
         else:
             print("Failed to create game in create_Game_Multi", flush=True)
@@ -288,22 +303,18 @@ class MatchmakingConsumer(AsyncWebsocketConsumer):
         global matchmaking_queue
         if self.channel_name in matchmaking_queue:
             matchmaking_queue.remove(self.channel_name)
-            print(f"User {self.user} removed from the matchmaking queue")
 
     async def receive(self, text_data):
         global matchmaking_queue
         text_data_json = json.loads(text_data)
 
         if text_data_json.get("type") == "join":
-            print(f"User {self.user} joining matchmaking", flush=True)
             matchmaking_queue.append({
                 'player_name': self.user,
                 'channel_name': self.channel_name
             })
-            print(f"User {self.user} added to matchmaking queue", flush=True)
 
             gameData = None
-            print('queue :', matchmaking_queue, flush=True)
             if len(matchmaking_queue) >= 2:
                 player1 = matchmaking_queue.pop(0)
                 player2 = matchmaking_queue.pop(0)
@@ -368,7 +379,6 @@ class MatchmakingConsumer(AsyncWebsocketConsumer):
             player1_object.save()
             player2_object.save()
 
-            print(f"Game created directly - ID: {game.id}, Player1: {game.player1}, Player2: {game.player2}", flush=True)
             return {
                 'id': game.id,
                 'player1': game.player1,
@@ -382,7 +392,6 @@ class MatchmakingConsumer(AsyncWebsocketConsumer):
     async def create_Game_Multi(self, player1, player2):
         game_data = await self.create_game_directly(player1, player2)
         if game_data:
-            print('Game created successfully in create_Game_Multi:', game_data, flush=True)
             return game_data
         else:
             print("Failed to create game in create_Game_Multi", flush=True)
@@ -539,6 +548,28 @@ class gameConsumer(AsyncWebsocketConsumer):
     def __init__(self):  
         self.game_running = False
         self.groups = []
+
+    async def authenticate_user(self, token):
+        try:
+            payload = jwt.decode(token, "coucou", algorithms=["HS256"])
+            user_id = payload.get('id')
+            if user_id:
+                user = await self.get_user_from_id(user_id)
+                if user:
+                    return user
+            return None
+        except jwt.ExpiredSignatureError:
+            print("Token expired")
+        except jwt.InvalidTokenError:
+            print("Invalid token")
+        return None
+
+    @database_sync_to_async
+    def get_user_from_id(self, user_id):
+        try:
+            return User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            return None
         
     @database_sync_to_async
     def get_game(self, game_id):
@@ -558,6 +589,8 @@ class gameConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.game_id = self.scope['url_route']['kwargs']['game_id']
         self.group_name = f"game_{self.game_id}"
+        self.token = self.scope['cookies'].get('token')
+        self.user = await self.authenticate_user(self.token)
         if self.game_id not in gameConsumer.game_states:
             game = await self.get_game(self.game_id)
             gameConsumer.game_states[self.game_id] = GameState(game)
@@ -570,11 +603,39 @@ class gameConsumer(AsyncWebsocketConsumer):
 
         await self.accept()
 
+    def get_other_player(self, player_name):
+        if player_name == gameConsumer.game_states[self.game_id].player1:
+            return gameConsumer.game_states[self.game_id].player2
+        elif player_name == gameConsumer.game_states[self.game_id].player2:
+            return gameConsumer.game_states[self.game_id].player1
+        return None
+
+
     async def disconnect(self, close_code):
+        game = await self.get_game(self.game_id)
+        if  game.status == "started":
+            game.status = "aborted"
+            await self.save_game(game)
+            player_left = self.user.name
+            other_player = self.get_other_player(player_left)
+            await self.send_message({
+                "type": "game_update",
+                "status" : game.status,
+                "score_P1": gameConsumer.game_states[self.game_id].score["score_P1"],
+                "score_P2": gameConsumer.game_states[self.game_id].score["score_P2"],
+                "winner": other_player,
+                "loser": player_left,
+                "seconds": gameConsumer.game_states[self.game_id].timer["seconds"],
+                "minutes": gameConsumer.game_states[self.game_id].timer["minutes"],
+                "elo_Player1" : gameConsumer.game_states[self.game_id].eloPlayer1,
+                "elo_Player2" : gameConsumer.game_states[self.game_id].eloPlayer2,
+                "isInTournament" : gameConsumer.game_states[self.game_id].isInTournament,
+                "tournamentCode" : gameConsumer.game_states[self.game_id].code,
+            })
         await self.channel_layer.group_discard(
             self.group_name,
             self.channel_name
-        )
+        )    
         if self.game_id in gameConsumer.paddle_data:
             del gameConsumer.paddle_data[self.game_id]
         if self.game_id in gameConsumer.current_key_states_P1:
@@ -583,7 +644,6 @@ class gameConsumer(AsyncWebsocketConsumer):
             del gameConsumer.current_key_states_P2[self.game_id]
         if self.game_id in gameConsumer.player:
             gameConsumer.player[self.game_id] = ""
-        print(f"WebSocket disconnected from game {self.game_id} with close code: {close_code}")
 
     async def receive(self, text_data):
         try:
@@ -592,9 +652,10 @@ class gameConsumer(AsyncWebsocketConsumer):
             print("Error decoding JSON data")
             return
         if "message" in data_dict:
-            print(f"WebSocket connected to game {self.game_id}!", flush=True)
             self.game_running = True
             game = await self.get_game(self.game_id)
+            game.status = "started"
+            await self.save_game(game)
             asyncio.create_task(self.run_game_loop(self.game_state, game))
         if "isKeyDown" in data_dict:
             gameConsumer.paddle_data[self.game_id] = {
@@ -652,9 +713,6 @@ class gameConsumer(AsyncWebsocketConsumer):
                     "minutes": game_state.timer["minutes"],
                 })
                 if game_state.is_game_over(game):
-                    print(f"Game Over! Winner: {game_state.winner}", flush=True)
-                    print(f"Game Over! Loser: {game_state.loser}", flush=True)
-                    print(f"Game Over! : {game_state.isInTournament}", flush=True)
                     gameConsumer.game_states[self.game_id].gamerunning = False
                     game_state.update_Elo()
                     await self.send_message({
@@ -669,13 +727,12 @@ class gameConsumer(AsyncWebsocketConsumer):
                         "elo_Player2" : game_state.eloPlayer2,
                         "isInTournament" : game_state.isInTournament,
                         "tournamentCode" : game_state.code,
+                        "status" : "finished"
                     })
                     break
 
         except asyncio.CancelledError:
             print("Game loop was cancelled", flush=True)
-        finally:
-            print("Game loop ended", flush=True)
     
     def handle_key_press(self, key_states):
         gameConsumer.player[self.game_id] = key_states.get("player", "P1")

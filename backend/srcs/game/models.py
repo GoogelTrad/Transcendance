@@ -6,12 +6,14 @@ class Game(models.Model):
     STARTED = 'started'
     FINISHED = 'finished'
     READY = 'ready'
+    ABORTED = "aborted"
 
     STATUS_CHOICES = [
         (WAITING, 'Waiting for Players'),
         (STARTED, 'Game Started'),
         (FINISHED, 'Game Finished'),
         (READY, 'Ready waiting to start'),
+        (ABORTED, 'Ready waiting to start'),
     ]
 
     timeSeconds = models.IntegerField(default=0)
@@ -62,15 +64,15 @@ class Tournament(models.Model):
     ]
 
     code = models.IntegerField(default=0)
-    timeMaxMinutes = models.IntegerField(default=0)
+    timeMaxMinutes = models.IntegerField(default=3)
     timeMaxSeconds = models.IntegerField(default=0)
-    scoreMax = models.IntegerField(default=0)
+    scoreMax = models.IntegerField(default=11)
     player1 = models.CharField(max_length=255, blank=True) 
     player2 = models.CharField(max_length=255, blank=True)
     player3 = models.CharField(max_length=255, blank=True)
     player4 = models.CharField(max_length=255, blank=True)
     gamesTournament = models.ManyToManyField("game.Game", related_name="tournament_players", blank=True)
-    size = models.IntegerField(default=4)
+    size = models.IntegerField(default=2)
     winner1 = models.CharField(max_length=255, blank=True)
     winner2 = models.CharField(max_length=255, blank=True)
     winner_final = models.CharField(max_length=255, blank=True)
