@@ -7,7 +7,7 @@ import axiosInstance from "../instance/AxiosInstance";
 import "./room.css"
 import ModalInstance from "../instance/ModalInstance";
 import Profile from "../users/Profile";
-
+import Template from "../instance/Template";
 import { useTranslation } from 'react-i18next';
 import { useAuth } from "../users/AuthContext";
 
@@ -210,108 +210,110 @@ export default function Room() {
 
 	return (
 		<>
-			<div className="general-room d-flex justify-content-between">
-				<div className="listroom">
-					<h5>{t('ListRooms')}</h5>
-					<ul>
-						{listrooms.map((room, index) => (
-							<li key={index}>
-								<Link to={`/room/${room.name}`} onClick={(e) => handleRoomClick(e, room)}>
-									{room.name} {room.password && "🔒"}
-								</Link>
-							</li>
-						))}
-					</ul>
-				</div>
-				<div className="chat">
-					<button className="exit" onClick={() => navigate(`/chat/`)}> {"🠔"} </button>
-					<div className="titre">
-						<h3>{t('RoomName')}: { dmname ? dmname : roomName }</h3>
-					</div>
-					<div ref={messagesEndRef} className="chat-messages">
-						{chat.map((msg, index) => (
-							<div key={index} style={{ marginBottom: '10px' }}>
-								<small>({new Date(msg.timestamp).toLocaleTimeString()})</small>
-								{' '}<strong>{msg.username}:</strong> {msg.message}{' '}
-							</div>
-						))}
-					</div>
-					<div className="saisi">
-						<form onSubmit={sendMessage}>
-							<div className="d-flex">
-								<input id="chat-message-input" type="text" size="100" maxLength={maxLength} value={message} onChange={handleChange}/>
-								<button className="send" type='submit'> {"➤"} </button>
-							</div>
-							<p>{t('Characters')}: {caracteresRestants}</p>
-						</form>
-					</div>
-				</div>
-				<div className="List">
-					<div className="User_list">
-						<h5>{t('Friends')}</h5>
+			<Template>
+				<div className="general-room d-flex justify-content-between">
+					<div className="listroom">
+						<h5>{t('ListRooms')}</h5>
 						<ul>
-							{friendList?.friends?.length > 0 ? (
-								friendList.friends.map((friend) => (
-									<li key={friend.id}>
-										<Link to={`/profile/${friend.id}`}> {friend.name} </Link>
+							{listrooms.map((room, index) => (
+								<li key={index}>
+									<Link to={`/room/${room.name}`} onClick={(e) => handleRoomClick(e, room)}>
+										{room.name} {room.password && "🔒"}
+									</Link>
+								</li>
+							))}
+						</ul>
+					</div>
+					<div className="chat">
+						<button className="exit" onClick={() => navigate(`/chat/`)}> {"🠔"} </button>
+						<div className="titre">
+							<h3>{t('RoomName')}: { dmname ? dmname : roomName }</h3>
+						</div>
+						<div ref={messagesEndRef} className="chat-messages">
+							{chat.map((msg, index) => (
+								<div key={index} style={{ marginBottom: '10px' }}>
+									<small>({new Date(msg.timestamp).toLocaleTimeString()})</small>
+									{' '}<strong>{msg.username}:</strong> {msg.message}{' '}
+								</div>
+							))}
+						</div>
+						<div className="saisi">
+							<form onSubmit={sendMessage}>
+								<div className="d-flex">
+									<input id="chat-message-input" type="text" size="100" maxLength={maxLength} value={message} onChange={handleChange}/>
+									<button className="send" type='submit'> {"➤"} </button>
+								</div>
+								<p>{t('Characters')}: {caracteresRestants}</p>
+							</form>
+						</div>
+					</div>
+					<div className="List">
+						<div className="User_list">
+							<h5>{t('Friends')}</h5>
+							<ul>
+								{friendList?.friends?.length > 0 ? (
+									friendList.friends.map((friend) => (
+										<li key={friend.id}>
+											<Link to={`/profile/${friend.id}`}> {friend.name} </Link>
+										</li>
+									))
+								) : (
+									<li>{t('NoFriend')}</li>
+								)}
+							</ul>
+						</div>
+						<div>
+							<h5>{t('OthersUsers')}</h5>
+						</div>
+						<div className="btn-group dropend">
+							<ul>
+								{users_room.map((user, index) => (
+									<li key={index}>
+										<button type="button" className="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+											{user.username}
+										</button>
+										<ul className="dropdown-menu">
+											<button className="dropdown-item" onClick={() => handleProfile(user.id)}> {t('Profile')} </button>
+											<button className="dropdown-item" onClick={() => sendNotification(user.id, `${userInfo.name} ${t('Pong')}`, userId)}> {t('PongInvitation')} </button>
+										</ul>
 									</li>
-								))
-							) : (
-								<li>{t('NoFriend')}</li>
-							)}
-						</ul>
-					</div>
-					<div>
-						<h5>{t('OthersUsers')}</h5>
-					</div>
-					<div className="btn-group dropend">
-						<ul>
-							{users_room.map((user, index) => (
-								<li key={index}>
-									<button type="button" className="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-										{user.username}
-									</button>
-									<ul className="dropdown-menu">
-										<button className="dropdown-item" onClick={() => handleProfile(user.id)}> {t('Profile')} </button>
-										<button className="dropdown-item" onClick={() => sendNotification(user.id, `${userInfo.name} ${t('Pong')}`, userId)}> {t('PongInvitation')} </button>
-									</ul>
-								</li>
-							))}
-						</ul>
-					</div>
-					<ModalInstance height="30%" width="40%" isModal={isModalProfile} modalRef={modalProfile} name="Profile" onLaunchUpdate={null} onClose={() => setIsModalProfile(false)}>
-						<Profile id={profileId}/>
-					</ModalInstance>
-					<div>
-						<h3>{t('Notifications')}</h3>
-						<ul>
-							{notifications.map((notif, index) => (
-								<li key={index}>
-									{notif.response ? (
-										<p>{t('Response')} : {notif.response}</p>
-									) : (
-										<>
-											{notif.message}
-											<button
-												onClick={() => handleResponse(notif.id, "accepté", notif.sender_id)}
-												disabled={clickedNotifications[notif.id]}
-											>
-												✅ {t('Accept')}
-											</button>
-											<button
-												onClick={() => handleResponse(notif.id, "refusé", notif.sender_id)}
-												disabled={clickedNotifications[notif.id]}
-											>
-												❌ {t('Decline')}
-											</button>
-										</>
-									)}
-								</li>
-							))}
-						</ul>
+								))}
+							</ul>
+						</div>
+						<ModalInstance height="30%" width="40%" isModal={isModalProfile} modalRef={modalProfile} name="Profile" onLaunchUpdate={null} onClose={() => setIsModalProfile(false)}>
+							<Profile id={profileId}/>
+						</ModalInstance>
+						<div>
+							<h3>{t('Notifications')}</h3>
+							<ul>
+								{notifications.map((notif, index) => (
+									<li key={index}>
+										{notif.response ? (
+											<p>{t('Response')} : {notif.response}</p>
+										) : (
+											<>
+												{notif.message}
+												<button
+													onClick={() => handleResponse(notif.id, "accepté", notif.sender_id)}
+													disabled={clickedNotifications[notif.id]}
+												>
+													✅ {t('Accept')}
+												</button>
+												<button
+													onClick={() => handleResponse(notif.id, "refusé", notif.sender_id)}
+													disabled={clickedNotifications[notif.id]}
+												>
+													❌ {t('Decline')}
+												</button>
+											</>
+										)}
+									</li>
+								))}
+							</ul>
+						</div>
 					</div>
 				</div>
-			</div>
+			</Template>
 		</>
 	);
 }
