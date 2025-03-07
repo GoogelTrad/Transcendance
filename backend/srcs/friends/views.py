@@ -110,7 +110,7 @@ def delete_friends(request, id):
 @jwt_auth_required    
 def get_friend_requests(request):    
 	if not request.user.is_authenticated:
-		return Response({'error': 'UserNotAuthenticated'}, status=status.HTTP_401_UNAUTHORIZED)
+		return Response({'error': 'UserNotAuthenticated'}, status=status.HTTP_403_FORBIDDEN)
 
 	friend_requests = FriendRequest.objects.filter(to_user=request.user)
 	serializer = FriendRequestSerializer(friend_requests, many=True)

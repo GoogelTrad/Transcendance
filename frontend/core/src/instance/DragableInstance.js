@@ -16,8 +16,7 @@ export default function DragableInstance(props) {
         e.preventDefault();
         onBringToFront();
         const modal = modalRef ? modalRef.current : null;
-        const current = self ? self.current : null
-        if (!modal && !current) return;
+        if (!modal) return;
 
         left = e.clientX
         top = e.clientY
@@ -29,24 +28,18 @@ export default function DragableInstance(props) {
     const handleDragMove = (e) => {
         e.preventDefault();
         const modal =  modalRef ? modalRef.current : null;
-        const current = self ? self.current : null
-        if (!modal && !current) return;
+        if (!modal) return;
         if (modal) {
             modal.style.left = `${modal.offsetLeft - (left - e.clientX)}px`;
             modal.style.top = `${modal.offsetTop - (top - e.clientY)}px`;
-        } else {
-            current.style.left = `${current.offsetLeft - (left - e.clientX)}px`;
-            current.style.top = `${current.offsetTop - (top - e.clientY)}px`;
         }
-
         left = e.clientX
         top = e.clientY
     };
 
     const handleDragEnd = () => {
         const modal = modalRef ? modalRef.current : null;
-        const current = self ? self.current : null
-        if (!modal && !current) return;
+        if (!modal) return;
 
         window.removeEventListener("mousemove", handleDragMove);
         window.removeEventListener("mouseup", handleDragEnd);

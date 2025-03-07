@@ -10,6 +10,7 @@ from datetime import timedelta
 from .views import refresh_token
 import jwt
 import os
+from rest_framework import status
 from ipware import get_client_ip
 from django.utils.deprecation import MiddlewareMixin
 
@@ -25,7 +26,7 @@ class SimpleMiddleware:
 
     def __call__(self, request):
         
-        if request.path.startswith(('/media/', '/static/', '/api/auth/', '/api/user/code', '/api/user/token')):
+        if request.path.startswith(('/media/', '/static/', '/api/auth/', '/api/user/code', '/api/user/token', '/api/user/delete')):
             return self.get_response(request)
         
         new_token = None
@@ -35,10 +36,10 @@ class SimpleMiddleware:
                 token = request.COOKIES.get('token')
                 
                 if not token:
-                    raise AuthenticationFailed('Token is invalid!')
+                   return JsonResponse({'error': 'TokenExpired'}, status=status.HTTP_401_UNAUTHORIZED)
                 
                 if not ValidToken.objects.filter(token=token).exists():
-                    raise AuthenticationFailed('Invalid or expired token!')
+                    return JsonResponse({'error': 'TokenExpired'}, status=status.HTTP_401_UNAUTHORIZED)
                 
                 payload = jwt.decode(token, os.getenv('JWT_KEY'), algorithms=['HS256'])
                 user = User.objects.filter(id=payload['id']).first()
@@ -50,13 +51,13 @@ class SimpleMiddleware:
             except jwt.ExpiredSignatureError:
                 user.status = "offline"
                 user.save()
-                raise AuthenticationFailed('Token expired!')
+                return JsonResponse({'error': 'TokenExpired'}, status=status.HTTP_401_UNAUTHORIZED)
             except jwt.InvalidTokenError:
-                raise AuthenticationFailed('Invalid token!')
+                return JsonResponse({'error': 'TokenExpired'}, status=status.HTTP_401_UNAUTHORIZED)
             
         response = self.get_response(request)
         
         if new_token:
-            response.set_cookie(key='token', value=new_token, max_age=3600, httponly=True, secure=True)
+            response.set_cookie(key='token', value=new_token, max_age=int(os.getenv('TOKEN_TIME', '3600')), httponly=True, secure=True)
             
         return response

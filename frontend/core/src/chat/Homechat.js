@@ -1,7 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { showToast } from "../instance/ToastsInstance";
-import { ToastContainer } from "react-toastify";
 import useSocket from '../socket'
 import axiosInstance from "../instance/AxiosInstance";
 import ModalInstance from "../instance/ModalInstance";
@@ -36,6 +35,7 @@ export default function HomeChat() {
 	const [isModalProfile, setIsModalProfile] = useState(false);
 	const [profileId, setProfileId] = useState(1);
 	const modalProfile = useRef(null);
+	const [roomIsPrivate, setRoomIsPrivate] = useState(false);
 
 	const navigate = useNavigate();
 
@@ -123,7 +123,7 @@ export default function HomeChat() {
 	const users_connected = async () => {
 		try {
 			const response = await axiosInstance.get('/api/livechat/users_connected/');
-			console.log("Liste des users:", response.data);
+			console.log("Liste des users:", response);
 			setusersconnected(response.data.filter((v) => v.id !== userInfo.id));
 		} catch (error) {
 			showToast("error", t('ToastsError'));
@@ -344,7 +344,6 @@ export default function HomeChat() {
 					</div>
 				</div>
 			</div>
-			<ToastContainer />
 		</Template>
 	);
 }

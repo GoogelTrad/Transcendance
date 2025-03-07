@@ -24,7 +24,8 @@ function ResultTournament({ items, setItems, setModalResult, setModalStats, remo
                 console.log("Error fetching tournament:", error);
                 }
             };
-            fetchTournement();
+            if(tournamentCode)
+                fetchTournement();
           }, [tournamentCode]);
     
         const handleClick = () => {

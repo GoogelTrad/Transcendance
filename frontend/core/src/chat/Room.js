@@ -7,7 +7,6 @@ import axiosInstance from "../instance/AxiosInstance";
 import "./room.css"
 import ModalInstance from "../instance/ModalInstance";
 import Profile from "../users/Profile";
-import { ToastContainer } from "react-toastify";
 
 import { useTranslation } from 'react-i18next';
 import { useAuth } from "../users/AuthContext";
@@ -225,10 +224,11 @@ export default function Room() {
 					</ul>
 				</div>
 				<div className="chat">
+					<button className="exit" onClick={() => navigate(`/chat/`)}> {"🠔"} </button>
 					<div className="titre">
 						<h3>{t('RoomName')}: { dmname ? dmname : roomName }</h3>
 					</div>
-					<div ref={messagesEndRef} className="chat-messages" style={{ height: '400px', overflowY: 'scroll', border: '1px solid #ccc', padding: '10px' }}>
+					<div ref={messagesEndRef} className="chat-messages">
 						{chat.map((msg, index) => (
 							<div key={index} style={{ marginBottom: '10px' }}>
 								<small>({new Date(msg.timestamp).toLocaleTimeString()})</small>
@@ -238,11 +238,12 @@ export default function Room() {
 					</div>
 					<div className="saisi">
 						<form onSubmit={sendMessage}>
-							<input id="chat-message-input" type="text" size="100" maxLength={maxLength} value={message} onChange={handleChange}/>
+							<div className="d-flex">
+								<input id="chat-message-input" type="text" size="100" maxLength={maxLength} value={message} onChange={handleChange}/>
+								<button className="send" type='submit'> {"➤"} </button>
+							</div>
 							<p>{t('Characters')}: {caracteresRestants}</p>
-							<button className="send" type='submit'> {t('Send')} </button>
 						</form>
-						<button className="exit" onClick={() => navigate(`/chat/`)}> {t('Exit')} </button>
 					</div>
 				</div>
 				<div className="List">
@@ -311,7 +312,6 @@ export default function Room() {
 					</div>
 				</div>
 			</div>
-			<ToastContainer />
 		</>
 	);
 }

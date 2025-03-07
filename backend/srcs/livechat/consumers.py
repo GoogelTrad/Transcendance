@@ -63,15 +63,12 @@ class ChatConsumer(AsyncWebsocketConsumer):
             return user
 
         except User.DoesNotExist:
-            print("Erreur : Utilisateur introuvable !", flush=True)
             return None
         except Exception as e:
-            print(f"Erreur d'authentification : {e}", flush=True)
             return None
 
     async def connect(self):
         if not self.scope['cookies']['token']:
-            print("Aucun token trouvé !", flush=True)
             await self.close()
             return
         self.user = await self.getUsers()

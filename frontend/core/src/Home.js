@@ -16,7 +16,6 @@ import Profile from './users/Profile';
 import HomeChat from './chat/Homechat';
 import { useAuth } from './users/AuthContext';
 
-import { ToastContainer } from 'react-toastify';
 import { jwtDecode } from "jwt-decode";
 import P from './assets/P.png';
 import S from './assets/S.png';
@@ -266,7 +265,6 @@ function Home() {
                 </div>
             )}
             {isAuthenticated && (
-                <DragableInstance>
                     <div
                         ref={gameRef}
                         style={{
@@ -288,7 +286,6 @@ function Home() {
                         />
                         <div className="tournament-text" style={{color:'rgba(13, 53, 82, 0.8)'}}>PONG</div>
                     </div>
-                </DragableInstance>
             )}
             {isAuthenticated && (
                 <div

@@ -35,26 +35,25 @@
 /* Conteneur principal du chat */
 .chat {
     width: 50%;
-    max-width: 1400px;
-    min-width: 600px;
+    max-width: 87.5rem;
+    min-width: 37.5rem;
     background-color: #373535;
-    border-radius: 10px;
+    border-radius: 0.625rem;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    padding: 20px;
+    padding: 1.25rem;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 0.625rem;
 }
 
-/* Zone d'affichage des messages */
-#chat-log {
+.chat-messages {
     width: 100%;
-    height: 300px;
+    height: 25rem;
     border: 1px solid #464646;
     border-radius: 5px;
-    padding: 10px;
+    padding: 0.625rem;
     background-color: #4a4848;
-    font-size: 14px;
+    font-size: 1rem;
     line-height: 1.5;
     overflow-y: auto;
     resize: none;
@@ -62,38 +61,50 @@
 
 /* Entrée pour taper le message */
 #chat-message-input {
-    width: calc(100% - 80px);
-    padding: 10px;
+    width: 90%;
+    padding: 0.625rem;
     border: 1px solid #464646;
     background-color: #4a4848;
-    border-radius: 5px;
-    font-size: 14px;
+    border-top-left-radius: 4rem;
+    border-bottom-left-radius: 4rem;
+    border-right: 0px;
+    font-size: 1rem;
+    color: white;
     outline: none;
 }
 
 /*Bouton pour envoyer le message*/
 .send {
-    width: 60px;
-    padding: 10px;
-    background-color: #000000;
-    color: rgb(83, 81, 81);
+    width: 10%;
+    padding: 0.625rem;
+    background-color: #4a4848;
+    color: rgb(255, 255, 255);
     border: none;
-    border-radius: 5px;
     cursor: pointer;
-    font-size: 14px;
+    font-size: 20px;
     transition: background-color 0.3s;
+    border-top-right-radius: 4rem;
+    border-bottom-right-radius: 4rem;
+}
+
+.send:hover {
+    color: greenyellow;
 }
 
 .exit {
-    width: 60px;
-    padding: 10px;
-    background-color: #000000;
-    color: rgb(83, 81, 81);
+    line-height: 75%;
+    background-color: transparent;
+    color: rgb(255, 255, 255);
     border: none;
     border-radius: 5px;
     cursor: pointer;
-    font-size: 14px;
+    font-size: 30px;
     transition: background-color 0.3s;
+    position: absolute;
+}
+
+.exit:hover {
+    color: greenyellow;
 }
 
 /* Ajout d'un scroll si nécessaire */
@@ -104,6 +115,6 @@
 .saisi{
 	display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 0.625rem;
     width: 100%;
 }
