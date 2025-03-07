@@ -244,10 +244,10 @@ function HomeGame({ setModalStats, setModalCreateTournament, setModalTournament,
                                     <div className="stats-item" onClick={() => handleClickStats('profile', '...')}>Global Stats</div>
                                     <div className="stats-item" onClick={() => handleClickStats('global', '...')}>Stats game</div>
                                     <div className="item">
-                                        <div className="stats-subitem" onClick={() => handleClickStats('global', 'All games')}>► All games</div>
-                                        <div className="stats-subitem" onClick={() => handleClickStats('global', 'Win')}>► Win</div>
-                                        <div className="stats-subitem" onClick={() => handleClickStats('global', 'Lose')}>► Lose</div>
-                                        <div className="stats-subitem" onClick={() => handleClickStats('global', 'Tournament')}>► Tournament</div>
+                                        <div className="stats-subitem" onClick={() => handleClickStats('global', 'All games')}>All games</div>
+                                        <div className="stats-subitem" onClick={() => handleClickStats('global', 'Win')}>Win</div>
+                                        <div className="stats-subitem" onClick={() => handleClickStats('global', 'Lose')}>Lose</div>
+                                        <div className="stats-subitem" onClick={() => handleClickStats('global', 'Tournament')}>Tournament</div>
                                     </div>
                                     <div className="stats-item" onClick={() => handleClickStats('collect', '...')}>Collection</div>
                                 </div>

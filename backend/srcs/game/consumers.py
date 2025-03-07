@@ -614,23 +614,27 @@ class gameConsumer(AsyncWebsocketConsumer):
     async def disconnect(self, close_code):
         game = await self.get_game(self.game_id)
         if  game.status == "started":
+           
             game.status = "aborted"
             await self.save_game(game)
             player_left = self.user.name
             other_player = self.get_other_player(player_left)
+            print("id :", self.game_id, flush=True)
+            game_state = gameConsumer.game_states.get(self.game_id)
+            print(game_state.timer["seconds"], flush=True)
             await self.send_message({
                 "type": "game_update",
                 "status" : game.status,
-                "score_P1": gameConsumer.game_states[self.game_id].score["score_P1"],
-                "score_P2": gameConsumer.game_states[self.game_id].score["score_P2"],
+                "score_P1": game_state.score["score_P1"],
+                "score_P2": game_state.score["score_P2"],
                 "winner": other_player,
                 "loser": player_left,
-                "seconds": gameConsumer.game_states[self.game_id].timer["seconds"],
-                "minutes": gameConsumer.game_states[self.game_id].timer["minutes"],
-                "elo_Player1" : gameConsumer.game_states[self.game_id].eloPlayer1,
-                "elo_Player2" : gameConsumer.game_states[self.game_id].eloPlayer2,
-                "isInTournament" : gameConsumer.game_states[self.game_id].isInTournament,
-                "tournamentCode" : gameConsumer.game_states[self.game_id].code,
+                "seconds": game_state.timer["seconds"],
+                "minutes": game_state.timer["minutes"],
+                "elo_Player1" : game_state.eloPlayer1,
+                "elo_Player2" : game_state.eloPlayer2,
+                "isInTournament" : game_state.isInTournament,
+                "tournamentCode" : game_state.code,
             })
         await self.channel_layer.group_discard(
             self.group_name,

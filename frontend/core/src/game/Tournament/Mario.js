@@ -103,7 +103,7 @@ const MarioSection = ({ tournamentResponse, renderImageWithClick, onKickPlayer, 
     );
 
     return (
-        <div className="mario-container h-100 w-100" style={{backgroundColor:'transparent'}}>
+        <div className="mario-container" style={{backgroundColor:'transparent'}}>
             {marioData.isMarioJump && renderImageWithClick(
                     piece, 
                     "piece", 
@@ -170,7 +170,7 @@ const MarioSection = ({ tournamentResponse, renderImageWithClick, onKickPlayer, 
 
                         {marioData.title && (
                             <div
-                                className="d-flex tournament-text"
+                                className="title-players d-flex tournament-text"
                                 style={{
                                     width: "80%",
                                     height: "20%",
@@ -189,7 +189,7 @@ const MarioSection = ({ tournamentResponse, renderImageWithClick, onKickPlayer, 
                         )}
 
                         {marioData.isMarioJump && (
-                            <div className="w-100 tournament-text" style={{
+                            <div className="content-mario tournament-text" style={{
                                 position: 'absolute',
                                 height: '80%',
                                 top: '15%',

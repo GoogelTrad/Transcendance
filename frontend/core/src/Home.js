@@ -55,7 +55,7 @@ function Home() {
         {name: 'social', setter: setIsModalSocial},
         {name: 'profile', setter: setIsModalProfile},
         {name: 'friend', setter: setIsModalFriendProfile},
-        {name: 'result', setter: setIsModalResult},
+        {name: 'resultTournament', setter: setIsModalResult},
     ]
 
     const [modalZIndexes, setModalZIndexes] = useState({});
@@ -81,6 +81,7 @@ function Home() {
         { name: 'Win', active: false },
         { name: 'Lose', active: false },
         { name: 'Tournament', active: false},
+        {name: 'resultTournament', active: false},
     ]);
     
     const [numberPlayer, setNumberPlayer] = useState("");
@@ -155,6 +156,24 @@ function Home() {
         return () => window.removeEventListener("resize", handleResize);
     }, [isAuthenticated]);
 
+    useEffect(() => {
+        if (location.state?.tournamentCode) {
+            console.log("tournament code2 :", location.state.tournamentCode);
+            setTournamentCode(location.state.tournamentCode);
+        }
+    }, [location.state]);
+
+    useEffect(() => {
+        if (location.state?.modalName === 'resultTournament') {
+            setTournamentCode(location.state.tournamentCode);
+            launching({ 
+                newLaunch: "resultTournament", 
+                setModal: setIsModalResult 
+            });
+            setIsModalResult(true);
+            navigate(location.pathname, { replace: true, state: {} });
+        }
+    }, [location.state]);
 
     return (
         <Template
@@ -414,25 +433,33 @@ function Home() {
                     <CreateTournament setIsModalTournament={setIsModalTournament} setIsModalCreateTournament={setIsModalCreateTournament} setTournamentCode={setTournamentCode} launching={launching} removeLaunch={removeLaunch} numberPlayer={numberPlayer}/>
                 </ModalInstance>
             }
-            {isAuthenticated && <ModalInstance
-                height="60%"
-                width="20%"
-                isModal={isModalResult}
-                modalRef={modalResultRef}
-                name="Result"
-                onLaunchUpdate={() => (removeLaunch("resultTournament"), removeLaunch("tournament"))}
-                onClose={() => (setIsModalResult(false), setIsModalTournament(false))}
+            {isAuthenticated && (
+                <ModalInstance
+                    height="60%"
+                    width="20%"
+                    isModal={isModalResult}
+                    modalRef={modalResultRef}
+                    name="Result"
+                    zIndex={modalZIndexes["resultTournament"] || 1}
+                    onBringToFront={() => bringToFront("resultTournament")}
+                    onLaunchUpdate={() => {
+                        removeLaunch("resultTournament");
+                    }}
+                    onClose={() => {
+                        setIsModalResult(false);
+                    }}
                 >
                     <ResultTournament
                         items={items}
                         setItems={setItems}
-                        setIsModalTournament={setIsModalTournament}
                         setModalResult={setIsModalResult}
                         setModalStats={setIsModalStats}
                         removeLaunch={removeLaunch}
                         launching={launching}
+                        tournamentCode={tournamentCode}
                     />
-            </ModalInstance>}
+                </ModalInstance>
+            )}
             {isAuthenticated && isLaunched(isLaunch, "social") && 
                 <ModalInstance
                     height="60%"

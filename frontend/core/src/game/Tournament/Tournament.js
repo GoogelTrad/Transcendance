@@ -121,27 +121,32 @@ function Tournament() {
     }, [makeTournament, socketRef.current]);
     
     useEffect(() => {
-        if (tournamentResponse && tournamentResponse.status == "finished")
-        {
-            if (socketRef.current) {
-                socketRef.current.close();
-                socketRef.current = null;
-            }
-        }
+        // if (tournamentResponse && tournamentResponse.status == "finished")
+        // {
+        //     if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
+        //         socketRef.current.close();
+        //         socketRef.current = null;
+        //     }
+        // }
         console.log("tournamentRes : ", tournamentResponse);
     }, [tournamentResponse]);
 
 
-    // useEffect(() => {
-    //     if (tournamentResponse && tournamentResponse.winner_final) {
-    //         navigate("/Home", { 
-    //             state: { 
-    //                 modalName: "resultTournament",
-    //                 tournamentCode: tournamentResponse.code
-    //             }
-    //         });
-    //     }
-    // }, [tournamentResponse]);
+    useEffect(() => {
+        if (tournamentResponse && tournamentResponse.winner_final) {
+            if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
+                socketRef.current.close();
+                socketRef.current = null;
+            }
+            
+            navigate("/Home", { 
+                state: { 
+                    modalName: 'resultTournament',
+                    tournamentCode: tournamentCode 
+                }
+            });
+        }
+    }, [tournamentResponse]);
 
         const renderImageWithClick = (src, alt, style, onClick, title) => (
             <img
@@ -193,7 +198,7 @@ function Tournament() {
                 </div>
                 <MarioSection tournamentResponse={tournamentResponse} renderImageWithClick={renderImageWithClick} onStartTournament={startTournament}/>
            <PacmanSection tournamentResponse={tournamentResponse} renderImageWithClick={renderImageWithClick}/>
-                <div className="tree-tournament" style={{ height: `70%` }}>
+                <div className="tree-tournament" >
                     <TournamentBracket numberPlayer={tournamentResponse?.size} tournamentResponse={tournamentResponse}/>
                 </div>
            </div>
