@@ -109,10 +109,7 @@ export default function HomeChat() {
 			const response = await axiosInstance.get('/api/livechat/listroom/');
 
 			const dmRooms = response.data.dmRooms.map((value) => {
-				value.dmname = value.users.filter((v) => {
-					if (v.id !== userInfo.id) return true;
-					return false;
-				})[0]?.name + ' dm' ?? value.name + ' dm';
+				value.dmname = value.users[0]?.name + ' dm' ?? value.name;
 				return value;
 			});
 
@@ -126,8 +123,8 @@ export default function HomeChat() {
 	const users_connected = async () => {
 		try {
 			const response = await axiosInstance.get('/api/livechat/users_connected/');
-			const list = response.data.filter((v) => v.id !== userInfo.id);
-			setusersconnected(list);
+			console.log("Liste des users:", response.data);
+			setusersconnected(response.data.filter((v) => v.id !== userInfo.id));
 		} catch (error) {
 			showToast("error", t('ToastsError'));
 		}
@@ -185,16 +182,20 @@ export default function HomeChat() {
 	};
 
 	useEffect(() => {
+		if (userInfo.id) {
+			listroom();
+		}
+	}, [userInfo.id]);
+
+	useEffect(() => {
 		if (userInfo)
 		{
 			users_connected();
-			listroom();
 			listUsersBlocked();
 		}
 
 		const interval = setInterval(() => {
 			users_connected();
-			listroom();
 		}, 5000);
 
 		return () => clearInterval(interval);

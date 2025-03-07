@@ -35,28 +35,17 @@ def get_me(request, room_name):
 @jwt_auth_required
 def get_list_rooms(request):
     user = request.user
+    print("user:", user, flush=True)
 
     rooms = Room.objects.all()
     dmRooms = Room.objects.filter(dm=True, users=user)
+
+    print("rooms:", dmRooms, flush=True)
     rooms = rooms.filter(dm=False)
     roomSerializer = RoomSerializer(rooms, many=True)
     dmSerializer = RoomSerializer(dmRooms, many=True)
+    print("dmSerializer:", dmSerializer, flush=True)
     return Response({"publicRooms": roomSerializer.data, "dmRooms": dmSerializer.data})
-
-
-# @api_view(['GET'])
-# @jwt_auth_required
-# def get_list_rooms(request):
-#     user = request.user
-
-#     public_rooms = Room.objects.filter(dm=False)
-#     public_serializer = RoomSerializer(public_rooms, many=True)
-
-#     dm_rooms = Room.objects.filter(dm=True, users=user).annotate(user_count=Count('users')).filter(user_count=2)
-#     dm_serializer = RoomSerializer(dm_rooms, many=True)
-
-#     return Response({"publicRooms": public_serializer.data, "dmRooms": dm_serializer.data})
-
 
 @api_view(['GET'])
 def get_list_users(request, name):
