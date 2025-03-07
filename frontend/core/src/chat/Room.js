@@ -184,6 +184,7 @@ export default function Room() {
 
 		const interval = setInterval(() => {
 			Users_room_list();
+			listroom();
 		}, 10000);
 
 		return () => clearInterval(interval);

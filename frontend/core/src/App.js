@@ -23,6 +23,7 @@ import axiosInstance from './instance/AxiosInstance';
 import { useNavigate } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import SetupInterceptors from "./instance/SetupInterceptors";
+import PageNotFound from './NotFound';
 
 function NavigateFunctionComponent(props) {
   let navigate = useNavigate();
@@ -58,6 +59,7 @@ function App() {
               <Route path='/friends' element={<ProtectedRoute><Friends /></ProtectedRoute>} />
               <Route path='/games/tournament/:tournamentCode' element={<ProtectedRoute><Tournament /></ProtectedRoute>} />
               <Route path="/auth-success" element={<AuthSuccess />} />
+              <Route path="*" element={<PageNotFound />} />
             </Routes>
         </Router>
       </AuthProvider>
