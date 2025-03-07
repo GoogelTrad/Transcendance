@@ -44,6 +44,8 @@ export const AuthProvider = ({ children }) => {
     };
 
     useEffect(() => {
+
+        console.log("coucou");
         const initializeAuth = async () => {
             const authenticated = await login();
             if (authenticated) {
@@ -54,6 +56,7 @@ export const AuthProvider = ({ children }) => {
                 setIsAuthenticated(false);
                 localStorage.setItem('isAuthenticated', 'false');
                 setUserInfo(null);
+                logout();
             }
         };
         initializeAuth();

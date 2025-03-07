@@ -9,8 +9,7 @@ const SetupInterceptors = (navigate) => {
         {
             if (localStorage.getItem('isAuthenticated') === 'true')
             {
-                localStorage.setItem('isAuthenticated', 'false');
-                navigate('/');
+                localStorage.setItem("isAuthenticated", "false");
             } 
         }
       });
