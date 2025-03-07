@@ -10,7 +10,6 @@ import check from "../assets/user/check.svg"
 import gear from "../assets/user/gear.svg"
 import { AddFriend } from "../friends/Friends"
 import { showToast } from "../instance/ToastsInstance";
-import { ToastContainer } from 'react-toastify';
 import { useAuth } from "./AuthContext";
 
 import { useTranslation } from 'react-i18next';
@@ -60,7 +59,6 @@ function ChangeDetails({setUser, setValue, toChange, value, toType})
 					placeholder={t('ModifyDetails')}/>
 				<button type="submit" className='check-icon'><img src={check} alt="check"/></button>
             </form>
-			<ToastContainer />
 		</>
 	) 
 }
@@ -240,7 +238,6 @@ function Profile({id})
 			) : (
 				<p>{t('NoUsers')}</p>
 			)}
-			<ToastContainer />
 		</>
 	);
 }

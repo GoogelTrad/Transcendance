@@ -48,7 +48,7 @@ class LoginView():
                 send_confirmation_email(user)
                 return Response(
                     {'message': 'Verification required. Check your email for the confirmation code.'},
-                    status=status.HTTP_401_UNAUTHORIZED
+                    status=status.HTTP_302_FOUND
                 )
         user.ip_user = ip
         user.status = 'online'
@@ -72,7 +72,7 @@ class LoginView():
 
         reponse = Response()
 
-        reponse.set_cookie(key='token', value=token, max_age=3600, httponly=True, secure=True)
+        reponse.set_cookie(key='token', value=token, max_age=int(os.getenv('TOKEN_TIME', '3600')), httponly=True, secure=True)
         reponse.data = {
             'message': 'Logged in successfully!'
         }
@@ -121,7 +121,7 @@ class UserView():
                     
                     filtered_user = {key: value for key, value in serializer.data.items() if key not in ['password']}
                     reponse.delete_cookie('token')
-                    reponse.set_cookie(key='token', value=new_token, max_age=3600, httponly=True, secure=True)
+                    reponse.set_cookie(key='token', value=new_token, max_age=int(os.getenv('TOKEN_TIME', '3600')), httponly=True, secure=True)
                     reponse.data = {
                         **filtered_user
                     }
@@ -226,7 +226,7 @@ def verify_code(request):
 
         reponse = Response()
 
-        reponse.set_cookie(key='token', value=token, max_age=3600, httponly=True, secure=True)
+        reponse.set_cookie(key='token', value=token, max_age=int(os.getenv('TOKEN_TIME', '3600')), httponly=True, secure=True)
         reponse.data = {
             'message': 'Code is valid!'
         }
@@ -293,7 +293,7 @@ def fetch_user_data(request):
             'is_stud': user.is_stud,
         }
         return Response({'payload': payload})
-    return Response({'error': 'Not authenticated'}, status=status.HTTP_401_UNAUTHORIZED)
+    return Response({'error': 'Not authenticated'}, status=status.HTTP_403_FORBIDDEN)
 
 @api_view(['GET'])
 def check_auth(request):

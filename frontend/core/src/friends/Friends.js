@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import axiosInstance from '../instance/AxiosInstance';
 import { jwtDecode } from 'jwt-decode';
 import { showToast } from '../instance/ToastsInstance';
-import { ToastContainer } from 'react-toastify';
 import { Link } from 'react-router-dom';
 import ModalInstance from '../instance/ModalInstance';
 import { useAuth } from '../users/AuthContext'; 
@@ -252,7 +251,6 @@ function FriendRequests({setModal, setIsFriends, launching}) {
                 )}
             </div>
 
-		<ToastContainer />
 	</div>
 	);
 }

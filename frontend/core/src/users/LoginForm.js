@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Button from 'react-bootstrap/Button';
 import { useNavigate, Link } from 'react-router-dom';
-import { ToastContainer } from 'react-toastify';
 import { showToast } from '../instance/ToastsInstance';
 import axiosInstance from '../instance/AxiosInstance';
 import 'react-toastify/dist/ReactToastify.css';
@@ -263,7 +262,6 @@ function LoginRegister({setModal, setTerminal, removeLaunch}) {
                     </div>
                 </div>
 
-                <ToastContainer />
             </div>
     );
 }

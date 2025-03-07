@@ -13,5 +13,4 @@ urlpatterns = [
     path('token/<str:token>', is_token_valid, name="is_token_valid"),
     path('fetch_user_data', fetch_user_data, name="fetch_user_data"),
     path('check_auth', check_auth, name="check_auth"),
-    
 ]
