@@ -212,7 +212,7 @@ function Tournament() {
                 </div>
                 <MarioSection tournamentResponse={tournamentResponse} renderImageWithClick={renderImageWithClick} onStartTournament={startTournament}/>
            <PacmanSection tournamentResponse={tournamentResponse} renderImageWithClick={renderImageWithClick}/>
-                <div className="tree-tournament" style={{ height: `70%` }}>
+                <div className="tree-tournament" >
                     <TournamentBracket numberPlayer={tournamentResponse?.size} tournamentResponse={tournamentResponse}/>
                 </div>
            </div>
