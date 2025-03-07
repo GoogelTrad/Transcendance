@@ -28,18 +28,16 @@ import PageNotFound from './NotFound';
 function NavigateFunctionComponent(props) {
   let navigate = useNavigate();
   const [ ran, setRan ] = useState(false);
+  const {setIsAuthenticated} = useAuth();
 
   if(!ran){
-     SetupInterceptors(navigate);
+     SetupInterceptors(navigate, setIsAuthenticated);
      setRan(true);
   }
   return <></>;
 }
 
-
 function App() {
-
-
   
   return (
     <>

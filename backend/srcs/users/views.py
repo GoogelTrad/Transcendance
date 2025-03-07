@@ -72,7 +72,7 @@ class LoginView():
 
         reponse = Response()
 
-        reponse.set_cookie(key='token', value=token, max_age=int(os.getenv('TOKEN_TIME', '3600')), httponly=True, secure=True)
+        reponse.set_cookie(key='token', value=token, max_age=int(os.getenv('TOKEN_TIME', '3600')), httponly=True, secure=True, samesite='None')
         reponse.data = {
             'message': 'Logged in successfully!'
         }
@@ -121,7 +121,7 @@ class UserView():
                     
                     filtered_user = {key: value for key, value in serializer.data.items() if key not in ['password']}
                     reponse.delete_cookie('token')
-                    reponse.set_cookie(key='token', value=new_token, max_age=int(os.getenv('TOKEN_TIME', '3600')), httponly=True, secure=True)
+                    reponse.set_cookie(key='token', value=new_token, max_age=int(os.getenv('TOKEN_TIME', '3600')), httponly=True, secure=True, samesite='None')
                     reponse.data = {
                         **filtered_user
                     }
@@ -226,7 +226,7 @@ def verify_code(request):
 
         reponse = Response()
 
-        reponse.set_cookie(key='token', value=token, max_age=int(os.getenv('TOKEN_TIME', '3600')), httponly=True, secure=True)
+        reponse.set_cookie(key='token', value=token, max_age=int(os.getenv('TOKEN_TIME', '3600')), httponly=True, secure=True, samesite='None')
         reponse.data = {
             'message': 'Code is valid!'
         }

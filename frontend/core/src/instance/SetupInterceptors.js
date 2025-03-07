@@ -1,6 +1,6 @@
 import axiosInstance from '../instance/AxiosInstance';
 
-const SetupInterceptors = (navigate) => {
+const SetupInterceptors = (navigate, setIsAuthenticated) => {
     axiosInstance.interceptors.response.use((response) => {
   
         return response;
@@ -10,6 +10,8 @@ const SetupInterceptors = (navigate) => {
             if (localStorage.getItem('isAuthenticated') === 'true')
             {
                 localStorage.setItem("isAuthenticated", "false");
+                setIsAuthenticated(false);
+                navigate("/home");
             } 
         }
       });
