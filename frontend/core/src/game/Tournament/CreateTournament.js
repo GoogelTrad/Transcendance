@@ -78,7 +78,6 @@ const CreateTournament = ({ setIsModalTournament, setIsModalCreateTournament, se
 
         if (tournamentSettings.maxScore === 0 || tournamentSettings.maxTimeMinutes === "00") {
             showToast("error", t('Toasts.PleaseEnterAScoreAndTime'));
-            console.log("Please enter a score and time");
             return;
         }
 

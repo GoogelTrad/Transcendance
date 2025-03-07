@@ -21,7 +21,7 @@ function ResultTournament({ items, setItems, setModalResult, setModalStats, remo
                     const response = await axiosInstance.get(`/api/game/fetch_data_tournament_by_code/${tournamentCode}`);
                     setTournamentResponse(response.data);
                 } catch (error) {
-                console.log("Error fetching tournament:", error);
+                    console.log("Error fetching tournament:", error);
                 }
             };
             if(tournamentCode)

@@ -114,7 +114,6 @@ export default function Room() {
 
 	const handleRoomClick = (e, room) => {
 		e.preventDefault();
-		console.log("name:", room.name);
 
 		if (!room.name) {
 			showToast("error", t('Toasts.NotRoomName'));

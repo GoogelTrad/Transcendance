@@ -21,7 +21,6 @@ export default function HomeChat() {
 
 
 	const { userInfo, refreshUserInfo, isAuthenticated} = useAuth();
-	console.log('chat', userInfo)
 	const socket = useSocket('chat', 'public');
 	const [createName, setCreateRoomName] = useState("");
 	const [createpassword, setCreatePassword] = useState("");
@@ -39,7 +38,11 @@ export default function HomeChat() {
 
 	const navigate = useNavigate();
 
-	const handleChangeCreateRoom = (e) => setCreateRoomName(e.target.value);
+	const handleChangeCreateRoom = (e) => {
+		const value = e.target.value;
+		const filteredValue = value.replace(/[^0-9a-zA-Z]/g, '');
+		setCreateRoomName(filteredValue);
+	};
 	const handleChangeCreatePassword = (e) => setCreatePassword(e.target.value);
 
 	const handleCreateToggle = () => { setIsCreateSwitchOn(!isCreateSwitchOn) };
@@ -123,8 +126,8 @@ export default function HomeChat() {
 	const users_connected = async () => {
 		try {
 			const response = await axiosInstance.get('/api/livechat/users_connected/');
-			console.log("Liste des users:", response);
-			setusersconnected(response.data.filter((v) => v.id !== userInfo.id));
+			const list = response.data.filter((v) => v.id !== userInfo.id);
+			setusersconnected(list);
 		} catch (error) {
 			showToast("error", t('ToastsError'));
 		}
@@ -170,12 +173,14 @@ export default function HomeChat() {
 	}
 
 	const listUsersBlocked = async () => {
-		try {
-			const response = await axiosInstance.get(`/api/livechat/blocked_users/${userInfo.id}`);
-			setBlockedUsers(response.data);
-		}
-		catch(error) {
-			showToast("error", t('ToastsError'));
+		if (!userInfo) { 
+			try {
+				const response = await axiosInstance.get(`/api/livechat/blocked_users/${userInfo.id}`);
+				setBlockedUsers(response.data);
+			}
+			catch(error) {
+				showToast("error", t('ToastsError'));
+			}
 		}
 	};
 
@@ -190,14 +195,12 @@ export default function HomeChat() {
 		const interval = setInterval(() => {
 			users_connected();
 			listroom();
-			listUsersBlocked();
 		}, 5000);
 
 		return () => clearInterval(interval);
 	}, []);
 
 	const handleRoomClick = async (e, room, dmname = null) => {
-		console.log("dmname", dmname);
 		e.preventDefault();
 
 		if (!room.name) {
