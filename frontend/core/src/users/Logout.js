@@ -6,7 +6,7 @@ import axiosInstance from '../instance/AxiosInstance.js';
 import { showToast } from '../instance/ToastsInstance';
 
 function Logout() {
-    const { logout} = useAuth();
+    const { logout } = useAuth();
 
     const navigate = useNavigate();
 
@@ -19,10 +19,6 @@ function Logout() {
     {
         handleLogout();
     }, []);
-
-    return (
-        <p>Coucou</p>
-    );
 };
 
 export default Logout;

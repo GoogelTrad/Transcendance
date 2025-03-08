@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Button from 'react-bootstrap/Button';
 import { useNavigate, Link } from 'react-router-dom';
-import { ToastContainer } from 'react-toastify';
 import { showToast } from '../instance/ToastsInstance';
 import axiosInstance from '../instance/AxiosInstance';
 import 'react-toastify/dist/ReactToastify.css';
@@ -79,6 +78,7 @@ function LoginRegister({setModal, setTerminal, removeLaunch}) {
                 },
             });
 
+
             if (response.status === 401)
                 setStep(true);
             else if (response.status === 200) {
@@ -91,7 +91,7 @@ function LoginRegister({setModal, setTerminal, removeLaunch}) {
             }
         } catch (error) {
             if (error.response && error.response.status === 401) 
-                setStep(true); 
+                setStep(true);
             else 
                 showToast('error', t('Toasts.IncorrectLoginOrPassword'));
         }
@@ -127,14 +127,26 @@ function LoginRegister({setModal, setTerminal, removeLaunch}) {
         if(isAuthenticated)
             return showToast('error', t('Toasts.NotCreateNewAccountWhileConnected'));
         try {
-            await axiosInstance.post('/api/user/create', data, {
+            const response = await axiosInstance.post('/api/user/create', data, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
             });
             showToast("info", t('Toasts.AccountCreatedSuccesfully'));
         } catch (error) {
-            showToast("error", t("Toasts.CannotCreateTheAccount"));
+            console.log(error);
+            if (error.response) {
+                if (error.response.status === 406) {
+                    showToast("error", t('Toasts.EmailType'));
+                }
+                else if (error.response.status === 403)
+                    showToast("error", t("Toasts.NameAlreadyTaken"));
+                else {
+                    showToast("error", t("Toasts.CannotCreateTheAccount"));
+                }
+            } else {
+                showToast("error", t("Toasts.CannotCreateTheAccount"));
+            }
         }
     };
     
@@ -209,7 +221,7 @@ function LoginRegister({setModal, setTerminal, removeLaunch}) {
                             <div className='mb-3'>
                                 <label htmlFor="email">{t('Email')}:</label>
                                 <input className='register-input'
-                                    type='email'
+                                    type='text'
                                     id='register-email'
                                     name='email'
                                     value={registerData.email}
@@ -263,7 +275,6 @@ function LoginRegister({setModal, setTerminal, removeLaunch}) {
                     </div>
                 </div>
 
-                <ToastContainer />
             </div>
     );
 }

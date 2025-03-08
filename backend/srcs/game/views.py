@@ -95,7 +95,7 @@ class GameView:
 
         response = Response()
 
-        response.set_cookie(key='token', value=token, max_age=3600)
+        response.set_cookie(key='token', value=token, max_age=int(os.getenv('TOKEN_TIME', '3600')), httponly=True, secure=True, samesite='None')
 
         response.data = {
             'token' : token
@@ -124,12 +124,12 @@ class TournamentView:
             tournament_to_del = Tournament.objects.first()
             tournament_to_del.delete()
             verif_tournament = Tournament.objects.count()
-        tournament_code = random.randint(1, 9999)
+        tournament_code = random.randint(100, 9999)
 
         if Tournament.objects.filter(code=tournament_code).exists():
             tournament_code_save = tournament_code
             while tournament_code == tournament_code_save:
-                tournament_code = random.randint(1, 9999)
+                tournament_code = random.randint(100, 9999)
         print(tournament_code, flush=True)
         data["code"] = tournament_code
         print(data["code"], flush=True)

@@ -24,7 +24,8 @@ def oauth_callback(request):
 
 def oauth_login(request):
 	if 'code' not in request.GET:
-		return JsonResponse({'error': 'Missing Code'}, status=400)
+		params = urlencode({'status': 'ACCESS_DENIED', 'name': None})
+		return HttpResponseRedirect(f"{os.getenv('REACT_APP_URL_REACT')}:3000/auth-success?{params}")
 
 	code = request.GET['code']
 	payload = {
@@ -45,7 +46,7 @@ def oauth_login(request):
 		if user_info.status_code == 200:
 			user_data = user_info.json()
 
-			if  User.objects.filter(email=user_data['email']).exists():
+			if  User.objects.filter(email=user_data['email']).exists() and not User.objects.filter(name=user_data['login']).exists():
 				params = urlencode({'status': 'EMAIL_TAKEN', 'name': None})
 				return HttpResponseRedirect(f"{os.getenv('REACT_APP_URL_REACT')}:3000/auth-success?{params}")
 
@@ -126,7 +127,7 @@ def oauth_login(request):
 
 			params = urlencode({'status': 'SUCCESS', 'token': jwt_token})
 			response = HttpResponseRedirect(f"{os.getenv('REACT_APP_URL_REACT')}:3000/auth-success?{params}")
-			response.set_cookie(key='token', value=jwt_token, max_age=3600, httponly=True, secure=True, domain=os.getenv('REACT_APP_DOMAIN'))
+			response.set_cookie(key='token', value=jwt_token, max_age=int(os.getenv('TOKEN_TIME', '3600')), httponly=True, secure=True, samesite='None')
 			return response
 
 		else:

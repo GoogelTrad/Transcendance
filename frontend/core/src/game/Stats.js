@@ -286,9 +286,8 @@ function Stats({ itemsArray = [] }) {
                                     marginTop: '5%'
                                 }}
                             >
-                                <label htmlFor="profile_image" className="d-flex justify-content-center align-items-center w-100 h-100">
                                     <img
-                                        src={userInfo?.profile_image_url ? `https://localhost:8000${userInfo?.profile_image_url}` : '/default.png'}
+                                        src={userInfo?.profile_image_url ? `${process.env.REACT_APP_API_URL}${userInfo?.profile_image_url}` : '/default.png'}
                                         alt="Profile"
                                         className="profile-picture img-fluid"
                                         title="profile"
@@ -299,7 +298,6 @@ function Stats({ itemsArray = [] }) {
                                             objectFit: 'cover'
                                         }}
                                     />
-                                </label>
                             </div>
                             <div className="stats-row-element empty-row flex-grow-1" style={{ height: "12%", display: "flex", alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>{userInfo?.name}</div>
                             <div className="stats-row-element d-flex flex-grow-1" style={{height: `30%`, alignItems: 'center', justifyContent: 'center', textAlign: 'center'}}>

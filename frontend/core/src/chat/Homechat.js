@@ -1,7 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { showToast } from "../instance/ToastsInstance";
-import { ToastContainer } from "react-toastify";
 import useSocket from '../socket'
 import axiosInstance from "../instance/AxiosInstance";
 import ModalInstance from "../instance/ModalInstance";
@@ -22,7 +21,6 @@ export default function HomeChat() {
 
 
 	const { userInfo, refreshUserInfo, isAuthenticated} = useAuth();
-	console.log('chat', userInfo)
 	const socket = useSocket('chat', 'public');
 	const [createName, setCreateRoomName] = useState("");
 	const [createpassword, setCreatePassword] = useState("");
@@ -36,10 +34,15 @@ export default function HomeChat() {
 	const [isModalProfile, setIsModalProfile] = useState(false);
 	const [profileId, setProfileId] = useState(1);
 	const modalProfile = useRef(null);
+	const [roomIsPrivate, setRoomIsPrivate] = useState(false);
 
 	const navigate = useNavigate();
 
-	const handleChangeCreateRoom = (e) => setCreateRoomName(e.target.value);
+	const handleChangeCreateRoom = (e) => {
+		const value = e.target.value;
+		const filteredValue = value.replace(/[^0-9a-zA-Z]/g, '');
+		setCreateRoomName(filteredValue);
+	};
 	const handleChangeCreatePassword = (e) => setCreatePassword(e.target.value);
 
 	const handleCreateToggle = () => { setIsCreateSwitchOn(!isCreateSwitchOn) };
@@ -106,10 +109,7 @@ export default function HomeChat() {
 			const response = await axiosInstance.get('/api/livechat/listroom/');
 
 			const dmRooms = response.data.dmRooms.map((value) => {
-				value.dmname = value.users.filter((v) => {
-					if (v.id !== userInfo.id) return true;
-					return false;
-				})[0]?.name + ' dm' ?? value.name + ' dm';
+				value.dmname = value.users[0]?.name + ' dm' ?? value.name;
 				return value;
 			});
 
@@ -170,34 +170,38 @@ export default function HomeChat() {
 	}
 
 	const listUsersBlocked = async () => {
-		try {
-			const response = await axiosInstance.get(`/api/livechat/blocked_users/${userInfo.id}`);
-			setBlockedUsers(response.data);
-		}
-		catch(error) {
-			showToast("error", t('ToastsError'));
+		if (!userInfo) { 
+			try {
+				const response = await axiosInstance.get(`/api/livechat/blocked_users/${userInfo.id}`);
+				setBlockedUsers(response.data);
+			}
+			catch(error) {
+				showToast("error", t('ToastsError'));
+			}
 		}
 	};
+
+	useEffect(() => {
+		if (userInfo.id) {
+			listroom();
+		}
+	}, [userInfo.id]);
 
 	useEffect(() => {
 		if (userInfo)
 		{
 			users_connected();
-			listroom();
 			listUsersBlocked();
 		}
 
 		const interval = setInterval(() => {
 			users_connected();
-			listroom();
-			listUsersBlocked();
 		}, 5000);
 
 		return () => clearInterval(interval);
 	}, []);
 
 	const handleRoomClick = async (e, room, dmname = null) => {
-		console.log("dmname", dmname);
 		e.preventDefault();
 
 		if (!room.name) {
@@ -344,7 +348,6 @@ export default function HomeChat() {
 					</div>
 				</div>
 			</div>
-			<ToastContainer />
 		</Template>
 	);
 }

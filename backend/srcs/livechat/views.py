@@ -12,7 +12,7 @@ from asgiref.sync import async_to_sync
 from django.shortcuts import get_object_or_404
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework import status
-
+from django.db.models import Count
 
 @api_view(['GET'])
 @jwt_auth_required
@@ -35,12 +35,16 @@ def get_me(request, room_name):
 @jwt_auth_required
 def get_list_rooms(request):
     user = request.user
+    print("user:", user, flush=True)
 
     rooms = Room.objects.all()
     dmRooms = Room.objects.filter(dm=True, users=user)
+
+    print("rooms:", dmRooms, flush=True)
     rooms = rooms.filter(dm=False)
     roomSerializer = RoomSerializer(rooms, many=True)
     dmSerializer = RoomSerializer(dmRooms, many=True)
+    print("dmSerializer:", dmSerializer, flush=True)
     return Response({"publicRooms": roomSerializer.data, "dmRooms": dmSerializer.data})
 
 @api_view(['GET'])
@@ -57,9 +61,13 @@ def get_list_users(request, name):
 @jwt_auth_required
 def get_users_connected(request):
     try:
+        user_id = request.user.id
         users = User.objects.all()
         serializer = UserConnectedSerializer(users, many=True)
-        return Response(serializer.data)
+
+        filtered_user = [usr for usr in serializer.data if usr['id'] != user_id]
+
+        return Response(filtered_user)
     except:
         return Response({"error": "Users connected not found."}, status=404)
 
@@ -167,6 +175,7 @@ def get_list_blocked(request, id):
 
     if users is None:
         raise AuthenticationFailed("User not found")
+
 
     response = Response()
 

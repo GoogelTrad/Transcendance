@@ -18,20 +18,15 @@ function Template({ children, taskBarContent, launching, appArray }) {
     const { i18n } = useTranslation();
     const navigate = useNavigate();
     const [isDesktop, setIsDesktop] = useState(false);
-    const [isSocial, setIsSocial] = useState(false);
     const { isAuthenticated } = useAuth();
     const desktopRef = useRef(null);
+    const locate = useLocation();
 
     const { t } = useTranslation();
 
     const toggleDesktop = () => {
         setIsDesktop((prev) => !prev);
     };
-
-    const toggleSocial = () => {
-        setIsSocial(((prev) => !prev));
-        handleClick('social')
-    }
 
     const handleClickOutside = (e) => {
         if (desktopRef.current && !desktopRef.current.contains(e.target) && 
@@ -42,7 +37,7 @@ function Template({ children, taskBarContent, launching, appArray }) {
 
     const handleClick= (modalName) =>
     {
-        const app = appArray.find((item) => item.name === modalName);
+        const app = appArray?.find((item) => item.name === modalName);
 
         if (!app) return;
         app.setter(prev => !prev);
@@ -51,7 +46,6 @@ function Template({ children, taskBarContent, launching, appArray }) {
         setIsDesktop(false);
     }
 
-    
 
     return (
         <div className="general container-fluid">
@@ -121,7 +115,6 @@ function Template({ children, taskBarContent, launching, appArray }) {
                                     <div className="w-100" style={{ position: 'absolute', left:'0%', height:'10%', bottom:'10%'}}>
                                         <img src={profile} alt="Profile" title="Profile" style={{ width: '24px', height: '24px', cursor: 'pointer', margin:'2%' }} onClick={() => navigate("/home", { state: { modalName: "profile" } })} />
                                         <img src={home} alt="Home" title="Home" style={{ width: '24px', height: '24px', cursor: 'pointer', margin:'2%' }} onClick={() => navigate("/home")} />
-                                        <img src={info} alt="Info" title="Infos" style={{ width: '24px', height: '24px', cursor: 'pointer', margin:'2%' }} onClick={() => console.log("Info clicked")} />
                                     </div>
                                     <div className="w-100" style={{ position: 'absolute', borderTop:'2px solid #989a9c', left:'0%', height:'10%', bottom:'0%'}}>
                                         <div className='h-100' style={{position: 'absolute', left:'86%', borderLeft:'2px solid #989a9c' }}></div>
@@ -140,7 +133,7 @@ function Template({ children, taskBarContent, launching, appArray }) {
                         src={social}
                         alt="social"
                         className="social-icon"
-                        onClick={toggleSocial}
+                        onClick={() => navigate("/home", {state: { modalName: "social"}})}
                     />}
                     <div className='date-task'>
                         <LiveDateTime />
