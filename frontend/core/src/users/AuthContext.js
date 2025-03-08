@@ -77,7 +77,7 @@ export const AuthProvider = ({ children }) => {
         try {
             await axiosInstance.get('/api/user/logout');
         } catch (err) {
-            console.log('Erreur lors de la déconnexion API:', err);
+            console.log('Erreur lors de la déconnexion API', err);
         }
 
         setUserInfo(null);

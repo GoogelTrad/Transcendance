@@ -127,7 +127,7 @@ def oauth_login(request):
 
 			params = urlencode({'status': 'SUCCESS', 'token': jwt_token})
 			response = HttpResponseRedirect(f"{os.getenv('REACT_APP_URL_REACT')}:3000/auth-success?{params}")
-			response.set_cookie(key='token', value=jwt_token, max_age=int(os.getenv('TOKEN_TIME', '3600')), httponly=True, secure=True)
+			response.set_cookie(key='token', value=jwt_token, max_age=int(os.getenv('TOKEN_TIME', '3600')), httponly=True, secure=True, samesite='None')
 			return response
 
 		else:

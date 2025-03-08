@@ -17,6 +17,7 @@ from django.utils.timezone import now
 import random
 import jwt
 import os
+import re
 
 
 class LoginView():
@@ -72,7 +73,7 @@ class LoginView():
 
         reponse = Response()
 
-        reponse.set_cookie(key='token', value=token, max_age=int(os.getenv('TOKEN_TIME', '3600')), httponly=True, secure=True)
+        reponse.set_cookie(key='token', value=token, max_age=int(os.getenv('TOKEN_TIME', '3600')), httponly=True, secure=True, samesite='None')
         reponse.data = {
             'message': 'Logged in successfully!'
         }
@@ -121,7 +122,7 @@ class UserView():
                     
                     filtered_user = {key: value for key, value in serializer.data.items() if key not in ['password']}
                     reponse.delete_cookie('token')
-                    reponse.set_cookie(key='token', value=new_token, max_age=int(os.getenv('TOKEN_TIME', '3600')), httponly=True, secure=True)
+                    reponse.set_cookie(key='token', value=new_token, max_age=int(os.getenv('TOKEN_TIME', '3600')), httponly=True, secure=True, samesite='None')
                     reponse.data = {
                         **filtered_user
                     }
@@ -135,20 +136,21 @@ class UserView():
 
     @api_view(['POST'])
     def createUser(request):
+
+        email_type = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+        email = request.data['email']
+        if not re.match(email_type, email) :
+            return Response({'error': "Invalid email type!"}, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+        username = request.data['name']
+        if User.objects.filter(name=username).exists():
+            return Response({'error': "Username already taken!"}, status=status.HTTP_403_FORBIDDEN)
+
         serializer = UserSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)   
         serializer.save()
 
         return Response(serializer.data)
-
-    @api_view(['GET'])
-    def count_users(request):
-        try :
-            user_count = User.objects.count()
-            return Response({'count': user_count})
-        except Exception as e:
-            return Response({'error': str(e)}, status=500)
-
 
 class LogoutView():
     @api_view(['GET'])
@@ -226,7 +228,7 @@ def verify_code(request):
 
         reponse = Response()
 
-        reponse.set_cookie(key='token', value=token, max_age=int(os.getenv('TOKEN_TIME', '3600')), httponly=True, secure=True)
+        reponse.set_cookie(key='token', value=token, max_age=int(os.getenv('TOKEN_TIME', '3600')), httponly=True, secure=True, samesite='None')
         reponse.data = {
             'message': 'Code is valid!'
         }

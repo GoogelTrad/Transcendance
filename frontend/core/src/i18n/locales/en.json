@@ -191,6 +191,8 @@
 		"EnableTo2FA": "2FA has been enable!",
 		"DisableTo2FA": "2FA has been disable!",
 		"Error2FA": "Error while changing perms on 2FA!",
+		"EmailType": "Invalid e-mail address!",
+		"NameAlreadyTaken": "Username already taken!",
 		"InvalidRoomName": "The room name may not contain any characters other than alphanumeric characters"
 	},
 
