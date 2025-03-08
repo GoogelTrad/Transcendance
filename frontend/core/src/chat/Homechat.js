@@ -48,7 +48,7 @@ export default function HomeChat() {
 	const handleCreateToggle = () => { setIsCreateSwitchOn(!isCreateSwitchOn) };
 
 	const [blockedData, setBlockedData] = useState({
-		from_user: userInfo.id,
+		from_user: userInfo?.id,
 		to_user: '',
 	});
 	
@@ -116,7 +116,8 @@ export default function HomeChat() {
 			setlistrooms(response.data.publicRooms);
 			setdmrooms(dmRooms);
 		} catch (error) {
-			showToast("error", t('ToastsError'));
+			if (error.response.status !== 401 )
+				showToast("error", t('ToastsError'));
 		}
 	};
 
@@ -126,7 +127,8 @@ export default function HomeChat() {
 			console.log("Liste des users:", response.data);
 			setusersconnected(response.data.filter((v) => v.id !== userInfo.id));
 		} catch (error) {
-			showToast("error", t('ToastsError'));
+			if (error.response.status !== 401 )
+				showToast("error", t('ToastsError'));
 		}
 	};
 
@@ -145,7 +147,8 @@ export default function HomeChat() {
 			}
 
 		} catch(error) {
-			showToast("error", t('ToastsError'));
+			if (error.response.status !== 401 )
+				showToast("error", t('ToastsError'));
 		}
 	}
 
@@ -165,41 +168,40 @@ export default function HomeChat() {
 			}
 
 		} catch(error) {
-			showToast("error", t('ToastsError'));
+			if (error.response.status !== 401 )
+				showToast("error", t('ToastsError'));
 		}
 	}
 
 	const listUsersBlocked = async () => {
-		if (!userInfo) { 
+		if (userInfo?.id) { 
 			try {
 				const response = await axiosInstance.get(`/api/livechat/blocked_users/${userInfo.id}`);
 				setBlockedUsers(response.data);
 			}
 			catch(error) {
-				showToast("error", t('ToastsError'));
+				if (error.response.status !== 401 )
+					showToast("error", t('ToastsError'));
 			}
 		}
 	};
 
 	useEffect(() => {
-		if (userInfo.id) {
-			listroom();
-		}
-	}, [userInfo.id]);
-
-	useEffect(() => {
-		if (userInfo)
+		if (userInfo.id)
 		{
 			users_connected();
+			listroom();
 			listUsersBlocked();
 		}
 
 		const interval = setInterval(() => {
 			users_connected();
+			listroom();
+			listUsersBlocked();
 		}, 5000);
 
 		return () => clearInterval(interval);
-	}, []);
+	}, [userInfo?.id]);
 
 	const handleRoomClick = async (e, room, dmname = null) => {
 		e.preventDefault();

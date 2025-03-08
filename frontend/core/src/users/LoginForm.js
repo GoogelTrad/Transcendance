@@ -77,11 +77,8 @@ function LoginRegister({setModal, setTerminal, removeLaunch}) {
                     'Content-Type': 'multipart/form-data',
                 },
             });
-
-
-            if (response.status === 401)
-                setStep(true);
-            else if (response.status === 200) {
+            console.log("coucou")
+            if (response.status === 200) {
                 login();
                 setModal(false);
                 setTerminal(false);
@@ -90,11 +87,11 @@ function LoginRegister({setModal, setTerminal, removeLaunch}) {
                 navigate('/home');
             }
         } catch (error) {
-            if (error.response && error.response.status === 401) 
+            if (error.status === 403)
                 setStep(true);
             else 
                 showToast('error', t('Toasts.IncorrectLoginOrPassword'));
-        }
+    }
     };
 
     const handleVerify = async () => {
@@ -149,6 +146,8 @@ function LoginRegister({setModal, setTerminal, removeLaunch}) {
             }
         }
     };
+
+    // useEffect(() => {console.log(step)}, [step]);
     
     return (
             <div className="coucou row">
@@ -185,7 +184,6 @@ function LoginRegister({setModal, setTerminal, removeLaunch}) {
                             </form>
                             <div>
                                 <AuthSchool noButton={false}/>
-                                {/* <Button type="submit" className='submit-button btn btn-primary' onClick={AuthSchool}>42</Button> */}
                             </div>
                         </div>
                     </div>
@@ -199,7 +197,7 @@ function LoginRegister({setModal, setTerminal, removeLaunch}) {
                             onChange={(e) => setCode(e.target.value)}
                         />
                         <button onClick={handleVerify}>{t('Verify')}</button>
-                        {/* <button onClick={setStep(false)}>Cancel</button> */}
+                        <button onClick={() => setStep(false)}>{t('Cancel')}</button>
                     </div>
                 )}
                 <div className="col-md-6 d-flex flex-column align-items-center justify-content-center">
