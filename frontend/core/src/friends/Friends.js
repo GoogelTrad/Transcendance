@@ -110,7 +110,6 @@ function FriendRequests({setModal, setIsFriends, launching}) {
 				...prevList,
 				friends: prevList.friends.filter((friend) => friend.id !== id),
 			}));
-			console.log(response.data.message);
 			showToast("message", t(`Toasts.${response.data.message}`));
 		}
 		catch(error) {

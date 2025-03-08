@@ -84,11 +84,11 @@ function Profile({id})
 	const fetchFriendList = async () => {
 
 		try {
-			const reponse = await axiosInstance.get(`/api/friends/list/${userInfo.id}`);
+			const reponse = await axiosInstance.get(`/api/friends/list/${userInfo?.id}`);
 			setFriendList(reponse.data);
 		}
 		catch(error) {
-			console.log(error);
+			showToast("error", t('ToastsError'));
 		}
 	}
 
@@ -96,7 +96,7 @@ function Profile({id})
 		e.preventDefault();
 		const selectedImage = e.target.files[0];
 		try {
-			const response = await axiosInstance.patch(`/api/user/${userInfo.id}`, { 
+			const response = await axiosInstance.patch(`/api/user/${userInfo?.id}`, { 
 				'profile_image' : selectedImage 
 				}, {
 				headers: {
@@ -115,7 +115,6 @@ function Profile({id})
 	{
 		try {
 			const response = await axiosInstance.post(`/api/user/perms/${userInfo.id}`);
-			console.log(response.data.message);
 			setIs2fa(response.data.message === "EnableTo2FA" ? true : false);
 			showToast("message", t(`Toasts.${response.data.message}`))
 		}
@@ -138,9 +137,7 @@ function Profile({id})
 			setIsPermitted(false);
 			setIsStud(false);
 		}
-		console.log(userInfo);
 		setUser(userInfo);
-		console.log(user);
 		if (userInfo.id !== id)
 		{
 			try 
@@ -157,14 +154,15 @@ function Profile({id})
 
     useEffect (() => 
     {
-        fetchUserData();
-		fetchFriendList();
+		if(userInfo?.id)
+		{
+			fetchUserData();
+			fetchFriendList();
+		}
 		friends = friendList?.friends || [];
-    }, [id]);
+    }, [userInfo?.id]);
 
-	useEffect(() => {
-        console.log('user mis à jour:', user);
-    }, [user]);
+	useEffect(() => {}, [user]);
 
 	return (
 		<>

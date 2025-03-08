@@ -77,7 +77,6 @@ function LoginRegister({setModal, setTerminal, removeLaunch}) {
                     'Content-Type': 'multipart/form-data',
                 },
             });
-            console.log("coucou")
             if (response.status === 200) {
                 login();
                 setModal(false);
@@ -131,7 +130,6 @@ function LoginRegister({setModal, setTerminal, removeLaunch}) {
             });
             showToast("info", t('Toasts.AccountCreatedSuccesfully'));
         } catch (error) {
-            console.log(error);
             if (error.response) {
                 if (error.response.status === 406) {
                     showToast("error", t('Toasts.EmailType'));
@@ -146,8 +144,6 @@ function LoginRegister({setModal, setTerminal, removeLaunch}) {
             }
         }
     };
-
-    // useEffect(() => {console.log(step)}, [step]);
     
     return (
             <div className="coucou row">
