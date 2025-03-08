@@ -45,7 +45,15 @@ canvas.gamebar {
 	z-index: 2; 
 	font-family: 'Press Start 2P', cursive;
 	opacity: 1;
-	font-size: clamp(1rem, 1vw, 1rem);
+	font-size: clamp(0.5rem, 1vw, 1rem);
+	white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+    padding: 0 10px;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
 }
 
 .controller.left {
@@ -107,9 +115,19 @@ canvas.gamebar {
     border: none;
 }
 
-
+.score-column {
+	margin: 2%;
+}
 .game-bar .column {
 	text-align: center;
+    flex: 1;
+    width: 20%; /* Puisqu'il y a 5 colonnes, chacune prend 20% */
+    min-width: 0;
+    text-align: center;
+    padding: 0 5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .game-bar .red {
@@ -122,6 +140,9 @@ canvas.gamebar {
 .backgroundGame {
 	background-color: #f0e48d !important;
 	border: 15px solid #a33d46;
+	white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 .gameCanva {
 	display: flex;
@@ -215,6 +236,54 @@ canvas.gamebar {
     }
 }
 
+.final-scores {
+    display: flex;
+    justify-content: space-around;
+    width: 100%;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 0 15px;
+}
+
+.score-column {
+    flex: 1;
+    min-width: 150px;
+    text-align: center;
+    margin: 5px;
+}
+
+@media (max-width: 1200px) {
+    .score-column {
+        min-width: 120px;
+        font-size: 0.9em;
+    }
+}
+
+@media (max-width: 992px) {
+    .score-column {
+        min-width: 100px;
+        font-size: 0.8em;
+    }
+}
+
+@media (max-width: 768px) {
+    .final-scores {
+        align-items: center;
+    }
+
+    .score-column {
+        width: 100%;
+        max-width: 200px;
+        margin: 5px 0;
+    }
+}
+
+@media (max-width: 576px) {
+    .score-column {
+        font-size: 0.7em;
+    }
+}
+
 @keyframes fireText {
     0%, 100% {
         background: linear-gradient(to bottom, #ff4d00, #ff9100);
@@ -226,6 +295,12 @@ canvas.gamebar {
         -webkit-background-clip: text;
         background-clip: text;
     }
+}
+
+@media (max-height: 500px), (max-width: 1880px) {
+	.resultats-game {
+		width: 100% !important;
+	}
 }
 
 @supports not (background-clip: text) {
@@ -403,4 +478,38 @@ canvas.gamebar {
 		max-width: 100%;
 		max-height: 100%;
 	}
+}
+
+/* Ajout des media queries pour game-bar */
+@media (max-width: 1200px) {
+    .game-bar {
+        font-size: clamp(0.4rem, 0.8vw, 0.8rem);
+    }
+    .game-bar .column {
+        padding: 0 5px;
+    }
+}
+
+@media (max-width: 992px) {
+    .game-bar {
+        font-size: clamp(0.3rem, 0.6vw, 0.6rem);
+    }
+}
+
+@media (max-width: 768px) {
+    .game-bar {
+        font-size: clamp(0.2rem, 0.5vw, 0.5rem);
+    }
+    .game-bar .column {
+        padding: 0 2px;
+    }
+}
+
+@media (max-width: 576px) {
+    .game-bar {
+        font-size: clamp(0.15rem, 0.4vw, 0.4rem);
+    }
+    .game-bar .column {
+        padding: 0 1px;
+    }
 }

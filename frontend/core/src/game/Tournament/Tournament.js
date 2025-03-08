@@ -32,14 +32,15 @@ function Tournament() {
     
     const socketRef = useRef(null);
 
-    const fetchTournementCode = async (code) => {
-        try {
-            const response = await axiosInstance.get(`/api/game/fetch_data_tournament_by_code/${code}`);
-            setTournamentResponse(response.data);
-        } catch (error) {
-            showToast("error", t('ToastsError'));
-        }
-    };
+    //const fetchTournementCode = async (code) => {
+    //    if(tournamentCode == 0) {return; }
+    //    try {
+    //        const response = await axiosInstance.get(`/api/game/fetch_data_tournament_by_code/${code}`);
+    //        setTournamentResponse(response.data);
+    //    } catch (error) {
+    //        showToast("error", t('ToastsError'));
+    //    }
+    //};
     useEffect(() => {
        if (tournamentStarted && !socketRef.current) {
            const newSocket =  new WebSocket(`${process.env.REACT_APP_SOCKET_IP}ws/tournament/${tournamentCode}/`);
@@ -51,7 +52,7 @@ function Tournament() {
                    navigate(`/game/${data.game_id}`);
                 }
                 if (data.type === 'user_connected_message') {
-                    fetchTournementCode(data.message.code);
+                    fetchTournement();
                 }
            }
            newSocket.onclose = () => {
@@ -66,7 +67,6 @@ function Tournament() {
 
     const fetchTournement = async () => {
         try {
-
             const response = await axiosInstance.get(`/api/game/fetch_data_tournament_by_code/${tournamentCode}`);
             setTournamentResponse(response.data);
         } catch (error) {
@@ -125,9 +125,6 @@ function Tournament() {
                 socketRef.current = null;
             }
         }
-        console.log("tournamentRes : ", tournamentResponse);
-        console.log("game 1 : ", tournamentResponse?.gamesTournament?.[0]);
-
     }, [tournamentResponse]);
 
 
@@ -174,8 +171,7 @@ function Tournament() {
 
     
     const renderPlayerImages = (numberPlayer, numberPlayerCo) => (
-        console.log("numberPlayerCo : ", numberPlayerCo),
-        console.log("numberPlayer : ", numberPlayer),
+    
         [
             ...Array.from({ length: numberPlayerCo }).map((_, index) => (
                 <img key={index + (numberPlayer - numberPlayerCo)} src={personAdd} alt={`Player ${index + 1}`} className="player-icon" />

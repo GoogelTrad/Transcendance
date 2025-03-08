@@ -73,8 +73,8 @@ class GameView:
         try:
             user = User.objects.get(id=user_id)
 
-            games = user.games.all().order_by('-player1')
-        
+            games = user.games.all().order_by('-date')
+            #games = games.games.exclude(status='aborted')
             game_serializer = GameSerializer(games, many=True)
 
             return Response(game_serializer.data, status=status.HTTP_200_OK)
@@ -239,3 +239,17 @@ class TournamentView:
 
         except Tournament.DoesNotExist:
             return Response({"error": "Tournament not found"}, status=status.HTTP_404_NOT_FOUND)
+
+    @api_view(['GET'])
+    def fetch_data_tournament_by_user(request, user_id):
+        try:
+            user = User.objects.get(id=user_id)
+
+            tournament = user.tournament.all().order_by('-date')
+        
+            tournament_serializer = TournamentSerializer(tournament, many=True)
+
+            return Response(tournament_serializer.data, status=status.HTTP_200_OK)
+    
+        except User.DoesNotExist:
+            return Response({"detail": "User not found."}, status=status.HTTP_404_NOT_FOUND)

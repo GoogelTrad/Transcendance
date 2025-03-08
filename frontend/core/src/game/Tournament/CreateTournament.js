@@ -54,8 +54,7 @@ const CreateTournament = ({ setIsModalTournament, setIsModalCreateTournament, se
                 scoreMax: tournamentSettings.maxScore,
                 size: tournamentSettings.numberPlayer,
             });
-            const newCode = response.data.code
-            console.log(response.data.code)
+            const newCode = response.data.code;
             setTournamentSettings(prev => ({ ...prev, tournamentCode: newCode }));
             return newCode;
         } catch (error) {

@@ -96,6 +96,7 @@ function Stats({ itemsArray = [] }) {
 
 
     useEffect(() => {
+        console.log("tournamentGames", tournamentGames);
         if (games.length > 0 && userInfo) {
             const winGamesFiltered = games.filter(game => game.winner === userInfo?.name);
             const loseGamesFiltered = games.filter(game => game.loser === userInfo?.name);
@@ -115,9 +116,8 @@ function Stats({ itemsArray = [] }) {
             );
             setupMedals(BestScoreFiltered, "BestScore", 5, 10, 15);
 
-            const BestTimeFiltered = winGames.filter(time => time.timeMinutes === '2');
+            const BestTimeFiltered = winGames.filter(time => time.timeMinutes > 1);
             setupMedals(BestTimeFiltered, "BestTime", 5, 10, 15);
-            console.log("best", BestTimeFiltered);
         }
     }, [games, id, userInfo]);
 
@@ -173,8 +173,6 @@ function Stats({ itemsArray = [] }) {
         setSelectedOption(activeOption || null);
     }, [option]);
 
-    
-
     useEffect(() => {
         const fetchStats = async () => {
             try {
@@ -184,9 +182,25 @@ function Stats({ itemsArray = [] }) {
                 showToast("error", t('ToastsError'));
             }
         };
-        if (userInfo?.id) fetchStats();
-      }, [!games.length, userInfo?.id]);
+        const fetchTournament = async () => { 
+            try {
+                const response = await axiosInstance.get(`/api/game/fetch_data_tournament_by_user/${userInfo?.id}/`, {});
+                setTournamentGames(response.data);
+            } catch (error) {
+                showToast("error", t('ToastsError'));
+            }
+        };
+        if (userInfo?.id) {
+            fetchStats();
+            fetchTournament();
+        }
+        }, [!games.length, userInfo?.id]);
     
+    const getOtherPlayers = (data) => {
+        const allPlayers = [data.player1, data.player2, data.player3, data.player4].filter(Boolean);
+        return allPlayers.filter(player => player !== userInfo?.name).join(', ') || 'N/A';
+    };
+
       function StatsTable({ data }) {
         return (
             <div className="stats-zone-table w-100 h-100">
@@ -221,10 +235,10 @@ function Stats({ itemsArray = [] }) {
                                             {data.date ? data.date.slice(-5) : "N/A"}-{data.date ? data.date.slice(0, 4) : "N/A"}
                                         </td>
                                         <td 
-                                            title={data.player2 || 'player2'}
+                                            title={getOtherPlayers(data)}
                                             className={expandedCells[`player-${data.id}`] ? 'expanded-cell' : ''}
                                         >
-                                            {data.player2 || "player2"}
+                                            {getOtherPlayers(data)}
                                         </td>
                                         <td
                                             title={isSmallScreen ? data.timeMinutes + " : " + data.timeSeconds : ""}
@@ -453,8 +467,10 @@ function Stats({ itemsArray = [] }) {
                                                         <td>{game.code || "N/A"}</td>
                                                         <td  
                                                             onClick={(e) => { e.stopPropagation(); handleDivClick(""); }} 
-                                                            className={expandedTab ? 'expanded-cell' : ''}
-                                                        >{game.against || "N/A"}</td>
+                                                            title={getOtherPlayers(userInfo?.id)}
+                                                            className={expandedCells[`score-${userInfo?.id}`] ? 'expanded-cell' : ''}
+                                                        >
+                                                            {getOtherPlayers(userInfo?.id)}</td>
                                                         <td>{game.time || "N/A"}</td>
                                                         <td>{game.place || "N/A"}</td>
                                                         <td
