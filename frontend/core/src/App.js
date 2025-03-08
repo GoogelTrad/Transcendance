@@ -24,14 +24,16 @@ import { useNavigate } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import SetupInterceptors from "./instance/SetupInterceptors";
 import PageNotFound from './NotFound';
+import { useTranslation } from 'react-i18next';
 
 function NavigateFunctionComponent(props) {
   let navigate = useNavigate();
   const [ ran, setRan ] = useState(false);
   const {setIsAuthenticated} = useAuth();
+  const { t } = useTranslation();
 
   if(!ran){
-     SetupInterceptors(navigate, setIsAuthenticated);
+     SetupInterceptors(navigate, setIsAuthenticated, t);
      setRan(true);
   }
   return <></>;

@@ -35,7 +35,7 @@ export default function Room() {
 
 	const navigate = useNavigate();
 	const { userInfo } = useAuth();
-	const userId = userInfo.id;
+	const userId = userInfo?.id;
 
 	const { notifications, sendNotification, respondNotification } = useNotifications();
 
@@ -175,7 +175,7 @@ export default function Room() {
 	}
 
 	useEffect(() => {
-		if(userInfo) {
+		if(userInfo.id) {
 			listroom();
 			FriendList();
 			Users_room_list();

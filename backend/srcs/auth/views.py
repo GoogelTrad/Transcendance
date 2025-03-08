@@ -6,7 +6,6 @@ from rest_framework import status
 from users.models import User, ValidToken
 from users.serializer import UserSerializer
 from django.core.files.base import ContentFile
-from ipware import get_client_ip
 from urllib.parse import urlencode
 from users.views import send_confirmation_email
 import requests
@@ -71,24 +70,12 @@ def oauth_login(request):
 						'is_stud': True,
 					}
 				)
-   
-			ip, routable = get_client_ip(request)
-	
-
-			if user.ip_user is not ip and not user.enable_verified:
-				user.last_verified = None
-				user.save()
 				
 			if user.enable_verified is True:
-				if not user.last_verified or (now() - user.last_verified).days >= 3:
-					user.ip_user = ip
-					user.is_verified = False
-					user.save()
-					send_confirmation_email(user)
-					params = urlencode({'status': '2FA_REQUIRED', 'name': user.name})
-					return HttpResponseRedirect(f"{os.getenv('REACT_APP_URL_REACT')}:3000/auth-success?{params}")
+				send_confirmation_email(user)
+				params = urlencode({'status': '2FA_REQUIRED', 'name': user.name})
+				return HttpResponseRedirect(f"{os.getenv('REACT_APP_URL_REACT')}:3000/auth-success?{params}")
 
-			user.ip_user = ip
 			user.status = 'online'
 			user.save()
 	
@@ -127,7 +114,7 @@ def oauth_login(request):
 
 			params = urlencode({'status': 'SUCCESS', 'token': jwt_token})
 			response = HttpResponseRedirect(f"{os.getenv('REACT_APP_URL_REACT')}:3000/auth-success?{params}")
-			response.set_cookie(key='token', value=jwt_token, max_age=int(os.getenv('TOKEN_TIME', '3600')), httponly=True, secure=True, samesite='None')
+			response.set_cookie(key='token', value=jwt_token, max_age=int(os.getenv('TOKEN_TIME')), httponly=True, secure=True, samesite='None')
 			return response
 
 		else:

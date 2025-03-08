@@ -95,7 +95,7 @@ class GameView:
 
         response = Response()
 
-        response.set_cookie(key='token', value=token, max_age=int(os.getenv('TOKEN_TIME', '3600')), httponly=True, secure=True, samesite='None')
+        response.set_cookie(key='token', value=token, max_age=int(os.getenv('TOKEN_TIME')), httponly=True, secure=True, samesite='None')
 
         response.data = {
             'token' : token
