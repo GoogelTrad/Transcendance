@@ -129,23 +129,46 @@ def send_notification(user, message):
 @api_view(['POST'])
 @jwt_auth_required
 def block_user(request):
-    from_user = request.data['from_user']
-    to_user = request.data['to_user']
+    from_user = request.data.get('from_user')
+    to_user = request.data.get('to_user')
 
-    user = User.objects.filter(id=from_user).first()
+    if not from_user or not to_user:
+        return Response(
+            {"error": "Les champs 'from_user' et 'to_user' sont requis"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
-    if user is None:
-        raise AuthenticationFailed("User not found")
+    # user = User.objects.filter(id=from_user).first()
 
-    blocked = User.objects.filter(id=to_user).first()
+    # if user is None:
+    #     raise AuthenticationFailed("User not found")
 
-    if blocked is None:
-        raise AuthenticationFailed("User not found")
+    # blocked = User.objects.filter(id=to_user).first()
+    # print("Blocked:", blocked, flush=True)
 
-    user.blocked_user.add(blocked)
-    user.save()
+    # if blocked is None:
+    #     raise AuthenticationFailed("User not found")
 
-    return Response({'message': 'Block user request accepted!'}, status=status.HTTP_200_OK)
+    # user.blocked_user.add(blocked)
+    # user.save()
+
+    # return Response({'message': 'Block user request accepted!'}, status=status.HTTP_200_OK)
+
+    from_user_id = User.objects.filter(id=from_user).first()
+    if not from_user_id:
+        raise AuthenticationFailed("Utilisateur émetteur non trouvé")
+
+    to_user_id = User.objects.filter(id=to_user).first()
+    if not to_user_id:
+        raise AuthenticationFailed("Utilisateur cible non trouvé")
+
+    from_user_id.blocked_user.add(to_user_id)
+    from_user_id.save()
+
+    return Response(
+        {'message': 'Utilisateur bloqué avec succès !'},
+        status=status.HTTP_200_OK
+    )
 
 @api_view(['POST'])
 @jwt_auth_required
@@ -175,7 +198,6 @@ def get_list_blocked(request, id):
 
     if users is None:
         raise AuthenticationFailed("User not found")
-
 
     response = Response()
 

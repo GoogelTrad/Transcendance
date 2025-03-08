@@ -105,7 +105,6 @@ export default function useSocket(name, param = '') {
         };
 
         socket.onerror = (error) => {
-            console.error("Erreur WebSocket:", error);
             setReady(false);
         };
 
