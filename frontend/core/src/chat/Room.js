@@ -67,14 +67,12 @@ export default function Room() {
 			});
 			socket.on('join_room', (data) => {
 				if (data.status) {
-					console.log("Salle rejoint room:", data.room_name);
 					navigate(`/room/${data.room_name}`);
 				} else {
 					showToast("error", t('ToastsError'));
 				}
 			});
 			socket.on('error', (data) => {
-				console.log("COUCOU");
 				showToast('error', data);
 			})
 			return () => {}

@@ -50,7 +50,7 @@ export function AuthSuccess()
 			}
 		}
 		catch(error) {
-			console.log('error');
+			showToast("error", t('ToastsError'));
 		}
 	}
 
@@ -60,7 +60,6 @@ export function AuthSuccess()
 		const status = urlParams.get("status");
 		setName(urlParams.get("name"));
 
-		console.log(status);
 		if (status === "EMAIL_TAKEN")
 		{
 			showToast("error", "Email already taken!")

@@ -116,7 +116,6 @@ function Home() {
 
     useEffect(() => {
         if (modalSend) {
-            console.log(location.pathname)
             const modalSetter = setters.find(item => item.name === modalSend)?.setter;
             if (modalSetter && !isLaunched(isLaunch, modalSend)) {
                 launching({ newLaunch: modalSend, setModal: modalSetter });
