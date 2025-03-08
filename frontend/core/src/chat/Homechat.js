@@ -43,11 +43,15 @@ export default function HomeChat() {
 
 	const handleCreateToggle = () => { setIsCreateSwitchOn(!isCreateSwitchOn) };
 
-	const [blockedData, setBlockedData] = useState({
-		from_user: userInfo.id,
-		to_user: '',
-	});
+	const [blockedData, setBlockedData] = useState({});
 	
+	useEffect(() =>{
+		setBlockedData({
+			from_user: userInfo.id,
+			to_user: '',
+		})
+	}, [userInfo.id]);
+
 	const { notifications, sendNotification, respondNotification } = useNotifications();
 
 	useEffect(() => {
@@ -127,11 +131,13 @@ export default function HomeChat() {
 	};
 
 	const blocked_user = async (id) => {
-		const data = {'from_user': userInfo.id, 'to_user': id};
+		console.log("ID:", id);
+		const updatedData = { ...blockedData, to_user: id || '' };
+		console.log("data:", updatedData);
 		try {
-			const response = await axiosInstance.post(`/api/livechat/block/`, data, {
+			const response = await axiosInstance.post(`/api/livechat/block/`, updatedData, {
 				headers: {
-					'Content-Type': 'multipart/form-data',
+					'Content-Type': 'application/json',
 				},
 			});
 
@@ -141,23 +147,25 @@ export default function HomeChat() {
 			}
 
 		} catch(error) {
+			console.error("Erreur:", error.response?.data || error.message);
 			showToast("error", t('ToastsError'));
 		}
 	}
 
 	const unlocked_user = async (id) => {
-		const data = {'from_user': userInfo.id, 'to_user': id};
+		console.log("ID:", id);
+		const updatedData = { ...blockedData, to_user: id || '' };
 		try {
-			const response = await axiosInstance.post(`/api/livechat/unlock/`, data, {
+			const response = await axiosInstance.post(`/api/livechat/unlock/`, updatedData, {
 				headers: {
-					'Content-Type': 'multipart/form-data',
+					'Content-Type': 'application/json',
 				},
 			});
 
 			if (response.status === 200)
 			{
 				listUsersBlocked();
-				showToast("succes", t('Toasts.UnlockUsers'));
+				showToast("succes", t('Toasts.UnblockUsers'));
 			}
 
 		} catch(error) {
@@ -166,7 +174,7 @@ export default function HomeChat() {
 	}
 
 	const listUsersBlocked = async () => {
-		if (!userInfo) { 
+		if (userInfo.id) { 
 			try {
 				const response = await axiosInstance.get(`/api/livechat/blocked_users/${userInfo.id}`);
 				setBlockedUsers(response.data);
@@ -178,20 +186,17 @@ export default function HomeChat() {
 	};
 
 	useEffect(() => {
-		if (userInfo.id) {
-			listroom();
-		}
-	}, [userInfo.id]);
-
-	useEffect(() => {
-		if (userInfo)
+		if (userInfo.id)
 		{
 			users_connected();
 			listUsersBlocked();
+			listroom();
 		}
 
 		const interval = setInterval(() => {
 			users_connected();
+			listUsersBlocked();
+			listroom();
 		}, 5000);
 
 		return () => clearInterval(interval);
@@ -309,7 +314,7 @@ export default function HomeChat() {
 											<button className="dropdown-item" onClick={() => blocked_user(user.id)}> {t('Block')} </button>
 										)}
 										{blockedUsers.includes(user.id) && (
-											<button className="dropdown-item" onClick={() => unlocked_user(user.id)}> {t('Unlock')} </button>
+											<button className="dropdown-item" onClick={() => unlocked_user(user.id)}> {t('Unblock')} </button>
 										)}
 									</ul>
 								</li>
