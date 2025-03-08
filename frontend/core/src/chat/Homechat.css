@@ -11,6 +11,8 @@
     height: 100vh;
 	flex-direction: row;
     gap: 2%;
+    min-width: 800px;
+    min-height: 700px;
 }
 
 .create-public-room {
@@ -31,4 +33,20 @@
 
 .liste_salles {
     overflow-y: scroll;
+}
+
+@media (max-height: 700px)
+{
+    .chat {
+        height: clamp(50%, 65%, 100%);
+    }
+}
+
+@media (max-width: 800px)
+{
+    .general-room {
+        width: clamp(10%, 100%, 100%);
+        min-height: 300px;
+        min-width: 800px;
+    }
 }

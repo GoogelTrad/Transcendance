@@ -335,8 +335,14 @@
     }
 
     .content-mario {
+        top: 0% !important;
         height: 20% !important;
         margin-top: 0% !important;
+    }
+
+    .btn-start-tournament {
+        min-width: 100%;
+        min-height: 10%;
     }
 
     .players-container,
@@ -360,7 +366,7 @@
 
     .mario-section {
         position: relative !important;
-        height: 100% !important;
+        height: clamp(125%, 125%, 150%) !important;
         top: 0 !important;
         width: 100% !important;
         display: flex;
@@ -373,7 +379,6 @@
         height: auto !important;
         min-height: 150px;
         position: relative !important;
-        padding: 10px !important;
         margin-top: 20px;
     }
 
@@ -387,7 +392,6 @@
         font-size: clamp(0.6rem, 1.5vw, 0.8rem) !important;
     }
 
-    /* Ajustement du bouton START */
     .mario-section button {
         margin: 10px auto !important;
         padding: 5px 15px;
@@ -409,7 +413,7 @@
     }
 }
 
-@media (max-height: 600px) {
+@media (max-height: 700px) {
     .content-area {
         overflow-y: auto;
         overflow-x: hidden;

@@ -236,7 +236,7 @@ export default function HomeChat() {
 
 	return (
 		<Template>
-			<div className="general-chat d-flex justify-content-between">
+			<div className="general-chat d-flex justify-content-between h-100 w-100">
 				<div className="create-public-room">
 					{showCreatePublicRoom ? (
 						<>

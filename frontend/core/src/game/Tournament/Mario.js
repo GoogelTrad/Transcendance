@@ -207,7 +207,7 @@ const MarioSection = ({ tournamentResponse, renderImageWithClick, onKickPlayer, 
                                 {renderPlayer(tournamentResponse?.player4, true)}
 
                                 <button 
-                                    className="tournament-text" 
+                                    className="btn-start-tournament tournament-text" 
                                     onClick={onStartTournament}
                                     style={{ 
                                         height:'10%', 
