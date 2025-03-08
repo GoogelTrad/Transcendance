@@ -87,6 +87,7 @@ function GameInstance({ children }) {
 
         socketRef.current.onmessage = (event) => {
             const data = JSON.parse(event.data);
+            console.log(data)
             setGameData((prevState) => ({
                 ...prevState,
                 Seconds: data.seconds,
@@ -111,19 +112,13 @@ function GameInstance({ children }) {
                 status: data.status,
             }));
             if (data.winner || data.loser) {
-                console.log("winner: ", data.winner, "loser : ", data.loser)
                 setIsGameOngoing(false);
             }
-            // if (data.status === "aborted"){
-            //     setIsGameOngoing(false);
-            // }
-
         };
         return () => {
             if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
                 socketRef.current.close();
                 socketRef.current = null;
-                console.log("WebSocket connection closed due to component unmount.");
             }
         };
     }, [id]);
@@ -154,28 +149,10 @@ function GameInstance({ children }) {
             });
             console.log("gamedata :", response.data)
             setGame(response.data);
-            // if (game?.player1 === userInfo.name) updateEloP1();
-            // if (game?.player2 === userInfo.name) updateEloP2();
             if (gameData.isInTournament === true)
                 {
                     await patchTournament()
                 }
-        } catch (error) {
-            showToast("error", t('ToastsError'));
-        }
-    };
-
-    const updateEloP1 = async () => {
-        try {
-            await axiosInstance.patch(`/api/user/${userInfo.id}`, { elo: gameData.elo_Player1 });
-        } catch (error) {
-            showToast("error", t('ToastsError'));
-        }
-    };
-
-    const updateEloP2 = async () => {
-        try {
-            await axiosInstance.patch(`/api/user/${userInfo.id}`, { elo: gameData.elo_Player2 });
         } catch (error) {
             showToast("error", t('ToastsError'));
         }
@@ -201,6 +178,10 @@ function GameInstance({ children }) {
     const fetchData = async () => {
         try {
             const response = await axiosInstance.get(`/api/game/fetch_data/${id}/`);
+            if (response.data.status == "aborted" || response.data.status == "finished"){
+                setGameData(response.data);
+                setIsGameOngoing(false);
+            }
         } catch (error) {
             showToast("error", t('ToastsError'));
             navigate('/home');
