@@ -11,7 +11,6 @@ from .views import refresh_token
 import jwt
 import os
 from rest_framework import status
-from ipware import get_client_ip
 from django.utils.deprecation import MiddlewareMixin
 
 class ExposeAuthorizationHeaderMiddleware(MiddlewareMixin):
@@ -26,7 +25,7 @@ class SimpleMiddleware:
 
     def __call__(self, request):
         
-        if request.path.startswith(('/media/', '/static/', '/api/auth/', '/api/user/code', '/api/user/token', '/api/user/delete')):
+        if request.path.startswith(('/media/', '/static/', '/api/auth/', '/api/user/code', '/api/user/delete')):
             return self.get_response(request)
         
         new_token = None
@@ -36,11 +35,9 @@ class SimpleMiddleware:
                 token = request.COOKIES.get('token')
                 
                 if not token:
-                    print("pas ouf", flush=True)
                     return JsonResponse({'error': 'TokenExpired'}, status=status.HTTP_401_UNAUTHORIZED)
                 
                 if not ValidToken.objects.filter(token=token).exists():
-                    print("pas ouf2", flush=True)
                     return JsonResponse({'error': 'TokenExpired'}, status=status.HTTP_401_UNAUTHORIZED)
                 
                 payload = jwt.decode(token, os.getenv('JWT_KEY'), algorithms=['HS256'])
@@ -60,6 +57,6 @@ class SimpleMiddleware:
         response = self.get_response(request)
         
         if new_token:
-            response.set_cookie(key='token', value=new_token, max_age=int(os.getenv('TOKEN_TIME', '3600')), httponly=True, secure=True, samesite='None')
+            response.set_cookie(key='token', value=new_token, max_age=int(os.getenv('TOKEN_TIME')), httponly=True, secure=True, samesite='None')
             
         return response

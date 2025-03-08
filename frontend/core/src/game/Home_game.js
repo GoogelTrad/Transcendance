@@ -20,7 +20,7 @@ function HomeGame({ setModalStats, setModalCreateTournament, setModalTournament,
     const [onClickStats, setOnClickStats] = useState(false);
     const [onClickJoin, setOnClickJoin] = useState(false);
     const [onClickCreate, setOnClickCreate] = useState(false);
-    const [gameCode, setGameCode] = useState("");
+    const [gameCode, setGameCode] = useState(0);
     const [numberPlayer, setNumberPlayer] = useState(2);
     const navigate = useNavigate();
     const [game, setGame] = useState(null);

@@ -75,6 +75,7 @@ class Tournament(models.Model):
     size = models.IntegerField(default=2)
     winner1 = models.CharField(max_length=255, blank=True)
     winner2 = models.CharField(max_length=255, blank=True)
+    winner3 = models.CharField(max_length=255, blank=True)
     winner_final = models.CharField(max_length=255, blank=True)
     players_connected = models.IntegerField(default=0)
     date = models.DateField(auto_now=True)

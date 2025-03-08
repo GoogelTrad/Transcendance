@@ -15,13 +15,13 @@ def jwt_auth_required(view_func):
         except jwt.ExpiredSignatureError:
             user.status = 'offline'
             user.save()
-            raise AuthenticationFailed('Token expired!')
+            return Response({'error': 'TokenExpired'}, status=status.HTTP_401_UNAUTHORIZED)
         except jwt.InvalidTokenError:
             user.status = 'offline'
             user.save()
-            raise AuthenticationFailed('Invalid token!')
+            return Response({'error': 'TokenExpired'}, status=status.HTTP_401_UNAUTHORIZED)
         except get_user_model().DoesNotExist:
-            raise AuthenticationFailed('User not found!')
+            return Response({'error': 'TokenExpired'}, status=status.HTTP_401_UNAUTHORIZED)
 
         return view_func(request, *args, **kwargs)
     
