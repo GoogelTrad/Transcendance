@@ -112,13 +112,10 @@ function Template({ children, taskBarContent, launching, appArray }) {
                                 }
                                 {isAuthenticated && 
                                     <>
-                                    <div className="w-100" style={{ position: 'absolute', left:'0%', height:'10%', bottom:'10%'}}>
+                                    <div className="template-icons w-100" style={{ position: 'absolute', left:'0%', height:'10%' }}>
                                         <img src={profile} alt="Profile" title="Profile" style={{ width: '24px', height: '24px', cursor: 'pointer', margin:'2%' }} onClick={() => navigate("/home", { state: { modalName: "profile" } })} />
-                                        <img src={home} alt="Home" title="Home" style={{ width: '24px', height: '24px', cursor: 'pointer', margin:'2%' }} onClick={() => navigate("/home")} />
-                                    </div>
-                                    <div className="w-100" style={{ position: 'absolute', borderTop:'2px solid #989a9c', left:'0%', height:'10%', bottom:'0%'}}>
-                                        <div className='h-100' style={{position: 'absolute', left:'86%', borderLeft:'2px solid #989a9c' }}></div>
-                                        <img src={power} alt="Power" title="logout" style={{ position: 'absolute', bottom: '0%', width: '24px', height: '24px', cursor: 'pointer', margin:'2%', right: '0%' }} onClick={() => navigate("/logout")} />
+                                        <img src={home} alt="Home" title="Home" style={{ width: '24px', cursor: 'pointer', margin:'2%' }} onClick={() => navigate("/home")} />
+                                        <img src={power} alt="Power" title="logout" style={{ width: '24px', height: '24px', cursor: 'pointer', margin:'2%'}} onClick={() => navigate("/logout")} />
                                     </div>
                                     </>
                                 }
