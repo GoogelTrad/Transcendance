@@ -187,11 +187,10 @@ class TournamentConsumer(AsyncWebsocketConsumer):
     async def start_finale(self):
         tournament = TournamentConsumer.tournament.get(self.tournament_code)
         if tournament:
-            if tournament.isPlayer1Connected == True and tournament.isPlayer2Connected and tournament.isPlayer3Connected == True and tournament.isPlayer4Connected:
-                if tournament.winner1 and tournament.winner2:
-                    final_game_data = await self.create_Game_Multi(self.token, tournament.winner1, tournament.winner2)
-                    if final_game_data:
-                        await self.start_game(final_game_data['id'], tournament.winner1, tournament.winner2, "finale")
+            if tournament.winner1 and tournament.winner2:
+                final_game_data = await self.create_Game_Multi(self.token, tournament.winner1, tournament.winner2)
+                if final_game_data:
+                    await self.start_game(final_game_data['id'], tournament.winner1, tournament.winner2, "finale")
 
     async def receive(self, text_data):
         try:
@@ -475,12 +474,12 @@ class GameState:
     def is_game_over(self, game):
         if self.status == "aborted":
             return True
-        if self.score["score_P1"] >= game.scoreMax - 7:
+        if self.score["score_P1"] >= game.scoreMax:
             self.winner = self.player1
             self.loser = self.player2
             self.status = "finished"
             return True
-        elif self.score["score_P2"] >= game.scoreMax - 7:
+        elif self.score["score_P2"] >= game.scoreMax:
             self.winner = self.player2
             self.loser = self.player1
             self.status = "finished"
