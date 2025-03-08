@@ -38,11 +38,7 @@ export default function HomeChat() {
 
 	const navigate = useNavigate();
 
-	const handleChangeCreateRoom = (e) => {
-		const value = e.target.value;
-		const filteredValue = value.replace(/[^0-9a-zA-Z]/g, '');
-		setCreateRoomName(filteredValue);
-	};
+	const handleChangeCreateRoom = (e) => setCreateRoomName(e.target.value);
 	const handleChangeCreatePassword = (e) => setCreatePassword(e.target.value);
 
 	const handleCreateToggle = () => { setIsCreateSwitchOn(!isCreateSwitchOn) };
@@ -63,7 +59,7 @@ export default function HomeChat() {
 					navigate(`/room/${data.room_name}`);
 				}
 				else {
-					showToast("error", t('ToastsError'));
+					showToast("error", t('Toasts.InvalidRoomName'));
 				}
 			});
 			socket.on("join_room", (data) => {

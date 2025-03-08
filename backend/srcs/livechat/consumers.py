@@ -6,11 +6,10 @@ from .models import Room, Message
 from .serializer import MessageSerializer
 import jwt
 import os
-from django.shortcuts import render, redirect
-from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 
 from asgiref.sync import sync_to_async
+from django.contrib.auth.hashers import make_password
 
 @sync_to_async
 def get_user_by_name(username):
@@ -77,6 +76,18 @@ class ChatConsumer(AsyncWebsocketConsumer):
             await self.close()
             return
         self.room_name = self.scope['url_route']['kwargs']['room']
+
+        import re
+        if not re.match(r'^[0-9a-zA-Z]+$', self.room_name):
+            print(f"Nom de salle invalide: {self.room_name}", flush=True)
+            await self.accept()  # Accepter la connexion pour envoyer un message
+            await self.send({
+                "type": "error",
+                "message": f"Invalid room name: {self.room_name}. Use only alphanumeric characters."
+            })
+            await self.close()
+            return
+
         self.room = None
         if not self.room_user_ids.__contains__(self.user.id):
             self.room_user_ids.append(self.user.id)
@@ -137,12 +148,14 @@ class ChatConsumer(AsyncWebsocketConsumer):
         
     
     async def createRoom(self, room_name, password = None, invited_user_id = None):
-        if room_name == '' or room_name is None:
+        if not room_name:
             await self.send({
                 "type": "create_room",
                 "status": False,
                 "error": "RoomName is required"
             })
+            return
+        
         try:
             room: Room = await Room.objects.aget(name=room_name)
             await self.send({
@@ -164,19 +177,36 @@ class ChatConsumer(AsyncWebsocketConsumer):
             })
             return
 
-        room = await Room.objects.acreate(
-            createur=self.user,
-            password=password,
-            name=room_name,
-            dm=True if invited_user_id is not None else False
-        )
+        if password:
+            room = Room(
+                createur=self.user,
+                password=make_password(password),
+                name=room_name,
+                dm=True if invited_user_id is not None else False
+            )
+        else:
+            room = Room(
+                createur=self.user,
+                password=password,
+                name=room_name,
+                dm=True if invited_user_id is not None else False
+            )
+
+        try:
+            await sync_to_async(room.full_clean)()
+            await room.asave()
+        except ValidationError as e:
+            await self.send({
+                "type": "create_room",
+                "status": False,
+                "error": str(e)
+            })
+            return
         
         await room.add_members(self.user)
         if invited_user_id is not None:
             invited_user: User = await User.objects.aget(id=invited_user_id)
             await room.add_members(invited_user)
-
-        await room.asave()
 
         await self.send({
             "type": "create_room",
@@ -224,7 +254,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         channel_layer = get_channel_layer()
         await channel_layer.group_add(self.room_group_name, self.channel_name)
-        print("DMNAME2:", dmname, flush=True)
         await self.send({
             "type": "join_room",
             "status": True,
@@ -242,6 +271,20 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def sendMessage(self, message):
         if self.room is None:
             self.room = await Room.objects.aget(name=self.room_name)
+
+        if len(message) > 300:
+            await self.send({
+                'type': 'error',
+                'message': "You can not write more than 300 characters."
+            })
+            return
+
+        if len(message) == 0:
+            await self.send({
+                'type': 'error',
+                'message': "You can not send a blank message."
+            })
+            return 
 
         msg = await Message.objects.acreate(
             user=self.user, 
