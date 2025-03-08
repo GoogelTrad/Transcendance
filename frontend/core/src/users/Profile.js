@@ -84,7 +84,7 @@ function Profile({id})
 	const fetchFriendList = async () => {
 
 		try {
-			const reponse = await axiosInstance.get(`/api/friends/list/${userInfo?.id}`);
+			const reponse = await axiosInstance.get(`/api/friends/list/${id}`);
 			setFriendList(reponse.data);
 		}
 		catch(error) {
@@ -96,7 +96,7 @@ function Profile({id})
 		e.preventDefault();
 		const selectedImage = e.target.files[0];
 		try {
-			const response = await axiosInstance.patch(`/api/user/${userInfo?.id}`, { 
+			const response = await axiosInstance.patch(`/api/user/${id}`, { 
 				'profile_image' : selectedImage 
 				}, {
 				headers: {
@@ -114,7 +114,7 @@ function Profile({id})
 	const handleConfirm = async () =>
 	{
 		try {
-			const response = await axiosInstance.post(`/api/user/perms/${userInfo.id}`);
+			const response = await axiosInstance.post(`/api/user/perms/${id}`);
 			setIs2fa(response.data.message === "EnableTo2FA" ? true : false);
 			showToast("message", t(`Toasts.${response.data.message}`))
 		}
@@ -137,30 +137,34 @@ function Profile({id})
 			setIsPermitted(false);
 			setIsStud(false);
 		}
-		setUser(userInfo);
 		if (userInfo.id !== id)
 		{
-			try 
-			{
-				const reponse = await axiosInstance.get(`/api/user/${id}`);
-				setUser(reponse.data);
-			}
-			catch (error)
-			{
-				showToast("error", t('ToastsError'));
+			if(id)
+			{	
+				try 
+				{
+					const reponse = await axiosInstance.get(`/api/user/${id}`);
+					setUser(reponse.data);
+				}
+				catch (error)
+				{
+					showToast("error", t('ToastsError'));
+				}
 			}
 		}
+		else
+			setUser(userInfo);
 	}
 
     useEffect (() => 
     {
-		if(userInfo?.id)
+		if(id)
 		{
 			fetchUserData();
 			fetchFriendList();
 		}
 		friends = friendList?.friends || [];
-    }, [userInfo?.id]);
+    }, [id]);
 
 	useEffect(() => {}, [user]);
 
@@ -176,13 +180,13 @@ function Profile({id})
 									alt="Profile"
 									className="profile-picture"
 								/>
-								<input
+								{isPermitted && <input
 									type="file"
 									id="profile_image"
 									accept="image/*"
 									style={{ display: 'none' }}
 									onChange={handleFileChange}
-								/>
+								/>}
 							</label>
 
 							<div className="general-change">

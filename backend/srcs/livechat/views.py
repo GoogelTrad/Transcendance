@@ -22,7 +22,6 @@ def get_me(request, room_name):
     me = request.user
     if room.dm:
         friend = [user for user in room.users.all() if user.id != me.id]
-        print("FRIEND:", friend, flush=True)
         dmname = friend[0].name + ' dm'
     return Response({
         "creation": room.creation,
@@ -35,16 +34,13 @@ def get_me(request, room_name):
 @jwt_auth_required
 def get_list_rooms(request):
     user = request.user
-    print("user:", user, flush=True)
 
     rooms = Room.objects.all()
     dmRooms = Room.objects.filter(dm=True, users=user)
 
-    print("rooms:", dmRooms, flush=True)
     rooms = rooms.filter(dm=False)
     roomSerializer = RoomSerializer(rooms, many=True)
     dmSerializer = RoomSerializer(dmRooms, many=True)
-    print("dmSerializer:", dmSerializer, flush=True)
     return Response({"publicRooms": roomSerializer.data, "dmRooms": dmSerializer.data})
 
 @api_view(['GET'])
@@ -75,7 +71,6 @@ def get_users_connected(request):
 @jwt_auth_required
 def save_chat_msg(request):
     data = json.loads(request.body)
-    print(data, flush=True)
     # Message.asave()
     return Response(status=200)
 
@@ -144,7 +139,6 @@ def block_user(request):
     #     raise AuthenticationFailed("User not found")
 
     # blocked = User.objects.filter(id=to_user).first()
-    # print("Blocked:", blocked, flush=True)
 
     # if blocked is None:
     #     raise AuthenticationFailed("User not found")

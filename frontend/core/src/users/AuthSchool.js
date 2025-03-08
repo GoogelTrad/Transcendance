@@ -4,6 +4,8 @@ import axiosInstance from "../instance/AxiosInstance";
 import { useAuth } from './AuthContext';
 import { showToast } from "../instance/ToastsInstance";
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+
 
 
 export default function AuthSchool({ noButton })
@@ -35,6 +37,7 @@ export function AuthSuccess()
 	const [isVerif, setIsVerif] = useState(false);
 	const [code, setCode] = useState("");
 	const { setIsAuthenticated, login } = useAuth();
+	const { t } = useTranslation();
 
 	const navigate = useNavigate();
 

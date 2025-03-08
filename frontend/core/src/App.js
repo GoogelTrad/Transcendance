@@ -29,11 +29,11 @@ import { useTranslation } from 'react-i18next';
 function NavigateFunctionComponent(props) {
   let navigate = useNavigate();
   const [ ran, setRan ] = useState(false);
-  const {setIsAuthenticated} = useAuth();
+  const {setIsAuthenticated, logout} = useAuth();
   const { t } = useTranslation();
 
   if(!ran){
-     SetupInterceptors(navigate, setIsAuthenticated, t);
+     SetupInterceptors(navigate, setIsAuthenticated, t, logout);
      setRan(true);
   }
   return <></>;

@@ -79,6 +79,7 @@ export const AuthProvider = ({ children }) => {
     }, [isAuthenticated]);
 
     const logout = async () => {
+        console.log('coucou');
         try {
             await axiosInstance.get('/api/user/logout');
         } catch (err) {
