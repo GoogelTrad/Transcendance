@@ -176,8 +176,9 @@ function Stats({ itemsArray = [] }) {
     useEffect(() => {
         const fetchStats = async () => {
             try {
-                const response = await axiosInstance.get(`/api/game/fetch_data_user/${userInfo?.id}/`, {});
+                const response = await axiosInstance.get(`/api/game/fetch_data_user/${userInfo?.id}/`, {}); 
                 setGames(response.data);
+                console.log("games :", response.data);
             } catch (error) {
                 showToast("error", t('ToastsError'));
             }
@@ -186,6 +187,7 @@ function Stats({ itemsArray = [] }) {
             try {
                 const response = await axiosInstance.get(`/api/game/fetch_data_tournament_by_user/${userInfo?.id}/`, {});
                 setTournamentGames(response.data);
+                console.log("TournamentGames :", response.data);
             } catch (error) {
                 showToast("error", t('ToastsError'));
             }

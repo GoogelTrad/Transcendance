@@ -225,14 +225,6 @@ class TournamentConsumer(AsyncWebsocketConsumer):
                 scoreMax=scoreMax,
                 tournamentCode=tournamentCode
             )
-            player1_object = User.objects.get(name=player1) 
-            player2_object = User.objects.get(name=player2)
-    
-            player1_object.games.add(game)
-            player2_object.games.add(game)
-
-            player1_object.save()
-            player2_object.save()
 
             TournamentConsumer.tournament[self.tournament_code].gamesTournament.add(game)
             return {

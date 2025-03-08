@@ -30,6 +30,15 @@ function Tournament() {
     
     const socketRef = useRef(null);
 
+    //const fetchTournementCode = async (code) => {
+    //    if(tournamentCode == 0) {return; }
+    //    try {
+    //        const response = await axiosInstance.get(`/api/game/fetch_data_tournament_by_code/${code}`);
+    //        setTournamentResponse(response.data);
+    //    } catch (error) {
+    //        showToast("error", t('ToastsError'));
+    //    }
+    //};
     useEffect(() => {
        if (tournamentStarted && !socketRef.current && userInfo.name) {
             const newSocket =  new WebSocket(`${process.env.REACT_APP_SOCKET_IP}ws/tournament/${tournamentCode}/`);
@@ -42,9 +51,6 @@ function Tournament() {
                 if (data.type === 'user_connected_message') {
                     fetchTournement();
                 }
-                if (data.game_id && data.gameStatus === "finale") {
-                    navigate(`/game/${data.game_id}`);
-                 }
            }
            newSocket.onclose = () => {
                console.log("Tournament webSocket closed");
@@ -68,7 +74,6 @@ function Tournament() {
             setTournamentResponse(response.data);
         } catch (error) {
             showToast("error", t('ToastsError'));
-            navigate('/home');
         }
     };
 
@@ -77,6 +82,12 @@ function Tournament() {
             socketRef.current.send(JSON.stringify({ "Start": "Start games" }));
         }
     }
+
+    // useEffect(() => {
+    //     if (join === true) {
+    //         fetchTournement();
+    //     }
+    // }, [join]);
 
     useEffect(() => {
         if (tournamentCode) {
@@ -110,7 +121,16 @@ function Tournament() {
     }, [makeTournament, socketRef.current]);
     
     useEffect(() => {
+        if (tournamentResponse && tournamentResponse.status == "finished")
+        {
+            if (socketRef.current) {
+                socketRef.current.close();
+                socketRef.current = null;
+            }
+        }
         console.log("tournamentRes : ", tournamentResponse);
+        console.log("game 1 : ", tournamentResponse?.gamesTournament?.[0]);
+
     }, [tournamentResponse]);
 
 
