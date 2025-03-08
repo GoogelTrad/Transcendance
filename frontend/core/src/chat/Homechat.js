@@ -32,7 +32,7 @@ export default function HomeChat() {
 	const [usersconnected, setusersconnected] = useState([]);
 	const [blockedUsers, setBlockedUsers] = useState([]);
 	const [isModalProfile, setIsModalProfile] = useState(false);
-	const [profileId, setProfileId] = useState(1);
+	const [profileId, setProfileId] = useState();
 	const modalProfile = useRef(null);
 	const [roomIsPrivate, setRoomIsPrivate] = useState(false);
 
@@ -107,7 +107,10 @@ export default function HomeChat() {
 			const response = await axiosInstance.get('/api/livechat/listroom/');
 
 			const dmRooms = response.data.dmRooms.map((value) => {
-				value.dmname = value.users[0]?.name + ' dm' ?? value.name;
+				if (userInfo?.id === value.users[1]?.id)
+					value.dmname = value.users[0]?.name + ' dm' ?? value.name;
+				else
+					value.dmname = value.users[1]?.name + ' dm' ?? value.name;
 				return value;
 			});
 
@@ -213,7 +216,7 @@ export default function HomeChat() {
 			if (enteredPassword) {
 				joinRoom(room.name, enteredPassword);
 			} else {
-				showToast("error", t('Toasts.EnterPassword'));
+				showToast("error", t('Toasts.Oui'));
 			}
 		} else {
 			joinRoom(room.name, null, dmname);
@@ -236,6 +239,8 @@ export default function HomeChat() {
 		}
 		return result;
 	}
+
+	useEffect(() => {console.log(profileId)}, [profileId]);
 
 	return (
 		<Template>

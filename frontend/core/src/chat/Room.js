@@ -26,12 +26,13 @@ export default function Room() {
 	const [users_room, setUsersRoom] = useState([]);
 	const [blockedUsers, setBlockedUsers] = useState([]);
 	const [clickedNotifications, setClickedNotifications] = useState({});
-	const maxLength = 100;
+	const maxLength = 300;
 	const [caracteresRestants, setCaracteresRestants] = useState(maxLength);
 	const [isModalProfile, setIsModalProfile] = useState(false);
 	const [profileId, setProfileId] = useState(1);
 	const modalProfile = useRef(null);
 	const messagesEndRef = useRef(null);
+	const [isJoin, setIsJoin] = useState(false);
 
 	const navigate = useNavigate();
 	const { userInfo } = useAuth();
@@ -73,7 +74,7 @@ export default function Room() {
 				}
 			});
 			socket.on('error', (data) => {
-				showToast('error', data);
+				showToast('error', data.message);
 			})
 			return () => {}
 		}
@@ -97,6 +98,7 @@ export default function Room() {
 			const response = await axiosInstance.post('/api/livechat/exit-room/', {room_name: roomName});
 		} catch (error) {
 			showToast("error", t('ToastsError'));
+			setIsJoin(true);
 		}
 	};
 
@@ -108,6 +110,7 @@ export default function Room() {
 				password: password,
 			});
 		}
+		setIsJoin(false);
 	};
 
 	const handleRoomClick = (e, room) => {
@@ -128,7 +131,8 @@ export default function Room() {
 			}
 		} else {
 			clearRoom();
-			joinRoom(room.name);
+			if(isJoin)
+				joinRoom(room.name);
 		}
 	}
 
@@ -143,7 +147,7 @@ export default function Room() {
 
 	const FriendList = async () => {
 		try {
-			const reponse = await axiosInstance.get(`/api/friends/list/${userInfo.id}`);
+			const reponse = await axiosInstance.get(`/api/friends/list/${userInfo?.id}`);
 			setFriendList(reponse.data);
 		}
 		catch(error) {
@@ -183,10 +187,11 @@ export default function Room() {
 		const interval = setInterval(() => {
 			Users_room_list();
 			listroom();
-		}, 10000);
+			FriendList();
+		}, 5000);
 
 		return () => clearInterval(interval);
-	}, [roomName]);
+	}, [roomName, userInfo?.id]);
 
 	useEffect(() => {
         if (messagesEndRef.current) {
@@ -196,6 +201,7 @@ export default function Room() {
 
 	const handleProfile = (user_id) => {
 		setIsModalProfile(!isModalProfile);
+		console.log(user_id)
 		setProfileId(user_id);
 	}
 
@@ -252,8 +258,8 @@ export default function Room() {
 								{friendList?.friends?.length > 0 ? (
 									friendList.friends.map((friend) => (
 										<li key={friend.id}>
-											<Link to={`/profile/${friend.id}`}> {friend.name} </Link>
-										</li>
+                                            {friend.name}
+                                        </li>
 									))
 								) : (
 									<li>{t('NoFriend')}</li>

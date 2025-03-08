@@ -467,12 +467,12 @@ class GameState:
     def is_game_over(self, game):
         if self.status == "aborted":
             return True
-        if self.score["score_P1"] >= game.scoreMax:
+        if self.score["score_P1"] >= game.scoreMax - 7:
             self.winner = self.player1
             self.loser = self.player2
             self.status = "finished"
             return True
-        elif self.score["score_P2"] >= game.scoreMax:
+        elif self.score["score_P2"] >= game.scoreMax - 7:
             self.winner = self.player2
             self.loser = self.player1
             self.status = "finished"
