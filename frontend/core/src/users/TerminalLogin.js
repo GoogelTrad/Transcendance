@@ -6,14 +6,13 @@ import logo from '../assets/user/logo.png';
 import './TerminalLogin.css';
 import AuthSchool from './AuthSchool';
 import { ValidatePassword } from './LoginForm';
-import { ToastContainer } from 'react-toastify';
 import { showToast } from '../instance/ToastsInstance';
 
 
 function TerminalLogin({ setModal, launching, setTerminal, removeLaunch }) {
     const { login } = useAuth();
     const navigate = useNavigate();
-    const [lines, setLines] = useState(["Welcome to the Terminal."]);
+    const [lines, setLines] = useState(['Welcome to the Terminal. Type "help" to see commands.']);
     const [isTwoFactorRequired, setIsTwoFactorRequired] = useState(false);
     const [currentInput, setCurrentInput] = useState("");
     const [currentCommand, setCurrentCommand] = useState(null);
@@ -143,18 +142,6 @@ function TerminalLogin({ setModal, launching, setTerminal, removeLaunch }) {
     const handleSchoolLogin = () => {
         setIsSchool(true);
     };
-
-    useEffect(() => {
-        const bc = new BroadcastChannel("taken");
-
-        bc.onmessage = (event) => {
-            console.log("mesage recu", event)
-            showToast("error", event);
-          };
-
-        bc.close();
-
-    }, [])
 
     const cancelCommand = () => {
         setCurrentCommand(null);
@@ -295,7 +282,6 @@ function TerminalLogin({ setModal, launching, setTerminal, removeLaunch }) {
             )}
 
             {isSchool ? (<AuthSchool noButton={true}/>) : (null)}
-            <ToastContainer/>
         </div>
     );
 }

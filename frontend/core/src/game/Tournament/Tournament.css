@@ -186,6 +186,7 @@
     pointer-events: none; /* Empêche la propagation aux enfants */
 }
 
+
 @media (max-width: 600px) {
 
     .custom-modal{

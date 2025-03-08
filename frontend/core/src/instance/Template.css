@@ -2,14 +2,13 @@
 {
     max-width: 100%;
     height: fit-content;
-    z-index: 1051;
+    z-index: 1000;
     position: relative;
 }
 
 .task-bar
 {
     display: flex;
-	position: relative;
     flex-direction: row;
     align-items: center;
     gap: 0.5%;
@@ -22,6 +21,8 @@
     border-color: rgba(255, 255, 255, 0.196);
     z-index: 1049;
     pointer-events: auto;
+    min-height: 40px;
+    overflow: hidden;
 }
 
 .left-task
@@ -36,7 +37,12 @@
     width: fit-content;
     display: flex;
     flex-direction: row;
-    gap: 5%;
+    font-size: clamp(8px, 2vw, 14px) !important; 
+    align-items: center;
+    overflow: hidden;
+    margin-left: auto;
+    padding-right: 10px;
+    transition: transform 0.3s ease; 
 }
 
 .date-task
@@ -45,8 +51,9 @@
     flex-direction: column;
     gap: 0%;
     padding: 0;
-    margin: 0;
-    font-size: 12px;
+    margin-right: 5%;
+    font-size: clamp(6px, 1.5vw, 12px);
+    white-space: nowrap;
 }
 
 .general {
@@ -68,6 +75,8 @@
 .social-icon {
     position: relative;
     z-index: 2000;
+    width: clamp(16px, 2vw, 24px);
+    height: auto;
 }
 
 .content-area {
@@ -88,8 +97,8 @@
     height: 100%;
     background: rgba(0, 0, 0, 0.5); 
     display: flex;
-    justify-content: center;
-    align-items: center;
+    justify-content: flex-start;
+    align-items: flex-end;
     z-index: 1050;
     pointer-events: none;
 }
@@ -100,6 +109,9 @@
     color: black;
     font-size: 15px;
     font-weight: bold;
+    flex: 1;
+    overflow-y: auto;
+    padding-bottom: 60px;
 }
 
 .application-desktop .bd-highlight {
@@ -112,20 +124,144 @@
 .desktop-content {
     gap: 0.5%;
     border: solid;
-    border-color: rgba(255, 255, 255, 0.196);
-    position: absolute;
     background-color: grey !important;
     border-color: rgba(255, 255, 255, 0.196);
     padding: 1%;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-    text-align: center;
     max-width: 600px;
     width: 15%;
     height: 45%;
-    bottom: 0%;
-    left: 0%;
-    padding-bottom: 0%;
-    padding-right: 0%;
+    bottom: 4%; 
     pointer-events: auto;
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    left: 0;
+    z-index: 1048;
 }
 
+.desktop-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.desktop-content::-webkit-scrollbar-track {
+    background: rgba(128, 128, 128, 0.3);
+    border-radius: 4px;
+}
+
+.desktop-content::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 4px;
+}
+
+.template-icons {
+    bottom: 0;
+    background-color: grey;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    z-index: 2;
+}
+
+.template-icons img {
+    width: clamp(5%, 10%, 10%) !important;
+    height: auto;
+    cursor: pointer;
+    margin: 2%;
+}
+
+@media (max-width: 600px) {
+    .desktop-content {
+        width: 18% !important;
+    }
+
+    .right-task {
+        gap: 2%;
+        font-size: clamp(6px, 1.5vw, 12px);
+    }
+    
+    .date-task {
+        font-size: clamp(5px, 1.2vw, 10px);
+    }
+}
+
+@media (max-height: 670px) {
+    .desktop-content {
+        height: 300px;
+        min-width: 18%;
+        max-height: calc(100vh - 60px);
+        overflow-y: auto;
+        position: fixed;
+        bottom: clamp(4%, 8%, 18%) !important; 
+        left: 0;
+    }
+
+    .application-desktop {
+        flex: 1;
+        overflow-y: auto;
+    }
+
+    .template-power, .template-icons {
+        bottom: 0% !important;
+    }
+
+    .template-icons {
+        min-height: 10%;
+        background-color: grey;
+        margin-top: auto;
+        z-index: 2;
+        position: sticky;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+    }
+
+    .application-desktop .p-2 {
+        padding: 0.5rem !important;
+        min-height: 40px;
+        display: flex;
+        align-items: center;
+        width: 100% !important;
+        font-size: 67%;
+    }
+}
+
+@media (max-height: 400px) {
+    .desktop-content {
+        height: 250px; 
+        bottom: 10%;
+    }
+}
+
+@media (max-width: 768px) {
+    .right-task {
+        transform: translateX(-10%);
+    }
+
+    .social-icon {
+        width: clamp(14px, 1.8vw, 20px);
+    }
+
+    .template-icons img {
+        width: clamp(14px, 1.8vw, 20px);
+    }
+}
+
+@media (max-width: 576px) {
+    .right-task {
+        transform: translateX(-20%);
+    }
+
+    .social-icon {
+        width: clamp(12px, 1.5vw, 16px);
+    }
+
+    .template-icons img {
+        width: clamp(12px, 1.5vw, 16px);
+        margin: 1.5%;
+    }
+}
+
+@media (max-width: 400px) {
+    .right-task {
+        transform: translateX(-30%); 
+    }
+}

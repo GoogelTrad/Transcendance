@@ -465,23 +465,23 @@ function GameInstance({ children }) {
                         <div className="d-flex justify-content-center align-items-center w-100" style={{ height: '40%' }}>
                             <h1 className="title-gameOver" >{t('GameOver')}</h1>
                         </div>
-                        <div className="d-flex justify-content-center align-items-center w-100" style={{ height: '30%' }}>
+                        <div className=" d-flex justify-content-center align-items-center w-100" style={{ height: '30%' }}>
                             <div className="final-scores d-flex justify-content-around w-100">
                                 <div className="score-column text-center">
-                                    <p className="title-column">{t('Player1')}</p>
+                                    <p className="title-column">{t('Score player1')}</p>
                                     <p>{game?.score_player_1 || "0"}</p>
                                 </div>
                                 <div className="score-column text-center">
-                                    <p className="title-column">{t('Player2')}</p>
+                                    <p className="title-column">{t('Score player2')}</p>
                                     <p>{game?.score_player_2 || "0"}</p>
                                 </div>
                                 <div className="score-column text-center">
                                     <p className="title-column">{t('Winner')}</p>
-                                    <p>{game?.winner || "No Player"}</p>
+                                    <p style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'}}>{game?.winner || "No Player"}</p>
                                 </div>
                                 <div className="score-column text-center">
                                     <p className="title-column">{t('Loser')}</p>
-                                    <p>{game?.loser || "No Player"}</p>
+                                    <p style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'}}>{game?.loser || "No Player"}</p>
                                 </div>
                                 <div className="score-column text-center">
                                     <p className="title-column">{t('Time')}</p>

@@ -11,12 +11,12 @@ from django.contrib.auth import authenticate, login
 from .models import User, ValidToken, ConfirmationCode
 from users.decorator import jwt_auth_required
 from django.core.mail import send_mail
-from ipware import get_client_ip
 from django.conf import settings
 from django.utils.timezone import now
 import random
 import jwt
 import os
+import re
 
 
 class LoginView():
@@ -25,32 +25,23 @@ class LoginView():
         name = request.data['name']
         password = request.data['password']
 
+        if not name or not password:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
         user = User.objects.filter(name=name).first()
 
         if user is None:
-            raise AuthenticationFailed('User not found!')
+            return Response(status=status.HTTP_403_FORBIDDEN)
         
         if not user.check_password(password):
-            raise AuthenticationFailed('Incorrect password!')
-        
-    
-        ip, routable = get_client_ip(request)
-        
-        if user.ip_user is not ip and not user.enable_verified:
-            user.last_verified = None
-            user.save()
+            return Response(status=status.HTTP_403_FORBIDDEN)
             
         if user.enable_verified is True:
-            if not user.last_verified or (now() - user.last_verified).days >= 3:
-                user.ip_user = ip
-                user.is_verified = False
-                user.save()
-                send_confirmation_email(user)
-                return Response(
-                    {'message': 'Verification required. Check your email for the confirmation code.'},
-                    status=status.HTTP_401_UNAUTHORIZED
-                )
-        user.ip_user = ip
+            send_confirmation_email(user)
+            return Response(
+                {'message': 'Verification required. Check your email for the confirmation code.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
         user.status = 'online'
         user.save()
         
@@ -72,22 +63,20 @@ class LoginView():
 
         reponse = Response()
 
-        reponse.set_cookie(key='token', value=token, max_age=3600, httponly=True, secure=True)
+        reponse.set_cookie(key='token', value=token, max_age=int(os.getenv('TOKEN_TIME')), httponly=True, secure=True, samesite='None')
         reponse.data = {
             'message': 'Logged in successfully!'
         }
         return reponse
 
 class UserView():
-    @api_view(['GET', 'PATCH', 'DELETE'])
+    @api_view(['GET', 'PATCH'])
     def userDetails(request, pk):
-
         if not request.user.is_authenticated:
             try:
                 user = User.objects.get(pk=pk)
             except:
-                raise AuthenticationFailed('User not found!')
-            
+                return Response(status=status.HTTP_403_FORBIDDEN)
 
             if request.method == 'GET':
                 serializer = UserSerializer(user)
@@ -121,34 +110,31 @@ class UserView():
                     
                     filtered_user = {key: value for key, value in serializer.data.items() if key not in ['password']}
                     reponse.delete_cookie('token')
-                    reponse.set_cookie(key='token', value=new_token, max_age=3600, httponly=True, secure=True)
+                    reponse.set_cookie(key='token', value=new_token, max_age=int(os.getenv('TOKEN_TIME')), httponly=True, secure=True, samesite='None')
                     reponse.data = {
                         **filtered_user
                     }
                     
                     return reponse
                 return Response("ErrorUploadingProfileImage", status=status.HTTP_400_BAD_REQUEST)
-        
-            elif request.method == 'DELETE':
-                user.delete()
-                return Response(status=status.HTTP_204_NO_CONTENT)
 
     @api_view(['POST'])
     def createUser(request):
+
+        email_type = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+        email = request.data['email']
+        if not re.match(email_type, email) :
+            return Response({'error': "Invalid email type!"}, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+        username = request.data['name']
+        if User.objects.filter(name=username).exists():
+            return Response({'error': "Username already taken!"}, status=status.HTTP_403_FORBIDDEN)
+
         serializer = UserSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)   
         serializer.save()
 
         return Response(serializer.data)
-
-    @api_view(['GET'])
-    def count_users(request):
-        try :
-            user_count = User.objects.count()
-            return Response({'count': user_count})
-        except Exception as e:
-            return Response({'error': str(e)}, status=500)
-
 
 class LogoutView():
     @api_view(['GET'])
@@ -157,9 +143,13 @@ class LogoutView():
         
         token = request.COOKIES.get('token')
         if not token :
-            AuthenticationFailed('Token is missing!')
+            return Response({'error': 'TokenExpired'}, status=status.HTTP_401_UNAUTHORIZED)
         
         user = User.objects.get(name=request.user.name)
+
+        if user is None:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
         user.status = 'offline'
         user.save()
         
@@ -177,8 +167,11 @@ def generate_confirmation_code():
 	return f"{random.randint(100000, 999999)}"
 
 def send_confirmation_email(user):
-    code = generate_confirmation_code()
 
+    if user is None:
+        return Response(status=status.HTTP_403_FORBIDDEN)
+
+    code = generate_confirmation_code()
     ConfirmationCode.objects.update_or_create(user=user, defaults={"code": code})
 
     subject = "Votre code de confirmation Transcendance!"
@@ -226,7 +219,7 @@ def verify_code(request):
 
         reponse = Response()
 
-        reponse.set_cookie(key='token', value=token, max_age=3600, httponly=True, secure=True)
+        reponse.set_cookie(key='token', value=token, max_age=int(os.getenv('TOKEN_TIME')), httponly=True, secure=True, samesite='None')
         reponse.data = {
             'message': 'Code is valid!'
         }
@@ -236,6 +229,9 @@ def verify_code(request):
         return Response({'message': 'Code is invalid!'}, status=status.HTTP_400_BAD_REQUEST)
 
 def refresh_token(user, old_token):
+
+    if user is None or not old_token:
+        return Response(status=status.HTTP_400_BAD_REQUEST)
     try:
         payload = jwt.decode(old_token, os.getenv('JWT_KEY'), algorithms=['HS256'])
         new_token = jwt.encode(payload, os.getenv('JWT_KEY'), 'HS256')
@@ -251,7 +247,7 @@ def refresh_token(user, old_token):
 def permission_verif(request, id):
     user = User.objects.filter(id=id).first()
     if not user:
-        AuthenticationFailed('User not found!')
+        return Response(status=status.HTTP_400_BAD_REQUEST)
     
     user.enable_verified = not user.enable_verified
     user.last_verified = None
@@ -264,19 +260,6 @@ def permission_verif(request, id):
         message = 'DisableTo2FA'
     return Response({'message': message})
 
-    
-    
-@api_view(['GET'])
-def is_token_valid(request, token):
-    
-    if ValidToken.objects.filter(token=token).exists():
-        return Response(status=status.HTTP_200_OK)
-    else:
-        payload = jwt.decode(token, os.getenv('JWT_KEY'), algorithms=['HS256'])
-        user = User.objects.filter(id=payload[id]).first()
-        user.status = "offline"
-        user.save()
-        return Response(status=status.HTTP_404_NOT_FOUND)
 @api_view(['GET'])
 @jwt_auth_required
 def fetch_user_data(request):
@@ -293,7 +276,7 @@ def fetch_user_data(request):
             'is_stud': user.is_stud,
         }
         return Response({'payload': payload})
-    return Response({'error': 'Not authenticated'}, status=status.HTTP_401_UNAUTHORIZED)
+    return Response({'error': 'Not authenticated'}, status=status.HTTP_403_FORBIDDEN)
 
 @api_view(['GET'])
 def check_auth(request):
@@ -309,6 +292,6 @@ def check_auth(request):
         else:
             return Response({'isAuthenticated': False})
     except jwt.ExpiredSignatureError:
-        return Response({'isAuthenticated': False, 'error': 'Token expired'})
+        return Response({'error': 'TokenExpired'}, status=status.HTTP_401_UNAUTHORIZED)
     except jwt.InvalidTokenError:
-        return Response({'isAuthenticated': False, 'error': 'Invalid token'})
+        return Response({'error': 'TokenExpired'}, status=status.HTTP_401_UNAUTHORIZED)

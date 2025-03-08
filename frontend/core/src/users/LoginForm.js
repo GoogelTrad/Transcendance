@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Button from 'react-bootstrap/Button';
 import { useNavigate, Link } from 'react-router-dom';
-import { ToastContainer } from 'react-toastify';
 import { showToast } from '../instance/ToastsInstance';
 import axiosInstance from '../instance/AxiosInstance';
 import 'react-toastify/dist/ReactToastify.css';
@@ -78,10 +77,8 @@ function LoginRegister({setModal, setTerminal, removeLaunch}) {
                     'Content-Type': 'multipart/form-data',
                 },
             });
-
-            if (response.status === 401)
-                setStep(true);
-            else if (response.status === 200) {
+            console.log("coucou")
+            if (response.status === 200) {
                 login();
                 setModal(false);
                 setTerminal(false);
@@ -90,11 +87,11 @@ function LoginRegister({setModal, setTerminal, removeLaunch}) {
                 navigate('/home');
             }
         } catch (error) {
-            if (error.response && error.response.status === 401) 
-                setStep(true); 
+            if (error.status === 403)
+                setStep(true);
             else 
                 showToast('error', t('Toasts.IncorrectLoginOrPassword'));
-        }
+    }
     };
 
     const handleVerify = async () => {
@@ -127,16 +124,30 @@ function LoginRegister({setModal, setTerminal, removeLaunch}) {
         if(isAuthenticated)
             return showToast('error', t('Toasts.NotCreateNewAccountWhileConnected'));
         try {
-            await axiosInstance.post('/api/user/create', data, {
+            const response = await axiosInstance.post('/api/user/create', data, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
             });
             showToast("info", t('Toasts.AccountCreatedSuccesfully'));
         } catch (error) {
-            showToast("error", t("Toasts.CannotCreateTheAccount"));
+            console.log(error);
+            if (error.response) {
+                if (error.response.status === 406) {
+                    showToast("error", t('Toasts.EmailType'));
+                }
+                else if (error.response.status === 403)
+                    showToast("error", t("Toasts.NameAlreadyTaken"));
+                else {
+                    showToast("error", t("Toasts.CannotCreateTheAccount"));
+                }
+            } else {
+                showToast("error", t("Toasts.CannotCreateTheAccount"));
+            }
         }
     };
+
+    // useEffect(() => {console.log(step)}, [step]);
     
     return (
             <div className="coucou row">
@@ -173,7 +184,6 @@ function LoginRegister({setModal, setTerminal, removeLaunch}) {
                             </form>
                             <div>
                                 <AuthSchool noButton={false}/>
-                                {/* <Button type="submit" className='submit-button btn btn-primary' onClick={AuthSchool}>42</Button> */}
                             </div>
                         </div>
                     </div>
@@ -187,7 +197,7 @@ function LoginRegister({setModal, setTerminal, removeLaunch}) {
                             onChange={(e) => setCode(e.target.value)}
                         />
                         <button onClick={handleVerify}>{t('Verify')}</button>
-                        {/* <button onClick={setStep(false)}>Cancel</button> */}
+                        <button onClick={() => setStep(false)}>{t('Cancel')}</button>
                     </div>
                 )}
                 <div className="col-md-6 d-flex flex-column align-items-center justify-content-center">
@@ -209,7 +219,7 @@ function LoginRegister({setModal, setTerminal, removeLaunch}) {
                             <div className='mb-3'>
                                 <label htmlFor="email">{t('Email')}:</label>
                                 <input className='register-input'
-                                    type='email'
+                                    type='text'
                                     id='register-email'
                                     name='email'
                                     value={registerData.email}
@@ -263,7 +273,6 @@ function LoginRegister({setModal, setTerminal, removeLaunch}) {
                     </div>
                 </div>
 
-                <ToastContainer />
             </div>
     );
 }

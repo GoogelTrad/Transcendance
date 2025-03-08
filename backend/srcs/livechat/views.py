@@ -12,7 +12,7 @@ from asgiref.sync import async_to_sync
 from django.shortcuts import get_object_or_404
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework import status
-
+from django.db.models import Count
 
 @api_view(['GET'])
 @jwt_auth_required
@@ -35,12 +35,16 @@ def get_me(request, room_name):
 @jwt_auth_required
 def get_list_rooms(request):
     user = request.user
+    print("user:", user, flush=True)
 
     rooms = Room.objects.all()
     dmRooms = Room.objects.filter(dm=True, users=user)
+
+    print("rooms:", dmRooms, flush=True)
     rooms = rooms.filter(dm=False)
     roomSerializer = RoomSerializer(rooms, many=True)
     dmSerializer = RoomSerializer(dmRooms, many=True)
+    print("dmSerializer:", dmSerializer, flush=True)
     return Response({"publicRooms": roomSerializer.data, "dmRooms": dmSerializer.data})
 
 @api_view(['GET'])
@@ -57,9 +61,13 @@ def get_list_users(request, name):
 @jwt_auth_required
 def get_users_connected(request):
     try:
+        user_id = request.user.id
         users = User.objects.all()
         serializer = UserConnectedSerializer(users, many=True)
-        return Response(serializer.data)
+
+        filtered_user = [usr for usr in serializer.data if usr['id'] != user_id]
+
+        return Response(filtered_user)
     except:
         return Response({"error": "Users connected not found."}, status=404)
 
@@ -121,23 +129,46 @@ def send_notification(user, message):
 @api_view(['POST'])
 @jwt_auth_required
 def block_user(request):
-    from_user = request.data['from_user']
-    to_user = request.data['to_user']
+    from_user = request.data.get('from_user')
+    to_user = request.data.get('to_user')
 
-    user = User.objects.filter(id=from_user).first()
+    if not from_user or not to_user:
+        return Response(
+            {"error": "Les champs 'from_user' et 'to_user' sont requis"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
-    if user is None:
-        raise AuthenticationFailed("User not found")
+    # user = User.objects.filter(id=from_user).first()
 
-    blocked = User.objects.filter(id=to_user).first()
+    # if user is None:
+    #     raise AuthenticationFailed("User not found")
 
-    if blocked is None:
-        raise AuthenticationFailed("User not found")
+    # blocked = User.objects.filter(id=to_user).first()
+    # print("Blocked:", blocked, flush=True)
 
-    user.blocked_user.add(blocked)
-    user.save()
+    # if blocked is None:
+    #     raise AuthenticationFailed("User not found")
 
-    return Response({'message': 'Block user request accepted!'}, status=status.HTTP_200_OK)
+    # user.blocked_user.add(blocked)
+    # user.save()
+
+    # return Response({'message': 'Block user request accepted!'}, status=status.HTTP_200_OK)
+
+    from_user_id = User.objects.filter(id=from_user).first()
+    if not from_user_id:
+        raise AuthenticationFailed("Utilisateur émetteur non trouvé")
+
+    to_user_id = User.objects.filter(id=to_user).first()
+    if not to_user_id:
+        raise AuthenticationFailed("Utilisateur cible non trouvé")
+
+    from_user_id.blocked_user.add(to_user_id)
+    from_user_id.save()
+
+    return Response(
+        {'message': 'Utilisateur bloqué avec succès !'},
+        status=status.HTTP_200_OK
+    )
 
 @api_view(['POST'])
 @jwt_auth_required

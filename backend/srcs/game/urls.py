@@ -12,5 +12,6 @@ urlpatterns = [
     path('fetch_data_tournament/<int:tournament_id>/', TournamentView.fetch_data_tournament, name="fetch_data_tournament"),
     path('fetch_data_tournament_by_code/<int:code>/', TournamentView.fetch_data_tournament_by_code, name="fetch_data_tournament_by_code"),
     path('add_player_to_tournament/<int:code>/', TournamentView.add_player_to_tournament, name="add_player_to_tournament"),
+    path('fetch_data_tournament_by_user/<int:user_id>/', TournamentView.fetch_data_tournament_by_user, name="fetch_data_tournament_by_user"),
 
 ]

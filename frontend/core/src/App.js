@@ -9,6 +9,7 @@ import Home_game from './game/Home_game';
 import Tournament from './game/Tournament/Tournament';
 import GameInstance from './instance/GameInstance';
 import { AuthProvider, useAuth } from './users/AuthContext';
+import React, { useState } from 'react';
 import { BrowserRouter as Router, Route, Routes, Link, Navigate } from 'react-router-dom';
 import Profile from './users/Profile';
 import ProtectedRoute from './instance/RouteInstance';
@@ -16,36 +17,54 @@ import { jwtDecode } from 'jwt-decode';
 import HomeChat from './chat/Homechat';
 import Room from "./chat/Room";
 import LoginRegister from './users/LoginForm';
-import AuthSchool, { AuthSuccess } from './users/AuthSchool';
+import { AuthSuccess } from './users/AuthSchool';
 import { useEffect } from 'react';
 import axiosInstance from './instance/AxiosInstance';
+import { useNavigate } from 'react-router-dom';
+import { ToastContainer } from 'react-toastify';
+import SetupInterceptors from "./instance/SetupInterceptors";
+import PageNotFound from './NotFound';
+import { useTranslation } from 'react-i18next';
 
-function NavBar()
-{
-  const { userInfo } = useAuth();
+function NavigateFunctionComponent(props) {
+  let navigate = useNavigate();
+  const [ ran, setRan ] = useState(false);
+  const {setIsAuthenticated} = useAuth();
+  const { t } = useTranslation();
+
+  if(!ran){
+     SetupInterceptors(navigate, setIsAuthenticated, t);
+     setRan(true);
+  }
+  return <></>;
 }
 
 function App() {
-
+  
   return (
-    <AuthProvider>
-      <Router>
-          <Routes>
-            <Route path="/" element={<Navigate to="/home" replace />} />
-            <Route path="/home" element={<Home />} />
-            <Route path="/login" element={<LoginRegister />} />
-            <Route path='/logout' element={<ProtectedRoute><Logout /></ProtectedRoute>} />
-            <Route path='/chat' element={<ProtectedRoute><HomeChat/></ProtectedRoute>} />
-            <Route path="/room/:roomName" element={<ProtectedRoute><Room/></ProtectedRoute>} />
-            <Route path='/home_game' element={<ProtectedRoute><Home_game /></ProtectedRoute>} />
-            <Route path='/game/:id' element={<ProtectedRoute><GameInstance /></ProtectedRoute>} />
-            <Route path='/profile' element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-            <Route path='/friends' element={<ProtectedRoute><Friends /></ProtectedRoute>} />
-            <Route path='/games/tournament/:tournamentCode' element={<ProtectedRoute><Tournament /></ProtectedRoute>} />
-            <Route path="/auth-success" element={<AuthSuccess />} />
-          </Routes>
-      </Router>
-    </AuthProvider>
+    <>
+      <AuthProvider>
+        <Router>
+          {<NavigateFunctionComponent />}
+            <Routes>
+              <Route path="/" element={<Navigate to="/home" replace />} />
+              <Route path="/home" element={<Home />} />
+              <Route path="/login" element={<LoginRegister />} />
+              <Route path='/logout' element={<ProtectedRoute><Logout /></ProtectedRoute>} />
+              <Route path='/chat' element={<ProtectedRoute><HomeChat/></ProtectedRoute>} />
+              <Route path="/room/:roomName" element={<ProtectedRoute><Room/></ProtectedRoute>} />
+              <Route path='/home_game' element={<ProtectedRoute><Home_game /></ProtectedRoute>} />
+              <Route path='/game/:id' element={<ProtectedRoute><GameInstance /></ProtectedRoute>} />
+              <Route path='/profile' element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+              <Route path='/friends' element={<ProtectedRoute><Friends /></ProtectedRoute>} />
+              <Route path='/games/tournament/:tournamentCode' element={<ProtectedRoute><Tournament /></ProtectedRoute>} />
+              <Route path="/auth-success" element={<AuthSuccess />} />
+              <Route path="*" element={<PageNotFound />} />
+            </Routes>
+        </Router>
+      </AuthProvider>
+      <ToastContainer/>
+    </>
   );
 }
 

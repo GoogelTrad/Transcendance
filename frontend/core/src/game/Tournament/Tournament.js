@@ -142,8 +142,7 @@ function Tournament() {
 
     
     const renderPlayerImages = (numberPlayer, numberPlayerCo) => (
-        console.log("numberPlayerCo : ", numberPlayerCo),
-        console.log("numberPlayer : ", numberPlayer),
+    
         [
             ...Array.from({ length: numberPlayerCo }).map((_, index) => (
                 <img key={index + (numberPlayer - numberPlayerCo)} src={personAdd} alt={`Player ${index + 1}`} className="player-icon" />

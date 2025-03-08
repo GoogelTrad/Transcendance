@@ -3,14 +3,12 @@ import person from '../../assets/game/person.svg';
 import "./Tournament.css";
 import waiting from '../../assets/waiting.gif';
 
-// Composant pour afficher le résultat W/L
 const ResultIndicator = ({ isWinner }) => (
   <span style={{ color: isWinner ? '#00ff00' : '#ff0000' }}>
     {isWinner ? 'W' : 'L'}
   </span>
 );
 
-// Fonction pour vérifier le gagnant
 const checkWinner = (winner, player) => {
   if (!winner) return null;
   return <ResultIndicator isWinner={winner === player} />;
@@ -28,7 +26,6 @@ const TournamentBracket = ({ numberPlayer, tournamentResponse }) => {
   });
 
   useEffect(() => {
-    console.log("Mise à jour des gagnants:", tournamentResponse);
     setWinners({
       winner1: tournamentResponse?.winner1 || null,
       winner2: tournamentResponse?.winner2 || null,
@@ -36,7 +33,6 @@ const TournamentBracket = ({ numberPlayer, tournamentResponse }) => {
     });
   }, [tournamentResponse?.winner1, tournamentResponse?.winner2, tournamentResponse?.winner_final]);
 
-  // Fonction principale refactorisée
   const getMatchResult = (player, roundIndex, playerIndex) => {
     const matchConfigs = {
       "2": [
@@ -44,20 +40,6 @@ const TournamentBracket = ({ numberPlayer, tournamentResponse }) => {
         { round: 2, check: () => checkWinner(winners.winner2, player) },
         { round: 3, check: () => checkWinner(winners.winner1, player) }
       ],
-      "4": [
-        { round: 0, check: () => checkWinner(winners.winner_final, player) },
-        { 
-          round: 1, 
-          check: () => {
-            if ((playerIndex === 0 || playerIndex === 1) && winners.winner1) {
-              return checkWinner(winners.winner1, player);
-            } else if (winners.winner2) {
-              return checkWinner(winners.winner2, player);
-            }
-            return null;
-          }
-        }
-      ]
     };
 
     const size = tournamentResponse?.size;

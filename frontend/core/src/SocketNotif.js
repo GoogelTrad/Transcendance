@@ -44,7 +44,20 @@ export default function useNotifications() {
 	useEffect(() => {
 		console.log("Notifications mises à jour : ", notifications);
 	}, [notifications]);
-	
+
+	// const sendInvit = (targetId, message, userId) => {
+	// 	if (socket && socket.readyState === WebSocket.OPEN) {
+	// 		const notificationData = {
+	// 			type: "send_notification",
+	// 			target_id: targetId,
+	// 			sender_id: userId,
+	// 			message: message,
+	// 		};
+	// 		console.log("Envoi de la notification : ", notificationData);
+	// 		socket.send(JSON.stringify(notificationData));
+	// 	}
+	// };
+
 	const sendNotification = (targetId, message, userId, room_name = undefined) => {
 		if (socket && socket.readyState === WebSocket.OPEN) {
 			const notificationData = {

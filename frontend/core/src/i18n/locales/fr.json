@@ -171,7 +171,9 @@
 	  "AccountCreatedSuccesfully": "Compte créé avec succès !",
 	  "CannotCreateTheAccount": "Impossible de créer le compte !",
 	  
-	  "ErrorUploadingProfileImage": "Téléchargez une image valide. Le fichier que vous avez téléchargé n'est pas une image ou est corrompu."
+	  "ErrorUploadingProfileImage": "Téléchargez une image valide. Le fichier que vous avez téléchargé n'est pas une image ou est corrompu.",
+	  "EmailType": "Adresse mail invalide!",
+	  "NameAlreadyTaken": "Nom d'utilisateur deja pris!"
 	},
   
 	"ToastsError": "Une erreur est survenue."

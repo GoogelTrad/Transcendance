@@ -62,20 +62,22 @@ export const AuthProvider = ({ children }) => {
             if (event.key === 'isAuthenticated' && event.newValue === 'true') {
                 login(); 
             }
+            else if (event.key === 'isAuthenticated' && event.newValue === 'false') {
+                logout(); 
+            }
         };
         window.addEventListener('storage', handleStorageChange);
 
         return () => {
             window.removeEventListener('storage', handleStorageChange);
         };
-    }, []);
+    }, [isAuthenticated]);
 
     const logout = async () => {
         try {
             await axiosInstance.get('/api/user/logout');
-            // window.location.href = '/';
         } catch (err) {
-            console.log('Erreur lors de la déconnexion API:', err);
+            console.log('Erreur lors de la déconnexion API', err);
         }
 
         setUserInfo(null);

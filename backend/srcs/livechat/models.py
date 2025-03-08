@@ -3,13 +3,21 @@ from users.models import User
 from django.conf import settings
 from django.core.exceptions import ValidationError
 
+from django.core.validators import RegexValidator
+
 class Room(models.Model):
-    """Modele representant une salle de chat prive"""
+    """Modele representant une salle de chat"""
+
+    name_validator = RegexValidator(
+        regex=r'^[0-9a-zA-Z]+$',
+        message="Nom d'utilisateur invalide"
+    )
+
     creation = models.DateTimeField(auto_now_add=True)
     createur = models.ForeignKey(User, on_delete=models.PROTECT, related_name="rooms_create")
     password = models.CharField(max_length=255, blank=True, null=True)
     users = models.ManyToManyField(User, related_name="rooms", blank=False)
-    name = models.CharField(max_length=255, blank=False, unique=True)
+    name = models.CharField(max_length=255, validators=[name_validator], blank=False, unique=True)
     dm = models.BooleanField(default=False)
 
     async def add_members(self, member):

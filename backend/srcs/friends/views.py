@@ -43,7 +43,7 @@ def send_friend_request(request, user_id):
 def accept_friend_request(request, request_id):
     
 	if not request.user.is_authenticated:
-		raise AuthenticationFailed('LoginRequiredForAcceptFriendRequest')
+		return Response({'error': 'LoginRequiredForAcceptFriendRequest'}, status=status.HTTP_401_UNAUTHORIZED)
 	try:
 		friend_request = FriendRequest.objects.get(id=request_id, to_user=request.user)
 	except FriendRequest.DoesNotExist:
@@ -62,7 +62,7 @@ def accept_friend_request(request, request_id):
 @jwt_auth_required
 def decline_friend_request(request, request_id):
 	if not request.user.is_authenticated:
-		raise AuthenticationFailed('LoginRequiredForAcceptFriendRequest')
+		return Response({'error': 'LoginRequiredForAcceptFriendRequest'}, status=status.HTTP_401_UNAUTHORIZED)
 
 	try:
 		friend_request = FriendRequest.objects.get(id=request_id, to_user=request.user)
@@ -96,21 +96,21 @@ def delete_friends(request, id):
 	try :
 		to_delete = User.objects.get(id=id)
 	except User.DoesNotExist:
-		return Response({'error': 'UserNotFound'}, status=404)
+		return Response({'error': 'UserNotFound'}, status=status.HTTP_404_NOT_FOUND)
 
 	if to_delete not in current_user.friends.all():	
-		return Response({'error': 'NotInYourFriendsList'}, status=404)
+		return Response({'error': 'NotInYourFriendsList'}, status=status.HTTP_404_NOT_FOUND)
 
 	current_user.friends.remove(to_delete)
 	to_delete.friends.remove(current_user)
 
-	return Response({'message': 'FriendsSuccesfullyRemoved'}, status=200)
+	return Response({'message': 'FriendsSuccesfullyRemoved'}, status=status.HTTP_200_OK)
 
 @api_view(['GET'])
 @jwt_auth_required    
 def get_friend_requests(request):    
 	if not request.user.is_authenticated:
-		return Response({'error': 'UserNotAuthenticated'}, status=status.HTTP_401_UNAUTHORIZED)
+		return Response({'error': 'UserNotAuthenticated'}, status=status.HTTP_403_FORBIDDEN)
 
 	friend_requests = FriendRequest.objects.filter(to_user=request.user)
 	serializer = FriendRequestSerializer(friend_requests, many=True)
@@ -121,6 +121,7 @@ def get_friend_requests(request):
 @jwt_auth_required
 def searchAddFriend(request, name):
 	user = User.objects.filter(name__startswith=name).exclude(id=request.user.id)
+	
 	if user.exists():
 		serializer = UserSerializer(user, many=True)
 		user_data = []

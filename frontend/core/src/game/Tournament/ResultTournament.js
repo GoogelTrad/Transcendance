@@ -21,32 +21,24 @@ function ResultTournament({ items, setItems, setModalResult, setModalStats, remo
                     const response = await axiosInstance.get(`/api/game/fetch_data_tournament_by_code/${tournamentCode}`);
                     setTournamentResponse(response.data);
                 } catch (error) {
-                console.log("Error fetching tournament:", error);
+                    console.log("Error fetching tournament:", error);
                 }
             };
-            fetchTournement();
+            if(tournamentCode)
+                fetchTournement();
           }, [tournamentCode]);
     
         const handleClick = (e) => {
-            console.log("Click sur le bouton stats");
-            e.stopPropagation(); // Empêcher la propagation de l'événement
+            e.stopPropagation();
             
             try {
-                // 1. Préparer les items actifs
-                console.log("Items avant modification:", items);
                 const itemsActiv = items.map(item => ({
                     ...item,
                     active: item.name === 'global' || item.name === 'Tournament'
                 }));
                 setItems(itemsActiv);
-                console.log("Items après modification:", itemsActiv);
-    
-                // 2. Lancer la modal stats
-                console.log("Lancement de la modal stats");
                 launching({ newLaunch: 'stats', setModal: setModalStats });
-    
-                // 3. Fermer le modal result
-                console.log("Fermeture du modal result");
+
                 setTimeout(() => {
                     setModalResult(false);
                     removeLaunch("tournament");
