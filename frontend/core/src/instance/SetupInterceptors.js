@@ -4,7 +4,7 @@ const SetupInterceptors = (navigate, setIsAuthenticated) => {
     axiosInstance.interceptors.response.use((response) => {
   
         return response;
-      }, (error) => {
+      }, (error) => { 
         if (error.status === 401)
         {
             if (localStorage.getItem('isAuthenticated') === 'true')
@@ -14,6 +14,7 @@ const SetupInterceptors = (navigate, setIsAuthenticated) => {
                 navigate("/home");
             } 
         }
+        return Promise.reject(error);
       });
 };
 

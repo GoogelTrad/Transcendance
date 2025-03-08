@@ -190,7 +190,9 @@
 		"ErrorUploadingProfileImage": "Upload a valid image. The file you uploaded was either not an image or a corrupted image.",
 		"EnableTo2FA": "2FA has been enable!",
 		"DisableTo2FA": "2FA has been disable!",
-		"Error2FA": "Error while changing perms on 2FA!"
+		"Error2FA": "Error while changing perms on 2FA!",
+		"EmailType": "Invalid e-mail address!",
+		"NameAlreadyTaken": "Username already taken!"
 	},
 
 	"ToastsError": "An error has occurred."

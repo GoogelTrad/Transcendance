@@ -17,6 +17,7 @@ from django.utils.timezone import now
 import random
 import jwt
 import os
+import re
 
 
 class LoginView():
@@ -135,20 +136,21 @@ class UserView():
 
     @api_view(['POST'])
     def createUser(request):
+
+        email_type = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+        email = request.data['email']
+        if not re.match(email_type, email) :
+            return Response({'error': "Invalid email type!"}, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+        username = request.data['name']
+        if User.objects.filter(name=username).exists():
+            return Response({'error': "Username already taken!"}, status=status.HTTP_403_FORBIDDEN)
+
         serializer = UserSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)   
         serializer.save()
 
         return Response(serializer.data)
-
-    @api_view(['GET'])
-    def count_users(request):
-        try :
-            user_count = User.objects.count()
-            return Response({'count': user_count})
-        except Exception as e:
-            return Response({'error': str(e)}, status=500)
-
 
 class LogoutView():
     @api_view(['GET'])
