@@ -1,10 +1,15 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import axiosInstance from '../instance/AxiosInstance';
 
+import { showToast } from "../instance/ToastsInstance";
+import { useTranslation } from 'react-i18next';
+
+
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
+    const { t } = useTranslation();
     const [userInfo, setUserInfo] = useState({});
     const [isAuthenticated, setIsAuthenticated] = useState(() => {
         return localStorage.getItem('isAuthenticated') === 'true';
@@ -21,7 +26,7 @@ export const AuthProvider = ({ children }) => {
                 localStorage.setItem('isAuthenticated', 'true');
                 return true;
             } else {
-                throw new Error('Utilisateur non authentifié après login');
+                showToast("error", t('ToastsError'));
             }
         } catch (err) {
             setIsAuthenticated(false);
@@ -39,7 +44,7 @@ export const AuthProvider = ({ children }) => {
             const userResponse = await axiosInstance.get('/api/user/fetch_user_data');
             setUserInfo(userResponse.data.payload);
         } catch (err) {
-            console.log('Erreur lors du rafraîchissement de userInfo:', err);
+            showToast("error", t('ToastsError'));
         }
     };
 
@@ -77,7 +82,7 @@ export const AuthProvider = ({ children }) => {
         try {
             await axiosInstance.get('/api/user/logout');
         } catch (err) {
-            console.log('Erreur lors de la déconnexion API', err);
+            showToast("error", t('ToastsError'));
         }
 
         setUserInfo(null);

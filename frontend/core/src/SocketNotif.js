@@ -10,21 +10,18 @@ export default function useNotifications() {
 		
 		const ws = new WebSocket(BASE_URL_NOTIF);
 
-		ws.onopen = () => console.log("WebSocket connecté !");
+		ws.onopen = () => {};
 		
 		ws.onmessage = (event) => {
 			const data = JSON.parse(event.data);
-			console.log("📩 Message1 reçu :", data);
 		
 			if (data.type === "send_notification") {
-				console.log("Notification reçue: ", data);
 				setNotifications((prev) => [
 					...prev,
 					{ target_id: data.targetId, message: data.message, sender_id: data.sender_id, room_name: data.room_name, response: null },
 				]);
 			} 
 			else if (data.type === "receive_response") {
-				console.log(`Réponse reçue pour la notification ${data.target_id}: ${data.response}`);
 				setNotifications((prevNotifications) => [
 						...prevNotifications,
 						{ target_id: data.targetId, message: data.message, sender_id: data.sender_id, response: data.response }
@@ -32,7 +29,7 @@ export default function useNotifications() {
 			}
 		};
 
-		ws.onclose = () => console.log("WebSocket déconnecté");
+		ws.onclose = () => {};
 
 		setSocket(ws);
 
@@ -41,9 +38,7 @@ export default function useNotifications() {
 		};
 	}, []);
 
-	useEffect(() => {
-		console.log("Notifications mises à jour : ", notifications);
-	}, [notifications]);
+	useEffect(() => {}, [notifications]);
 
 	// const sendInvit = (targetId, message, userId) => {
 	// 	if (socket && socket.readyState === WebSocket.OPEN) {
@@ -53,7 +48,6 @@ export default function useNotifications() {
 	// 			sender_id: userId,
 	// 			message: message,
 	// 		};
-	// 		console.log("Envoi de la notification : ", notificationData);
 	// 		socket.send(JSON.stringify(notificationData));
 	// 	}
 	// };
@@ -67,22 +61,18 @@ export default function useNotifications() {
 				message: message,
 				room_name
 			};
-			console.log("Envoi de la notification : ", notificationData);
 			socket.send(JSON.stringify(notificationData));
 		}
 	};
 
 	const respondNotification = (targetId, response, senderId) => {
-		console.log("BONSOIR");
 		if (socket && socket.readyState === WebSocket.OPEN) {
-			console.log("BONSOIR2");
 			const notificationData = {
 				type: "receive_response",
 				target_id: targetId,
 				response: response,
 				sender_id: senderId,
 			};
-			console.log("Envoi de la reponse : ", notificationData); // Ajout d'un log
 			socket.send(JSON.stringify(notificationData));
 		}
 	};
