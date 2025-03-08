@@ -32,7 +32,6 @@ export default function Room() {
 	const [profileId, setProfileId] = useState(1);
 	const modalProfile = useRef(null);
 	const messagesEndRef = useRef(null);
-	const [isJoin, setIsJoin] = useState(false);
 
 	const navigate = useNavigate();
 	const { userInfo } = useAuth();
@@ -95,10 +94,10 @@ export default function Room() {
 
 	const clearRoom = async () => {
 		try {
-			const response = await axiosInstance.post('/api/livechat/exit-room/', {room_name: roomName});
+			const response = await axiosInstance.post('/api/livechat/exit_room/', {room_name: roomName},
+			);
 		} catch (error) {
 			showToast("error", t('ToastsError'));
-			setIsJoin(true);
 		}
 	};
 
@@ -110,7 +109,6 @@ export default function Room() {
 				password: password,
 			});
 		}
-		setIsJoin(false);
 	};
 
 	const handleRoomClick = (e, room) => {
@@ -131,8 +129,7 @@ export default function Room() {
 			}
 		} else {
 			clearRoom();
-			if(isJoin)
-				joinRoom(room.name);
+			joinRoom(room.name);
 		}
 	}
 
