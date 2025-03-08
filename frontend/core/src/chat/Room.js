@@ -73,6 +73,10 @@ export default function Room() {
 					showToast("error", t('ToastsError'));
 				}
 			});
+			socket.on('error', (data) => {
+				console.log("COUCOU");
+				showToast('error', data);
+			})
 			return () => {}
 		}
 	}, [socket, navigate, navigate]);
@@ -80,10 +84,6 @@ export default function Room() {
 	const sendMessage = (e) => {
 		e.preventDefault();
 		setCaracteresRestants(maxLength);
-		if (message.trim() === "") {
-			showToast("error", t('Toasts.NotBlankMessage'));
-			return;
-		}
 		if (socket.ready) {
 			socket.send({
 				type: 'send_message',
