@@ -74,7 +74,8 @@ class GameView:
             user = User.objects.get(id=user_id)
 
             games = user.games.all().order_by('-date')
-            games = games.games.exclude(status='aborted')
+            games = games.exclude(status='aborted')
+            games = games.exclude(status='waiting')
             game_serializer = GameSerializer(games, many=True)
 
             return Response(game_serializer.data, status=status.HTTP_200_OK)

@@ -467,16 +467,16 @@ function Stats({ itemsArray = [] }) {
                                                         <td>{game.code || "N/A"}</td>
                                                         <td  
                                                             onClick={(e) => { e.stopPropagation(); handleDivClick(""); }} 
-                                                            title={getOtherPlayers(userInfo?.id)}
-                                                            className={expandedCells[`score-${userInfo?.id}`] ? 'expanded-cell' : ''}
+                                                            title={getOtherPlayers(game)}
+                                                            className={expandedCells[`player-${game.id}`] ? 'expanded-cell' : ''}
                                                         >
-                                                            {getOtherPlayers(userInfo?.id)}</td>
-                                                        <td>{game.time || "N/A"}</td>
+                                                            {getOtherPlayers(game)}</td>
+                                                        <td>{game.timeMaxMinutes} : {game.timeMaxSeconds}</td>
                                                         <td>{game.place || "N/A"}</td>
                                                         <td
                                                             onClick={(e) => { e.stopPropagation(); handleDivClick(""); }} 
                                                             className={expandedTab ? 'expanded-cell' : ''}
-                                                        >{game.classement || "N/A"}</td>
+                                                        > 1er{game.first || "N/A"} 2ème{game.first || "N/A"} 3ème{game.first || "N/A"} 4ème{game.first || "N/A"}</td>
                                                     </tr>
                                                 ))}
                                             </tbody>
