@@ -7,9 +7,13 @@ from .serializer import MessageSerializer
 import jwt
 import os
 from django.core.exceptions import ValidationError
+from channels.db import database_sync_to_async
+from game.models import Game
+
 
 from asgiref.sync import sync_to_async
 from django.contrib.auth.hashers import make_password, check_password
+import re
 
 @sync_to_async
 def get_user_by_name(username):
@@ -70,12 +74,11 @@ class ChatConsumer(AsyncWebsocketConsumer):
             return
         self.room_name = self.scope['url_route']['kwargs']['room']
 
-        import re
         if not re.match(r'^[0-9a-zA-Z]+$', self.room_name):
             await self.accept()  # Accepter la connexion pour envoyer un message
             await self.send({
                 "type": "error",
-                "message": f"Invalid room name: {self.room_name}. Use only alphanumeric characters."
+                "error": f"Invalid room name: {self.room_name}. Use only alphanumeric characters."
             })
             await self.close()
             return
@@ -135,12 +138,12 @@ class ChatConsumer(AsyncWebsocketConsumer):
             result = room.filter(users=self.user)
 
         return list(result)
-        
+
     
     async def createRoom(self, room_name, password = None, invited_user_id = None):
         if not room_name:
             await self.send({
-                "type": "create_room",
+                "type": "error",
                 "status": False,
                 "error": "RoomName is required"
             })
@@ -148,8 +151,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
         
         try:
             room: Room = await Room.objects.aget(name=room_name)
+            print("HEYYYY", flush=True)
             await self.send({
-                "type": "create_room",
+                "type": "error",
                 "status": False,
                 "error": f"{room_name} already exist"
             })
@@ -159,7 +163,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         dmRoom = await self.checkIfDmRoomExist(invited_user_id)
         if dmRoom:
             await self.send({
-                "type": "create_room",
+                "type": "error",
                 "status": True,
                 "room_name": dmRoom[0].name,
                 "error": f"already exist"
@@ -186,7 +190,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             await room.asave()
         except ValidationError as e:
             await self.send({
-                "type": "create_room",
+                "type": "error",
                 "status": False,
                 "error": str(e)
             })
@@ -212,7 +216,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             room = await Room.objects.aget(name=room_name)
         except Room.DoesNotExist:
             await self.send({
-                "type": "join_room",
+                "type": "error",
                 "status": False,
                 "error": f"Room '{room_name}' does not exist."
             })
@@ -222,7 +226,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             room_users = await sync_to_async(list)(room.users.all())
             if self.user not in room_users:
                 await self.send({
-                    "type": "join_room",
+                    "type": "error",
                     "status": False,
                     "error": "You are not authorized to join this DM."
                 })
@@ -231,7 +235,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         if password:
             if check_password(room.password, password):
                 await self.send({
-                    "type": "join_room",
+                    "type": "error",
                     "status": False,
                     "error": "Invalid password"
                 })
@@ -318,13 +322,12 @@ class NotificationConsumer(AsyncWebsocketConsumer):
         return await User.objects.aget(id=token['id'])
     
     async def connect(self):
-        if not self.scope['cookies'].get('token'):  # Vérifie si le token existe
+        if not self.scope['cookies'].get('token'):
             await self.close()
             return
     
         self.user = await self.getUsers()
-
-        if not self.user:  # Vérifie si l'utilisateur est valide
+        if not self.user:
             await self.close()
             return
 
@@ -333,15 +336,15 @@ class NotificationConsumer(AsyncWebsocketConsumer):
             return
 
         self.room_group_name = f"user_{self.user.id}"
-
+        channel_layer = get_channel_layer()
         await self.channel_layer.group_add(
             self.room_group_name,
             self.channel_name
         )
-
         await self.accept()
 
     async def disconnect(self, close_code):
+        channel_layer = get_channel_layer()
         await self.channel_layer.group_discard(
             self.room_group_name,
             self.channel_name
@@ -353,12 +356,11 @@ class NotificationConsumer(AsyncWebsocketConsumer):
         if data["type"] == "send_notification":
             if "target_id" not in data or "sender_id" not in data:
                 return
-
             target_id = data["target_id"]
             sender_id = data["sender_id"]
             message = data["message"]
             room_name = data["room_name"]
-
+            channel_layer = get_channel_layer()
             await self.channel_layer.group_send(
                 f"user_{target_id}",
                 {
@@ -370,14 +372,30 @@ class NotificationConsumer(AsyncWebsocketConsumer):
                 }
             )
 
+        elif data["type"] == "send_invite":
+            if "target_id" not in data or "sender_id" not in data:
+                return
+            target_id = data["target_id"]
+            sender_id = data["sender_id"]
+            message = data["message"]
+            channel_layer = get_channel_layer()
+            await self.channel_layer.group_send(
+                f"user_{target_id}",
+                {
+                    "type": "send_invite",
+                    "id": target_id,
+                    "message": message,
+                    "sender_id": sender_id,
+                }
+            )
+
         elif data["type"] == "receive_response":
             if "target_id" not in data or "response" not in data or "sender_id" not in data:
                 return
-
             target_id = data["target_id"]
             response = data["response"]
             sender_id = data["sender_id"]
-
+            channel_layer = get_channel_layer()
             await self.channel_layer.group_send(
                 f"user_{sender_id}",
                 {
@@ -387,17 +405,108 @@ class NotificationConsumer(AsyncWebsocketConsumer):
                     "sender_id": sender_id,
                 }
             )
+            if response == "accept":
+                game_data = await self.create_Game_Multi(sender_id, target_id)
+                if game_data:
+                    # Passer les IDs à start_game au lieu des noms
+                    await self.start_game(game_data['id'], sender_id, target_id)
+                    channel_layer = get_channel_layer()
+                    await self.channel_layer.group_send(
+                        f"user_{sender_id}",
+                        {
+                            "type": "game_created",  # Changement pour un type plus clair
+                            "game_id": game_data['id'],
+                            "player1": game_data['player1'],
+                            "player2": game_data['player2'],
+                            "message": "Game started!"
+                        }
+                    )
+                    await self.channel_layer.group_send(
+                        f"user_{target_id}",
+                        {
+                            "type": "game_created",
+                            "game_id": game_data['id'],
+                            "player1": game_data['player1'],
+                            "player2": game_data['player2'],
+                            "message": "Game started!"
+                        }
+                    )
 
     async def send_notification(self, event):
+        await self.send(text_data=json.dumps(event))
 
+    async def send_invite(self, event):
         await self.send(text_data=json.dumps(event))
 
     async def receive_response(self, event):
-        # Lorsque la réponse est reçue, on la renvoie à l'expéditeur
-
         await self.send(text_data=json.dumps({
             "type": "receive_response",
             "sender_id": event["sender_id"],
             "target_id": event["target_id"],
             "response": event["response"],
         }))
+
+    @database_sync_to_async
+    def create_game_directly(self, player1, player2):
+        try:
+            p1 = User.objects.filter(id=player1).first()
+            p2 = User.objects.filter(id=player2).first()
+            game = Game.objects.create(
+                player1=p1.name,
+                player2=p2.name,
+            )
+            p1.games.add(game)
+            p2.games.add(game)
+            p1.save()
+            p2.save()
+            return {
+                'id': game.id,
+                'player1': game.player1,
+                'player2': game.player2,
+            }
+        except Exception as e:
+            print(f"Error creating game directly: {e}", flush=True)
+            return None
+
+    async def create_Game_Multi(self, player1, player2):
+        game_data = await self.create_game_directly(player1, player2)
+        if game_data:
+            return game_data
+        else:
+            print("Failed to create game in create_Game_Multi", flush=True)
+            return None
+
+    async def game_update(self, event):
+        await self.send(text_data=json.dumps(event))
+
+    async def game_created(self, event):
+        await self.send(text_data=json.dumps({
+            "type": "game_created",
+            "game_id": event["game_id"],
+            "player1": event["player1"],
+            "player2": event["player2"],
+            "message": event["message"],
+        }))
+
+    async def start_game(self, game_id, player1_id, player2_id):
+        channel_layer = get_channel_layer()
+        player1_channel = f"user_{player1_id}"
+        player2_channel = f"user_{player2_id}"
+        
+        await self.channel_layer.group_send(
+            player1_channel,
+            {
+                "type": "game_update",
+                "game_id": game_id,
+            }
+        )
+        await self.channel_layer.group_send(
+            player2_channel,
+            {
+                "type": "game_update",
+                "game_id": game_id,
+            }
+        )
+        group_name = f"game_{game_id}"
+        await self.channel_layer.group_add(group_name, player1_channel)
+        await self.channel_layer.group_add(group_name, player2_channel)

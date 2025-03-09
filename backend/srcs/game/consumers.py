@@ -9,6 +9,7 @@ import asyncio
 import time
 from channels.layers import get_channel_layer
 import jwt
+import os
 from django.shortcuts import get_object_or_404
 
 
@@ -293,7 +294,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
             
     async def authenticate_user(self, token):
         try:
-            payload = jwt.decode(token, "coucou", algorithms=["HS256"])
+            payload = jwt.decode(token, os.getenv('JWT_KEY'), algorithms=["HS256"])
             user_id = payload.get('id')
             if user_id:
                 user = await self.get_user_from_id(user_id)
@@ -391,7 +392,7 @@ class MatchmakingConsumer(AsyncWebsocketConsumer):
 
     async def authenticate_user(self, token):
         try:
-            payload = jwt.decode(token, "coucou", algorithms=["HS256"])
+            payload = jwt.decode(token, os.getenv('JWT_KEY'), algorithms=["HS256"])
             user_id = payload.get('id')
             if user_id:
                 user = await self.get_user_from_id(user_id)
@@ -598,7 +599,7 @@ class gameConsumer(AsyncWebsocketConsumer):
 
     async def authenticate_user(self, token):
         try:
-            payload = jwt.decode(token, "coucou", algorithms=["HS256"])
+            payload = jwt.decode(token, os.getenv('JWT_KEY'), algorithms=["HS256"])
             user_id = payload.get('id')
             if user_id:
                 user = await self.get_user_from_id(user_id)

@@ -32,8 +32,8 @@ function LoginRegister({setModal, setTerminal, removeLaunch}) {
     const [rulesPassword, setRulesPassword] = useState(false);
     const {isAuthenticated, login} = useAuth();
     const [loginData, setLoginData] = useState({
-        name: 'f',
-        password: 'f',
+        name: '',
+        password: '',
     });
 
     const [registerData, setRegisterData] = useState({
@@ -86,8 +86,10 @@ function LoginRegister({setModal, setTerminal, removeLaunch}) {
                 navigate('/home');
             }
         } catch (error) {
-            if (error.status === 403)
+            if (error.status === 400)
                 setStep(true);
+            else if (error.status === 409)
+                showToast("error", t("Toasts.AlreadyConnected"))
             else 
                 showToast('error', t('Toasts.IncorrectLoginOrPassword'));
     }

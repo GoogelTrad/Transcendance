@@ -37,7 +37,7 @@ export default function Room() {
 	const { userInfo } = useAuth();
 	const userId = userInfo?.id;
 
-	const { notifications, sendNotification, respondNotification } = useNotifications();
+	const { notifications, sendNotification, respondNotification, sendInvite, } = useNotifications();
 
 	const handleChange = (event) => {
 		let texte = event.target.value;
@@ -67,13 +67,12 @@ export default function Room() {
 			});
 			socket.on('join_room', (data) => {
 				if (data.status) {
+					showToast("message", data.message);
 					navigate(`/room/${data.room_name}`);
-				} else {
-					showToast("error", t('ToastsError'));
 				}
 			});
 			socket.on('error', (data) => {
-				showToast('error', data.message);
+				showToast('error', data.error);
 			})
 			return () => {}
 		}
@@ -124,13 +123,17 @@ export default function Room() {
 			if (enteredPassword) {
 				clearRoom();
 				joinRoom(room.name, enteredPassword);
-			} else {
+			} 
+			else {
 				showToast("error", t('Toasts.EnterPassword'));
 			}
-		} else {
+		} 
+		else if (roomName !== room.name) {
 			clearRoom();
 			joinRoom(room.name);
 		}
+		else if (roomName === room.name)
+			showToast("error", t("Toasts.AlreadyRoom"));
 	}
 
 	const listroom = async () => {
@@ -275,7 +278,7 @@ export default function Room() {
 										</button>
 										<ul className="dropdown-menu">
 											<button className="dropdown-item" onClick={() => handleProfile(user.id)}> {t('Profile')} </button>
-											<button className="dropdown-item" onClick={() => sendNotification(user.id, `${userInfo.name} ${t('Pong')}`, userId)}> {t('PongInvitation')} </button>
+											<button className="dropdown-item" onClick={() => sendInvite(user.id, `${userInfo.name} ${t('Pong')}`, userId)}> {t('PongInvitation')} </button>
 										</ul>
 									</li>
 								))}
@@ -295,13 +298,13 @@ export default function Room() {
 											<>
 												{notif.message}
 												<button
-													onClick={() => handleResponse(notif.id, "accepté", notif.sender_id)}
+													onClick={() => handleResponse(notif.id, "accept", notif.sender_id)}
 													disabled={clickedNotifications[notif.id]}
 												>
 													✅ {t('Accept')}
 												</button>
 												<button
-													onClick={() => handleResponse(notif.id, "refusé", notif.sender_id)}
+													onClick={() => handleResponse(notif.id, "decline", notif.sender_id)}
 													disabled={clickedNotifications[notif.id]}
 												>
 													❌ {t('Decline')}

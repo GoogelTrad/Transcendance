@@ -40,7 +40,7 @@ class LoginView():
             send_confirmation_email(user)
             return Response(
                 {'message': 'Verification required. Check your email for the confirmation code.'},
-                status=status.HTTP_403_FORBIDDEN
+                status=status.HTTP_400_BAD_REQUEST
             )
         user.status = 'online'
         user.save()
@@ -54,11 +54,12 @@ class LoginView():
             'status': user.status,
             'profile_image_url': profile_image_url,
             'is_stud': user.is_stud,
+            'enable_verified': user.enable_verified,
         }
 
         token = jwt.encode(payload, os.getenv('JWT_KEY'), 'HS256')
         if ValidToken.objects.filter(user=user).exists():
-            ValidToken.objects.filter(user=user).delete()
+            return Response(status=status.HTTP_409_CONFLICT)
         ValidToken.objects.create(user=user, token=token)
 
         reponse = Response()
@@ -99,6 +100,7 @@ class UserView():
                         'status': user.status,
                         'profile_image_url': profile_image_url,
                         'is_stud': user.is_stud,
+                        'enable_verified': user.enable_verified,
                     }
                     reponse = Response()
                     new_token = jwt.encode(payload, os.getenv('JWT_KEY'), 'HS256')
@@ -208,6 +210,7 @@ def verify_code(request):
             'status': user.status,
             'profile_image_url': profile_image_url,
             'is_stud': user.is_stud,
+            'enable_verified': user.enable_verified,
         }
 
         token = jwt.encode(payload, os.getenv('JWT_KEY'), 'HS256')
@@ -272,6 +275,7 @@ def fetch_user_data(request):
             'status': user.status,
             'profile_image_url': profile_image_url,
             'is_stud': user.is_stud,
+            'enable_verified': user.enable_verified,
         }
         return Response({'payload': payload})
     return Response({'error': 'Not authenticated'}, status=status.HTTP_403_FORBIDDEN)
