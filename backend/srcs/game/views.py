@@ -176,6 +176,8 @@ class TournamentView:
             return Response(serializer.data, status=status.HTTP_200_OK)
 
         elif request.method == 'PATCH':
+            win_P1 = 0
+            win_P2 = 0
             if 'winner' in request.data:
                 games = list(tournament.gamesTournament.all().order_by('id'))
                 print("games states :", games, flush=True)
@@ -184,6 +186,26 @@ class TournamentView:
                 if len(games) >= 2:
                     tournament.winner2 = games[1].winner
                 if len(games) == 3:
+                    if tournament.size == 2:
+                        tournament.winner3 = games[2].winner
+                        if tournament.winner1 == tournament.player1:
+                            win_P1 += 1
+                        if tournament.winner1 == tournament.player2:
+                            win_P2 += 1
+                        if tournament.winner2 == tournament.player1:
+                            win_P1 += 1
+                        if tournament.winner2 == tournament.player2:
+                            win_P2 += 1
+                        if tournament.winner3 == tournament.player1:
+                            win_P1 += 1
+                        if tournament.winner3 == tournament.player2:
+                            win_P2 += 1
+                        if win_P1 > win_P2:
+                            tournament.winner_final =  tournament.player1
+                        else:
+                            tournament.winner_final =  tournament.player2
+                    else:
+                        tournament.winner_final = games[2].winner
                     score_game_1 = min(games[0].score_player_1, games[0].score_player_2)
                     score_game_2 = min(games[1].score_player_1, games[1].score_player_2)
                     if score_game_1 < score_game_2:
@@ -195,8 +217,7 @@ class TournamentView:
                     if score_game_1 == score_game_2:
                         tournament.fourth = games[1].loser
                         tournament.third = games[0].loser
-                        tournament.tie = True
-                    tournament.winner_final = games[2].winner
+                        tournament.tie = True    
                     tournament.first = games[2].winner
                     tournament.second = games[2].loser
             serializer = TournamentSerializer(tournament, data=request.data, partial=True)
