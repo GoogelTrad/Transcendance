@@ -30,15 +30,6 @@ function Tournament() {
     
     const socketRef = useRef(null);
 
-    //const fetchTournementCode = async (code) => {
-    //    if(tournamentCode == 0) {return; }
-    //    try {
-    //        const response = await axiosInstance.get(`/api/game/fetch_data_tournament_by_code/${code}`);
-    //        setTournamentResponse(response.data);
-    //    } catch (error) {
-    //        showToast("error", t('ToastsError'));
-    //    }
-    //};
     useEffect(() => {
        if (tournamentStarted && !socketRef.current && userInfo.name) {
             const newSocket =  new WebSocket(`${process.env.REACT_APP_SOCKET_IP}ws/tournament/${tournamentCode}/`);
@@ -83,12 +74,6 @@ function Tournament() {
         }
     }
 
-    // useEffect(() => {
-    //     if (join === true) {
-    //         fetchTournement();
-    //     }
-    // }, [join]);
-
     useEffect(() => {
         if (tournamentCode) {
             fetchTournement();
@@ -128,8 +113,6 @@ function Tournament() {
                 socketRef.current = null;
             }
         }
-        console.log("tournamentRes : ", tournamentResponse);
-        console.log("game 1 : ", tournamentResponse?.gamesTournament?.[0]);
 
     }, [tournamentResponse]);
 

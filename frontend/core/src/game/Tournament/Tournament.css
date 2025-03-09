@@ -4,11 +4,38 @@
         0 0 10px rgba(0, 150, 255, 0.8), 
         inset 0 0 15px rgba(0, 150, 255, 0.5),
         0 0 50px rgba(0, 150, 255, 0.3); 
-    pointer-events: auto !important; /* Changé de none à auto */
+    pointer-events: auto !important;
     overflow: visible;
     display: flex;
     flex-direction: column;
-    min-height: 400px; /* Hauteur minimale */
+    min-height: 400px;
+}
+.explications.one {
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 150, 255, 0.5) transparent;
+    display: flex;
+    align-items: flex-start !important; 
+    padding: 15px !important;        
+}
+
+.explications.one p {                   
+    margin: 0;
+    padding: 0;
+    width: 100%;
+}
+
+.explications.one::-webkit-scrollbar {
+    width: 6px;
+}
+
+.explications.one::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.explications.one::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 150, 255, 0.5);
+    border-radius: 3px;
 }
 
 .tournament .line {
@@ -21,13 +48,13 @@
 
 .tournament-text {
     height: 50%;
-    font-family: "Digital-7", monospace;
-    font-size: 1.2rem;
+    font-family: "Digital-7", monospace;    
     color: #ffffff;
     text-shadow: 0 0 5px rgba(0, 150, 255, 0.8);
-    text-align: center;
     text-transform: uppercase;
     font-weight: bold;
+    font-size: 1.2rem;
+    text-align: center;
 }
 .tournament .tree-tournament {
     position: relative;
@@ -64,7 +91,7 @@
     border: 0px;
     width: 10%;
     font-family: "Digital-7", monospace;
-    font-size: clamp(0.5rem, 1vw, 1rem);
+    font-size: 100%;
     color: #0096ff;
     text-shadow: 0 0 5px rgba(0, 150, 255, 0.8);
 }
@@ -187,7 +214,7 @@
 }
 
 
-@media (max-width: 600px) {
+@media (max-width: 1500px) {
 
     .custom-modal{
         overflow: hidden;
@@ -272,8 +299,9 @@
     .tournament.background {
         padding: 10px;
     }
-
-
+    .mario-section {
+        width: 50%;
+    }
     .tournament-text {
         font-size: clamp(10%, 125%, 150%);
     }
@@ -304,15 +332,19 @@
 
 }
 
-
 @media (max-height: 700px) {
     .players-co {
-        height: clamp(150%, 100%, 10%);
-        top: 0% !important;
+        height: clamp(25%, 100%, 34%);
+        margin-top: 0% !important;
     }
     .mario-section img[alt="block"],
     .mario-section img[alt="blockAfter"] {
         right: 28% !important;
+    }
+    .pacman img[alt="ghost"],
+    .pacman img[alt="ghostAfter"],
+    .pacman img[alt= "pacman"] {
+        height: 10% !important;
     }
 
     .mario-container img[alt="piece"] {
@@ -332,6 +364,11 @@
         height: 100% !important;
         width: 100% !important;
         overflow-y: auto;
+    }
+
+    .explications.one {
+        right: 10%;
+        width: 90% !important;
     }
 
     .content-mario {
@@ -379,7 +416,6 @@
         height: auto !important;
         min-height: 150px;
         position: relative !important;
-        margin-top: 20px;
     }
 
     /* Ajustement des éléments de Mario */
@@ -397,7 +433,53 @@
         padding: 5px 15px;
         height: auto !important;
     }
+
+    .touch-style {
+        transform: scale(0.6) !important;
+    }
+    
+    .touch-line {
+        margin: 2px 0;
+    }
+
+    .player-touch {
+        transform: scale(0.8);
+    }
+    .bracket-container {
+        top: 25% !important;
+    }
+
+    .mario-container {
+        top: 20% !important;  /* Même valeur que pacman */
+        position: absolute !important;
+        height: 50% !important;
+        width: 33% !important;
+        margin: 0 !important;
+    }
+
+    /* Ajustements complémentaires pour maintenir l'alignement */
+    .mario-section {
+        height: 100% !important;
+        top: 0 !important;
+        width: 100% !important;
+        position: relative !important;
+    }
+
+    .content-mario {
+        width: 100% !important;
+        height: 100% !important;
+        position: relative !important;
+    }
 }
+
+.touch-square {
+    min-width: 30px;
+    min-height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
 @media (max-width: 480px) {
     .tournament-text {
         font-size: clamp(0.6rem, 1.5vw, 1rem);
@@ -414,6 +496,14 @@
 }
 
 @media (max-height: 700px) {
+    .touch-line {
+        height: 50%;
+    }
+
+    .pacman {
+        width: 29% !important;
+        height: 35% !important;
+    }
     .content-area {
         overflow-y: auto;
         overflow-x: hidden;

@@ -35,13 +35,8 @@
     overflow-y: scroll;
 }
 
-@media (max-height: 700px)
-{
-    .chat {
-        height: clamp(50%, 65%, 100%);
-    }
-}
 
+/*
 @media (max-width: 800px)
 {
     .general-room {
@@ -49,4 +44,5 @@
         min-height: 300px;
         min-width: 800px;
     }
-}
+
+}*/

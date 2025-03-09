@@ -10,6 +10,7 @@ import axiosInstance from "../instance/AxiosInstance";
 import { useAuth } from '../users/AuthContext';
 import { useTranslation } from 'react-i18next';
 import { showToast } from '../instance/ToastsInstance';
+import loading from '../assets/loading.gif';
 
 function HomeGame({ setModalStats, setModalCreateTournament, setModalTournament, launching, setParentItems, setParentNumberPlayer }) {
     const [player1, setPlayer1] = useState("");
@@ -20,7 +21,7 @@ function HomeGame({ setModalStats, setModalCreateTournament, setModalTournament,
     const [onClickStats, setOnClickStats] = useState(false);
     const [onClickJoin, setOnClickJoin] = useState(false);
     const [onClickCreate, setOnClickCreate] = useState(false);
-    const [gameCode, setGameCode] = useState(0);
+    const [gameCode, setGameCode] = useState("");
     const [numberPlayer, setNumberPlayer] = useState(2);
     const navigate = useNavigate();
     const [game, setGame] = useState(null);
@@ -176,13 +177,13 @@ function HomeGame({ setModalStats, setModalCreateTournament, setModalTournament,
                 <div className="content-wrapper">
                     <div className="column-left">
                         <div className="d-flex flex-column mb-3 h-100">
-                            <div className="p-2" onClick={() => handleMenuClick("play")}>
+                            <div className="p-2" style={{cursor: 'pointer'}} onClick={() => handleMenuClick("play")}>
                                 <span className="arrow">►</span> PLAY <span className="tilde">_</span>
                             </div>
-                            <div className="p-2" onClick={() => handleMenuClick("tournament")}>
+                            <div className="p-2" style={{cursor: 'pointer'}} onClick={() => handleMenuClick("tournament")}>
                                 <span className="arrow">►</span> TOURNAMENT <span className="tilde">_</span>
                             </div>
-                            <div className="p-2" onClick={() => handleMenuClick("stats")}>
+                            <div className="p-2" style={{cursor: 'pointer'}} onClick={() => handleMenuClick("stats")}>
                                 <span className="arrow">►</span> STATS <span className="tilde">_</span>
                             </div>
                         </div>
@@ -191,16 +192,15 @@ function HomeGame({ setModalStats, setModalCreateTournament, setModalTournament,
                         {onClickPlay && (
                             <div className="content">
                                 <h3 style={{ textAlign: "center" }} onClick={() => handleMenuClick("play")}>Play</h3>
-                                {/* <div className="line" onClick={() => StartGameSolo()}> 1 player </div> */}
-                                <div className="line" onClick={() => StartGameSolo()}> 2 players - Local </div>
-                                <div className="line" onClick={() => Matchmaking()}> 2 players - Online </div>
+                                <div className="line" style={{cursor: 'pointer'}} onClick={() => StartGameSolo()}> 2 players - Local </div>
+                                <div className="line" style={{cursor: 'pointer'}} onClick={() => Matchmaking()}> 2 players - Online </div>
                             </div>
                         )}
                         {onClickTournament && (
                             <div className="content">
                                 <h3 onClick={() => handleMenuClick("tournament")}>Tournament Section</h3>
                                 <div className="section-tournament w-100">
-                                    <div className="tournament-item d-flex flex-direction column w-100 h-70" onClick={() => setOnClickJoin((prev) => !prev)}>
+                                    <div className="tournament-item d-flex flex-direction column w-100 h-70" style={{cursor: 'pointer'}} onClick={() => setOnClickJoin((prev) => !prev)}>
                                         <span>Join a game</span>
                                         {onClickJoin && (
                                             <div className="h-100 w-100">
@@ -212,11 +212,11 @@ function HomeGame({ setModalStats, setModalCreateTournament, setModalTournament,
                                                     onClick={(e) => e.stopPropagation()}
                                                     onChange={(e) => setGameCode(e.target.value.replace(/\D/g, ""))}
                                                 />
-                                                <button onClick={() => handleClickTournament("join")}> ✅ </button>
+                                                <button style={{cursor: 'pointer'}} onClick={() => handleClickTournament("join")}> ✅ </button>
                                             </div>
                                         )}
                                     </div>
-                                    <div className="tournament-item d-flex flex-direction column w-100 h-30" onClick={() => setOnClickCreate((prev) => !prev)}>
+                                    <div className="tournament-item d-flex flex-direction column w-100 h-30" style={{cursor: 'pointer'}} onClick={() => setOnClickCreate((prev) => !prev)}>
                                         <span>Create game</span>
                                         {onClickCreate && (
                                             <div style={{ fontSize: 12, marginTop: "8%" }}>
@@ -227,10 +227,10 @@ function HomeGame({ setModalStats, setModalCreateTournament, setModalTournament,
                                                     onClick={(e) => e.stopPropagation()}
                                                     onChange={(e) => setNumberPlayer(e.target.value)}
                                                 >
-                                                    <option value="2">2 players</option>
-                                                    <option value="4">4 players</option>
+                                                    <option style={{cursor: 'pointer'}} value="2">2 players</option>
+                                                    <option style={{cursor: 'pointer'}} value="4">4 players</option>
                                                 </select>
-                                                <button onClick={() => handleClickTournament("create")}> ✅ </button>
+                                                <button style={{cursor: 'pointer'}} onClick={() => handleClickTournament("create")}> ✅ </button>
                                             </div>
                                         )}
                                     </div>
@@ -241,15 +241,15 @@ function HomeGame({ setModalStats, setModalCreateTournament, setModalTournament,
                             <div className="content">
                                 <p className="game-home-stats-title" onClick={() => handleMenuClick("stats")}>Stats</p>
                                 <div className="text-stats">
-                                    <div className="stats-item" onClick={() => handleClickStats('profile', '...')}>Global Stats</div>
-                                    <div className="stats-item" onClick={() => handleClickStats('global', '...')}>Stats game</div>
+                                    <div className="stats-item" style={{cursor: 'pointer'}} onClick={() => handleClickStats('profile', '...')}>Global Stats</div>
+                                    <div className="stats-item" style={{cursor: 'pointer'}} onClick={() => handleClickStats('global', '...')}>Stats game</div>
                                     <div className="item">
-                                        <div className="stats-subitem" onClick={() => handleClickStats('global', 'All games')}>All games</div>
-                                        <div className="stats-subitem" onClick={() => handleClickStats('global', 'Win')}>Win</div>
-                                        <div className="stats-subitem" onClick={() => handleClickStats('global', 'Lose')}>Lose</div>
-                                        <div className="stats-subitem" onClick={() => handleClickStats('global', 'Tournament')}>Tournament</div>
+                                        <div className="stats-subitem" style={{cursor: 'pointer'}} onClick={() => handleClickStats('global', 'All games')}>All games</div>
+                                        <div className="stats-subitem" style={{cursor: 'pointer'}} onClick={() => handleClickStats('global', 'Win')}>Win</div>
+                                        <div className="stats-subitem" style={{cursor: 'pointer'}} onClick={() => handleClickStats('global', 'Lose')}>Lose</div>
+                                        <div className="stats-subitem" style={{cursor: 'pointer'}} onClick={() => handleClickStats('global', 'Tournament')}>Tournament</div>
                                     </div>
-                                    <div className="stats-item" onClick={() => handleClickStats('collect', '...')}>Collection</div>
+                                    <div className="stats-item" style={{cursor: 'pointer'}} onClick={() => handleClickStats('collect', '...')}>Collection</div>
                                 </div>
                             </div>
                         )}
@@ -257,9 +257,10 @@ function HomeGame({ setModalStats, setModalCreateTournament, setModalTournament,
                 </div>
             </div>
         ) : (
-            <div className="waiting h-100 w-100">
-                <h2 className="wait_text"> Waiting for Player...</h2>
-                <div className="line" onClick={() => exitWait()}> EXIT </div>
+            <div className="waiting d-flex h-100 w-100">
+                <h2 className="wait_text d-flex w-100">Waiting for Player...</h2>
+                <img style={{height: '50%', width: 'auto'}} src={loading} alt="waiting"/>
+                <div className="line d-flex w-100" onClick={() => exitWait()}>EXIT</div>
             </div>
         )
     );

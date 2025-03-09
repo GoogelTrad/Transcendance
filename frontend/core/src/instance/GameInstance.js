@@ -29,15 +29,6 @@ function GameInstance({ children }) {
     const navigate = useNavigate();
     const [isKeyDown, setIsKeyDown] = useState({ ArrowUp: false, ArrowDown: false, z: false, s: false });
     const [waitInput, setWaitInput] = useState(false);
-    const [ballColor, setBallColor] = useState("white"); // Track main ball color
-    const [isBonusBall, setIsBonusBall] = useState([
-        { name: "SpeedUp", color: "#ff914d", active: false },
-        { name: "SpeedDown", color: "#00FF00", active: false },
-        { name: "PaddlePlus", color: "#FF00FF", active: false },
-        { name: "PaddleMinus", color: "#00FFFF", active: false },
-        { name: "ScoreUp", color: "#00FFFF", active: false },
-    ]);
-    const [bonusBalls, setBonusBalls] = useState([]); 
     const [backDimensions, setBackDimensions] = useState(() => ({
         width: 1536,
         height: 826,
@@ -158,23 +149,6 @@ function GameInstance({ children }) {
         }
     };
 
-	const drawBall = (context, x, y, radius, color) => {
-		context.beginPath();
-		context.arc(x, y, radius, 0, Math.PI * 2);
-		context.fillStyle = color;
-		context.fill();
-		context.closePath();
-	};
-
-	const generateRandomPosition = (canvasWidth, canvasHeight) => {
-		return {
-			x: Math.random() * (canvasWidth - 40),
-			y: Math.random() * (canvasHeight - 40),
-			type: Math.floor(Math.random() * isBonusBall.length),
-			createdAt: Date.now(),
-		};
-	};
-
     const fetchData = async () => {
         try {
             const response = await axiosInstance.get(`/api/game/fetch_data/${id}/`);
@@ -202,30 +176,6 @@ function GameInstance({ children }) {
 			}
 		}
 	}, []);
-
-
-	useEffect(() => {
-		if (!isGameOngoing || !canvasRef.current) return;
-
-		const generateBonusBall = () => {
-			const newBall = generateRandomPosition(canvasRef.current.width, canvasRef.current.height);
-			setBonusBalls(prev => [...prev, newBall]);
-
-			setTimeout(() => {
-				setBonusBalls(prev => prev.filter(ball => ball.createdAt !== newBall.createdAt));
-			}, 10000); 
-		};
-
-		const interval = setInterval(generateBonusBall, 30000); 
-		return () => clearInterval(interval);
-	}, [isGameOngoing]);
-
-	const checkCollision = (mainBallX, mainBallY, mainBallRadius, bonusBallX, bonusBallY, bonusBallRadius) => {
-		const dx = mainBallX - bonusBallX;
-		const dy = mainBallY - bonusBallY;
-		const distance = Math.sqrt(dx * dx + dy * dy);
-		return distance < (mainBallRadius + bonusBallRadius);
-	};
 
     useEffect(() => {
         if (canvasRef.current && showModal) {
@@ -255,26 +205,12 @@ function GameInstance({ children }) {
 			gameData.PaddleWidth,
 			gameData.PaddleHeight
 		);
-	
-		const mainBallRadius = gameData.Ball_Width / 2;
-		drawBall(context, gameData.Ball_Pos_x, gameData.Ball_Pos_y, mainBallRadius, ballColor);
-	
-		const bonusBallRadius = 20; 
-		bonusBalls.forEach((ball, index) => {
-			drawBall(context, ball.x, ball.y, bonusBallRadius, isBonusBall[ball.type].color);
-			if (checkCollision(
-				gameData.Ball_Pos_x,
-				gameData.Ball_Pos_y,
-				mainBallRadius,
-				ball.x,
-				ball.y,
-				bonusBallRadius
-			)) {
-				setBallColor(isBonusBall[ball.type].color); 
-				setBonusBalls(prev => prev.filter((_, i) => i !== index));
-			}
-		});
-	}, [gameData, ballColor, bonusBalls]);
+        context.beginPath();
+		context.arc(gameData.Ball_Pos_x, gameData.Ball_Pos_y, gameData.Ball_Width / 2, 0, Math.PI * 2);
+		context.fillStyle = 'white';
+		context.fill();
+		context.closePath();
+	}, [gameData]);
 
 	useEffect(() => {
 		if (canvasRef.current && isGameOngoing) {
@@ -489,7 +425,7 @@ function GameInstance({ children }) {
                                 </div>
                             </div>
                         </div>
-                        <div className="d-flex justify-content-center align-items-center w-100" style={{ height: '30%' }}>
+                        <div className="d-flex justify-content-center align-items-center w-100">
                             <div 
                                 className="exit-button p-3" 
                                 onClick={() => quitToHome()}

@@ -124,6 +124,7 @@ function Stats({ itemsArray = [] }) {
     const [expandedCells, setExpandedCells] = useState(false);
     
     const handleDivClick = (name) => {
+        console.log("pass", name);
         if(name != "")
         {
                 setMode(prevMode => 
@@ -203,7 +204,7 @@ function Stats({ itemsArray = [] }) {
         return allPlayers.filter(player => player !== userInfo?.name).join(', ') || 'N/A';
     };
 
-      function StatsTable({ data }) {
+      function StatsTable({ data, expandedTab }) {
         return (
             <div className="stats-zone-table w-100 h-100">
                 <div className="w-100 d-flex">
@@ -232,26 +233,34 @@ function Stats({ itemsArray = [] }) {
                                     <tr key={data.id}>
                                       <td 
                                             title={`${data.date ? data.date.slice(-5) : "N/A"}-${data.date ? data.date.slice(0, 4) : "N/A"}`}
-                                            className={expandedCells[`date-${data.id}`] ? 'expanded-cell' : ''}
+                                            onClick={(e) => { e.stopPropagation(); handleDivClick(""); }} 
+                                            className={expandedTab ? 'expanded-cell' : ''}
                                         >
                                             {data.date ? data.date.slice(-5) : "N/A"}-{data.date ? data.date.slice(0, 4) : "N/A"}
                                         </td>
                                         <td 
                                             title={getOtherPlayers(data)}
-                                            className={expandedCells[`player-${data.id}`] ? 'expanded-cell' : ''}
+                                            onClick={(e) => { e.stopPropagation(); handleDivClick(""); }} 
+                                            className={expandedTab ? 'expanded-cell' : ''}
                                         >
                                             {getOtherPlayers(data)}
                                         </td>
                                         <td
                                             title={isSmallScreen ? data.timeMinutes + " : " + data.timeSeconds : ""}
+                                            onClick={(e) => { e.stopPropagation(); handleDivClick(""); }} 
+                                            className={expandedTab ? 'expanded-cell' : ''}
                                         >{data.timeMinutes} : {data.timeSeconds}</td>
                                         <td
                                            title={isSmallScreen ? `${data.score_player_1} - ${data.score_player_2}` : ""}
+                                           onClick={(e) => { e.stopPropagation(); handleDivClick(""); }} 
+                                           className={expandedTab ? 'expanded-cell' : ''}
                                         >
                                             {data.score_player_1} - {data.score_player_2}
                                         </td>
                                         <td
                                             title={isSmallScreen ? data.winner === userInfo?.name ? "win" : data.loser === userInfo?.name ? "lose" : "N/A" : ""}
+                                            onClick={(e) => { e.stopPropagation(); handleDivClick(""); }} 
+                                            className={expandedTab ? 'expanded-cell' : ''}
                                         >
                                             {data.winner === userInfo?.name ? "win" :
                                             data.loser === userInfo?.name ? "lose" : "N/A"}
@@ -432,13 +441,13 @@ function Stats({ itemsArray = [] }) {
                         </div>
 
                         {option.find(option => option.name === 'All games')?.active && (
-                            <StatsTable data={games} />
+                            <StatsTable data={games} expandedTab={expandedTab}/>
                         )}
                         {option.find(option => option.name === 'Win')?.active && (
-                            <StatsTable data={winGames} />
+                            <StatsTable data={winGames} expandedTab={expandedTab}/>
                         )}
                         {option.find(option => option.name === 'Lose')?.active && (
-                            <StatsTable data={loseGames} />
+                            <StatsTable data={loseGames} expandedTab={expandedTab}/>
                         )}
                         {option.find(option => option.name === 'Tournament')?.active && (
                             <>
@@ -450,7 +459,6 @@ function Stats({ itemsArray = [] }) {
                                                 <tr>
                                                     <th>{t('Date')}</th>
                                                     <th>{t('Code')}</th>
-                                                    <th>{t('Against')}</th>
                                                     <th>{t('Time')}</th>
                                                     <th>{t('Place')}</th>
                                                     <th>{t('Classement')}</th>
@@ -464,19 +472,41 @@ function Stats({ itemsArray = [] }) {
                                                             onClick={(e) => { e.stopPropagation(); handleDivClick(""); }} 
                                                             className={expandedTab ? 'expanded-cell' : ''}
                                                         >{game.date || "N/A"}</td>
-                                                        <td>{game.code || "N/A"}</td>
-                                                        <td  
-                                                            onClick={(e) => { e.stopPropagation(); handleDivClick(""); }} 
-                                                            title={getOtherPlayers(game)}
-                                                            className={expandedCells[`player-${game.id}`] ? 'expanded-cell' : ''}
-                                                        >
-                                                            {getOtherPlayers(game)}</td>
-                                                        <td>{game.timeMaxMinutes} : {game.timeMaxSeconds}</td>
-                                                        <td>{game.place || "N/A"}</td>
                                                         <td
                                                             onClick={(e) => { e.stopPropagation(); handleDivClick(""); }} 
                                                             className={expandedTab ? 'expanded-cell' : ''}
-                                                        > 1er{game.first || "N/A"} 2ème{game.first || "N/A"} 3ème{game.first || "N/A"} 4ème{game.first || "N/A"}</td>
+                                                        >{game.code || "N/A"}</td>
+                                                        <td
+                                                             onClick={(e) => { e.stopPropagation(); handleDivClick(""); }} 
+                                                             className={expandedTab ? 'expanded-cell' : ''}
+                                                        >{game.timeMaxMinutes} : {game.timeMaxSeconds}</td>
+                                                        <td
+                                                             onClick={(e) => { e.stopPropagation(); handleDivClick(""); }} 
+                                                             className={expandedTab ? 'expanded-cell' : ''}
+                                                        >{(() => {
+                                                            if (game.first === userInfo?.name) return "1st";
+                                                            if (game.second === userInfo?.name) return "2nd";
+                                                            if (game.third === userInfo?.name) return "3rd";
+                                                            if (game.fourth === userInfo?.name) return "4th";
+                                                            return "N/A";
+                                                        })() || "N/A"}</td>
+                                                        <td
+                                                            onClick={(e) => { e.stopPropagation(); handleDivClick(""); }} 
+                                                            className={expandedTab ? 'expanded-cell' : ''}
+                                                        > 
+                                                        <div className="d-flex flex-direction row w-100" style={{alignItems: 'center', justifyContent: 'center', textAlign: 'center'}}> 1 : {game.first || "N/A"} </div>
+                                                        <div className="d-flex flex-direction row w-100" style={{alignItems: 'center', justifyContent: 'center', textAlign: 'center'}}> 2 : {game.second || "N/A"} </div>
+                                                        {game.third && game.third !== game.first && game.third !== game.second && (
+                                                            <div className="d-flex flex-direction row w-100" style={{alignItems: 'center', justifyContent: 'center', textAlign: 'center'}}>
+                                                                3 : {game.third}
+                                                            </div>
+                                                        )}
+                                                        {game.fourth && game.fourth !== game.first && game.fourth !== game.second && (
+                                                            <div className="d-flex flex-direction row w-100" style={{alignItems: 'center', justifyContent: 'center', textAlign: 'center'}}>
+                                                                4 : {game.fourth}
+                                                            </div>
+                                                        )}
+                                                        </td>
                                                     </tr>
                                                 ))}
                                             </tbody>

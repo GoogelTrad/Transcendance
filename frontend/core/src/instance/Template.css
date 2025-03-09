@@ -4,6 +4,7 @@
     height: fit-content;
     z-index: 1000;
     position: relative;
+    cursor: pointer;
 }
 
 .task-bar
@@ -78,6 +79,7 @@
     z-index: 2000;
     width: clamp(16px, 2vw, 24px);
     height: auto;
+    cursor: pointer;
 }
 
 .content-area {
@@ -120,6 +122,7 @@
     width: 50%; 
     display: flex;
     margin: inherit;
+    cursor: pointer;
 }
 
 .desktop-content {

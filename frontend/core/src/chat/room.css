@@ -32,11 +32,8 @@
 	flex-direction: column;
 }
 
-/* Conteneur principal du chat */
 .chat {
-    width: 50%;
-    max-width: 87.5rem;
-    min-width: 37.5rem;
+    min-height: 10.25rem;
     background-color: #373535;
     border-radius: 0.625rem;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
@@ -117,4 +114,22 @@
     align-items: center;
     gap: 0.625rem;
     width: 100%;
+}
+
+@media (max-height: 700px), (min-width: 900px)
+{
+    .chat {
+        height: clamp(50%, 65%, 100%);
+        width: clamp(5%, 50%, 100%) !important;
+    }
+}
+
+@media (max-height: 400px) {
+    .general-room {
+        overflow-y: auto;
+        overflow: scroll;
+    }
+    .chat-messages {
+        height: 10%;
+    }
 }

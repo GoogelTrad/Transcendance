@@ -52,6 +52,41 @@ html, body, #root {
     color: white;
 }
 
+.waiting {
+    background: radial-gradient(circle at center, #001133 20%, #000000 80%);
+    box-shadow: 
+        0 0 10px rgba(0, 150, 255, 0.8), 
+        inset 0 0 15px rgba(0, 150, 255, 0.5),
+        0 0 50px rgba(0, 150, 255, 0.3);
+    justify-content: space-between; 
+    align-items: center;
+    flex-direction: column;
+    text-align: center;
+    font-family: "Digital-7", monospace;    
+    color: #ffffff;
+    text-shadow: 0 0 5px rgba(0, 150, 255, 0.8);
+    text-transform: uppercase;
+    font-weight: bold;
+}
+
+.wait_text {
+    width: 100%;
+    margin: 0;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    margin-top: 5%;
+}
+
+.line {
+    width: 100%;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    margin-bottom: 5%;
+    cursor: pointer;
+}
+
 
 .game-home .content {
     border: 10px solid white;

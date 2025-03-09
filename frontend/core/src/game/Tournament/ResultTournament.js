@@ -15,7 +15,7 @@ function ResultTournament({ items, setItems, setModalResult, setModalStats, remo
     
         useEffect(() => {
             
-            if(tournamentCode === 0) { return;}
+            if(tournamentCode === "") { return;}
             const fetchTournement = async () => {
                 try {
                     const response = await axiosInstance.get(`/api/game/fetch_data_tournament_by_code/${tournamentCode}`);

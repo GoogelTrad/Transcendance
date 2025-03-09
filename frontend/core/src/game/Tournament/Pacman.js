@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import ghost from '../../assets/game/ghost2.png';
 import pacman from '../../assets/game/pacman.png';
 import ghostAfter from '../../assets/game/ghost3.png';
+import './Tournament.css';
 
 const PacmanSection = ({ tournamentResponse, renderImageWithClick }) => {
     const [pacmanData, setPacmanData] = useState({
@@ -106,7 +107,7 @@ const PacmanSection = ({ tournamentResponse, renderImageWithClick }) => {
     }, [pacmanData.isPacmanEating]);
 
     return(
-        <div className="pacman" style={{ position: 'absolute', height: '65%', top: '15%', right: '0%', width: '16%', overflow: "hidden", backgroundColor:'transparent'}}>
+        <div className="pacman" style={{ position: 'absolute', height: '50%', top: '15%', right: '0%', width: '20%', overflow: "hidden", backgroundColor:'transparent'}}>
         <div className="w-100 h-100" style={{ position: 'relative'}}>
             {pacmanData.dots.map((dot, index) => (
                 <span key={index} style={{ position: 'absolute', top: '6%', left: `${dot}%`, color: 'white', zIndex: 10 }}>•</span>
@@ -120,92 +121,44 @@ const PacmanSection = ({ tournamentResponse, renderImageWithClick }) => {
                         <div className="explications title d-flex p-2" style={{ fontSize: 'clamp(0.2rem, 2.5vw, 1.0rem)'}}>
                             <p>Tournament PONG</p>
                         </div>
-                        <div className="explications one d-flex p-2" style={{ height: '25%', width:'96%', marginLeft:'2%',  fontSize: 'clamp(0.2rem, 0.6vw, 1.0rem)'}}>
-                            The {tournamentResponse.size} players compete 2 against 2. The first to reach {tournamentResponse.maxScore} points or the one who has the most points at the end of the defined time ({tournamentResponse.maxTimeMinutes} : {tournamentResponse.maxTimeSecondes}) qualifies for the next phase. Dans le cas de 2 joueurs, les deux joueurs s'affrontent jusqu'à la finale. Le joueur qui a le meilleur score à la fin du tournoi le remporte. Le classement se fait donc en fonction du score.
+                        <div className="explications one" 
+                            style={{ 
+                                height: '40%', 
+                                width: '94%',
+                                margin: '10px 3%',
+                                fontSize: 'clamp(0.6rem, 1.5vw, 0.9rem)',
+                                lineHeight: '1.4'  // Augmenté pour plus de lisibilité
+                            }}
+                        >
+                            <p>  {/* Wrapping du texte dans un paragraphe */}
+                                The {tournamentResponse.size} players compete 2 against 2. The first to reach {tournamentResponse.maxScore} points or the one who has the most points at the end of the defined time ({tournamentResponse.maxTimeMinutes} : {tournamentResponse.maxTimeSecondes}) qualifies for the next phase. Dans le cas de 2 joueurs, les deux joueurs s'affrontent jusqu'à la finale. Le joueur qui a le meilleur score à la fin du tournoi le remporte. Le classement se fait donc en fonction du score.
+                            </p>
                         </div>
                         <div className="border-top border-2 border-white w-75 mx-auto"></div>
-                        <div className="explications cmd d-flex p-2">
-                            <div className="column h-100 w-50">
-                                <div className="touch p-2">
-                                    <div className="touch-style d-flex flex-column">
-                                        <div className="touch-line">
+                        <div className="explications cmd d-flex p-2" style={{ height: '30%'}}>
+                            <div className="column h-100 w-100" style={{paddingRight: '5%'}}>
+                                <div className="touch p-2 w-100" style={{
+                                    height: '70%',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center'
+                                }}>
+                                    <div className="touch-style d-flex flex-column" style={{
+                                        transform: `scale(${window.innerHeight <= 700 ? '0.6' : '1'})`,
+                                        margin: 'auto',
+                                        gap: '5px'  // Espacement entre les touches
+                                    }}>
+                                        <div className="touch-line" style={{ marginBottom: '5px' }}>
                                             <div className="touch-square center">↑</div>
                                         </div>
                                         <div className="touch-line">
-                                            <div className="touch-square alpha">←</div>
                                             <div className="touch-square alpha">↓</div>
-                                            <div className="touch-square alpha">→</div>
                                         </div>
+                                        {/*<div className="touch-square alpha">←</div>*/}
+                                        {/*<div className="touch-square alpha">→</div>*/}
                                     </div>
                                 </div>
-                                <div className="player-touch p-2 w-100 h-50" style={{fontSize: 'clamp(1.2rem, 1.7vw, 1rem)'}}>TOUCH</div>
-                            </div>
-                        </div>
-                        <div className="w-100" style={{ position: "relative", top: "2%", fontSize: 'clamp(0.5rem, 1.7vw, 1rem)' }}>
-                            <div className="w-100 d-flex justify-content-center" style={{ height: "25%" }}>
-                                <div className="w-100 text-center" style={{ marginBottom : '5%'}}>BONUS BALL</div>
-                            </div>
-                            <div className="w-100 d-flex flex-column justify-content-center align-items-center" style={{ height: "75%" }}>
-                                <div className="d-flex align-items-center mb-1" style={{fontSize: '70%'}}>
-                                    <div
-                                        style={{
-                                            width: "10px",
-                                            height: "10px",
-                                            backgroundColor: "#ff914d",
-                                            borderRadius: "50%",
-                                            marginRight: "8px",
-                                        }}
-                                    ></div>
-                                    accélération balle
-                                </div>
-                                <div className="d-flex align-items-center mb-1" style={{fontSize: '70%'}}>
-                                    <div
-                                        style={{
-                                            width: "10px",
-                                            height: "10px",
-                                            backgroundColor: "#00FF00",
-                                            borderRadius: "50%",
-                                            marginRight: "8px",
-                                        }}
-                                    ></div>
-                                    ralentissement balle
-                                </div>
-                                <div className="d-flex align-items-center mb-1" style={{fontSize: '70%'}}>
-                                    <div
-                                        style={{
-                                            width: "10px",
-                                            height: "10px",
-                                            backgroundColor: "#0000FF",
-                                            borderRadius: "50%",
-                                            marginRight: "8px",
-                                        }}
-                                    ></div>
-                                    agrandissement raquette
-                                </div>
-                                <div className="d-flex align-items-center mb-1" style={{fontSize: '70%'}}>
-                                    <div
-                                        style={{
-                                            width: "10px",
-                                            height: "10px",
-                                            backgroundColor: "#FFFF00",
-                                            borderRadius: "50%",
-                                            marginRight: "8px",
-                                        }}
-                                    ></div>
-                                    rétrécissement raquette
-                                </div>
-                                <div className="d-flex align-items-center" style={{fontSize: '70%'}}>
-                                    <div
-                                        style={{
-                                            width: "10px",
-                                            height: "10px",
-                                            backgroundColor: "#FF00FF",
-                                            borderRadius: "50%",
-                                            marginRight: "8px",
-                                        }}
-                                    ></div>
-                                    double score
-                                </div>
+                                <div className="player-touch p-2 d-flex" style={{fontSize: 'clamp(0.5rem, 1.7vw, 1rem)', alignItems: 'center', justifyContent: 'center', textAlign: 'center'}}>TOUCH</div>
                             </div>
                         </div>
                     </div>

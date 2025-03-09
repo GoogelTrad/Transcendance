@@ -7,6 +7,7 @@ import ModalInstance from '../instance/ModalInstance';
 import { useAuth } from '../users/AuthContext'; 
 import Profile from '../users/Profile';
 import "./Friends.css"
+import friends from './../assets/user/friends.svg'
 
 import { useTranslation } from 'react-i18next';
 
@@ -151,8 +152,9 @@ function FriendRequests({setModal, setIsFriends, launching}) {
     }, []);
 
     return (
-		<div className="general-friend">
-		<div className="search-bar">
+		<div className="general-friend h-100 w-100">
+		<img style={{height: '10%', width: 'auto'}} src={friends} alt="friends" />
+		<div className="search-bar">	
 			<input
 				type="text"
 				placeholder={t('SearchFriends')}
