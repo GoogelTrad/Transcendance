@@ -124,13 +124,17 @@ export default function Room() {
 			if (enteredPassword) {
 				clearRoom();
 				joinRoom(room.name, enteredPassword);
-			} else {
+			} 
+			else {
 				showToast("error", t('Toasts.EnterPassword'));
 			}
-		} else {
+		} 
+		else if (roomName !== room.name) {
 			clearRoom();
 			joinRoom(room.name);
 		}
+		else if (roomName === room.name)
+			showToast("error", t("Toasts.AlreadyRoom"));
 	}
 
 	const listroom = async () => {
