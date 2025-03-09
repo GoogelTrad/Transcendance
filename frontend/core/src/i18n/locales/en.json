@@ -193,7 +193,8 @@
 		"Error2FA": "Error while changing perms on 2FA!",
 		"EmailType": "Invalid e-mail address!",
 		"NameAlreadyTaken": "Username already taken!",
-		"InvalidRoomName": "The room name may not contain any characters other than alphanumeric characters"
+		"InvalidRoomName": "The room name may not contain any characters other than alphanumeric characters",
+		"RoomNameAlreadyExist": "Room name already exist!"
 	},
 
 	"ToastsError": "An error has occurred."
