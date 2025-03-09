@@ -10,6 +10,7 @@ from django.core.exceptions import ValidationError
 
 from asgiref.sync import sync_to_async
 from django.contrib.auth.hashers import make_password, check_password
+import re
 
 @sync_to_async
 def get_user_by_name(username):
@@ -70,12 +71,11 @@ class ChatConsumer(AsyncWebsocketConsumer):
             return
         self.room_name = self.scope['url_route']['kwargs']['room']
 
-        import re
         if not re.match(r'^[0-9a-zA-Z]+$', self.room_name):
             await self.accept()  # Accepter la connexion pour envoyer un message
             await self.send({
                 "type": "error",
-                "message": f"Invalid room name: {self.room_name}. Use only alphanumeric characters."
+                "error": f"Invalid room name: {self.room_name}. Use only alphanumeric characters."
             })
             await self.close()
             return
@@ -140,7 +140,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def createRoom(self, room_name, password = None, invited_user_id = None):
         if not room_name:
             await self.send({
-                "type": "create_room",
+                "type": "error",
                 "status": False,
                 "error": "RoomName is required"
             })
@@ -148,8 +148,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
         
         try:
             room: Room = await Room.objects.aget(name=room_name)
+            print("HEYYYY", flush=True)
             await self.send({
-                "type": "create_room",
+                "type": "error",
                 "status": False,
                 "error": f"{room_name} already exist"
             })
@@ -159,7 +160,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         dmRoom = await self.checkIfDmRoomExist(invited_user_id)
         if dmRoom:
             await self.send({
-                "type": "create_room",
+                "type": "error",
                 "status": True,
                 "room_name": dmRoom[0].name,
                 "error": f"already exist"
@@ -186,7 +187,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             await room.asave()
         except ValidationError as e:
             await self.send({
-                "type": "create_room",
+                "type": "error",
                 "status": False,
                 "error": str(e)
             })
@@ -212,7 +213,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             room = await Room.objects.aget(name=room_name)
         except Room.DoesNotExist:
             await self.send({
-                "type": "join_room",
+                "type": "error",
                 "status": False,
                 "error": f"Room '{room_name}' does not exist."
             })
@@ -222,7 +223,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             room_users = await sync_to_async(list)(room.users.all())
             if self.user not in room_users:
                 await self.send({
-                    "type": "join_room",
+                    "type": "error",
                     "status": False,
                     "error": "You are not authorized to join this DM."
                 })
@@ -231,7 +232,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         if password:
             if check_password(room.password, password):
                 await self.send({
-                    "type": "join_room",
+                    "type": "error",
                     "status": False,
                     "error": "Invalid password"
                 })
