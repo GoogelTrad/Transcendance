@@ -261,6 +261,7 @@ class TournamentView:
             user = User.objects.get(id=user_id)
 
             tournament = user.tournament.all().order_by('-date')
+            tournament = tournament.exclude(status='aborted')
         
             tournament_serializer = TournamentSerializer(tournament, many=True)
 

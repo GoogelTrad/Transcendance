@@ -49,24 +49,21 @@ class TournamentConsumer(AsyncWebsocketConsumer):
             if not self.user:
                 await self.close()
                 return
-            print("status :" ,tournament.status, flush=True)
             if self.user.name in [tournament.player1, tournament.player2, tournament.player3, tournament.player4]:
                 game_group = f"game_{self.tournament_code}"
                 await self.channel_layer.group_add(game_group, self.channel_name)
                 await self.accept()
-                tournament.players_connected += 1
                 await self.save_tournament(tournament)
                 await self.send_user_connected_message()
                 return
             else:
-                if tournament.status == 'waiting' or tournament.status == 'ready':
-                    print("User accepted", flush=True)
+                if tournament.status == 'waiting':
                     await self.accept()
                     await self.add_user_to_tournament()
                     await self.send_user_connected_message()
+                    print('p connected 1st time :', tournament.players_connected)
                     game_group = f"game_{self.tournament_code}"
                     await self.channel_layer.group_add(game_group, self.channel_name)
-                    print("status after co :", tournament.status)
                     if self.tournament_code not in TournamentConsumer.tournament_states:
                         TournamentConsumer.tournament_states[self.tournament_code] = {"games_finished": 0}
                     
@@ -77,14 +74,23 @@ class TournamentConsumer(AsyncWebsocketConsumer):
         tournament = TournamentConsumer.tournament.get(self.tournament_code)
         if tournament:
             tournament.players_connected -= 1
+            if tournament.player1 and  self.user.name == tournament.player1:
+                tournament.player1 = ""
+            elif tournament.player2 and  self.user.name == tournament.player2:
+                tournament.player2 = ""
+            elif tournament.player3 and  self.user.name == tournament.player3:
+                tournament.player3 = ""
+            elif tournament.player4 and  self.user.name == tournament.player4:
+                tournament.player4 = ""
             tournament.save()
 
+
     async def disconnect(self, close_code):
-         async with TournamentConsumer.tournament_locks[self.tournament_code]:
-            await self.remove_user_to_tournament()
-            await self.send_user_connected_message()
-            tournament = TournamentConsumer.tournament.get(self.tournament_code)           
-            print("Disconnected with code :", close_code, flush=True)
+        tournament = TournamentConsumer.tournament.get(self.tournament_code)           
+        if tournament.status == "waiting":
+            async with TournamentConsumer.tournament_locks[self.tournament_code]:
+                await self.remove_user_to_tournament()
+                await self.send_user_connected_message()
 
     @database_sync_to_async
     def fetch_nbr_games(self):
@@ -114,8 +120,6 @@ class TournamentConsumer(AsyncWebsocketConsumer):
             tournament.players_connected += 1
 
             if tournament.players_connected == tournament.size:
-                print('inside if :',tournament.players_connected, flush=True)
-                print(tournament.size, flush=True)
                 tournament.status = "ready"
             tournament.save()
 
@@ -169,7 +173,6 @@ class TournamentConsumer(AsyncWebsocketConsumer):
     def add_to_user(self, tournament):
         if tournament.player2:
             player2_user = get_object_or_404(User, name=tournament.player2)
-            print("cc:",player2_user, flush=True)
             player2_user.tournament.add(tournament)
             player2_user.save()
         if tournament.player3:
@@ -720,8 +723,8 @@ class gameConsumer(AsyncWebsocketConsumer):
                     self.process_key_states_P1(gameConsumer.current_key_states_P1[self.game_id], game_state)
                 if self.game_id in gameConsumer.current_key_states_P2:
                     self.process_key_states_P2(gameConsumer.current_key_states_P2[self.game_id], game_state)
-                # if game.IA == True:
-                #     self.IA_in_game(game_state)
+                if game.IA == True:
+                    self.IA_in_game(game_state)
                 game_state.update()
                 current_time = time.time()
                 time_diff = current_time - last_time_updated
@@ -840,16 +843,12 @@ class gameConsumer(AsyncWebsocketConsumer):
         if game_state.IA_timer >= 1:
             game_state.IA_pos_y = game_state.pong_data["pos_y"]
             game_state.IA_timer = 0
-            if game_state.IA_pos_y < game_state.paddle_data["paddleRightY"] + game_state.paddle_data["height"] / 2:
-                game_state.IA_up = True
-                game_state.IA_down = False
-            elif game_state.IA_pos_y > game_state.paddle_data["paddleRightY"] + game_state.paddle_data["height"] / 2:
-                game_state.IA_up = False
-                game_state.IA_down = True
-        if game_state.IA_up == True and game_state.IA_pos_y > game_state.paddle_data["paddleRightY"] + game_state.paddle_data["height"] / 2:
-            game_state.IA_up = False
-        if  game_state.IA_down == True and game_state.IA_pos_y > game_state.paddle_data["paddleRightY"] + game_state.paddle_data["height"] / 2:
+        if game_state.IA_pos_y < game_state.paddle_data["paddleRightY"] + game_state.paddle_data["height"] / 2:
+            game_state.IA_up = True
             game_state.IA_down = False
+        elif game_state.IA_pos_y  > game_state.paddle_data["paddleRightY"] + game_state.paddle_data["height"] / 2:
+            game_state.IA_up = False
+            game_state.IA_down = True
         if game_state.IA_up == True:
             game_state.paddle_data["paddleRightY"] = max(
                 0, game_state.paddle_data["paddleRightY"] - random_paddle_speed

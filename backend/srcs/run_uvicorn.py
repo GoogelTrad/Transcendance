@@ -10,5 +10,5 @@ if __name__ == "__main__":
         port=8000,
         ssl_keyfile="/home/certs/server.key",
         ssl_certfile="/home/certs/server.crt",
-        app_dir="/home/srcs"
+        app_dir="/home/srcs",
     )
