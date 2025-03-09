@@ -54,7 +54,7 @@ function HomeGame({ setModalStats, setModalCreateTournament, setModalTournament,
                 console.log("join : ", data);
                 if (data.game_id) {
                     setGame(data);
-                    navigate(`/game/${data.game_id}`);
+                    navigate(`/game/${data.game_id}`, { state: { authorized:true } });
                 }
             };
             newSocket.onclose = () => {
@@ -121,15 +121,18 @@ function HomeGame({ setModalStats, setModalCreateTournament, setModalTournament,
             const fonction_return = await fetchDataTournament();
             if (fonction_return === 0) {
                 console.log("code", gameCode);
-                navigate(`/games/tournament/${gameCode}` , { state: { makeTournament: true } });
+                navigate(`/games/tournament/${gameCode}` , { state: { makeTournament: true, authorized:true } });
             }
         }
     };
 
-    const StartGameSolo = async () => {
+    const StartGameSolo = async (IA) => {
         try {
-            const response = await axiosInstance.post(`/api/game/create_game`, { player1 });
-            navigate(`/game/${response.data.id}`);
+            const response = await axiosInstance.post(`/api/game/create_game`, { 
+                player1,
+                IA,
+             });
+            navigate(`/game/${response.data.id}` , { state: { authorized:true } });
         } catch (error) {
             showToast("error", t('ToastsError'));
         }
@@ -192,7 +195,8 @@ function HomeGame({ setModalStats, setModalCreateTournament, setModalTournament,
                         {onClickPlay && (
                             <div className="content">
                                 <h3 style={{ textAlign: "center" }} onClick={() => handleMenuClick("play")}>Play</h3>
-                                <div className="line" style={{cursor: 'pointer'}} onClick={() => StartGameSolo()}> 2 players - Local </div>
+                                <div className="line" style={{cursor: 'pointer'}} onClick={() => StartGameSolo(false)}> 2 players - Local </div>
+                                <div className="line" style={{cursor: 'pointer'}} onClick={() => StartGameSolo(true)}> 1 player - vs IA </div>
                                 <div className="line" style={{cursor: 'pointer'}} onClick={() => Matchmaking()}> 2 players - Online </div>
                             </div>
                         )}

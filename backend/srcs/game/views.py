@@ -24,6 +24,8 @@ class HomeGameView:
 
         if serializer.is_valid():
             game_instance = serializer.save()
+            is_IA_active = data.get('IA')
+            game_instance.IA = is_IA_active
             player1_name = data.get('player1')
             if player1_name:
                 try:
@@ -32,15 +34,6 @@ class HomeGameView:
                     player1_user.save()
                 except Exception as e:
                     return Response({"detail": f"Player1 with name '{player1_name}' not found: {str(e)}"}, status=status.HTTP_404_NOT_FOUND)
-            player2_name = data.get('player2')
-            if player2_name:
-                try:
-                    player2_user = get_object_or_404(User, name=player2_name)
-                    player2_user.games.add(game_instance)
-                    player2_user.save()
-                except Exception as e:
-                    return Response({"detail": f"Player2 with name '{player2_name}' not found: {str(e)}"}, status=status.HTTP_404_NOT_FOUND)
-                
 
             return Response({"id": game_instance.id, **serializer.data}, status=status.HTTP_201_CREATED)
 

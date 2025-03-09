@@ -5,7 +5,7 @@ import axios from 'axios';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Modal, Button } from 'react-bootstrap';
 import { jwtDecode } from "jwt-decode";
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
 import axiosInstance from '../instance/AxiosInstance.js';
 import { throttle } from 'lodash';
@@ -27,7 +27,10 @@ function GameInstance({ children }) {
     const [gameStart, setGameStart] = useState(false);
     const { id } = useParams();
     const navigate = useNavigate();
-    const [isKeyDown, setIsKeyDown] = useState({ ArrowUp: false, ArrowDown: false, z: false, s: false });
+    const location = useLocation();
+    const { authorized } = location.state || false;
+
+    const [isKeyDown, setIsKeyDown] = useState({ ArrowUp: false, ArrowDown: false, w: false, s: false });
     const [waitInput, setWaitInput] = useState(false);
     const [backDimensions, setBackDimensions] = useState(() => ({
         width: 1536,
@@ -60,8 +63,11 @@ function GameInstance({ children }) {
     const socketRef = useRef(null);
 
     useEffect(() => {
+        if (authorized === undefined) {
+            navigate("/home");
+            return ;
+        }
         if (!socketRef.current) {
-            fetchData();
             socketRef.current = new WebSocket(`${process.env.REACT_APP_SOCKET_IP}ws/game/${id}`);
         }
         socketRef.current.onopen = () => {
@@ -78,7 +84,6 @@ function GameInstance({ children }) {
 
         socketRef.current.onmessage = (event) => {
             const data = JSON.parse(event.data);
-            console.log(data)
             setGameData((prevState) => ({
                 ...prevState,
                 Seconds: data.seconds,
@@ -119,7 +124,7 @@ function GameInstance({ children }) {
 			const response = await axiosInstance.patch(`/api/game/fetch_data_tournament_by_code/${gameData.tournamentCode}/`, {
 				winner: "game_over"
 		  });
-          navigate(`/games/tournament/${gameData.tournamentCode}` , { state: { makeTournament: true } });
+          navigate(`/games/tournament/${gameData.tournamentCode}` , { state: { makeTournament: true , authorized:true } });
 		} catch (error) {
             showToast("error", t('ToastsError'));
 		}
@@ -311,7 +316,7 @@ function GameInstance({ children }) {
     const  quitToHome = async () => {
         if (gameData.isInTournament === true){
             await patchTournament()
-            navigate(`/games/tournament/${gameData.tournamentCode}` , { state: { makeTournament: true } });
+            navigate(`/games/tournament/${gameData.tournamentCode}` , { state: { makeTournament: true , authorized:true } });
         }
         else
             navigate(`/home`);

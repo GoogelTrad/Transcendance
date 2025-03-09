@@ -90,7 +90,7 @@ const CreateTournament = ({ setIsModalTournament, setIsModalCreateTournament, se
             removeLaunch("createTournament");
             setTournamentCode(newTournamentCode);
             launching({ newLaunch: 'tournament', setModal: setIsModalTournament });
-            navigate(`/games/Tournament/${newTournamentCode}` , { state: { makeTournament: true } });
+            navigate(`/games/Tournament/${newTournamentCode}` , { state: { makeTournament: true, authorized:true  } });
         } else {
             showToast("error", t('Toasts.FailedToCreateTournament'));
         }

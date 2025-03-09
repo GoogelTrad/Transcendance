@@ -24,9 +24,9 @@ function Tournament() {
     const navigate = useNavigate();
     const location = useLocation();
     const { makeTournament } = location.state || false;
+    const { authorized } = location.state || false;
 
     const { userInfo } = useAuth();
-    let user = userInfo;
     
     const socketRef = useRef(null);
 
@@ -37,10 +37,19 @@ function Tournament() {
             newSocket.onmessage = (event) => {
                 const data = JSON.parse(event.data);
                 if (data.game_id && (data.player1 === userInfo.name || data.player2 === userInfo.name)) {
-                   navigate(`/game/${data.game_id}`);
+                    if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
+                        socketRef.current.close();
+                        socketRef.current = null;
+                    }
+                   navigate(`/game/${data.game_id}` , { state: { authorized:true } });
                 }
                 if (data.type === 'user_connected_message') {
                     fetchTournement();
+                }
+                if (data.type === 'tournament_update') {
+                    socketRef.current.close();
+                    socketRef.current = null;
+                    navigate("/home");
                 }
            }
            newSocket.onclose = () => {
@@ -51,17 +60,27 @@ function Tournament() {
                };
            }
            return () => {
+            console.log('quit');
             if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
+                console.log('quitSocket');
+                socketRef.current.send(JSON.stringify({ "Abort": "Abort tournament" }));
                 socketRef.current.close();
                 socketRef.current = null;
             }
         };
-     }, [tournamentCode, tournamentStarted, userInfo]);
+     }, [userInfo, tournamentCode, tournamentStarted]);
 
 
     const fetchTournement = async () => {
         try {
             const response = await axiosInstance.get(`/api/game/fetch_data_tournament_by_code/${tournamentCode}`);
+            if (response.data.status == "aborted" || response.data.status == "finished"){
+                if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
+                    socketRef.current.close();
+                    socketRef.current = null;
+                }
+                navigate("/home");
+            }
             setTournamentResponse(response.data);
         } catch (error) {
             showToast("error", t('ToastsError'));
@@ -76,6 +95,10 @@ function Tournament() {
 
     useEffect(() => {
         if (tournamentCode) {
+            if (authorized === undefined)
+            {
+                navigate("/home");
+            }
             fetchTournement();
             setTournamentStarted(true);
         }
@@ -105,18 +128,6 @@ function Tournament() {
         }
     }, [makeTournament, socketRef.current]);
     
-    useEffect(() => {
-        if (tournamentResponse && tournamentResponse.status == "finished")
-        {
-            if (socketRef.current) {
-                socketRef.current.close();
-                socketRef.current = null;
-            }
-        }
-
-    }, [tournamentResponse]);
-
-
     useEffect(() => {
         if (tournamentResponse && tournamentResponse.winner_final) {
             if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {

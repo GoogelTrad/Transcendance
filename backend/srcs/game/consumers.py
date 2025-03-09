@@ -9,6 +9,8 @@ import asyncio
 import time
 from channels.layers import get_channel_layer
 import jwt
+from django.shortcuts import get_object_or_404
+
 
 class TournamentConsumer(AsyncWebsocketConsumer):
     tournament_states = {}
@@ -46,7 +48,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
             if not self.user:
                 await self.close()
                 return
-                
+            print("status :" ,tournament.status, flush=True)
             if self.user.name in [tournament.player1, tournament.player2, tournament.player3, tournament.player4]:
                 game_group = f"game_{self.tournament_code}"
                 await self.channel_layer.group_add(game_group, self.channel_name)
@@ -56,14 +58,17 @@ class TournamentConsumer(AsyncWebsocketConsumer):
                 await self.send_user_connected_message()
                 return
             else:
-                await self.add_user_to_tournament()
-                await self.send_user_connected_message()
-                game_group = f"game_{self.tournament_code}"
-                await self.channel_layer.group_add(game_group, self.channel_name)
-
-                if self.tournament_code not in TournamentConsumer.tournament_states:
-                    TournamentConsumer.tournament_states[self.tournament_code] = {"games_finished": 0}
-            await self.accept()
+                if tournament.status == 'waiting' or tournament.status == 'ready':
+                    print("User accepted", flush=True)
+                    await self.accept()
+                    await self.add_user_to_tournament()
+                    await self.send_user_connected_message()
+                    game_group = f"game_{self.tournament_code}"
+                    await self.channel_layer.group_add(game_group, self.channel_name)
+                    print("status after co :", tournament.status)
+                    if self.tournament_code not in TournamentConsumer.tournament_states:
+                        TournamentConsumer.tournament_states[self.tournament_code] = {"games_finished": 0}
+                    
 
 
     @database_sync_to_async
@@ -77,6 +82,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
          async with TournamentConsumer.tournament_locks[self.tournament_code]:
             await self.remove_user_to_tournament()
             await self.send_user_connected_message()
+            tournament = TournamentConsumer.tournament.get(self.tournament_code)           
             print("Disconnected with code :", close_code, flush=True)
 
     @database_sync_to_async
@@ -88,8 +94,8 @@ class TournamentConsumer(AsyncWebsocketConsumer):
         return 0
     
     @database_sync_to_async
-    def finish_tournament(self, tournament):
-        tournament.status = "finished"
+    def change_tournament_status(self, tournament, newStatus):
+        tournament.status = newStatus
         tournament.save()
 
     @database_sync_to_async
@@ -105,7 +111,13 @@ class TournamentConsumer(AsyncWebsocketConsumer):
             elif not tournament.player4:
                 tournament.player4 = self.user.name
             tournament.players_connected += 1
+
+            if tournament.players_connected == tournament.size:
+                print('inside if :',tournament.players_connected, flush=True)
+                print(tournament.size, flush=True)
+                tournament.status = "ready"
             tournament.save()
+
 
     @database_sync_to_async
     def save_tournament(self, tournament):
@@ -131,6 +143,9 @@ class TournamentConsumer(AsyncWebsocketConsumer):
                 }
             )
 
+    async def tournament_update(self, event):
+        await self.send(text_data=json.dumps(event))
+
     async def user_connected_message(self, event):
         await self.send(text_data=json.dumps(event))
 
@@ -149,9 +164,26 @@ class TournamentConsumer(AsyncWebsocketConsumer):
                 "gameStatus" : gameStatus,
             }
         )
+    @database_sync_to_async
+    def add_to_user(self, tournament):
+        if tournament.player2:
+            player2_user = get_object_or_404(User, name=tournament.player2)
+            print("cc:",player2_user, flush=True)
+            player2_user.tournament.add(tournament)
+            player2_user.save()
+        if tournament.player3:
+            player3_user = get_object_or_404(User, name=tournament.player3)
+            player3_user.tournament.add(tournament)
+            player3_user.save()
+        if tournament.player4:
+            player4_user = get_object_or_404(User, name=tournament.player4)
+            player4_user.tournament.add(tournament)
+            player4_user.save()
+
 
     async def start_first_match(self):
         tournament = TournamentConsumer.tournament.get(self.tournament_code)
+        await self.add_to_user(tournament)
         if tournament:
             if tournament.size == 2 and tournament.players_connected == 2:
                 if tournament.player1 and tournament.player2:
@@ -182,6 +214,19 @@ class TournamentConsumer(AsyncWebsocketConsumer):
                 if final_game_data:
                     await self.start_game(final_game_data['id'], tournament.winner1, tournament.winner2, "finale")
 
+
+    async def abort_tournament(self):
+        tournament = TournamentConsumer.tournament.get(self.tournament_code)
+        await self.change_tournament_status(tournament, "aborted")
+        group_name = f"game_{self.tournament_code}"
+        await self.channel_layer.group_send(
+            group_name,
+            {
+                "type": "tournament_update",
+                "tournament_status": tournament.status,
+            }
+        )
+
     async def receive(self, text_data):
         try:
             data_dict = json.loads(text_data)
@@ -189,10 +234,15 @@ class TournamentConsumer(AsyncWebsocketConsumer):
             print("Error decoding JSON data", flush=True)
             return
         tournament = TournamentConsumer.tournament.get(self.tournament_code)
+        print("data :", data_dict, flush=True)
         if "message" in data_dict:
             if tournament.winner_final != "":
-                await self.finish_tournament(tournament)
+                await self.change_tournament_status(tournament, "finished")
             await self.send_user_connected_message()
+        if "Abort" in data_dict:
+            print('status when aborting :', tournament.status, flush=True)
+            if tournament.status != "waiting":
+                await self.abort_tournament()
         if "Start" in data_dict:
             if tournament:
                 if tournament.players_connected == 2 and tournament.size == 2 and await self.fetch_nbr_games() < 3:
@@ -315,7 +365,7 @@ class MatchmakingConsumer(AsyncWebsocketConsumer):
             })
 
             gameData = None
-            if len(matchmaking_queue) >= 2:
+            if len(matchmaking_queue) >= 2: 
                 player1 = matchmaking_queue.pop(0)
                 player2 = matchmaking_queue.pop(0)
                 if player1['player_name'] != player2['player_name']:
@@ -450,8 +500,14 @@ class GameState:
         self.eloPlayer2 = game.elo_Player2
         self.isInTournament = game.isInTournament
         self.code = game.tournamentCode
+        self.IA_active = game.IA
+        self.IA_timer = 0
+        self.IA_last_timer = 0
+        self.IA_up = False
+        self.IA_down = False
         self.gamerunning = False
         self.status = "started"
+        self.IA_pos_y = 0
 
     def is_game_over(self, game):
         if self.status == "aborted":
@@ -480,7 +536,6 @@ class GameState:
     def update(self):
         self.pong_data["pos_x"] += self.pong_data["velocity_x"]
         self.pong_data["pos_y"] += self.pong_data["velocity_y"]
-
         if self.pong_data["pos_x"] <= 0:
             self.score["score_P2"] += 1
             self.reset_ball(direction=1)
@@ -521,7 +576,7 @@ class GameState:
             self.paddle_data["paddleRightY"] = 0
         if self.paddle_data["paddleRightY"] + self.paddle_data["height"] > self.paddle_data["height_canvas"]:
             self.paddle_data["paddleRightY"] = self.paddle_data["height_canvas"] - self.paddle_data["height"]
-
+        
     def reset_ball(self, direction=1):
         self.pong_data["pos_x"] = self.paddle_data["width_canvas"] / 2
         self.pong_data["pos_y"] = self.paddle_data["height_canvas"] / 2
@@ -664,6 +719,8 @@ class gameConsumer(AsyncWebsocketConsumer):
                     self.process_key_states_P1(gameConsumer.current_key_states_P1[self.game_id], game_state)
                 if self.game_id in gameConsumer.current_key_states_P2:
                     self.process_key_states_P2(gameConsumer.current_key_states_P2[self.game_id], game_state)
+                # if game.IA == True:
+                #     self.IA_in_game(game_state)
                 game_state.update()
                 current_time = time.time()
                 time_diff = current_time - last_time_updated
@@ -737,7 +794,7 @@ class gameConsumer(AsyncWebsocketConsumer):
                     game_state.paddle_data["height_canvas"] - game_state.paddle_data["height"],
                     game_state.paddle_data["paddleLeftY"] + paddle_speed,
                 )
-        if game_state.player2 == "" :
+        if game_state.player2 == "" and game_state.IA_active == False:
             if key_states.get("ArrowUp", False):
                     game_state.paddle_data["paddleRightY"] = max(
                         0, game_state.paddle_data["paddleRightY"] - paddle_speed
@@ -761,7 +818,7 @@ class gameConsumer(AsyncWebsocketConsumer):
                     game_state.paddle_data["paddleRightY"] + paddle_speed,
                 )
         if game_state.player2 == "" :
-            if key_states.get("z", False):
+            if key_states.get("w", False):
                 game_state.paddle_data["paddleLeftY"] = max(
                 0, game_state.paddle_data["paddleLeftY"] - paddle_speed
             )
@@ -771,3 +828,33 @@ class gameConsumer(AsyncWebsocketConsumer):
                 game_state.paddle_data["paddleLeftY"] + paddle_speed,
             )
 
+    def IA_in_game(self, game_state):
+        paddle_speed = 15
+        random_speed = random.randint(100, 100)
+        random_paddle_speed = paddle_speed * random_speed / 100
+        current_time = time.time()
+        time_diff = current_time - game_state.IA_last_timer
+        game_state.IA_timer += time_diff
+        game_state.IA_last_timer = current_time
+        if game_state.IA_timer >= 1:
+            game_state.IA_pos_y = game_state.pong_data["pos_y"]
+            game_state.IA_timer = 0
+            if game_state.IA_pos_y < game_state.paddle_data["paddleRightY"] + game_state.paddle_data["height"] / 2:
+                game_state.IA_up = True
+                game_state.IA_down = False
+            elif game_state.IA_pos_y > game_state.paddle_data["paddleRightY"] + game_state.paddle_data["height"] / 2:
+                game_state.IA_up = False
+                game_state.IA_down = True
+        if game_state.IA_up == True and game_state.IA_pos_y > game_state.paddle_data["paddleRightY"] + game_state.paddle_data["height"] / 2:
+            game_state.IA_up = False
+        if  game_state.IA_down == True and game_state.IA_pos_y > game_state.paddle_data["paddleRightY"] + game_state.paddle_data["height"] / 2:
+            game_state.IA_down = False
+        if game_state.IA_up == True:
+            game_state.paddle_data["paddleRightY"] = max(
+                0, game_state.paddle_data["paddleRightY"] - random_paddle_speed
+            )
+        if game_state.IA_down == True:
+            game_state.paddle_data["paddleRightY"] = min(
+                game_state.paddle_data["height_canvas"] - game_state.paddle_data["height"],
+                game_state.paddle_data["paddleRightY"] + random_paddle_speed,
+            )

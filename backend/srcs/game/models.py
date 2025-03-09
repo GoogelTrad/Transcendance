@@ -13,7 +13,7 @@ class Game(models.Model):
         (STARTED, 'Game Started'),
         (FINISHED, 'Game Finished'),
         (READY, 'Ready waiting to start'),
-        (ABORTED, 'Ready waiting to start'),
+        (ABORTED, 'One player leave the game'),
     ]
 
     timeSeconds = models.IntegerField(default=0)
@@ -30,6 +30,7 @@ class Game(models.Model):
     date = models.DateField(auto_now=True)
     isInTournament = models.BooleanField(default=False)
     tournamentCode = models.IntegerField(default=0)
+    IA = models.BooleanField(default=False)
     
 
     status = models.CharField(
@@ -55,12 +56,15 @@ class Tournament(models.Model):
     STARTED = 'started'
     FINISHED = 'finished'
     READY = 'ready'
+    ABORTED = "aborted"
+
 
     STATUS_CHOICES = [
         (WAITING, 'Waiting for Players'),
         (STARTED, 'Tournament Started'),
         (FINISHED, 'Tournament Finished'),
         (READY, 'Ready waiting to start'),
+        (ABORTED, 'Tournament is aborted'),
     ]
 
     code = models.IntegerField(default=0)
