@@ -51,7 +51,9 @@ class TournamentConsumer(AsyncWebsocketConsumer):
                 game_group = f"game_{self.tournament_code}"
                 await self.channel_layer.group_add(game_group, self.channel_name)
                 await self.accept()
+                tournament.players_connected += 1
                 await self.save_tournament(tournament)
+                await self.send_user_connected_message()
                 return
             else:
                 await self.add_user_to_tournament()
@@ -64,33 +66,24 @@ class TournamentConsumer(AsyncWebsocketConsumer):
             await self.accept()
 
 
-    # @database_sync_to_async
-    # def remove_user_to_tournament(self):
-    #     tournament = TournamentConsumer.tournament.get(self.tournament_code)
-    #     if tournament:
-    #         if tournament.player1 == self.user.name:
-    #             tournament.isPlayer1Connected = False
-    #         elif tournament.player2 == self.user.name:
-    #             tournament.isPlayer2Connected = False
-    #         elif tournament.player3 == self.user.name:
-    #             tournament.isPlayer3Connected = False
-    #         elif tournament.player4 == self.user.name:
-    #             tournament.isPlayer4Connected = False
-    #         tournament.players_connected -= 1
-    #         tournament.save()
+    @database_sync_to_async
+    def remove_user_to_tournament(self):
+        tournament = TournamentConsumer.tournament.get(self.tournament_code)
+        if tournament:
+            tournament.players_connected -= 1
+            tournament.save()
 
     async def disconnect(self, close_code):
-        # async with TournamentConsumer.tournament_locks[self.tournament_code]:
-        #     # await self.remove_user_to_tournament()
-        #     await self.send_user_connected_message()
-        print("Disconnected with code :", close_code, flush=True)
+         async with TournamentConsumer.tournament_locks[self.tournament_code]:
+            await self.remove_user_to_tournament()
+            await self.send_user_connected_message()
+            print("Disconnected with code :", close_code, flush=True)
 
     @database_sync_to_async
     def fetch_nbr_games(self):
         tournament = TournamentConsumer.tournament.get(self.tournament_code)
         if tournament: 
             count = tournament.gamesTournament.count()
-            print("count", count, flush=True)
             return count
         return 0
     
@@ -105,16 +98,13 @@ class TournamentConsumer(AsyncWebsocketConsumer):
         if tournament:
             if not tournament.player1:
                 tournament.player1 = self.user.name
-                tournament.players_connected += 1
             elif not tournament.player2:
                 tournament.player2 = self.user.name
-                tournament.players_connected += 1
             elif not tournament.player3:
                 tournament.player3 = self.user.name
-                tournament.players_connected += 1
             elif not tournament.player4:
                 tournament.player4 = self.user.name
-                tournament.players_connected += 1
+            tournament.players_connected += 1
             tournament.save()
 
     @database_sync_to_async
