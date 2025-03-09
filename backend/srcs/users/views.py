@@ -102,9 +102,7 @@ class UserView():
                     }
                     reponse = Response()
                     new_token = jwt.encode(payload, os.getenv('JWT_KEY'), 'HS256')
-                    
-                    print(f'newtoken = {new_token}', flush=True)
-                    
+                                        
                     ValidToken.objects.filter(user_id=user.id).delete()
                     ValidToken.objects.create(user=user, token=new_token)
                     

@@ -88,12 +88,16 @@ const MarioSection = ({ tournamentResponse, renderImageWithClick, onKickPlayer, 
     const renderPlayer = (playerName, showBan = false) => (
         playerName && (
             <div
+                title={playerName}
                 className="w-100"
                 style={{
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between',
                     color: 'white',
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',   
                 }}
             >
                 {playerName || "player"}
@@ -207,7 +211,7 @@ const MarioSection = ({ tournamentResponse, renderImageWithClick, onKickPlayer, 
                                 {renderPlayer(tournamentResponse?.player4, true)}
 
                                 <button 
-                                    className="tournament-text" 
+                                    className="btn-start-tournament tournament-text" 
                                     onClick={onStartTournament}
                                     style={{ 
                                         height:'10%', 

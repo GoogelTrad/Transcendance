@@ -187,11 +187,10 @@ class TournamentConsumer(AsyncWebsocketConsumer):
     async def start_finale(self):
         tournament = TournamentConsumer.tournament.get(self.tournament_code)
         if tournament:
-            if tournament.isPlayer1Connected == True and tournament.isPlayer2Connected and tournament.isPlayer3Connected == True and tournament.isPlayer4Connected:
-                if tournament.winner1 and tournament.winner2:
-                    final_game_data = await self.create_Game_Multi(self.token, tournament.winner1, tournament.winner2)
-                    if final_game_data:
-                        await self.start_game(final_game_data['id'], tournament.winner1, tournament.winner2, "finale")
+            if tournament.winner1 and tournament.winner2:
+                final_game_data = await self.create_Game_Multi(self.token, tournament.winner1, tournament.winner2)
+                if final_game_data:
+                    await self.start_game(final_game_data['id'], tournament.winner1, tournament.winner2, "finale")
 
     async def receive(self, text_data):
         try:
@@ -225,14 +224,6 @@ class TournamentConsumer(AsyncWebsocketConsumer):
                 scoreMax=scoreMax,
                 tournamentCode=tournamentCode
             )
-            player1_object = User.objects.get(name=player1) 
-            player2_object = User.objects.get(name=player2)
-    
-            player1_object.games.add(game)
-            player2_object.games.add(game)
-
-            player1_object.save()
-            player2_object.save()
 
             TournamentConsumer.tournament[self.tournament_code].gamesTournament.add(game)
             return {

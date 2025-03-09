@@ -69,3 +69,10 @@
     margin-bottom: 20px;
     color: white;	
 }
+
+@media (max-height: 700px) {
+    .general-friend {
+        overflow-y: auto;
+        overflow: scroll;
+    }
+}

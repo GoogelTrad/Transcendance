@@ -84,11 +84,11 @@ function Profile({id})
 	const fetchFriendList = async () => {
 
 		try {
-			const reponse = await axiosInstance.get(`/api/friends/list/${userInfo.id}`);
+			const reponse = await axiosInstance.get(`/api/friends/list/${id}`);
 			setFriendList(reponse.data);
 		}
 		catch(error) {
-			console.log(error);
+			showToast("error", t('ToastsError'));
 		}
 	}
 
@@ -96,7 +96,7 @@ function Profile({id})
 		e.preventDefault();
 		const selectedImage = e.target.files[0];
 		try {
-			const response = await axiosInstance.patch(`/api/user/${userInfo.id}`, { 
+			const response = await axiosInstance.patch(`/api/user/${id}`, { 
 				'profile_image' : selectedImage 
 				}, {
 				headers: {
@@ -114,8 +114,7 @@ function Profile({id})
 	const handleConfirm = async () =>
 	{
 		try {
-			const response = await axiosInstance.post(`/api/user/perms/${userInfo.id}`);
-			console.log(response.data.message);
+			const response = await axiosInstance.post(`/api/user/perms/${id}`);
 			setIs2fa(response.data.message === "EnableTo2FA" ? true : false);
 			showToast("message", t(`Toasts.${response.data.message}`))
 		}
@@ -138,33 +137,36 @@ function Profile({id})
 			setIsPermitted(false);
 			setIsStud(false);
 		}
-		console.log(userInfo);
-		setUser(userInfo);
-		console.log(user);
 		if (userInfo.id !== id)
 		{
-			try 
-			{
-				const reponse = await axiosInstance.get(`/api/user/${id}`);
-				setUser(reponse.data);
-			}
-			catch (error)
-			{
-				showToast("error", t('ToastsError'));
+			if(id)
+			{	
+				try 
+				{
+					const reponse = await axiosInstance.get(`/api/user/${id}`);
+					setUser(reponse.data);
+				}
+				catch (error)
+				{
+					showToast("error", t('ToastsError'));
+				}
 			}
 		}
+		else
+			setUser(userInfo);
 	}
 
     useEffect (() => 
     {
-        fetchUserData();
-		fetchFriendList();
+		if(id)
+		{
+			fetchUserData();
+			fetchFriendList();
+		}
 		friends = friendList?.friends || [];
     }, [id]);
 
-	useEffect(() => {
-        console.log('user mis à jour:', user);
-    }, [user]);
+	useEffect(() => {}, [user]);
 
 	return (
 		<>
@@ -178,13 +180,13 @@ function Profile({id})
 									alt="Profile"
 									className="profile-picture"
 								/>
-								<input
+								{isPermitted && <input
 									type="file"
 									id="profile_image"
 									accept="image/*"
 									style={{ display: 'none' }}
 									onChange={handleFileChange}
-								/>
+								/>}
 							</label>
 
 							<div className="general-change">

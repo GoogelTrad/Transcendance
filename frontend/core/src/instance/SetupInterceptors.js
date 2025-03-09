@@ -1,7 +1,7 @@
 import axiosInstance from '../instance/AxiosInstance';
 import { showToast } from './ToastsInstance';
 
-const SetupInterceptors = (navigate, setIsAuthenticated, t) => {
+const SetupInterceptors = (navigate, setIsAuthenticated, t, logout) => {
     axiosInstance.interceptors.response.use((response) => {
   
         return response;
@@ -13,6 +13,7 @@ const SetupInterceptors = (navigate, setIsAuthenticated, t) => {
                 localStorage.setItem("isAuthenticated", "false");
                 setIsAuthenticated(false);
                 showToast("error", t("TokenExpired"));
+                logout();
                 navigate("/home");
             } 
         }

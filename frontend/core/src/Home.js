@@ -116,7 +116,6 @@ function Home() {
 
     useEffect(() => {
         if (modalSend) {
-            console.log(location.pathname)
             const modalSetter = setters.find(item => item.name === modalSend)?.setter;
             if (modalSetter && !isLaunched(isLaunch, modalSend)) {
                 launching({ newLaunch: modalSend, setModal: modalSetter });
@@ -300,7 +299,7 @@ function Home() {
                             src={P}
                             alt="icon game"
                             className=""
-                            style={{height: '80%', width:'auto'}}
+                            style={{height: '80%', width:'auto', cursor:'pointer'}}
                             onClick={() => launching({newLaunch: "game", setModal: setIsModalGame})}
                         />
                         <div className="tournament-text" style={{color:'rgba(13, 53, 82, 0.8)'}}>PONG</div>
@@ -324,7 +323,7 @@ function Home() {
                         src={C}
                         alt="icon chat"
                         className=""
-                        style={{height: '80%', width:'auto'}}
+                        style={{height: '80%', width:'auto', cursor:'pointer'}}
                         onClick={() => navigate('/Chat')}
                     />
                     <div className="tournament-text" style={{color:'rgba(13, 53, 82, 0.8)'}}>CHAT</div>
@@ -347,7 +346,7 @@ function Home() {
                         src={S}
                         alt="icon stats"
                         className=""
-                        style={{height: '80%', width:'auto'}}
+                        style={{height: '80%', width:'auto', cursor:'pointer'}}
                         onClick={() => launching({newLaunch: "stats", setModal: setIsModalStats})}
                     />
                     <div className="tournament-text" style={{color:'rgba(13, 53, 82, 0.8)'}}>STATS</div>

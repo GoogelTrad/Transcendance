@@ -4,6 +4,8 @@ import axiosInstance from "../instance/AxiosInstance";
 import { useAuth } from './AuthContext';
 import { showToast } from "../instance/ToastsInstance";
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+
 
 
 export default function AuthSchool({ noButton })
@@ -35,6 +37,7 @@ export function AuthSuccess()
 	const [isVerif, setIsVerif] = useState(false);
 	const [code, setCode] = useState("");
 	const { setIsAuthenticated, login } = useAuth();
+	const { t } = useTranslation();
 
 	const navigate = useNavigate();
 
@@ -50,7 +53,7 @@ export function AuthSuccess()
 			}
 		}
 		catch(error) {
-			console.log('error');
+			showToast("error", t('ToastsError'));
 		}
 	}
 
@@ -60,7 +63,6 @@ export function AuthSuccess()
 		const status = urlParams.get("status");
 		setName(urlParams.get("name"));
 
-		console.log(status);
 		if (status === "EMAIL_TAKEN")
 		{
 			showToast("error", "Email already taken!")

@@ -42,9 +42,6 @@ function Tournament() {
                 if (data.type === 'user_connected_message') {
                     fetchTournement();
                 }
-                if (data.game_id && data.gameStatus === "finale") {
-                    navigate(`/game/${data.game_id}`);
-                 }
            }
            newSocket.onclose = () => {
                console.log("Tournament webSocket closed");
@@ -68,7 +65,6 @@ function Tournament() {
             setTournamentResponse(response.data);
         } catch (error) {
             showToast("error", t('ToastsError'));
-            navigate('/home');
         }
     };
 
@@ -110,7 +106,14 @@ function Tournament() {
     }, [makeTournament, socketRef.current]);
     
     useEffect(() => {
-        console.log("tournamentRes : ", tournamentResponse);
+        if (tournamentResponse && tournamentResponse.status == "finished")
+        {
+            if (socketRef.current) {
+                socketRef.current.close();
+                socketRef.current = null;
+            }
+        }
+
     }, [tournamentResponse]);
 
 

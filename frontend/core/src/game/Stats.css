@@ -42,6 +42,7 @@ body, html {
     position: relative;
     z-index: 15;
     pointer-events: all !important;
+    min-height: 100%;
 }
 
 .stats-zone-table table {
@@ -55,6 +56,14 @@ body, html {
     z-index: 12;
     pointer-events: auto;
     pointer-events: all !important;
+    min-height: 100%;
+    position: relative;
+}
+
+/* Ajout d'une règle pour les cellules vides */
+.stats-zone-table tbody:empty {
+    min-height: 100px;
+    display: block;
 }
 
 .stats-zone-table th, 
@@ -96,14 +105,13 @@ body, html {
 
 .stats-zone-table td.expanded-cell {
     padding: 20px;
-    background-color: rgba(0, 150, 255, 0.2);
-    font-size: 1.1em;
     z-index: 25;
     transform: scale(1.1);
     box-shadow: 0 0 10px rgba(0, 150, 255, 0.3);
     white-space: normal; 
     width: auto;
     max-width: none;
+    font-size: clamp(10%, 60%, 100%);
     pointer-events: all !important;
 }
 

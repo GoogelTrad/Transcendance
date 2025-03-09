@@ -102,7 +102,7 @@ const TournamentBracket = ({ numberPlayer, tournamentResponse }) => {
                   {player === waiting ? (
                     <img src={waiting} alt="waiting" className="waiting-img" />
                   ) : (
-                    <span>{player}</span>
+                    <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'}}title={player} >{player}</span>
                   )}
                 </div>
               </div>

@@ -32,7 +32,7 @@ export default function HomeChat() {
 	const [usersconnected, setusersconnected] = useState([]);
 	const [blockedUsers, setBlockedUsers] = useState([]);
 	const [isModalProfile, setIsModalProfile] = useState(false);
-	const [profileId, setProfileId] = useState(1);
+	const [profileId, setProfileId] = useState();
 	const modalProfile = useRef(null);
 	const [roomIsPrivate, setRoomIsPrivate] = useState(false);
 
@@ -47,10 +47,10 @@ export default function HomeChat() {
 	
 	useEffect(() =>{
 		setBlockedData({
-			from_user: userInfo.id,
+			from_user: userInfo?.id,
 			to_user: '',
 		})
-	}, [userInfo.id]);
+	}, [userInfo?.id]);
 
 	const { notifications, sendNotification, respondNotification } = useNotifications();
 
@@ -58,7 +58,6 @@ export default function HomeChat() {
 		if (socket.ready) {
 			socket.on("create_room", (data) => {
 				if (data.status) {
-					console.log("Salle créée :", data.room_name);
 					setCreatedRoomName(data.room_name);
 					navigate(`/room/${data.room_name}`);
 				}
@@ -68,7 +67,6 @@ export default function HomeChat() {
 			});
 			socket.on("join_room", (data) => {
 				if (data.status) {
-					console.log("Salle rejoint home:", data.room_name);
 					navigate(`/room/${data.room_name}`);
 				} else {
 					showToast("error", t('ToastsError'));
@@ -109,7 +107,10 @@ export default function HomeChat() {
 			const response = await axiosInstance.get('/api/livechat/listroom/');
 
 			const dmRooms = response.data.dmRooms.map((value) => {
-				value.dmname = value.users[0]?.name + ' dm' ?? value.name;
+				if (userInfo?.id === value.users[1]?.id)
+					value.dmname = value.users[0]?.name + ' dm' ?? value.name;
+				else
+					value.dmname = value.users[1]?.name + ' dm' ?? value.name;
 				return value;
 			});
 
@@ -124,7 +125,6 @@ export default function HomeChat() {
 	const users_connected = async () => {
 		try {
 			const response = await axiosInstance.get('/api/livechat/users_connected/');
-			console.log("Liste des users:", response.data);
 			setusersconnected(response.data.filter((v) => v.id !== userInfo.id));
 		} catch (error) {
 			if (error.response.status !== 401 )
@@ -133,9 +133,7 @@ export default function HomeChat() {
 	};
 
 	const blocked_user = async (id) => {
-		console.log("ID:", id);
 		const updatedData = { ...blockedData, to_user: id || '' };
-		console.log("data:", updatedData);
 		try {
 			const response = await axiosInstance.post(`/api/livechat/block/`, updatedData, {
 				headers: {
@@ -155,7 +153,6 @@ export default function HomeChat() {
 	}
 
 	const unlocked_user = async (id) => {
-		console.log("ID:", id);
 		const updatedData = { ...blockedData, to_user: id || '' };
 		try {
 			const response = await axiosInstance.post(`/api/livechat/unlock/`, updatedData, {
@@ -219,7 +216,7 @@ export default function HomeChat() {
 			if (enteredPassword) {
 				joinRoom(room.name, enteredPassword);
 			} else {
-				showToast("error", t('Toasts.EnterPassword'));
+				showToast("error", t('Toasts.Oui'));
 			}
 		} else {
 			joinRoom(room.name, null, dmname);
@@ -243,9 +240,11 @@ export default function HomeChat() {
 		return result;
 	}
 
+	useEffect(() => {console.log(profileId)}, [profileId]);
+
 	return (
 		<Template>
-			<div className="general-chat d-flex justify-content-between">
+			<div className="general-chat d-flex justify-content-between h-100 w-100">
 				<div className="create-public-room">
 					{showCreatePublicRoom ? (
 						<>
