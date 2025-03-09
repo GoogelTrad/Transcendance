@@ -59,7 +59,7 @@ class LoginView():
 
         token = jwt.encode(payload, os.getenv('JWT_KEY'), 'HS256')
         if ValidToken.objects.filter(user=user).exists():
-            ValidToken.objects.filter(user=user).delete()
+            return Response(status=status.HTTP_409_CONFLICT)
         ValidToken.objects.create(user=user, token=token)
 
         reponse = Response()

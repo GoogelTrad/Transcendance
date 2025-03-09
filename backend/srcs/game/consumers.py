@@ -9,6 +9,7 @@ import asyncio
 import time
 from channels.layers import get_channel_layer
 import jwt
+import os
 
 class TournamentConsumer(AsyncWebsocketConsumer):
     tournament_states = {}

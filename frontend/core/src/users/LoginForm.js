@@ -88,6 +88,8 @@ function LoginRegister({setModal, setTerminal, removeLaunch}) {
         } catch (error) {
             if (error.status === 400)
                 setStep(true);
+            else if (error.status === 409)
+                showToast("error", t("Toasts.AlreadyConnected"))
             else 
                 showToast('error', t('Toasts.IncorrectLoginOrPassword'));
     }

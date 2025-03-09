@@ -7,7 +7,7 @@ import uuid
 import datetime
 
 class User(AbstractUser):
-    name = models.CharField(max_length=255, unique=True)
+    name = models.CharField(max_length=32, unique=True)
     email = models.CharField(max_length=255, unique=True)
     profile_image = models.ImageField(upload_to='profile_images/', null=True, blank=True)
     password = models.CharField(max_length=255, blank=True)

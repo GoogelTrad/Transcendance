@@ -37,7 +37,7 @@ export default function Room() {
 	const { userInfo } = useAuth();
 	const userId = userInfo?.id;
 
-	const { notifications, sendNotification, respondNotification } = useNotifications();
+	const { notifications, sendNotification, respondNotification, sendInvite, } = useNotifications();
 
 	const handleChange = (event) => {
 		let texte = event.target.value;
@@ -278,7 +278,7 @@ export default function Room() {
 										</button>
 										<ul className="dropdown-menu">
 											<button className="dropdown-item" onClick={() => handleProfile(user.id)}> {t('Profile')} </button>
-											<button className="dropdown-item" onClick={() => sendNotification(user.id, `${userInfo.name} ${t('Pong')}`, userId)}> {t('PongInvitation')} </button>
+											<button className="dropdown-item" onClick={() => sendInvite(user.id, `${userInfo.name} ${t('Pong')}`, userId)}> {t('PongInvitation')} </button>
 										</ul>
 									</li>
 								))}
@@ -298,13 +298,13 @@ export default function Room() {
 											<>
 												{notif.message}
 												<button
-													onClick={() => handleResponse(notif.id, "accepté", notif.sender_id)}
+													onClick={() => handleResponse(notif.id, "accept", notif.sender_id)}
 													disabled={clickedNotifications[notif.id]}
 												>
 													✅ {t('Accept')}
 												</button>
 												<button
-													onClick={() => handleResponse(notif.id, "refusé", notif.sender_id)}
+													onClick={() => handleResponse(notif.id, "decline", notif.sender_id)}
 													disabled={clickedNotifications[notif.id]}
 												>
 													❌ {t('Decline')}

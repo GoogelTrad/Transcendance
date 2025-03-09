@@ -24,7 +24,7 @@ class UserSerializer(serializers.ModelSerializer):
         
         if password and password_confirm and password != password_confirm:
             raise serializers.ValidationError('Password does not match!')
-        # if len(password) < 8:
+        # if len(password) < 8 and len(password) > 33:
         #     raise ValidationError("Le mot de passe doit contenir au moins 8 caractères.")
         # if not any(char.isupper() for char in password):
         #     raise ValidationError("Le mot de passe doit contenir au moins une majuscule.")

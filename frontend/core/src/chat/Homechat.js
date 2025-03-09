@@ -339,13 +339,7 @@ export default function HomeChat() {
 						<ul>
 							{notifications.map((notif, index) => (
 								<li key={index}>
-									{ notif.response ? (
-										<p> {t('Response')} : {notif.response}</p>
-									) : (
-										<>
-											{notif.message}
-										</>
-									)}
+									{notif.message}
 								</li>
 							))}
 						</ul>
