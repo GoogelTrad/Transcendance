@@ -115,6 +115,7 @@ function Profile({id})
 	{
 		try {
 			const response = await axiosInstance.post(`/api/user/perms/${id}`);
+			console.log(response.data.message);
 			setIs2fa(response.data.message === "EnableTo2FA" ? true : false);
 			showToast("message", t(`Toasts.${response.data.message}`))
 		}
@@ -166,7 +167,9 @@ function Profile({id})
 		friends = friendList?.friends || [];
     }, [id]);
 
-	useEffect(() => {}, [user]);
+	useEffect(() => {
+		setIs2fa(userInfo.enable_verified);
+	}, [user, userInfo?.id]);
 
 	return (
 		<>

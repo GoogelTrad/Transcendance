@@ -194,7 +194,7 @@
 		"EmailType": "Invalid e-mail address!",
 		"NameAlreadyTaken": "Username already taken!",
 		"InvalidRoomName": "The room name may not contain any characters other than alphanumeric characters",
-		"RoomNameAlreadyExist": "Room name already exist!"
+		"AlreadyRoom": "Already in this room!"
 	},
 
 	"ToastsError": "An error has occurred."

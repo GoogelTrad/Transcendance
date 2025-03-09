@@ -43,6 +43,7 @@ export const AuthProvider = ({ children }) => {
         try {
             const userResponse = await axiosInstance.get('/api/user/fetch_user_data');
             setUserInfo(userResponse.data.payload);
+            console.log(userInfo)
         } catch (err) {
             showToast("error", t('ToastsError'));
         }

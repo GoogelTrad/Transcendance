@@ -104,6 +104,7 @@ def oauth_login(request):
                 'email': serializer.instance.email,
                 'status': serializer.instance.status,
                 'is_stud': serializer.instance.is_stud,
+				'enable_verified': serializer.instance.enable_verified,
             }
 
 			jwt_token = jwt.encode(payload, os.getenv('JWT_KEY'), algorithm='HS256')
