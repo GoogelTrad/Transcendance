@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import person from '../../assets/game/person.svg';
 import "./Tournament.css";
 import waiting from '../../assets/waiting.gif';
 
@@ -54,7 +53,7 @@ const TournamentBracket = ({ numberPlayer, tournamentResponse }) => {
   const generateRounds = (numberPlayer) => {
     let rounds = [];
 
-    if (numberPlayer == "2") {
+    if (numberPlayer === "2") {
 		
         for (let i = 0; i < 3; i++) {
             rounds.unshift([
@@ -67,7 +66,7 @@ const TournamentBracket = ({ numberPlayer, tournamentResponse }) => {
         ]);
     }
 
-    if (numberPlayer == "4") {
+    if (numberPlayer === "4") {
         rounds.unshift([
             tournamentResponse?.player1 ? tournamentResponse.player1 : waiting,
             tournamentResponse?.player2 ? tournamentResponse.player2 : waiting,

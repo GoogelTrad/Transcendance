@@ -1,14 +1,9 @@
 import './GameInstance.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min';
-import axios from 'axios';
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Modal, Button } from 'react-bootstrap';
-import { jwtDecode } from "jwt-decode";
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
 import axiosInstance from '../instance/AxiosInstance.js';
-import { throttle } from 'lodash';
 import { useAuth } from '../users/AuthContext.js';
 import Template from './Template.js';
 
@@ -121,7 +116,7 @@ function GameInstance({ children }) {
 
 	const patchTournament = async () => {
 		try {
-			const response = await axiosInstance.patch(`/api/game/fetch_data_tournament_by_code/${gameData.tournamentCode}/`, {
+			await axiosInstance.patch(`/api/game/fetch_data_tournament_by_code/${gameData.tournamentCode}/`, {
 				winner: "game_over"
 		  });
           navigate(`/games/tournament/${gameData.tournamentCode}` , { state: { makeTournament: true , authorized:true } });

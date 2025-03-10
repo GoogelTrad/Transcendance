@@ -7,16 +7,7 @@ class RoomSerializer(serializers.ModelSerializer):
     users = BasicUserSerializer(read_only=True, many=True)
     class Meta:
         model = Room
-        fields = ['id', 'name', 'creation', 'password', 'users', 'dm']
-
-    def create(self, validated_data):
-        password = validated_data.pop('password', None)
-        instance = self.Meta.model(**validated_data)
-        if password is not None:
-            instance.set_password(password)
-        
-        instance.save()
-        return instance
+        fields = ['id', 'name', 'creation', 'users', 'dm']
 
 class UserConnectedSerializer(serializers.ModelSerializer):
     class Meta:

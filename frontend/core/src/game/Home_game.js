@@ -2,9 +2,8 @@ import './Home_game.css';
 import '../Home';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min';
-import { BrowserRouter as Router, Route, Routes, Link, useNavigate } from 'react-router-dom';
-import React, { useEffect, useState, useRef } from "react";
-import { jwtDecode } from "jwt-decode";
+import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from "react";
 import axiosInstance from "../instance/AxiosInstance";
 import { useAuth } from '../users/AuthContext';
 import { useTranslation } from 'react-i18next';
@@ -23,10 +22,8 @@ function HomeGame({ setModalStats, setModalCreateTournament, setModalTournament,
     const [gameCode, setGameCode] = useState("");
     const [numberPlayer, setNumberPlayer] = useState(2);
     const navigate = useNavigate();
-    const [game, setGame] = useState(null);
-    const [tournament, setTournament] = useState(null);
+    // const [game, setGame] = useState(null);
     const [socket, setSocket] = useState(null);
-    const [socketTournament, setSocketTournament] = useState(null);
 
     const { t } = useTranslation();
 
@@ -52,7 +49,7 @@ function HomeGame({ setModalStats, setModalCreateTournament, setModalTournament,
                 const data = JSON.parse(event.data);
                 console.log("join : ", data);
                 if (data.game_id) {
-                    setGame(data);
+                    // setGame(data);
                     navigate(`/game/${data.game_id}`, { state: { authorized:true } });
                 }
             };
@@ -75,7 +72,7 @@ function HomeGame({ setModalStats, setModalCreateTournament, setModalTournament,
                 setSocket("");
             }
         };
-    }, [socket, waitingForPlayer]);
+    }, [socket, waitingForPlayer, navigate]);
 
     useEffect(() => {
         if (user && user.name) {
@@ -107,8 +104,7 @@ function HomeGame({ setModalStats, setModalCreateTournament, setModalTournament,
             return;
         }
         try {
-            const response = await axiosInstance.get(`/api/game/fetch_data_tournament_by_code/${gameCode}/`);
-            setTournament(response.data);
+            await axiosInstance.get(`/api/game/fetch_data_tournament_by_code/${gameCode}/`);
             return 0;
         } catch (error) {
             showToast("error", t('ToastsError'));

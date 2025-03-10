@@ -1,5 +1,5 @@
-import { useEffect, useState, useRef } from "react";
-import { useParams, Link, useNavigate, useLocation } from "react-router-dom";
+import { useEffect, useState, useRef, useCallback } from "react";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { showToast } from "../instance/ToastsInstance";
 import useSocket from '../socket'
 import useNotifications from "../SocketNotif"
@@ -16,7 +16,6 @@ export default function Room() {
 	const { t } = useTranslation();
 
 	const { roomName } = useParams();
-	const query = new URLSearchParams(useLocation().search);
 	const socket = useSocket('chat', roomName);
 	const [dmname, setdmname] = useState(undefined);
 	const [message, setMessage] = useState('');
@@ -25,7 +24,6 @@ export default function Room() {
 	const [friendList, setFriendList] = useState([]);
 	const [users_room, setUsersRoom] = useState([]);
 	const [dmrooms, setdmrooms] = useState([]);
-	const [blockedUsers, setBlockedUsers] = useState([]);
 	const [clickedNotifications, setClickedNotifications] = useState({});
 	const maxLength = 300;
 	const [caracteresRestants, setCaracteresRestants] = useState(maxLength);
@@ -38,7 +36,7 @@ export default function Room() {
 	const { userInfo } = useAuth();
 	const userId = userInfo?.id;
 
-	const { notifications, sendNotification, respondNotification, sendInvite, } = useNotifications();
+	const { notifications, respondNotification, sendInvite } = useNotifications();
 
 	const handleChange = (event) => {
 		let texte = event.target.value;
@@ -68,7 +66,6 @@ export default function Room() {
 			});
 			socket.on('join_room', (data) => {
 				if (data.status) {
-					showToast("message", data.message);
 					navigate(`/room/${data.room_name}`);
 				}
 			});
@@ -77,7 +74,7 @@ export default function Room() {
 			})
 			return () => {}
 		}
-	}, [socket, navigate, navigate]);
+	}, [socket, navigate]);
 
 	const sendMessage = (e) => {
 		e.preventDefault();
@@ -94,24 +91,22 @@ export default function Room() {
 
 	const clearRoom = async () => {
 		try {
-			const response = await axiosInstance.post('/api/livechat/exit_room/', {room_name: roomName},
-			);
+			await axiosInstance.post('/api/livechat/exit_room/', {room_name: roomName});
 		} catch (error) {
 			showToast("error", t('ToastsError'));
 		}
 	};
 
-	const joinRoom = (name, password = null) => {
+	const joinRoom = (name) => {
 		if (socket.ready) {
 			socket.send({
 				type: "join_room",
-				room_name: name,
-				password: password,
+				room_name: name
 			});
 		}
 	};
 
-	const listroom = async () => {
+	const listroom = useCallback(async () => {
 		try {
 			const response = await axiosInstance.get('/api/livechat/listroom/');
 			
@@ -128,7 +123,7 @@ export default function Room() {
 		} catch (error) {
 			showToast("error", t('ToastsError'));
 		}
-	}
+	}, [userInfo?.id, setlistrooms, setdmrooms, t]);
 
 	const handleRoomClick = (e, room) => {
 		e.preventDefault();
@@ -138,22 +133,10 @@ export default function Room() {
 			return;
 		}
 
-		if (room.password) {
-			const enteredPassword = prompt(`${t('PasswordRequired')} "${room.name}" :`);
-			if (enteredPassword) {
-				clearRoom();
-				joinRoom(room.name, enteredPassword);
-			} 
-			else {
-				showToast("error", t('Toasts.EnterPassword'));
-			}
-		}
 		if (dmrooms.some(room => room.name === roomName) && roomName !== room.name) {
-			console.log("je rejoins une room depuis un dm");
 			joinRoom(room.name);
 		}
 		else if (roomName !== room.name) {
-			console.log("je rejoins une room depuis une room");
 			clearRoom();
 			joinRoom(room.name);
 		}
@@ -161,7 +144,7 @@ export default function Room() {
 			showToast("error", t("Toasts.AlreadyRoom"));
 	}
 
-	const FriendList = async () => {
+	const FriendList = useCallback(async () => {
 		try {
 			const reponse = await axiosInstance.get(`/api/friends/list/${userInfo?.id}`);
 			setFriendList(reponse.data);
@@ -169,9 +152,9 @@ export default function Room() {
 		catch(error) {
 			showToast("error", t('ToastsError'));
 		}
-	}
+	}, [userInfo?.id, setFriendList, t]);
 
-	const Users_room_list = async () => {
+	const Users_room_list = useCallback(async () => {
 		try {
 			const response = await axiosInstance.get(`/api/livechat/users_room/${roomName}`);
 			setUsersRoom(response.data.filter((value) => value.id !== userId));
@@ -179,18 +162,18 @@ export default function Room() {
 		catch(error) {
 			showToast("error", t('ToastsError'));
 		}
-	}
+	}, [roomName, setUsersRoom, userId, t]);
 
-	const get_room = async () => {
+	const get_room = useCallback(async () => {
 		try {
 			const response = await axiosInstance.get(`/api/livechat/room/${roomName}`);
-			const { dmname: roomPseudo } = response.data
+			const { dmname: roomPseudo } = response.data;
 			setdmname(roomPseudo);
 		}
 		catch(error) {
 			showToast("error", t('ToastsError'));
 		}
-	}
+	}, [roomName, setdmname, t]);
 
 	useEffect(() => {
 		if(userInfo.id) {
@@ -207,7 +190,7 @@ export default function Room() {
 		}, 5000);
 
 		return () => clearInterval(interval);
-	}, [roomName, userInfo?.id]);
+	}, [roomName, userInfo?.id, listroom, FriendList, get_room, Users_room_list]);
 
 	useEffect(() => {
         if (messagesEndRef.current) {
@@ -238,7 +221,7 @@ export default function Room() {
 							{listrooms.map((room, index) => (
 								<li key={index}>
 									<Link to={`/room/${room.name}`} onClick={(e) => handleRoomClick(e, room)}>
-										{room.name} {room.password && "🔒"}
+										{room.name}
 									</Link>
 								</li>
 							))}
@@ -283,7 +266,7 @@ export default function Room() {
 							</ul>
 						</div>
 						<div>
-							<h5>{t('OthersUsers')}</h5>
+							<h5>{t('OtherUsers')}</h5>
 						</div>
 						<div className="btn-group dropend">
 							<ul>

@@ -1,7 +1,7 @@
 import './Tournament.css';
 import React, { useEffect, useState, useRef  } from "react";
 import axiosInstance from '../../instance/AxiosInstance.js';
-import { BrowserRouter as useNavigate, useParams } from 'react-router-dom';
+import { BrowserRouter as _Router, useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../users/AuthContext.js';
 import { useLocation } from 'react-router-dom';
 import person from '../../assets/game/person.svg';
@@ -73,7 +73,7 @@ function Tournament() {
     const fetchTournement = async () => {
         try {
             const response = await axiosInstance.get(`/api/game/fetch_data_tournament_by_code/${tournamentCode}`);
-            if (response.data.status == "aborted" || response.data.status == "finished"){
+            if (response.data.status === "aborted" || response.data.status === "finished"){
                 if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
                     socketRef.current.close();
                     socketRef.current = null;
@@ -113,7 +113,7 @@ function Tournament() {
     }, [isRunning, socketRef]);
 
     const startTournament = () => {
-        if (tournamentResponse.players_connected != tournamentResponse.size) {
+        if (tournamentResponse.players_connected !== tournamentResponse.size) {
             showToast("error", t(`need ${tournamentResponse.size} players`));
             return;
         }
