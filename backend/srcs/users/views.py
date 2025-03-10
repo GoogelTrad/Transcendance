@@ -36,6 +36,9 @@ class LoginView():
         if not user.check_password(password):
             return Response({'error': 'Password incorrect!'}, status=status.HTTP_404_NOT_FOUND)
             
+        if ValidToken.objects.filter(user=user).exists():
+            return Response({'error': 'User already connected!'}, status=status.HTTP_409_CONFLICT)
+            
         if user.enable_verified is True:
             send_confirmation_email(user)
             return Response(
