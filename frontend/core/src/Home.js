@@ -297,7 +297,7 @@ function Home() {
                             style={{height: '80%', width:'auto', cursor:'pointer'}}
                             onClick={() => launching({newLaunch: "game", setModal: setIsModalGame})}
                         />
-                        <div className="tournament-text" style={{color:'rgba(13, 53, 82, 0.8)'}}>PONG</div>
+                        <div className="tournament-text" style={{color:'rgba(13, 53, 82, 0.8)'}}>{t('Game')}</div>
                     </div>
             )}
             {isAuthenticated && (
@@ -321,7 +321,7 @@ function Home() {
                         style={{height: '80%', width:'auto', cursor:'pointer'}}
                         onClick={() => navigate('/Chat')}
                     />
-                    <div className="tournament-text" style={{color:'rgba(13, 53, 82, 0.8)'}}>CHAT</div>
+                    <div className="tournament-text" style={{color:'rgba(13, 53, 82, 0.8)'}}>{t('Chat')}</div>
                 </div>
             )}
             {isAuthenticated && (
@@ -344,7 +344,7 @@ function Home() {
                         style={{height: '80%', width:'auto', cursor:'pointer'}}
                         onClick={() => launching({newLaunch: "stats", setModal: setIsModalStats})}
                     />
-                    <div className="tournament-text" style={{color:'rgba(13, 53, 82, 0.8)'}}>STATS</div>
+                    <div className="tournament-text" style={{color:'rgba(13, 53, 82, 0.8)'}}>{t('Stats')}</div>
                 </div>
             )}
             {!isAuthenticated && isLaunched(isLaunch, "terminal") && 
@@ -353,7 +353,7 @@ function Home() {
                     width="50%"
                     isModal={isModalTerminal}
                     modalRef={modalTerminalRef}
-                    name="Terminal"
+                    name={t('Terminal')}
                     zIndex={modalZIndexes["terminal"] || 1}
                     onBringToFront={() => bringToFront("terminal")}
                     onLaunchUpdate={() => removeLaunch("terminal")}
@@ -368,7 +368,7 @@ function Home() {
                     width="50%"
                     isModal={isModalForms}
                     modalRef={modalFormsRef}
-                    name="Forms"
+                    name={t('Forms')}
                     zIndex={modalZIndexes["forms"] || 1}
                     onBringToFront={() => bringToFront("forms")}
                     onLaunchUpdate={() => removeLaunch("forms")}
@@ -383,7 +383,7 @@ function Home() {
                     width="50%"
                     isModal={isModalGame}
                     modalRef={modalGameRef}
-                    name="Pong"
+                    name={t('Game')}
                     zIndex={modalZIndexes["game"] || 1}
                     onBringToFront={() => bringToFront("game")}
                     onLaunchUpdate={() => removeLaunch("game")}
@@ -399,7 +399,7 @@ function Home() {
                     top="5%"
                     isModal={isModalStats}
                     modalRef={modalStatsRef}
-                    name="Stats"
+                    name={t('Stats')}
                     zIndex={modalZIndexes["stats"] || 1}
                     onBringToFront={() => bringToFront("stats")}
                     onLaunchUpdate={() => removeLaunch("stats")}
@@ -415,7 +415,7 @@ function Home() {
                     top="3%"
                     isModal={isModalCreateTournament}
                     modalRef={modalCreateTournament}
-                    name="Create game"
+                    name={t('CreateTournament')}
                     zIndex={modalZIndexes["createTournament"] || 1}
                     onBringToFront={() => bringToFront("createTournament")}
                     onLaunchUpdate={() => removeLaunch("createTournament")}
@@ -430,7 +430,7 @@ function Home() {
                     width="20%"
                     isModal={isModalResult}
                     modalRef={modalResultRef}
-                    name="Result"
+                    name={t('Result')}
                     zIndex={modalZIndexes["resultTournament"] || 1}
                     onBringToFront={() => bringToFront("resultTournament")}
                     onLaunchUpdate={() => {
@@ -457,7 +457,7 @@ function Home() {
                     width="50%"
                     isModal={isModalSocial}
                     modalRef={modalSocial}
-                    name="Social"
+                    name={t('Social')}
                     zIndex={modalZIndexes["social"] || 1}
                     onBringToFront={() => bringToFront("social")}
                     onLaunchUpdate={() => removeLaunch("social")}
@@ -472,7 +472,7 @@ function Home() {
                     width="40%"
                     isModal={isModalProfile}
                     modalRef={modalProfile}
-                    name="Profile"
+                    name={t('Profil')}
                     zIndex={modalZIndexes["profile"] || 1}
                     onBringToFront={() => bringToFront("profile")}
                     onLaunchUpdate={() => removeLaunch("profile")}
@@ -488,7 +488,7 @@ function Home() {
                     width="40%"
                     isModal={isModalFriendProfile}
                     modalRef={modalFriendProfileRef}
-                    name="Friend Profile"
+                    name={t('FriendProfile')}
                     zIndex={modalZIndexes["friend"] || 1}
                     onBringToFront={() => bringToFront("friend")}
                     onLaunchUpdate={() => removeLaunch("friend")}

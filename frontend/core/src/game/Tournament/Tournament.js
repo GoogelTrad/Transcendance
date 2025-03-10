@@ -220,10 +220,10 @@ function Tournament() {
             <div className="tournament background h-100 w-100">
                 <div className="w-100" style={{ position: "absolute", height: "10%", marginTop: "3%" }}>
                         <div className="tournament-text d-flex flex-row w-100">
-                            <div className="d-flex flex-column h-100 w-25">Tournament Code</div>
-                            <div className="d-flex flex-column h-100 w-25">Time</div>
-                            <div className="d-flex flex-column h-100 w-25">Max Score</div>
-                            <div className="d-flex flex-column h-100 w-25">Players</div>
+                            <div className="d-flex flex-column h-100 w-25">{t('TournamentCode')}</div>
+                            <div className="d-flex flex-column h-100 w-25">{t('MaxScore')}</div>
+                            <div className="d-flex flex-column h-100 w-25">{t('Time')}</div>
+                            <div className="d-flex flex-column h-100 w-25">{t('Players')}</div>
                         </div>
                         <div className="tournament-text d-flex flex-row w-100">
                             <div className="d-flex flex-column h-100 w-25">{tournamentResponse?.code || "X"} </div>

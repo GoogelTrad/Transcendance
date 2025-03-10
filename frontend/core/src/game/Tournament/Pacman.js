@@ -3,8 +3,11 @@ import ghost from '../../assets/game/ghost2.png';
 import pacman from '../../assets/game/pacman.png';
 import ghostAfter from '../../assets/game/ghost3.png';
 import './Tournament.css';
+import { useTranslation } from 'react-i18next';
 
 const PacmanSection = ({ tournamentResponse, renderImageWithClick }) => {
+
+    const { t } = useTranslation();
     const [pacmanData, setPacmanData] = useState({
         ghostPosition: 85,
         dots: [],
@@ -119,7 +122,7 @@ const PacmanSection = ({ tournamentResponse, renderImageWithClick }) => {
                 <>
                     <div className="w-100 h-100 tournament-text" style={{ color:  '#0079bf',fontWeight:'none', position: 'absolute', top: '11%', right: '0%'}}>
                         <div className="explications title d-flex p-2" style={{ fontSize: 'clamp(0.2rem, 2.5vw, 1.0rem)'}}>
-                            <p>Tournament PONG</p>
+                            <p>{t('TournamentPong')}</p>
                         </div>
                         <div className="explications one" 
                             style={{ 
@@ -130,9 +133,9 @@ const PacmanSection = ({ tournamentResponse, renderImageWithClick }) => {
                                 lineHeight: '1.4' 
                             }}
                         >
-                            <p>
-                                The {tournamentResponse.size} players compete 2 against 2. The first to reach {tournamentResponse.maxScore} points or the one who has the most points at the end of the defined time ({tournamentResponse.maxTimeMinutes} : {tournamentResponse.maxTimeSecondes}) qualifies for the next phase. Dans le cas de 2 joueurs, les deux joueurs s'affrontent jusqu'à la finale. Le joueur qui a le meilleur score à la fin du tournoi le remporte. Le classement se fait donc en fonction du score.
-                            </p>
+                        <div>
+                            <p> {t('ExplainTournament', { size: 5, maxScore: 5, maxTimeMinutes: 8, maxTimeSeconds: 0 })}</p>
+                        </div>
                         </div>
                         <div className="border-top border-2 border-white w-75 mx-auto"></div>
                         <div className="explications cmd d-flex p-2" style={{ height: '30%'}}>
@@ -154,11 +157,9 @@ const PacmanSection = ({ tournamentResponse, renderImageWithClick }) => {
                                         <div className="touch-line">
                                             <div className="touch-square alpha">↓</div>
                                         </div>
-                                        {/*<div className="touch-square alpha">←</div>*/}
-                                        {/*<div className="touch-square alpha">→</div>*/}
                                     </div>
                                 </div>
-                                <div className="player-touch p-2 d-flex" style={{fontSize: 'clamp(0.5rem, 1.7vw, 1rem)', alignItems: 'center', justifyContent: 'center', textAlign: 'center'}}>TOUCH</div>
+                                <div className="player-touch p-2 d-flex" style={{fontSize: 'clamp(0.5rem, 1.7vw, 1rem)', alignItems: 'center', justifyContent: 'center', textAlign: 'center'}}>{t('Touch')}</div>
                             </div>
                         </div>
                     </div>
@@ -179,7 +180,7 @@ const PacmanSection = ({ tournamentResponse, renderImageWithClick }) => {
                         fontSize: 'clamp(0.5rem, 1.7vw, 1rem)',
                     }}
                 >
-                    ••• Rules •••
+                    ••• {t('Rules')} •••
                 </div>
             )
             }
