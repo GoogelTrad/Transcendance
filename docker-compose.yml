@@ -17,8 +17,8 @@ services:
     container_name: react
     image: front
     restart: unless-stopped
-    env_file: .env
-    build: ./frontend/
+    build:
+      context: ./frontend/
     environment:
       - WATCHPACK_POLLING=true
       - HTTPS=true

@@ -15,11 +15,18 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, include, re_path
 from rest_framework import routers
 from . import socket
 from django.conf import settings
 from django.conf.urls.static import static
+from django.views.static import serve
+
+
+static_urlpatterns = [
+    re_path(r"^media/(?P<path>.*)$", serve, {"document_root": settings.MEDIA_ROOT}),
+    re_path(r"^static/(?P<path>.*)$", serve, {"document_root": settings.STATIC_ROOT}),
+]
 
 urlpatterns = [
     path('api/admin/', admin.site.urls),
@@ -29,6 +36,7 @@ urlpatterns = [
     path('api/game/', include('game.urls')),
 	# path('socket.io/', socket.handler),
     path('api/auth/', include('auth.urls')),
+    path("", include(static_urlpatterns)),
 ]
 
 if settings.DEBUG:
