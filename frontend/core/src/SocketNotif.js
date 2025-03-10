@@ -37,7 +37,7 @@ export default function useNotifications() {
 				]);
 			}
 			else if(data.type === "game_update") {
-				navigate(`/game/${data.game_id}`);
+				navigate(`/game/${data.game_id}` , { state: { authorized:true } });
 			}
 		};
 

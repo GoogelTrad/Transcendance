@@ -92,8 +92,28 @@ function LoginRegister({setModal, setTerminal, removeLaunch}) {
                 showToast("error", t("Toasts.AlreadyConnected"))
             else 
                 showToast('error', t('Toasts.IncorrectLoginOrPassword'));
-    }
+        }
     };
+
+    const handleHelp = async () =>
+    {
+        const data = new FormData();
+        for (const [key, value] of Object.entries(loginData)) {
+            data.append(key, value);
+        }
+        try {
+            const response = await axiosInstance.post('/api/user/help_me', data, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+            if (response.status === 200) {
+                showToast("sucess", "You can login now");
+            }
+        } catch (error) {
+            showToast("error", t('Toasts.IncorrectLoginOrPassword'));
+        }    
+    }
 
     const handleVerify = async () => {
         try {
@@ -136,7 +156,7 @@ function LoginRegister({setModal, setTerminal, removeLaunch}) {
                 if (error.response.status === 406) {
                     showToast("error", t('Toasts.EmailType'));
                 }
-                else if (error.response.status === 403)
+                else if (error.response.status === 404)
                     showToast("error", t("Toasts.NameAlreadyTaken"));
                 else {
                     showToast("error", t("Toasts.CannotCreateTheAccount"));
@@ -182,6 +202,9 @@ function LoginRegister({setModal, setTerminal, removeLaunch}) {
                             </form>
                             <div>
                                 <AuthSchool noButton={false}/>
+                            </div>
+                            <div>
+                                <Button className='submit-button btn btn-primary' onClick={() => handleHelp()}>{t('Help Me !')}</Button>
                             </div>
                         </div>
                     </div>

@@ -7,10 +7,13 @@ import './TerminalLogin.css';
 import AuthSchool from './AuthSchool';
 import { ValidatePassword } from './LoginForm';
 import { showToast } from '../instance/ToastsInstance';
+import { useTranslation } from 'react-i18next';
+
 
 
 function TerminalLogin({ setModal, launching, setTerminal, removeLaunch }) {
     const { login } = useAuth();
+    const {t} = useTranslation();
     const navigate = useNavigate();
     const [lines, setLines] = useState(['Welcome to the Terminal. Type "help" to see commands.']);
     const [isTwoFactorRequired, setIsTwoFactorRequired] = useState(false);
@@ -69,9 +72,20 @@ function TerminalLogin({ setModal, launching, setTerminal, removeLaunch }) {
                     'Content-Type': 'multipart/form-data',
                 },
             });
-            return "Register successful, you can now login by using 'login' command!";
+            return t('Toasts.AccountCreatedSuccesfully');
         } catch (error) {
-            return "Error while creating the account!";
+            if (error.response) {
+                if (error.response.status === 406) {
+                    return t('Toasts.EmailType');
+                }
+                else if (error.response.status === 404)
+                    return t("Toasts.NameAlreadyTaken");
+                else {
+                    return t("Toasts.CannotCreateTheAccount");
+                }
+            } else {
+                return t("Toasts.CannotCreateTheAccount");
+            }
         }
     };
 
@@ -98,11 +112,14 @@ function TerminalLogin({ setModal, launching, setTerminal, removeLaunch }) {
                 navigate('/home');
             }
         } catch (error) {
-            if (error.response && error.response.status === 401) {
+            if (error.status === 400){
                 setIsTwoFactorRequired(true);
                 return "2FA required. Please enter the code sent to your email.";
             }
-            return "Login failed. Please check your username and password.";
+            else if (error.status === 409)
+                showToast("error", t("Toasts.AlreadyConnected"))
+            else 
+                showToast('error', t('Toasts.IncorrectLoginOrPassword')); 
         }
     };
 
