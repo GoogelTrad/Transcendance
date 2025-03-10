@@ -20,6 +20,7 @@ export default function useSocket(name, param = '') {
         };
 
         socket.onclose = () => {
+            setReady(false);
         };
 
         socket.onmessage = (e) => {
@@ -30,7 +31,7 @@ export default function useSocket(name, param = '') {
             }
         };
 
-        socket.onerror = (error) => {
+        socket.onerror = () => {
             setReady(false);
         };
 
@@ -38,7 +39,6 @@ export default function useSocket(name, param = '') {
 
         return () => {
             if (ready) {
-                socket.close();
                 handlers.clear();
                 setReady(false);
             }

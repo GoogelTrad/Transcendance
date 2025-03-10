@@ -192,7 +192,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             await self.send({
                 "type": "error",
                 "status": False,
-                "error": str(e)
+                "error": "Room name invalid, must be 15 characters max and letters only"
             })
             return
         
