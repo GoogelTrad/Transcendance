@@ -28,3 +28,7 @@
 .close-button {
     margin-right: 1%;
 }
+
+.custom-modal.show.Profile {
+    height: clamp(5%, 13%, 15%) !important;
+}

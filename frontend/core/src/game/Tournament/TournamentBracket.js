@@ -69,7 +69,7 @@ const TournamentBracket = ({ numberPlayer, tournamentResponse }) => {
 
     if (numberPlayer == "4") {
         rounds.unshift([
-            tournamentResponse?.player1,
+            tournamentResponse?.player1 ? tournamentResponse.player1 : waiting,
             tournamentResponse?.player2 ? tournamentResponse.player2 : waiting,
             tournamentResponse?.player3 ? tournamentResponse.player3 : waiting,
             tournamentResponse?.player4 ? tournamentResponse.player4 : waiting,
@@ -102,7 +102,7 @@ const TournamentBracket = ({ numberPlayer, tournamentResponse }) => {
                   {player === waiting ? (
                     <img src={waiting} alt="waiting" className="waiting-img" />
                   ) : (
-                    <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'}}title={player} >{player}</span>
+                    <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'}} title={player}>{player}</span>
                   )}
                 </div>
               </div>
