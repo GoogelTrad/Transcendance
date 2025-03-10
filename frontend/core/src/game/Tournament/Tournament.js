@@ -1,7 +1,7 @@
 import './Tournament.css';
 import React, { useEffect, useState, useRef  } from "react";
 import axiosInstance from '../../instance/AxiosInstance.js';
-import { BrowserRouter as useNavigate, useParams } from 'react-router-dom';
+import { BrowserRouter as Router, useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../users/AuthContext.js';
 import { useLocation } from 'react-router-dom';
 import person from '../../assets/game/person.svg';
