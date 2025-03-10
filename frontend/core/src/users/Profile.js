@@ -159,7 +159,7 @@ function Profile({id})
 		}
 		else if (userInfo.id == id && userInfo.is_stud == true) {
 			setIsStud(true);
-			setIsPermitted(false);
+			setIsPermitted(true);
 		}
 		else {
 			setIsPermitted(false);
@@ -247,7 +247,9 @@ function Profile({id})
 								/>
 							</button>
 							<ul className="dropdown-menu">
-								<li><button className="dropdown-item" type="button" onClick={() => setShowChangePassword(true)}>{t('ChangePassword')}</button></li>
+								{!isStud && 
+									(<li><button className="dropdown-item" type="button" onClick={() => setShowChangePassword(true)}>{t('ChangePassword')}</button></li>)
+								}
 								<li><button className="dropdown-item" type="button" onClick={handleConfirm}>{is2fa ? t('Disable2FA') : t('Enable2FA')}</button></li>
 							</ul>
 							{showChangePassword && <ChangeDetails setUser={setUser} setValue={setShowChangePassword} toChange={'password'} value={null} toType={'password'}/>}

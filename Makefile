@@ -1,6 +1,7 @@
 all: 
 	mkdir -p db certs
-	@docker compose -f docker-compose.yml up --build
+	@docker compose -f docker-compose.yml up --build -d
+	@docker compose logs -f
 
 down:
 	@docker compose -f docker-compose.yml down
