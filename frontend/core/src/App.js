@@ -40,7 +40,7 @@ function NavigateFunctionComponent(props) {
 }
 
 function App() {
-  
+
   return (
     <>
       <AuthProvider>

@@ -29,11 +29,12 @@ class SimpleMiddleware:
             return self.get_response(request)
         
         new_token = None
-        
-        if not request.path == '/api/user/login' and not request.path == '/api/user/create':
+        ValidToken().clean_expired_tokens()
+                
+        if not request.path == '/api/user/login' and not request.path == '/api/user/create' and not request.path == '/api/user/help_me':
             try:
                 token = request.COOKIES.get('token')
-                
+
                 if not token:
                     return JsonResponse({'error': 'TokenExpired'}, status=status.HTTP_401_UNAUTHORIZED)
                 

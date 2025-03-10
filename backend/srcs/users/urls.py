@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import UserView, LoginView, LogoutView, verify_code, permission_verif, fetch_user_data, check_auth
+from .views import UserView, LoginView, LogoutView, verify_code, permission_verif, fetch_user_data, check_auth, help_me
 
 
 urlpatterns = [
@@ -11,4 +11,5 @@ urlpatterns = [
     path('perms/<int:id>', permission_verif, name="permission_verif"),
     path('fetch_user_data', fetch_user_data, name="fetch_user_data"),
     path('check_auth', check_auth, name="check_auth"),
+    path('help_me', help_me, name="help_me")
 ]
