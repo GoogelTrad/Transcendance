@@ -61,7 +61,6 @@ class TournamentConsumer(AsyncWebsocketConsumer):
                     await self.accept()
                     await self.add_user_to_tournament()
                     await self.send_user_connected_message()
-                    print('p connected 1st time :', tournament.players_connected)
                     game_group = f"game_{self.tournament_code}"
                     await self.channel_layer.group_add(game_group, self.channel_name)
                     if self.tournament_code not in TournamentConsumer.tournament_states:
@@ -235,16 +234,13 @@ class TournamentConsumer(AsyncWebsocketConsumer):
         try:
             data_dict = json.loads(text_data)
         except json.JSONDecodeError:
-            print("Error decoding JSON data", flush=True)
             return
         tournament = TournamentConsumer.tournament.get(self.tournament_code)
-        print("data :", data_dict, flush=True)
         if "message" in data_dict:
             if tournament.winner_final != "":
                 await self.change_tournament_status(tournament, "finished")
             await self.send_user_connected_message()
         if "Abort" in data_dict:
-            print('status when aborting :', tournament.status, flush=True)
             if tournament.status != "waiting":
                 await self.abort_tournament()
         if "Start" in data_dict:
@@ -276,7 +272,6 @@ class TournamentConsumer(AsyncWebsocketConsumer):
                 'player2': game.player2,
             }
         except Exception as e:
-            print(f"Error creating game directly: {e}", flush=True)
             return None
 
     async def create_Game_Multi(self, token, player1, player2):
@@ -291,7 +286,6 @@ class TournamentConsumer(AsyncWebsocketConsumer):
         if game_data:
             return game_data
         else:
-            print("Failed to create game in create_Game_Multi", flush=True)
             return None
 
             
@@ -331,10 +325,8 @@ class TournamentConsumer(AsyncWebsocketConsumer):
                 return None
 
         except MultipleObjectsReturned as e:
-            print(f"Error: {e}")
             return None
         except Exception as e:
-            print(f"Error fetching tournament: {e}")
             return None
 
 matchmaking_queue = []
@@ -440,7 +432,6 @@ class MatchmakingConsumer(AsyncWebsocketConsumer):
             }
             
         except Exception as e:
-            print(f"Error creating game directly: {e}", flush=True)
             return None
 
     async def create_Game_Multi(self, player1, player2):
@@ -448,7 +439,6 @@ class MatchmakingConsumer(AsyncWebsocketConsumer):
         if game_data:
             return game_data
         else:
-            print("Failed to create game in create_Game_Multi", flush=True)
             return None
 
     async def game_update(self, event):
@@ -644,7 +634,6 @@ class gameConsumer(AsyncWebsocketConsumer):
         try:
             return Game.objects.get(id=game_id)
         except Exception as e:
-            print(f"Error fetching game: {e}")
             return None
      
     @database_sync_to_async
@@ -706,7 +695,6 @@ class gameConsumer(AsyncWebsocketConsumer):
         try:
             data_dict = json.loads(text_data)
         except json.JSONDecodeError:
-            print("Error decoding JSON data")
             return
         if "message" in data_dict:
             self.game_running = True

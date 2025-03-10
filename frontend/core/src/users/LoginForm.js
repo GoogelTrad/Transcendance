@@ -12,12 +12,13 @@ import { useTranslation } from 'react-i18next';
 
 export function ValidatePassword(password){
     const minLength = 8;
+    const maxLength = 32;
     const hasUpperCase = /[A-Z]/.test(password);
     const hasLowerCase = /[a-z]/.test(password);
     const hasNumber = /\d/.test(password);
     const hasSpecialChar = /[@$!%*?&]/.test(password);
 
-    if (password && password.length >= minLength && hasUpperCase && hasLowerCase && hasNumber && hasSpecialChar) 
+    if (password && password.length >= minLength && password.length <= maxLength && hasUpperCase && hasLowerCase && hasNumber && hasSpecialChar) 
         return true;
     else 
         return false;
@@ -50,10 +51,6 @@ function LoginRegister({setModal, setTerminal, removeLaunch}) {
             [name]: value,
         });
     };
-
-    const handleSchoolLogin = () => {    
-        AuthSchool();  
-    }
 
     const handleRegisterChange = (e) => {
         const { name, value } = e.target;
@@ -140,8 +137,8 @@ function LoginRegister({setModal, setTerminal, removeLaunch}) {
             data.append(key, value);
         }
         setRulesPassword(false);
-        // if (!ValidatePassword(data.password))
-        //     setRulesPassword(true);
+        if (!ValidatePassword(data.password))
+            setRulesPassword(true);
         if(isAuthenticated)
             return showToast('error', t('Toasts.NotCreateNewAccountWhileConnected'));
         try {
@@ -264,7 +261,7 @@ function LoginRegister({setModal, setTerminal, removeLaunch}) {
                                     <p className='rule-password'>
                                         {t('PasswordContains')} :
                                         <br />
-                                            {t('8CharactersLong')}
+                                            {t('CharactersLong')}
                                         <br />
                                             {t('1Uppercase')}
                                         <br />
