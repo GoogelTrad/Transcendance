@@ -5,11 +5,26 @@
         inset 0 0 15px rgba(0, 150, 255, 0.5),
         0 0 50px rgba(0, 150, 255, 0.3); 
     pointer-events: auto !important;
-    overflow: visible;
     display: flex;
     flex-direction: column;
     min-height: 400px;
+    max-height: 100vh;
+    width: 100%;
+    position: relative;
+    top: 0% !important;
 }
+
+.stats-button-container {
+    pointer-events: auto !important;
+    z-index: 9999;
+    flex-shrink: 0;
+}
+
+.stats-button-container button {
+    position: relative;
+    overflow: hidden;
+}
+
 .explications.one {
     overflow-y: auto;
     scrollbar-width: thin;
@@ -201,7 +216,6 @@
     z-index: 9999;
 }
 
-/* Ajoutez ces nouvelles classes */
 .stats-button {
     pointer-events: all !important;
     cursor: pointer !important;
@@ -210,7 +224,7 @@
 
 .stats-button img,
 .stats-button div {
-    pointer-events: none; /* Empêche la propagation aux enfants */
+    pointer-events: none;
 }
 
 
@@ -279,13 +293,6 @@
     }
   }
 
-  /*@media (max-width: 1500px)
-  {
-    .tournament.background {
-        height: 60%;
-        width: 40%;
-    }
-  }*/
   .mario-container {
     height: 100%;
     width: 100%;
@@ -332,6 +339,7 @@
 
 }
 
+
 @media (max-height: 700px) {
     .players-co {
         height: clamp(25%, 100%, 34%);
@@ -363,7 +371,6 @@
     .tournament.background {
         height: 100% !important;
         width: 100% !important;
-        overflow-y: auto;
     }
 
     .explications.one {
@@ -411,6 +418,47 @@
         align-items: center;
     }
 
+    .tournament.background {
+        height: 100% !important;
+        min-height: 400px;
+        top: 0%;
+        margin-top: 0%;
+    }
+
+    .stats-button-container {
+        height: clamp(30px, 8vh, 60px); 
+        padding: 5px 0;
+        top: 41% !important;
+    }
+
+    .stats-button-container button {
+        width: clamp(60px, 30%, 150px);
+        height: 100%;
+    }
+
+    .stats-button-container img {
+        max-height: 40px;
+    }
+
+    .stats-button-container .tournament-text {
+        font-size: clamp(0.4rem, 1vw, 0.8rem);
+        padding: 2px;
+    }
+
+    .trophy-first,
+    .trophy-second,
+    .trophy-third {
+        height: clamp(20px, 8vh, 60px);
+    }
+
+    .horizontal-line {
+        margin-bottom: 10px;
+    }
+
+    .tournament-text {
+        font-size: clamp(0.8rem, 1vw, 1rem);
+    }
+    
     .content-mario {
         width: 90% !important;
         height: auto !important;
@@ -418,7 +466,6 @@
         position: relative !important;
     }
 
-    /* Ajustement des éléments de Mario */
     .mario-section img {
         transform: scale(0.8);
         transition: transform 0.3s ease;
@@ -450,14 +497,13 @@
     }
 
     .mario-container {
-        top: 20% !important;  /* Même valeur que pacman */
+        top: 20% !important; 
         position: absolute !important;
         height: 50% !important;
         width: 33% !important;
         margin: 0 !important;
     }
 
-    /* Ajustements complémentaires pour maintenir l'alignement */
     .mario-section {
         height: 100% !important;
         top: 0 !important;
@@ -470,6 +516,7 @@
         height: 100% !important;
         position: relative !important;
     }
+
 }
 
 .touch-square {
@@ -506,7 +553,6 @@
     }
     .content-area {
         overflow-y: auto;
-        overflow-x: hidden;
     }
 
     .content-area::-webkit-scrollbar {
@@ -532,20 +578,64 @@
         margin-bottom: 20px;
     }
 
-    .tournament.background {
-        min-height: 600px;
-    }
-
-    .trophy-first,
-    .trophy-second,
-    .trophy-third {
-        position: fixed;
-        z-index: 1050;
-    }
-
     .tournament.background > div:not(:first-child) {
         position: relative;
         top: auto;
         margin-top: 20px;
+    }
+    .trophy-second {
+        right: clamp(10%, 30%, 100%);
+        top: clamp(0%, 16%, 50%) !important;
+    }
+    .trophy-third {
+        right: clamp(10%, 30%, 100%);
+        top: clamp(0%, 16%, 50%) !important;
+    }
+}
+
+@media (min-height: 900px) {
+    .trophy-first {
+        right: clamp(10%, 30%, 100%) !important;
+        top: clamp(0%, 3%, 7%) !important;
+        height: clamp(30px, 15vh, 100px);
+    }
+    .trophy-second {
+        height: clamp(30px, 15vh, 100px);
+    }
+    .trophy-third {
+        height: clamp(30px, 13vh, 100px);
+    }
+}
+
+
+@media (max-width: 1500px) {
+    .trophy-second {
+        right: clamp(10%, 30%, 100%);
+        top: clamp(0%, 16%, 50%) !important;
+    }
+    .trophy-third {
+        right: clamp(10%, 30%, 100%);
+        top: clamp(0%, 16%, 50%) !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .trophy-first {
+        right: 10%;
+        top: 2%;
+        height: clamp(30px, 15vh, 100px);
+    }
+    .trophy-second {
+        left: 5%;
+        top: 15%;
+        height: clamp(25px, 12vh, 80px);
+    }
+    .trophy-third {
+        right: 5%;
+        top: 15%;
+        height: clamp(25px, 12vh, 80px);
+    }
+    .tournament-text {
+        overflow-y: visible;
     }
 }

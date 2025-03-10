@@ -2,7 +2,6 @@ import './Home_game.css';
 import '../Home';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min';
-import { Modal, Button } from 'react-bootstrap';
 import { BrowserRouter as Router, Route, Routes, Link, useNavigate } from 'react-router-dom';
 import React, { useEffect, useState, useRef } from "react";
 import { jwtDecode } from "jwt-decode";

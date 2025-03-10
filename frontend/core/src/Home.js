@@ -7,13 +7,11 @@ import './Home.css';
 import Template from './instance/Template';  
 import ModalInstance from './instance/ModalInstance';
 import Stats from './game/Stats';
-import Tournament from './game/Tournament/Tournament';
 import ResultTournament from './game/Tournament/ResultTournament';
 import CreateTournament from './game/Tournament/CreateTournament';
 import './game/Tournament/Tournament.css';
 import FriendRequests from './friends/Friends';
 import Profile from './users/Profile';
-import HomeChat from './chat/Homechat';
 import { useAuth } from './users/AuthContext';
 
 import { jwtDecode } from "jwt-decode";
@@ -23,8 +21,6 @@ import C from './assets/C.png';
 import T from './assets/T.png';
 
 import { useTranslation } from 'react-i18next';
-import DragableInstance from './instance/DragableInstance';
-import { showToast } from './instance/ToastsInstance';
 
 function Home() {
 

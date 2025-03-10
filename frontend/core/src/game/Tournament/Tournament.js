@@ -1,8 +1,7 @@
 import './Tournament.css';
 import React, { useEffect, useState, useRef  } from "react";
 import axiosInstance from '../../instance/AxiosInstance.js';
-import { BrowserRouter as Router, Route, Routes, Link, useNavigate, useParams } from 'react-router-dom';
-import { jwtDecode } from "jwt-decode";
+import { BrowserRouter as useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../users/AuthContext.js';
 import { useLocation } from 'react-router-dom';
 import person from '../../assets/game/person.svg';
@@ -102,7 +101,7 @@ function Tournament() {
                 if (count === 0) {
                     clearInterval(interval);
                     setIsRunning(false);
-
+                    //remettre le status à ready 
                     if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
                         socketRef.current.send(JSON.stringify({ "Start": "Start games" }));
                     }
@@ -114,9 +113,14 @@ function Tournament() {
     }, [isRunning, socketRef]);
 
     const startTournament = () => {
+        if (tournamentResponse.players_connected != tournamentResponse.size) {
+            showToast("error", t(`need ${tournamentResponse.size} players`));
+            return;
+        }
         if (!isRunning) {
             setSeconds(3);
             setIsRunning(true);
+            //mettre le status à timer
         }
     };
 

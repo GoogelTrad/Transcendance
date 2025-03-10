@@ -6,7 +6,6 @@ import marioRun2 from '../../assets/game/mario-run-2.png';
 import marioJump from '../../assets/game/mario-jump.png';
 import blockAfter from '../../assets/game/blockAfter.png';
 import piece from '../../assets/game/piece.png';
-import ban from '../../assets/ban.png';
 import './Tournament.css';
 
 const MarioSection = ({ tournamentResponse, renderImageWithClick, onKickPlayer, onStartTournament }) => {
@@ -85,7 +84,7 @@ const MarioSection = ({ tournamentResponse, renderImageWithClick, onKickPlayer, 
         }
     }, [marioData.marioPosition]);
 
-    const renderPlayer = (playerName, showBan = false) => (
+    const renderPlayer = (playerName = false) => (
         playerName && (
             <div
                 title={playerName}
@@ -101,7 +100,6 @@ const MarioSection = ({ tournamentResponse, renderImageWithClick, onKickPlayer, 
                 }}
             >
                 {playerName || "player"}
-                {showBan && renderImageWithClick(ban, "ban", { height: '20px' }, () => onKickPlayer(playerName), "KICK")}
             </div>
         )
     );
