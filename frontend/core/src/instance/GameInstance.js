@@ -296,9 +296,12 @@ function GameInstance({ children }) {
         if (isKeyDown[e.key] === undefined || !waitInput) return;
     
         setIsKeyDown((prev) => {
-            const updatedKeyDown = { ...prev, [e.key]: true };
-            sendGameState(updatedKeyDown);
-            return updatedKeyDown;
+            if (prev[e.key] !== true) {
+                const updatedKeyDown = { ...prev, [e.key]: true };
+                sendGameState(updatedKeyDown);
+                return updatedKeyDown;
+            }
+            return prev;
         });
     };
     
@@ -306,12 +309,23 @@ function GameInstance({ children }) {
         if (isKeyDown[e.key] === undefined || !waitInput) return;
     
         setIsKeyDown((prev) => {
-            const updatedKeyDown = { ...prev, [e.key]: false };
-            sendGameState(updatedKeyDown);
-            return updatedKeyDown;
+            if (prev[e.key] !== false) {
+                const updatedKeyDown = { ...prev, [e.key]: false };
+                sendGameState(updatedKeyDown);
+                return updatedKeyDown;
+            }
+            return prev;
         });
     };
-    
+
+    useEffect(() => {
+        window.addEventListener('keydown', handleKeyPress);
+        window.addEventListener('keyup', handleKeyUp);
+        return () => {
+            window.removeEventListener('keydown', handleKeyPress);
+            window.removeEventListener('keyup', handleKeyUp);
+        };
+    }, [waitInput]); 
 
     const  quitToHome = async () => {
         if (gameData.isInTournament === true){
@@ -322,14 +336,7 @@ function GameInstance({ children }) {
             navigate(`/home`);
     };
 
-    useEffect(() => {
-        window.addEventListener('keydown', handleKeyPress);
-        window.addEventListener('keyup', handleKeyUp);
-        return () => {
-            window.removeEventListener('keydown', handleKeyPress);
-            window.removeEventListener('keyup', handleKeyUp);
-        };
-    }, [gameData, game, waitInput]);
+
 
     return (
         <Template>
