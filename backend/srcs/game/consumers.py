@@ -60,6 +60,8 @@ class TournamentConsumer(AsyncWebsocketConsumer):
                 await self.accept()
                 await self.save_tournament(tournament)
                 await self.send_user_connected_message()
+                await self.change_user_connection(True)
+                await self.change_tournament_status(tournament, "ready")
                 return
             else:
                 if tournament.status == 'waiting':
@@ -95,6 +97,15 @@ class TournamentConsumer(AsyncWebsocketConsumer):
             async with TournamentConsumer.tournament_locks[self.tournament_code]:
                 await self.remove_user_to_tournament()
                 await self.send_user_connected_message()
+        if self.group_name:
+            await self.channel_layer.group_discard(
+            self.group_name,
+            self.channel_name
+        )
+        print("Deconnecting...", flush=True)
+        await self.change_user_connection(False)
+        if tournament.status != "in_Game":
+            await self.abort_tournament()
 
     @database_sync_to_async
     def fetch_nbr_games(self):
@@ -115,17 +126,36 @@ class TournamentConsumer(AsyncWebsocketConsumer):
         if tournament:
             if not tournament.player1:
                 tournament.player1 = self.user.name
+                tournament.player1co = True
             elif not tournament.player2:
                 tournament.player2 = self.user.name
+                tournament.player2co = True
             elif not tournament.player3:
                 tournament.player3 = self.user.name
+                tournament.player3co = True
             elif not tournament.player4:
                 tournament.player4 = self.user.name
+                tournament.player4co = True
             tournament.players_connected += 1
 
             if tournament.players_connected == tournament.size:
                 tournament.status = "ready"
             tournament.save()
+
+    @database_sync_to_async
+    def change_user_connection(self, newConnection):
+        tournament = TournamentConsumer.tournament.get(self.tournament_code)
+        if tournament:
+            if tournament.player1 == self.user.name:
+                tournament.player1co = newConnection
+            elif tournament.player2 == self.user.name:
+                tournament.player2co = newConnection
+            elif tournament.player3 == self.user.name:
+                tournament.player3co = newConnection
+            elif tournament.player4 == self.user.name:
+                tournament.player4co = newConnection
+            tournament.save()
+
 
 
     @database_sync_to_async
@@ -151,7 +181,6 @@ class TournamentConsumer(AsyncWebsocketConsumer):
                     'message': message
                 }
             )
-
 
     async def Timer(self, event):
         await self.send(text_data=json.dumps(event))
@@ -201,6 +230,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
         tournament = TournamentConsumer.tournament.get(self.tournament_code)
         await self.add_to_user(tournament)
         if tournament:
+            await self.change_tournament_status(tournament, "in_Game")
             if tournament.size == 2 and tournament.players_connected == 2:
                 if tournament.player1 and tournament.player2:
                     game_data_1 = await self.create_Game_Multi(
@@ -208,6 +238,8 @@ class TournamentConsumer(AsyncWebsocketConsumer):
                     )
                     if game_data_1:
                         await self.start_game(game_data_1['id'], tournament.player1, tournament.player2, "match")
+                    else:
+                        await self.abort_tournament()
             if tournament.size == 4 and tournament.players_connected == 4:
                 if tournament.player1 and tournament.player2:
                     game_data_1 = await self.create_Game_Multi(
@@ -215,12 +247,16 @@ class TournamentConsumer(AsyncWebsocketConsumer):
                     )
                     if game_data_1:
                         await self.start_game(game_data_1['id'], tournament.player1, tournament.player2, "match")
+                    else:
+                        await self.abort_tournament()
                 if tournament.player3 and tournament.player4:
                     game_data_2 = await self.create_Game_Multi(
                         self.token, tournament.player3, tournament.player4
                     )
                     if game_data_2:
                         await self.start_game(game_data_2['id'], tournament.player3, tournament.player4, "match")
+                    else:
+                        await self.abort_tournament()
 
     async def start_finale(self):
         tournament = TournamentConsumer.tournament.get(self.tournament_code)
@@ -249,6 +285,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
         except json.JSONDecodeError:
             return
         tournament = TournamentConsumer.tournament.get(self.tournament_code)
+        print("data", data_dict)
         if "message" in data_dict:
             if tournament.winner_final != "":
                 await self.change_tournament_status(tournament, "finished")
@@ -258,12 +295,15 @@ class TournamentConsumer(AsyncWebsocketConsumer):
                 await self.abort_tournament()
         if "Start" in data_dict:
             if tournament:
-                if tournament.players_connected == 2 and tournament.size == 2 and await self.fetch_nbr_games() < 3:
-                    await self.start_first_match()
-                if tournament.players_connected == 4 and tournament.size == 4 and await self.fetch_nbr_games() < 2:
-                    await self.start_first_match()
-                if tournament.players_connected == 4 and tournament.size == 4 and await self.fetch_nbr_games() == 2:
-                    await self.start_finale()
+                async with TournamentConsumer.tournament_locks[self.tournament_code]:
+                    if tournament.status != "Timer" and tournament.status != "in_Game":
+                        await self.change_tournament_status(tournament ,"Timer")
+                        if tournament.players_connected == 2 and tournament.size == 2 and await self.fetch_nbr_games() < 3:
+                            await self.start_first_match()
+                        if tournament.players_connected == 4 and tournament.size == 4 and await self.fetch_nbr_games() < 2:
+                            await self.start_first_match()
+                        if tournament.players_connected == 4 and tournament.size == 4 and await self.fetch_nbr_games() == 2:
+                            await self.start_finale()
         if "Timer" in data_dict:
             if tournament:
                 await self.channel_layer.group_send(
@@ -298,16 +338,26 @@ class TournamentConsumer(AsyncWebsocketConsumer):
             return None
 
     async def create_Game_Multi(self, token, player1, player2):
-        
-        timeSeconds = TournamentConsumer.tournament[self.tournament_code].timeMaxSeconds 
-        timeMinutes = TournamentConsumer.tournament[self.tournament_code].timeMaxMinutes
-        scoreMax = TournamentConsumer.tournament[self.tournament_code].scoreMax
-        tournement_code = self.tournament_code
-        
-        game_data = await self.create_game_directly(player1, player2, timeSeconds, timeMinutes, scoreMax, tournement_code)
-
-        if game_data:
-            return game_data
+        tournament = TournamentConsumer.tournament.get(self.tournament_code)
+        timeSeconds = tournament.timeMaxSeconds 
+        timeMinutes = tournament.timeMaxMinutes
+        scoreMax = tournament.scoreMax
+        if tournament.size == 2:
+            if tournament.player1co == False or tournament.player2co == False:
+                return None
+            game_data = await self.create_game_directly(player1, player2, timeSeconds, timeMinutes, scoreMax,self.tournament_code)
+            if game_data:
+                return game_data
+            else:
+                return None
+        elif tournament.size == 4:
+            if tournament.player1co == False or tournament.player2co == False or tournament.player3co == False or tournament.player4co == False:
+                return None
+            game_data = await self.create_game_directly(player1, player2, timeSeconds, timeMinutes, scoreMax,self.tournament_code)
+            if game_data:
+                return game_data
+            else:
+                return None
         else:
             return None
 

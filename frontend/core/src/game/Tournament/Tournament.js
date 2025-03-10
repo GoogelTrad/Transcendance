@@ -91,26 +91,22 @@ function Tournament() {
     useEffect(() => {
         let count = 3;
         let interval = null;
-
         if (isRunning) {
             interval = setInterval(() => {
                 count--;
                 setSeconds(count);
-
                 if (count === 0) {
                     clearInterval(interval);
                     setIsRunning(false);
-                    if (userInfo.name === tournamentResponse.player1){
                         if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
                             socketRef.current.send(JSON.stringify({ "Start": "Start games" }));
-                        }
                     }
                 }
             }, 1000);
         }
 
         return () => clearInterval(interval);
-    }, [isRunning, socketRef]);
+    }, [isRunning]);
 
     const startTournament = () => {
 
@@ -168,7 +164,7 @@ function Tournament() {
                 }
             };
         }
-    }, [makeTournament, socketRef.current]);
+    }, [makeTournament]);
     
     useEffect(() => {
         if (tournamentResponse && tournamentResponse.winner_final) {

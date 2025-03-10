@@ -57,6 +57,8 @@ class Tournament(models.Model):
     FINISHED = 'finished'
     READY = 'ready'
     ABORTED = "aborted"
+    INGAME = "in_Game"
+    TIMER = 'timer'
 
 
     STATUS_CHOICES = [
@@ -65,6 +67,8 @@ class Tournament(models.Model):
         (FINISHED, 'Tournament Finished'),
         (READY, 'Ready waiting to start'),
         (ABORTED, 'Tournament is aborted'),
+        (INGAME, 'Games are started'),
+        (TIMER, 'Timer is started'),
     ]
 
     code = models.IntegerField(default=0)
@@ -75,6 +79,10 @@ class Tournament(models.Model):
     player2 = models.CharField(max_length=255, blank=True)
     player3 = models.CharField(max_length=255, blank=True)
     player4 = models.CharField(max_length=255, blank=True)
+    player1co = models.BooleanField(default=False)
+    player2co = models.BooleanField(default=False)
+    player3co = models.BooleanField(default=False)
+    player4co = models.BooleanField(default=False)
     gamesTournament = models.ManyToManyField("game.Game", related_name="tournament_players", blank=True)
     size = models.IntegerField(default=2)
     winner1 = models.CharField(max_length=255, blank=True)
