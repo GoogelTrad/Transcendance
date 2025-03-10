@@ -12,3 +12,4 @@ if __name__ == "__main__":
         ssl_certfile="/home/certs/server.crt",
         app_dir="/home/srcs",
     )
+    
