@@ -24,6 +24,7 @@ export default function Room() {
 	const [listrooms, setlistrooms] = useState([]);
 	const [friendList, setFriendList] = useState([]);
 	const [users_room, setUsersRoom] = useState([]);
+	const [dmrooms, setdmrooms] = useState([]);
 	const [blockedUsers, setBlockedUsers] = useState([]);
 	const [clickedNotifications, setClickedNotifications] = useState({});
 	const maxLength = 300;
@@ -110,6 +111,25 @@ export default function Room() {
 		}
 	};
 
+	const listroom = async () => {
+		try {
+			const response = await axiosInstance.get('/api/livechat/listroom/');
+			
+			const dmRooms = response.data.dmRooms.map((value) => {
+				if (userInfo?.id === value.users[1]?.id)
+					value.dmname = value.users[0]?.name + ' dm' ?? value.name;
+				else
+					value.dmname = value.users[1]?.name + ' dm' ?? value.name;
+				return value;
+			});
+			setlistrooms(response.data.publicRooms);
+			
+			setdmrooms(dmRooms);
+		} catch (error) {
+			showToast("error", t('ToastsError'));
+		}
+	}
+
 	const handleRoomClick = (e, room) => {
 		e.preventDefault();
 
@@ -127,22 +147,18 @@ export default function Room() {
 			else {
 				showToast("error", t('Toasts.EnterPassword'));
 			}
-		} 
+		}
+		if (dmrooms.some(room => room.name === roomName) && roomName !== room.name) {
+			console.log("je rejoins une room depuis un dm");
+			joinRoom(room.name);
+		}
 		else if (roomName !== room.name) {
+			console.log("je rejoins une room depuis une room");
 			clearRoom();
 			joinRoom(room.name);
 		}
 		else if (roomName === room.name)
 			showToast("error", t("Toasts.AlreadyRoom"));
-	}
-
-	const listroom = async () => {
-		try {
-			const response = await axiosInstance.get('/api/livechat/listroom/');
-			setlistrooms(response.data.publicRooms);
-		} catch (error) {
-			showToast("error", t('ToastsError'));
-		}
 	}
 
 	const FriendList = async () => {
@@ -229,7 +245,7 @@ export default function Room() {
 						</ul>
 					</div>
 					<div className="chat">
-						<button className="exit" onClick={() => navigate(`/chat/`)}> {"🠔"} </button>
+						<button className="exit" onClick={() => {dmrooms.some(room => room.name === roomName) ? navigate(`/chat/`) : clearRoom() && navigate(`/chat/`)}}> {"🠔"} </button>
 						<div className="titre">
 							<h3>{t('RoomName')}: { dmname ? dmname : roomName }</h3>
 						</div>

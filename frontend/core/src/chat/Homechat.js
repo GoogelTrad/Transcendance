@@ -59,13 +59,13 @@ export default function HomeChat() {
 			socket.on("create_room", (data) => {
 				if (data.status) {
 					setCreatedRoomName(data.room_name);
-					showToast("message", data.message);
+					//showToast("message", data.message);
 					navigate(`/room/${data.room_name}`);
 				}
 			});
 			socket.on("join_room", (data) => {
 				if (data.status) {
-					showToast("message", data.message);
+					//showToast("message", data.message);
 					navigate(`/room/${data.room_name}`);
 				}
 			});
