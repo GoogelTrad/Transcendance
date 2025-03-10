@@ -96,7 +96,6 @@ function Stats({ itemsArray = [] }) {
 
 
     useEffect(() => {
-        console.log("tournamentGames", tournamentGames);
         if (games.length > 0 && userInfo) {
             const winGamesFiltered = games.filter(game => game.winner === userInfo?.name);
             const loseGamesFiltered = games.filter(game => game.loser === userInfo?.name);
@@ -124,7 +123,6 @@ function Stats({ itemsArray = [] }) {
     const [expandedCells, setExpandedCells] = useState(false);
     
     const handleDivClick = (name) => {
-        console.log("pass", name);
         if(name != "")
         {
                 setMode(prevMode => 
@@ -179,7 +177,6 @@ function Stats({ itemsArray = [] }) {
             try {
                 const response = await axiosInstance.get(`/api/game/fetch_data_user/${userInfo?.id}/`, {}); 
                 setGames(response.data);
-                console.log("games :", response.data);
             } catch (error) {
                 showToast("error", t('ToastsError'));
             }
@@ -188,7 +185,6 @@ function Stats({ itemsArray = [] }) {
             try {
                 const response = await axiosInstance.get(`/api/game/fetch_data_tournament_by_user/${userInfo?.id}/`, {});
                 setTournamentGames(response.data);
-                console.log("TournamentGames :", response.data);
             } catch (error) {
                 showToast("error", t('ToastsError'));
             }

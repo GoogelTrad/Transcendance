@@ -50,17 +50,14 @@ function HomeGame({ setModalStats, setModalCreateTournament, setModalTournament,
 
             newSocket.onmessage = (event) => {
                 const data = JSON.parse(event.data);
-                console.log("join : ", data);
                 if (data.game_id) {
                     setGame(data);
                     navigate(`/game/${data.game_id}`, { state: { authorized:true } });
                 }
             };
             newSocket.onclose = () => {
-                console.log("Matchmaking webSocket closed");
             };
             newSocket.onopen = () => {
-                console.log("Matchmaking websocket open");
             };
         }
         if (waitingForPlayer === false) {
@@ -146,8 +143,6 @@ function HomeGame({ setModalStats, setModalCreateTournament, setModalTournament,
             if (socket && socket.readyState === WebSocket.OPEN && send_Info) {
                 socket.send(JSON.stringify({ type: 'join' }));
                 setSend_Info(false);
-            } else {
-                console.log("Socket is not open, retrying...");
             }
         };
 

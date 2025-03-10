@@ -29,12 +29,17 @@ class TournamentConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.tournament_code = self.scope['url_route']['kwargs']['tournament_code']
         self.token = self.scope['cookies'].get('token')
+        self.user = await self.authenticate_user(self.token)
         if self.tournament_code not in TournamentConsumer.tournament_locks:
             TournamentConsumer.tournament_locks[self.tournament_code] = asyncio.Lock()
-        self.user = await self.authenticate_user(self.token)
-
-        async with TournamentConsumer.tournament_locks[self.tournament_code]:
+        async with TournamentConsumer.tournament_locks[self.tournament_code]: 
             tournament = await self.get_tournament(self.tournament_code)
+            if tournament.status == "ready" and not self.user.name in [tournament.player1, tournament.player2, tournament.player3, tournament.player4]:
+                await self.accept()
+                await self.send(text_data=json.dumps({
+                    'full': True,
+                }))
+                return
             if tournament:
                 TournamentConsumer.tournament[self.tournament_code] = tournament
             else:
@@ -61,7 +66,6 @@ class TournamentConsumer(AsyncWebsocketConsumer):
                     await self.accept()
                     await self.add_user_to_tournament()
                     await self.send_user_connected_message()
-                    print('p connected 1st time :', tournament.players_connected)
                     game_group = f"game_{self.tournament_code}"
                     await self.channel_layer.group_add(game_group, self.channel_name)
                     if self.tournament_code not in TournamentConsumer.tournament_states:
@@ -148,6 +152,10 @@ class TournamentConsumer(AsyncWebsocketConsumer):
                 }
             )
 
+
+    async def Timer(self, event):
+        await self.send(text_data=json.dumps(event))
+
     async def tournament_update(self, event):
         await self.send(text_data=json.dumps(event))
 
@@ -171,6 +179,10 @@ class TournamentConsumer(AsyncWebsocketConsumer):
         )
     @database_sync_to_async
     def add_to_user(self, tournament):
+        if tournament.player1:
+            player1_user = get_object_or_404(User, name=tournament.player1)
+            player1_user.tournament.add(tournament)
+            player1_user.save()
         if tournament.player2:
             player2_user = get_object_or_404(User, name=tournament.player2)
             player2_user.tournament.add(tournament)
@@ -238,13 +250,11 @@ class TournamentConsumer(AsyncWebsocketConsumer):
             print("Error decoding JSON data", flush=True)
             return
         tournament = TournamentConsumer.tournament.get(self.tournament_code)
-        print("data :", data_dict, flush=True)
         if "message" in data_dict:
             if tournament.winner_final != "":
                 await self.change_tournament_status(tournament, "finished")
             await self.send_user_connected_message()
         if "Abort" in data_dict:
-            print('status when aborting :', tournament.status, flush=True)
             if tournament.status != "waiting":
                 await self.abort_tournament()
         if "Start" in data_dict:
@@ -255,6 +265,16 @@ class TournamentConsumer(AsyncWebsocketConsumer):
                     await self.start_first_match()
                 if tournament.players_connected == 4 and tournament.size == 4 and await self.fetch_nbr_games() == 2:
                     await self.start_finale()
+        if "Timer" in data_dict:
+            if tournament:
+                await self.channel_layer.group_send(
+                self.group_name,
+                {
+                    "type": "Timer",
+                    "startTimer": True,
+                }
+        )
+
 
     @database_sync_to_async
     def create_game_directly(self, player1, player2, timeSeconds, timeMinutes, scoreMax, tournamentCode):
@@ -805,7 +825,7 @@ class gameConsumer(AsyncWebsocketConsumer):
 
     def process_key_states_P1(self, key_states, game_state):
         paddle_speed = 15
-        if game_state.player2 != "" :
+        if game_state.player2 != "" and game_state.IA_active == False:
             if key_states.get("ArrowUp", False):
                 game_state.paddle_data["paddleLeftY"] = max(
                     0, game_state.paddle_data["paddleLeftY"] - paddle_speed
@@ -825,10 +845,20 @@ class gameConsumer(AsyncWebsocketConsumer):
                     game_state.paddle_data["height_canvas"] - game_state.paddle_data["height"],
                     game_state.paddle_data["paddleRightY"] + paddle_speed,
             )
+        if game_state.player2 == "" and game_state.IA_active == True:
+            if key_states.get("ArrowUp", False):
+                game_state.paddle_data["paddleLeftY"] = max(
+                    0, game_state.paddle_data["paddleLeftY"] - paddle_speed
+                )
+            if key_states.get("ArrowDown", False):
+                game_state.paddle_data["paddleLeftY"] = min(
+                    game_state.paddle_data["height_canvas"] - game_state.paddle_data["height"],
+                    game_state.paddle_data["paddleLeftY"] + paddle_speed,
+                )
 
     def process_key_states_P2(self, key_states, game_state):
         paddle_speed = 15
-        if game_state.player2 != "" :
+        if game_state.player2 != "" and game_state.IA_active == False:
             if key_states.get("ArrowUp", False):
                 game_state.paddle_data["paddleRightY"] = max(
                     0, game_state.paddle_data["paddleRightY"] - paddle_speed
@@ -838,7 +868,7 @@ class gameConsumer(AsyncWebsocketConsumer):
                     game_state.paddle_data["height_canvas"] - game_state.paddle_data["height"],
                     game_state.paddle_data["paddleRightY"] + paddle_speed,
                 )
-        if game_state.player2 == "" :
+        if game_state.player2 == "" and game_state.IA_active == False:
             if key_states.get("w", False):
                 game_state.paddle_data["paddleLeftY"] = max(
                 0, game_state.paddle_data["paddleLeftY"] - paddle_speed

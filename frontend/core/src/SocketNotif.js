@@ -79,7 +79,6 @@ export default function useNotifications() {
 
 	const respondNotification = (targetId, response, senderId) => {
 
-		console.log(response);
 		if (socket && socket.readyState === WebSocket.OPEN) {
 			const notificationData = {
 				type: "receive_response",

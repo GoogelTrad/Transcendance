@@ -152,7 +152,6 @@ function Home() {
 
     useEffect(() => {
         if (location.state?.tournamentCode) {
-            console.log("tournament code2 :", location.state.tournamentCode);
             setTournamentCode(location.state.tournamentCode);
         }
     }, [location.state]);

@@ -1,7 +1,7 @@
 import './Tournament.css';
 import React, { useEffect, useState, useRef  } from "react";
 import axiosInstance from '../../instance/AxiosInstance.js';
-import { BrowserRouter as useNavigate, useParams } from 'react-router-dom';
+import { BrowserRouter as Router, useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../users/AuthContext.js';
 import { useLocation } from 'react-router-dom';
 import person from '../../assets/game/person.svg';
@@ -11,7 +11,6 @@ import Template from '../../instance/Template.js';
 import MarioSection from './Mario.js';
 import PacmanSection from './Pacman.js';
 import { showToast } from '../../instance/ToastsInstance.js';
-
 import { useTranslation } from 'react-i18next';
 
 function Tournament() {
@@ -35,6 +34,11 @@ function Tournament() {
             socketRef.current = newSocket;
             newSocket.onmessage = (event) => {
                 const data = JSON.parse(event.data);
+                if (data.full === true){
+                    socketRef.current.close();
+                    socketRef.current = null;
+                    navigate("/home");
+                }
                 if (data.game_id && (data.player1 === userInfo.name || data.player2 === userInfo.name)) {
                     if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
                         socketRef.current.close();
@@ -50,18 +54,13 @@ function Tournament() {
                     socketRef.current = null;
                     navigate("/home");
                 }
+                if (data.type === 'Timer') {
+                    setIsRunning(true);
+                }
            }
-           newSocket.onclose = () => {
-               console.log("Tournament webSocket closed");
-           };
-           newSocket.onopen = () => {
-               console.log("Tournament websocket open")
-               };
-           }
+        }
            return () => {
-            console.log('quit');
             if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
-                console.log('quitSocket');
                 socketRef.current.send(JSON.stringify({ "Abort": "Abort tournament" }));
                 socketRef.current.close();
                 socketRef.current = null;
@@ -101,9 +100,10 @@ function Tournament() {
                 if (count === 0) {
                     clearInterval(interval);
                     setIsRunning(false);
-                    //remettre le status à ready 
-                    if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
-                        socketRef.current.send(JSON.stringify({ "Start": "Start games" }));
+                    if (userInfo.name === tournamentResponse.player1){
+                        if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
+                            socketRef.current.send(JSON.stringify({ "Start": "Start games" }));
+                        }
                     }
                 }
             }, 1000);
@@ -113,8 +113,13 @@ function Tournament() {
     }, [isRunning, socketRef]);
 
     const startTournament = () => {
+
         if (tournamentResponse.players_connected != tournamentResponse.size) {
             showToast("error", t(`need ${tournamentResponse.size} players`));
+            return;
+        }
+        if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
+            socketRef.current.send(JSON.stringify({ "Timer": "Start timer" }));
             return;
         }
         if (!isRunning) {

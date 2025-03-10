@@ -149,11 +149,9 @@ export default function Room() {
 			}
 		}
 		if (dmrooms.some(room => room.name === roomName) && roomName !== room.name) {
-			console.log("je rejoins une room depuis un dm");
 			joinRoom(room.name);
 		}
 		else if (roomName !== room.name) {
-			console.log("je rejoins une room depuis une room");
 			clearRoom();
 			joinRoom(room.name);
 		}
@@ -217,7 +215,6 @@ export default function Room() {
 
 	const handleProfile = (user_id) => {
 		setIsModalProfile(!isModalProfile);
-		console.log(user_id)
 		setProfileId(user_id);
 	}
 

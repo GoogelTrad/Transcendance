@@ -95,12 +95,10 @@ function Profile({id})
     const [loseGames, setLoseGames] = useState([]);
 
 	useEffect(() => {
-		console.log("PASS");
         const fetchStats = async () => {
             try {
                 const response = await axiosInstance.get(`/api/game/fetch_data_user/${user?.id}/`, {}); 
                 setGames(response.data);
-                console.log("games :", response.data);
             } catch (error) {
                 showToast("error", t('ToastsError'));
             }
@@ -145,7 +143,6 @@ function Profile({id})
 	{
 		try {
 			const response = await axiosInstance.post(`/api/user/perms/${id}`);
-			console.log(response.data.message);
 			setIs2fa(response.data.message === "EnableTo2FA" ? true : false);
 			showToast("message", t(`Toasts.${response.data.message}`))
 		}
