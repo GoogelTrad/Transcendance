@@ -34,11 +34,23 @@ class ValidToken(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     
     def clean_expired_tokens(self):
-        expiration_time = timezone.now() - timedelta(seconds=int(os.getenv('TOKEN_TIME')))
-        ValidToken.objects.filter(created_at__lt=expiration_time).delete()
+        token_time = int(os.getenv('TOKEN_TIME', '10'))
+        expiration_time = timezone.now() - timedelta(seconds=token_time)
+        
+        expired_tokens = ValidToken.objects.filter(created_at__lt=expiration_time)
+        if expired_tokens.exists():
+            user_ids = expired_tokens.values_list('user__id', flat=True).distinct()
+            User.objects.filter(id__in=user_ids).update(status="offline")
+        
+        deleted_count, _ = expired_tokens.delete()
 
     def is_expired(self):
         return timezone.now() > (self.created_at + timedelta(seconds=int(os.getenv('TOKEN_TIME'))))
+
+    def delete(self, *args, **kwargs):
+        self.user.status = "offline"
+        self.user.save()
+        super().delete(*args, **kwargs)
 
 class ConfirmationCode(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
