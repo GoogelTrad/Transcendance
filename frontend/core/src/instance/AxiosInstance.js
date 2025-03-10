@@ -15,14 +15,4 @@ axiosInstance.interceptors.request.use(
   }
 );
 
-// axiosInstance.interceptors.response.use((response) => {
-  
-//   return response;
-// }, (error) => {
-//   if (error.status === 401)
-//   {
-//     if (localStorage.getItem('isAuthenticated') === 'true') window.location = "/home";
-//   }
-// });
-
 export default axiosInstance;

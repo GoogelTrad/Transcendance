@@ -26,15 +26,18 @@ class LoginView():
         password = request.data['password']
 
         if not name or not password:
-            return Response(status=status.HTTP_403_FORBIDDEN)
+            return Response({'error': 'Username or password incorrect!'}, status=status.HTTP_404_NOT_FOUND)
 
         user = User.objects.filter(name=name).first()
 
         if user is None:
-            return Response(status=status.HTTP_403_FORBIDDEN)
+            return Response({'error': 'User not found!'}, status=status.HTTP_404_NOT_FOUND)
         
         if not user.check_password(password):
-            return Response(status=status.HTTP_403_FORBIDDEN)
+            return Response({'error': 'Password incorrect!'}, status=status.HTTP_404_NOT_FOUND)
+            
+        if ValidToken.objects.filter(user=user).exists():
+            return Response({'error': 'User already connected!'}, status=status.HTTP_409_CONFLICT)
             
         if user.enable_verified is True:
             send_confirmation_email(user)
@@ -59,7 +62,7 @@ class LoginView():
 
         token = jwt.encode(payload, os.getenv('JWT_KEY'), 'HS256')
         if ValidToken.objects.filter(user=user).exists():
-            return Response(status=status.HTTP_409_CONFLICT)
+            return Response({'error': 'User already connected!'}, status=status.HTTP_409_CONFLICT)
         ValidToken.objects.create(user=user, token=token)
 
         reponse = Response()
@@ -77,7 +80,7 @@ class UserView():
             try:
                 user = User.objects.get(pk=pk)
             except:
-                return Response(status=status.HTTP_403_FORBIDDEN)
+                return Response({'error': 'User not found!'}, status=status.HTTP_404_NOT_FOUND)
 
             if request.method == 'GET':
                 serializer = UserSerializer(user)
@@ -128,7 +131,7 @@ class UserView():
 
         username = request.data['name']
         if User.objects.filter(name=username).exists():
-            return Response({'error': "Username already taken!"}, status=status.HTTP_403_FORBIDDEN)
+            return Response({'error': "Username already taken!"}, status=status.HTTP_404_NOT_FOUND)
 
         serializer = UserSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)   
@@ -148,7 +151,7 @@ class LogoutView():
         user = User.objects.get(name=request.user.name)
 
         if user is None:
-            return Response(status=status.HTTP_403_FORBIDDEN)
+            return Response({'error': 'User not found!'}, status=status.HTTP_404_NOT_FOUND)
 
         user.status = 'offline'
         user.save()
@@ -169,7 +172,7 @@ def generate_confirmation_code():
 def send_confirmation_email(user):
 
     if user is None:
-        return Response(status=status.HTTP_403_FORBIDDEN)
+        return Response({'error': 'User not found!'}, status=status.HTTP_404_NOT_FOUND)
 
     code = generate_confirmation_code()
     ConfirmationCode.objects.update_or_create(user=user, defaults={"code": code})
@@ -232,7 +235,7 @@ def verify_code(request):
 def refresh_token(user, old_token):
 
     if user is None or not old_token:
-        return Response(status=status.HTTP_400_BAD_REQUEST)
+        return Response({'error': 'User not found or token invalid!'}, status=status.HTTP_404_NOT_FOUND)
     try:
         payload = jwt.decode(old_token, os.getenv('JWT_KEY'), algorithms=['HS256'])
         new_token = jwt.encode(payload, os.getenv('JWT_KEY'), 'HS256')
@@ -248,7 +251,7 @@ def refresh_token(user, old_token):
 def permission_verif(request, id):
     user = User.objects.filter(id=id).first()
     if not user:
-        return Response(status=status.HTTP_400_BAD_REQUEST)
+        return Response({'error': 'User not found!'}, status=status.HTTP_400_BAD_REQUEST)
     
     user.enable_verified = not user.enable_verified
     user.last_verified = None
@@ -278,7 +281,7 @@ def fetch_user_data(request):
             'enable_verified': user.enable_verified,
         }
         return Response({'payload': payload})
-    return Response({'error': 'Not authenticated'}, status=status.HTTP_403_FORBIDDEN)
+    return Response({'error': 'Not authenticated'}, status=status.HTTP_404_NOT_FOUND)
 
 @api_view(['GET'])
 def check_auth(request):
@@ -297,3 +300,27 @@ def check_auth(request):
         return Response({'error': 'TokenExpired'}, status=status.HTTP_401_UNAUTHORIZED)
     except jwt.InvalidTokenError:
         return Response({'error': 'TokenExpired'}, status=status.HTTP_401_UNAUTHORIZED)
+
+@api_view(['POST'])
+def help_me(request):
+    name = request.data['name']
+    password = request.data['password']
+
+    if not name or not password:
+        return Response({'error': 'Username or password incorrect!'}, status=status.HTTP_404_NOT_FOUND)
+
+    user = User.objects.filter(name=name).first()
+
+    if user is None:
+        return Response({'error': 'User not found!'}, status=status.HTTP_404_NOT_FOUND)
+    if not user.check_password(password):
+        return Response({'error': 'Password incorrect!'}, status=status.HTTP_404_NOT_FOUND)
+
+    token = ValidToken.objects.filter(user=user).first()
+    if token:
+        ValidToken.objects.filter(user=user).delete()
+        user.status = "offline"
+        user.save()
+        return Response({'message': 'Token refreshed, you can now log in!'}, status=status.HTTP_200_OK)
+
+    return Response({'error': 'User not found!'}, status=status.HTTP_404_NOT_FOUND)

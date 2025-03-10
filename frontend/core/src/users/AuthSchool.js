@@ -11,7 +11,7 @@ import { useTranslation } from 'react-i18next';
 export default function AuthSchool({ noButton })
 {
     const handleAuth = async (e) => {
-        e.preventDefault();
+        e?.preventDefault();
         try {
             window.location.href = `${process.env.REACT_APP_API_URL}/api/auth/code`;
         }
@@ -19,6 +19,12 @@ export default function AuthSchool({ noButton })
             return "Error while trying to connect with 42."
         }
     }
+
+	useEffect(() => {
+        if (noButton) {
+            handleAuth();
+        }
+    }, [noButton]);
 
 	return noButton ? null : (
         <button
