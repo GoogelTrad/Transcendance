@@ -247,7 +247,6 @@ class TournamentConsumer(AsyncWebsocketConsumer):
         try:
             data_dict = json.loads(text_data)
         except json.JSONDecodeError:
-            print("Error decoding JSON data", flush=True)
             return
         tournament = TournamentConsumer.tournament.get(self.tournament_code)
         if "message" in data_dict:
@@ -296,7 +295,6 @@ class TournamentConsumer(AsyncWebsocketConsumer):
                 'player2': game.player2,
             }
         except Exception as e:
-            print(f"Error creating game directly: {e}", flush=True)
             return None
 
     async def create_Game_Multi(self, token, player1, player2):
@@ -311,7 +309,6 @@ class TournamentConsumer(AsyncWebsocketConsumer):
         if game_data:
             return game_data
         else:
-            print("Failed to create game in create_Game_Multi", flush=True)
             return None
 
             
@@ -351,10 +348,8 @@ class TournamentConsumer(AsyncWebsocketConsumer):
                 return None
 
         except MultipleObjectsReturned as e:
-            print(f"Error: {e}")
             return None
         except Exception as e:
-            print(f"Error fetching tournament: {e}")
             return None
 
 matchmaking_queue = []
@@ -460,7 +455,6 @@ class MatchmakingConsumer(AsyncWebsocketConsumer):
             }
             
         except Exception as e:
-            print(f"Error creating game directly: {e}", flush=True)
             return None
 
     async def create_Game_Multi(self, player1, player2):
@@ -468,7 +462,6 @@ class MatchmakingConsumer(AsyncWebsocketConsumer):
         if game_data:
             return game_data
         else:
-            print("Failed to create game in create_Game_Multi", flush=True)
             return None
 
     async def game_update(self, event):
@@ -664,7 +657,6 @@ class gameConsumer(AsyncWebsocketConsumer):
         try:
             return Game.objects.get(id=game_id)
         except Exception as e:
-            print(f"Error fetching game: {e}")
             return None
      
     @database_sync_to_async
@@ -726,7 +718,6 @@ class gameConsumer(AsyncWebsocketConsumer):
         try:
             data_dict = json.loads(text_data)
         except json.JSONDecodeError:
-            print("Error decoding JSON data")
             return
         if "message" in data_dict:
             self.game_running = True

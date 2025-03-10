@@ -3,6 +3,9 @@ from .models import User
 from friends.serializer import FriendSerializer
 from django.core.exceptions import ValidationError
 import re
+from rest_framework.response import Response
+from rest_framework import status
+
 
 class UserSerializer(serializers.ModelSerializer):
     friends = FriendSerializer(many=True, read_only=True)
@@ -24,16 +27,17 @@ class UserSerializer(serializers.ModelSerializer):
         
         if password and password_confirm and password != password_confirm:
             raise serializers.ValidationError('Password does not match!')
-        # if len(password) < 8 and len(password) > 33:
-        #     raise ValidationError("Le mot de passe doit contenir au moins 8 caractères.")
-        # if not any(char.isupper() for char in password):
-        #     raise ValidationError("Le mot de passe doit contenir au moins une majuscule.")
-        # if not any(char.islower() for char in password):
-        #     raise ValidationError("Le mot de passe doit contenir au moins une minuscule.")
-        # if not any(char.isdigit() for char in password):
-        #     raise ValidationError("Le mot de passe doit contenir au moins un chiffre.")
-        # if not re.search(r"[@$!%*?&]", password):
-        #     raise ValidationError("Le mot de passe doit contenir au moins un caractère spécial (@$!%*?&).")
+        if password:
+            if len(password) < 8 and len(password) > 33:
+                raise ValidationError("Le mot de passe doit contenir au moins 8 caractères.")
+            if not any(char.isupper() for char in password):
+                raise ValidationError("Le mot de passe doit contenir au moins une majuscule.")
+            if not any(char.islower() for char in password):
+                raise ValidationError("Le mot de passe doit contenir au moins une minuscule.")
+            if not any(char.isdigit() for char in password):
+                raise ValidationError("Le mot de passe doit contenir au moins un chiffre.")
+            if not re.search(r"[@$!%*?&]", password):
+                raise ValidationError("Le mot de passe doit contenir au moins un caractère spécial (@$!%*?&).")
         
         return data
 

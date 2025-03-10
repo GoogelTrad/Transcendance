@@ -2,7 +2,6 @@ import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min';
 import Home from './Home';
-import Friends from './friends/Friends';
 import Logout from './users/Logout';
 import TerminalLogin from './users/TerminalLogin';
 import Home_game from './game/Home_game';
@@ -16,7 +15,6 @@ import ProtectedRoute from './instance/RouteInstance';
 import { jwtDecode } from 'jwt-decode';
 import HomeChat from './chat/Homechat';
 import Room from "./chat/Room";
-import LoginRegister from './users/LoginForm';
 import { AuthSuccess } from './users/AuthSchool';
 import { useEffect } from 'react';
 import axiosInstance from './instance/AxiosInstance';
@@ -49,14 +47,11 @@ function App() {
             <Routes>
               <Route path="/" element={<Navigate to="/home" replace />} />
               <Route path="/home" element={<Home />} />
-              <Route path="/login" element={<LoginRegister />} />
               <Route path='/logout' element={<ProtectedRoute><Logout /></ProtectedRoute>} />
               <Route path='/chat' element={<ProtectedRoute><HomeChat/></ProtectedRoute>} />
               <Route path="/room/:roomName" element={<ProtectedRoute><Room/></ProtectedRoute>} />
               <Route path='/home_game' element={<ProtectedRoute><Home_game /></ProtectedRoute>} />
               <Route path='/game/:id' element={<ProtectedRoute><GameInstance /></ProtectedRoute>} />
-              <Route path='/profile' element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-              <Route path='/friends' element={<ProtectedRoute><Friends /></ProtectedRoute>} />
               <Route path='/games/tournament/:tournamentCode' element={<ProtectedRoute><Tournament /></ProtectedRoute>} />
               <Route path="/auth-success" element={<AuthSuccess />} />
               <Route path="*" element={<PageNotFound />} />

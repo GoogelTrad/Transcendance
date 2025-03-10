@@ -75,7 +75,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         self.room_name = self.scope['url_route']['kwargs']['room']
 
         if not re.match(r'^[0-9a-zA-Z]+$', self.room_name):
-            await self.accept()  # Accepter la connexion pour envoyer un message
+            await self.accept() 
             await self.send({
                 "type": "error",
                 "error": f"Invalid room name: {self.room_name}. Use only alphanumeric characters."
@@ -408,13 +408,12 @@ class NotificationConsumer(AsyncWebsocketConsumer):
             if response == "accept":
                 game_data = await self.create_Game_Multi(sender_id, target_id)
                 if game_data:
-                    # Passer les IDs à start_game au lieu des noms
                     await self.start_game(game_data['id'], sender_id, target_id)
                     channel_layer = get_channel_layer()
                     await self.channel_layer.group_send(
                         f"user_{sender_id}",
                         {
-                            "type": "game_created",  # Changement pour un type plus clair
+                            "type": "game_created", 
                             "game_id": game_data['id'],
                             "player1": game_data['player1'],
                             "player2": game_data['player2'],
@@ -465,7 +464,6 @@ class NotificationConsumer(AsyncWebsocketConsumer):
                 'player2': game.player2,
             }
         except Exception as e:
-            print(f"Error creating game directly: {e}", flush=True)
             return None
 
     async def create_Game_Multi(self, player1, player2):
@@ -473,7 +471,6 @@ class NotificationConsumer(AsyncWebsocketConsumer):
         if game_data:
             return game_data
         else:
-            print("Failed to create game in create_Game_Multi", flush=True)
             return None
 
     async def game_update(self, event):

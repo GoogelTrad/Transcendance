@@ -49,9 +49,9 @@ def get_list_users(request, name):
         room = Room.objects.get(name=name)
         users = room.users.all()
         users_data = [{"id": user.id,"username": user.name} for user in users]
-        return Response(users_data, status=200)
+        return Response(users_data, status=status.HTTP_200_OK)
     except:
-        return Response({"error": "Room introuvable."}, status=404)
+        return Response({"error": "Room introuvable."}, status=status.HTTP_404_NOT_FOUND)
     
 @api_view(['GET'])
 @jwt_auth_required
@@ -65,20 +65,20 @@ def get_users_connected(request):
 
         return Response(filtered_user)
     except:
-        return Response({"error": "Users connected not found."}, status=404)
+        return Response({"error": "Users connected not found."}, status=status.HTTP_404_NOT_FOUND)
 
 @api_view(['POST'])
 @jwt_auth_required
 def save_chat_msg(request):
     data = json.loads(request.body)
     # Message.asave()
-    return Response(status=200)
+    return Response(status=status.HTTP_200_OK)
 
 @api_view(['POST'])
 @jwt_auth_required
 def exit_room(request):
     if not request.user.is_authenticated:
-        return JsonResponse({'success': False, 'message': 'Utilisateur non authentifié'}, status=401)
+        return JsonResponse({'success': False, 'message': 'Utilisateur non authentifié'}, status=status.HTTP_401_UNAUTHORIZED)
     
     try:
         data = json.loads(request.body)
@@ -88,16 +88,16 @@ def exit_room(request):
         room = Room.objects.get(name=room_name)
 
         if user not in room.users.all():
-            return JsonResponse({'success': False, 'message': 'L\'utilisateur n\'est pas dans cette salle'}, status=400)
+            return JsonResponse({'success': False, 'message': 'L\'utilisateur n\'est pas dans cette salle'}, status=status.HTTP_400_BAD_REQUEST)
         
         room.users.remove(user)
 
         return JsonResponse({'success': True, 'message': 'Utilisateur retiré de la salle avec succès'})
 
     except Room.DoesNotExist:
-        return JsonResponse({'success': False, 'message': 'Salle non trouvée'}, status=404)
+        return JsonResponse({'success': False, 'message': 'Salle non trouvée'}, status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
-        return JsonResponse({'success': False, 'message1': str(e)}, status=500)
+        return JsonResponse({'success': False, 'message1': str(e)}, status=status.HTTP_404_NOT_FOUND)
 
 @jwt_auth_required
 def envoyer_invitation(request, user_id):
@@ -106,7 +106,7 @@ def envoyer_invitation(request, user_id):
         send_notification(receveur, f"{request.user.username} vous a envoyé une invitation.")
         return JsonResponse({"success": True})
     except User.DoesNotExist:
-        return JsonResponse({"error": "Utilisateur introuvable"}, status=404)
+        return JsonResponse({"error": "Utilisateur introuvable"}, status=status.HTTP_404_NOT_FOUND)
 
 def send_notification(user, message):
     channel_layer = get_channel_layer()
@@ -135,11 +135,11 @@ def block_user(request):
 
     from_user_id = User.objects.filter(id=from_user).first()
     if not from_user_id:
-        raise AuthenticationFailed("Utilisateur émetteur non trouvé")
+        return Response({'error': 'User not found!'}, status=status.HTTP_404_NOT_FOUND)
 
     to_user_id = User.objects.filter(id=to_user).first()
     if not to_user_id:
-        raise AuthenticationFailed("Utilisateur cible non trouvé")
+        return Response({'error': 'User not found!'}, status=status.HTTP_404_NOT_FOUND)
 
     from_user_id.blocked_user.add(to_user_id)
     from_user_id.save()
@@ -158,12 +158,12 @@ def unlock_user(request):
     user = User.objects.filter(id=from_user).first()
 
     if user is None:
-        raise AuthenticationFailed("User not found")
+        return Response({'error': 'User not found!'}, status=status.HTTP_404_NOT_FOUND)
 
     blocked = User.objects.filter(id=to_user).first()
 
     if blocked is None:
-        raise AuthenticationFailed("User not found")
+        return Response({'error': 'User not found!'}, status=status.HTTP_404_NOT_FOUND)
 
     user.blocked_user.remove(blocked)
     user.save()
@@ -176,8 +176,7 @@ def get_list_blocked(request, id):
     users = User.objects.filter(id=id).first()
 
     if users is None:
-        raise AuthenticationFailed("User not found")
-
+        return Response({'error': 'User not found!'}, status=status.HTTP_404_NOT_FOUND)
     response = Response()
 
     response.data = list(users.blocked_user.values_list('id', flat=True))

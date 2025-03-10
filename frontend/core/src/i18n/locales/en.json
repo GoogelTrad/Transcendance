@@ -124,7 +124,7 @@
 	"RegisterHere": "Register here",
 	"Email": "Email",
 	"PasswordContains": "Password need to contains",
-	"8CharactersLong": "At least 8 characters long",
+	"CharactersLong": "Between 8 and 32 characters",
 	"1Uppercase": "At least 1 uppercase",
 	"1Lowercase": "At least 1 lowercase",
 	"1Number": "At least 1 number",
