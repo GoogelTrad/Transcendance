@@ -55,9 +55,10 @@
 	display: flex;
 	flex-direction: row;
 	align-items: flex-start;
-	position: relative;
+	position: absolute;
 	gap: 2%;
 	justify-content: space-around;
+	flex: 1;
 }
 
 .profile-picture
@@ -144,4 +145,22 @@
 .x-icon
 {
 	zoom: 150%;
+}
+
+.stats-friends {
+	font-family: 'Courier New', Courier, monospace !important;
+}
+
+@media (max-width: 1200px), (max-height: 500px) {
+	.user-general {
+		flex-direction: column;
+		overflow-y: scroll;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+	.col-friends-stats {
+		bottom: 0% !important;
+		min-height: none !important;
+	}
 }

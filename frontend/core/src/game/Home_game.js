@@ -102,6 +102,11 @@ function HomeGame({ setModalStats, setModalCreateTournament, setModalTournament,
     };
 
     const fetchDataTournament = async () => {
+        if (gameCode === "0" || gameCode === "")
+        {
+            showToast("error", t('not a valid input'));
+            return;
+        }
         try {
             const response = await axiosInstance.get(`/api/game/fetch_data_tournament_by_code/${gameCode}/`);
             setTournament(response.data);
@@ -120,7 +125,6 @@ function HomeGame({ setModalStats, setModalCreateTournament, setModalTournament,
         } else if (name === "join") {
             const fonction_return = await fetchDataTournament();
             if (fonction_return === 0) {
-                console.log("code", gameCode);
                 navigate(`/games/tournament/${gameCode}` , { state: { makeTournament: true, authorized:true } });
             }
         }

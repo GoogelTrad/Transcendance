@@ -96,28 +96,32 @@ function Profile({id})
     const [loseGames, setLoseGames] = useState([]);
 
 	useEffect(() => {
+		console.log("PASS");
         const fetchStats = async () => {
             try {
-                const response = await axiosInstance.get(`/api/game/fetch_data_user/${userInfo?.id}/`, {}); 
+                const response = await axiosInstance.get(`/api/game/fetch_data_user/${user?.id}/`, {}); 
                 setGames(response.data);
                 console.log("games :", response.data);
             } catch (error) {
                 showToast("error", t('ToastsError'));
             }
         };
-	}, [userInfo?.id]);
+		if (user?.id) {
+            fetchStats();
+		}
+	}, [user?.id]);
 
 	useEffect(() => {
         if (games.length > 0 && userInfo) {
-            const winGamesFiltered = games.filter(game => game.winner === userInfo?.name);
-            const loseGamesFiltered = games.filter(game => game.loser === userInfo?.name);
+            const winGamesFiltered = games.filter(game => game.winner === user?.name);
+            const loseGamesFiltered = games.filter(game => game.loser === user?.name);
             
             if (winGamesFiltered)
                 setWinGames(winGamesFiltered);
             if (loseGamesFiltered)
                 setLoseGames(loseGamesFiltered);
 		}
-    }, [games, id, userInfo]);
+    }, [games, id, user]);
 
     const handleFileChange = async (e) => {
 		e.preventDefault();
@@ -203,7 +207,7 @@ function Profile({id})
 			{user ? (
 				<div className="general-profile">
 					<div className="user-general">
-						<div className="profile-general">
+						<div className="profile-general d-flex w-100" style={{justifyContent:'flex-start'}}>
 							<label htmlFor="profile_image">
 								<img
 									src={user.profile_image_url ? `${process.env.REACT_APP_API_URL}${user.profile_image_url}` : '/default.png'}
@@ -262,23 +266,23 @@ function Profile({id})
 										<AddFriend id={user.id} />
 									</div>
 								)}
-								<div className="stats-col d-flex flex-row h-50" style={{ bottom:'0%', position: 'absolute', width: '100%', justifyContent:'space-between', alignItems:'center'}}>
+								<div className="col-friends-stats d-flex flex-row h-50" style={{ bottom:'5%', position: 'absolute', width: '100%', justifyContent:'space-between', alignItems:'center'}}>
 									<div className="stats-row-element flex-grow-1 w-100">
 									<div className="text-center">
-										<div className="stats-text">{t('GamesPlayed')}</div>
-										<div className="counter">{games?.length || "0"}</div>
-									</div>
-									</div>
-									<div className="stats-row-element flex-grow-1 w-100">
-									<div className="text-center">
-										<div className="stats-text">{t('Win')}</div>
-										<div className="counter">{winGames?.length || "0"}</div>
+										<div className="stats-friends" style={{ fontWeight:'bold'}}>{t('GamesPlayed')}</div>
+										<div className="stats-friends">{games?.length || "0"}</div>
 									</div>
 									</div>
 									<div className="stats-row-element flex-grow-1 w-100">
 									<div className="text-center">
-										<div className="stats-text">{t('Lose')}</div>
-										<div className="counter">{loseGames?.length || "0"} </div>
+										<div className="stats-friends" style={{ fontWeight:'bold'}}>{t('Win')}</div>
+										<div className="stats-friends">{winGames?.length || "0"}</div>
+									</div>
+									</div>
+									<div className="stats-row-element flex-grow-1 w-100">
+									<div className="text-center">
+										<div className="stats-friends" style={{ fontWeight:'bold'}}>{t('Lose')}</div>
+										<div className="stats-friends">{loseGames?.length || "0"} </div>
 									</div>
 									</div>
 								</div>
