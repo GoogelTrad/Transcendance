@@ -23,7 +23,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-+o(vmv8%jyw+((w5t&oomrbm-#h+8yv^hgh9=6ke*$^6l#8rnt'
+SECRET_KEY = os.getenv('SECRET_KEY_DJANGO')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -94,7 +94,7 @@ CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
-            "hosts": [("redis", 6379)],
+            "hosts": [(os.getenv('HOST_REDIS'), os.getenv('REDIS_PORT'))],
         },
     },
 }
@@ -105,12 +105,12 @@ CHANNEL_LAYERS = {
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',  # Le moteur de base de données que vous utilisez
-        'NAME': 'database',    # Nom de la base de données
-        'USER': 'db_user',                # Nom d'utilisateur de la base de données
-        'PASSWORD': 'db_mdp',         # Mot de passe de la base de données
-        'HOST': 'db',                        # Hôte de la base de données (par défaut : 'localhost')
-        'PORT': '5432',                                 # Port de la base de données (par défaut : '')
+        'ENGINE': os.getenv('DB_ENGINE'),  # Le moteur de base de données que vous utilisez
+        'NAME': os.getenv('POSTGRES_DB'),    # Nom de la base de données
+        'USER': os.getenv('POSTGRES_USER'),                # Nom d'utilisateur de la base de données
+        'PASSWORD': os.getenv('POSTGRES_PASSWORD'),         # Mot de passe de la base de données
+        'HOST': os.getenv('DB_HOST'),                        # Hôte de la base de données (par défaut : 'localhost')
+        'PORT': os.getenv('DB_PORT'),                                 # Port de la base de données (par défaut : '')
     }
 }
 

@@ -24,7 +24,7 @@ def oauth_callback(request):
 def oauth_login(request):
 	if 'code' not in request.GET:
 		params = urlencode({'status': 'ACCESS_DENIED', 'name': None})
-		return HttpResponseRedirect(f"{os.getenv('REACT_APP_URL_REACT')}:3000/auth-success?{params}")
+		return HttpResponseRedirect(f"{os.getenv('REACT_APP_URL_REACT')}/auth-success?{params}")
 
 	code = request.GET['code']
 	payload = {
@@ -47,7 +47,7 @@ def oauth_login(request):
 
 			if  User.objects.filter(email=user_data['email']).exists() and not User.objects.filter(name=user_data['login']).exists():
 				params = urlencode({'status': 'EMAIL_TAKEN', 'name': None})
-				return HttpResponseRedirect(f"{os.getenv('REACT_APP_URL_REACT')}:3000/auth-success?{params}")
+				return HttpResponseRedirect(f"{os.getenv('REACT_APP_URL_REACT')}/auth-success?{params}")
 
 			if User.objects.filter(name=user_data['login']).exists() and not User.objects.filter(email=user_data['email']).exists():
 				number = 1
@@ -74,7 +74,7 @@ def oauth_login(request):
 			if user.enable_verified is True:
 				send_confirmation_email(user)
 				params = urlencode({'status': '2FA_REQUIRED', 'name': user.name})
-				return HttpResponseRedirect(f"{os.getenv('REACT_APP_URL_REACT')}:3000/auth-success?{params}")
+				return HttpResponseRedirect(f"{os.getenv('REACT_APP_URL_REACT')}/auth-success?{params}")
 
 			user.status = 'online'
 			user.save()
@@ -114,7 +114,7 @@ def oauth_login(request):
 			ValidToken.objects.create(user=user, token=jwt_token)
 
 			params = urlencode({'status': 'SUCCESS', 'token': jwt_token})
-			response = HttpResponseRedirect(f"{os.getenv('REACT_APP_URL_REACT')}:3000/auth-success?{params}")
+			response = HttpResponseRedirect(f"{os.getenv('REACT_APP_URL_REACT')}/auth-success?{params}")
 			response.set_cookie(key='token', value=jwt_token, max_age=int(os.getenv('TOKEN_TIME')), httponly=True, secure=True, samesite='None')
 			return response
 
