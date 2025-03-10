@@ -11,7 +11,6 @@ import Template from '../../instance/Template.js';
 import MarioSection from './Mario.js';
 import PacmanSection from './Pacman.js';
 import { showToast } from '../../instance/ToastsInstance.js';
-
 import { useTranslation } from 'react-i18next';
 
 function Tournament() {
@@ -35,6 +34,11 @@ function Tournament() {
             socketRef.current = newSocket;
             newSocket.onmessage = (event) => {
                 const data = JSON.parse(event.data);
+                if (data.full === true){
+                    socketRef.current.close();
+                    socketRef.current = null;
+                    navigate("/home");
+                }
                 if (data.game_id && (data.player1 === userInfo.name || data.player2 === userInfo.name)) {
                     if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
                         socketRef.current.close();
@@ -50,18 +54,13 @@ function Tournament() {
                     socketRef.current = null;
                     navigate("/home");
                 }
+                if (data.type === 'Timer') {
+                    setIsRunning(true);
+                }
            }
-           newSocket.onclose = () => {
-               console.log("Tournament webSocket closed");
-           };
-           newSocket.onopen = () => {
-               console.log("Tournament websocket open")
-               };
-           }
+        }
            return () => {
-            console.log('quit');
             if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
-                console.log('quitSocket');
                 socketRef.current.send(JSON.stringify({ "Abort": "Abort tournament" }));
                 socketRef.current.close();
                 socketRef.current = null;
@@ -101,9 +100,10 @@ function Tournament() {
                 if (count === 0) {
                     clearInterval(interval);
                     setIsRunning(false);
-                    //remettre le status à ready 
-                    if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
-                        socketRef.current.send(JSON.stringify({ "Start": "Start games" }));
+                    if (userInfo.name === tournamentResponse.player1){
+                        if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
+                            socketRef.current.send(JSON.stringify({ "Start": "Start games" }));
+                        }
                     }
                 }
             }, 1000);
@@ -113,8 +113,13 @@ function Tournament() {
     }, [isRunning, socketRef]);
 
     const startTournament = () => {
+
         if (tournamentResponse.players_connected != tournamentResponse.size) {
             showToast("error", t(`need ${tournamentResponse.size} players`));
+            return;
+        }
+        if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
+            socketRef.current.send(JSON.stringify({ "Timer": "Start timer" }));
             return;
         }
         if (!isRunning) {
@@ -215,10 +220,10 @@ function Tournament() {
             <div className="tournament background h-100 w-100">
                 <div className="w-100" style={{ position: "absolute", height: "10%", marginTop: "3%" }}>
                         <div className="tournament-text d-flex flex-row w-100">
-                            <div className="d-flex flex-column h-100 w-25">Tournament Code</div>
-                            <div className="d-flex flex-column h-100 w-25">Time</div>
-                            <div className="d-flex flex-column h-100 w-25">Max Score</div>
-                            <div className="d-flex flex-column h-100 w-25">Players</div>
+                            <div className="d-flex flex-column h-100 w-25">{t('TournamentCode')}</div>
+                            <div className="d-flex flex-column h-100 w-25">{t('MaxScore')}</div>
+                            <div className="d-flex flex-column h-100 w-25">{t('Time')}</div>
+                            <div className="d-flex flex-column h-100 w-25">{t('Players')}</div>
                         </div>
                         <div className="tournament-text d-flex flex-row w-100">
                             <div className="d-flex flex-column h-100 w-25">{tournamentResponse?.code || "X"} </div>

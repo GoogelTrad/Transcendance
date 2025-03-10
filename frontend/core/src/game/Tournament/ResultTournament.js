@@ -7,6 +7,8 @@ import star from '../../assets/star.png';
 
 import { useTranslation } from 'react-i18next';
 import axiosInstance from "../../instance/AxiosInstance";
+import { showToast } from '../../instance/ToastsInstance.js';
+
 
 function ResultTournament({ items, setItems, setModalResult, setModalStats, removeLaunch, launching, tournamentCode }) {
 
@@ -21,7 +23,7 @@ function ResultTournament({ items, setItems, setModalResult, setModalStats, remo
                     const response = await axiosInstance.get(`/api/game/fetch_data_tournament_by_code/${tournamentCode}`);
                     setTournamentResponse(response.data);
                 } catch (error) {
-                    console.log("Error fetching tournament:", error);
+                    showToast("error", t('ToastsError'));
                 }
             };
             if(tournamentCode)

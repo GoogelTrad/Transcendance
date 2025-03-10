@@ -10,11 +10,9 @@ import { jwtDecode } from "jwt-decode";
 import bronze from '../assets/game/bronze.png';
 import silver from '../assets/game/silver.png';
 import gold from '../assets/game/gold.png';
-import backgroundCollect from '../assets/game/background-collect.jpg';
 import { useAuth } from "../users/AuthContext";
 import { useTranslation } from 'react-i18next';
 import { showToast } from "../instance/ToastsInstance";
-
 
 function Stats({ itemsArray = [] }) {
 
@@ -54,19 +52,19 @@ function Stats({ itemsArray = [] }) {
     const medalRules = {
         Played: {
             thresholds: [10, 20, 30],
-            titles: ["10 games played", "20 games played", "30 games played"]
+            titles: [`10 ${t('MedalPlayed')}`, `20 ${t('MedalPlayed')}`, `30 ${t('MedalPlayed')}`]
         },
         Win: {
             thresholds: [5, 10, 15],
-            titles: ["5 games win", "10 games win", "15 games win"]
+            titles: [`5 ${t('MedalWin')}`, `10 ${t('MedalWin')}`, `15 ${t('MedalWin')}`]
         },
         BestScore: {
             thresholds: [5, 10, 15],
-            titles: ["5 games won with maximum score", "10 games won with maximum score", "15 games won with maximum score"]
+            titles: [`5 ${t('MedalWonMax')}`, `10 ${t('MedalWonMax')}`, `15 ${t('MedalWonMax')}`]
         },
         BestTime: {
             thresholds: [5, 10, 15],
-            titles: ["5 games won in less than 2 minutes", "10 games won in less than 2 minutes", "15 games won in less than 2 minutes"]
+            titles: [`5 ${t('MedalTime')}`, `10 ${t('MedalTime')}`, `15 ${t('MedalTime')}`]
         }
     };
 
@@ -96,7 +94,6 @@ function Stats({ itemsArray = [] }) {
 
 
     useEffect(() => {
-        console.log("tournamentGames", tournamentGames);
         if (games.length > 0 && userInfo) {
             const winGamesFiltered = games.filter(game => game.winner === userInfo?.name);
             const loseGamesFiltered = games.filter(game => game.loser === userInfo?.name);
@@ -124,7 +121,6 @@ function Stats({ itemsArray = [] }) {
     const [expandedCells, setExpandedCells] = useState(false);
     
     const handleDivClick = (name) => {
-        console.log("pass", name);
         if(name != "")
         {
                 setMode(prevMode => 
@@ -179,7 +175,6 @@ function Stats({ itemsArray = [] }) {
             try {
                 const response = await axiosInstance.get(`/api/game/fetch_data_user/${userInfo?.id}/`, {}); 
                 setGames(response.data);
-                console.log("games :", response.data);
             } catch (error) {
                 showToast("error", t('ToastsError'));
             }
@@ -188,7 +183,6 @@ function Stats({ itemsArray = [] }) {
             try {
                 const response = await axiosInstance.get(`/api/game/fetch_data_tournament_by_user/${userInfo?.id}/`, {});
                 setTournamentGames(response.data);
-                console.log("TournamentGames :", response.data);
             } catch (error) {
                 showToast("error", t('ToastsError'));
             }
@@ -258,12 +252,12 @@ function Stats({ itemsArray = [] }) {
                                             {data.score_player_1} - {data.score_player_2}
                                         </td>
                                         <td
-                                            title={isSmallScreen ? data.winner === userInfo?.name ? "win" : data.loser === userInfo?.name ? "lose" : "N/A" : ""}
+                                            title={isSmallScreen ? data.winner === userInfo?.name ? t('win') : data.loser === userInfo?.name ? "lose" : "N/A" : ""}
                                             onClick={(e) => { e.stopPropagation(); handleDivClick(""); }} 
                                             className={expandedTab ? 'expanded-cell' : ''}
                                         >
-                                            {data.winner === userInfo?.name ? "win" :
-                                            data.loser === userInfo?.name ? "lose" : "N/A"}
+                                            {data.winner === userInfo?.name ? t('win') :
+                                            data.loser === userInfo?.name ? t('lose') : "N/A"}
                                         </td>
                                     </tr>
                                 ))}
@@ -408,7 +402,7 @@ function Stats({ itemsArray = [] }) {
                         className={`stats-zone ${mode.find(mode => mode.name === 'global')?.active ? 'expanded right' : ''} right d-flex flex-column`}>
                         <div className="dropdown-stats btn-group" onClick={(e) => e.stopPropagation()}>
                             <button type="button" className="btn btn-dropdown-stats">
-                                {selectedOption?.name || "..."}
+                                {t(selectedOption && selectedOption.name ? selectedOption.name.replace(/\s/g, "") : "defaultKey")}
                             </button>
                             <button
                                 type="button"
@@ -433,7 +427,7 @@ function Stats({ itemsArray = [] }) {
                                                 e.target.closest(".dropdown-menu").classList.remove("show");
                                             }}
                                         >
-                                            {option.name}
+                                            {t(option.name.replace(/\s/g, ""))}
                                         </a>
                                     </li>
                                 ))}
@@ -484,10 +478,10 @@ function Stats({ itemsArray = [] }) {
                                                              onClick={(e) => { e.stopPropagation(); handleDivClick(""); }} 
                                                              className={expandedTab ? 'expanded-cell' : ''}
                                                         >{(() => {
-                                                            if (game.first === userInfo?.name) return "1st";
-                                                            if (game.second === userInfo?.name) return "2nd";
-                                                            if (game.third === userInfo?.name) return "3rd";
-                                                            if (game.fourth === userInfo?.name) return "4th";
+                                                            if (game.first === userInfo?.name) return t('1st');
+                                                            if (game.second === userInfo?.name) return t('2nd');
+                                                            if (game.third === userInfo?.name) return t('3rd');
+                                                            if (game.fourth === userInfo?.name) return t('4th');
                                                             return "N/A";
                                                         })() || "N/A"}</td>
                                                         <td

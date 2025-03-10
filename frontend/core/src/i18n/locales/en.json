@@ -7,13 +7,16 @@
 	"Friends": "Friends",
 	"NoFriend": "No friend found",
 	"OtherUsers": "Other users",
-	"Profile": "Profile",
+	"Profil": "Profil",
 	"Pong": "invites you to play a game of pong",
 	"PongInvitation": "Send an invitation to play",
 	"Notifications": "Notifications",
 	"Response": "Response",
 	"Accept": "Accept",
 	"Decline": "Decline",
+
+	"Image": "IMAGE",
+	"Source": "SOURCE",
 
 
 	"Private": "Room is private",
@@ -48,19 +51,22 @@
 	"Player2": "Player 2",
 	"Score2": "Score2",
 	"Loser": "Loser",
-	
+	"TournamentPong": "Tournament pong",
+	"ExplainTournament": "The {{size}} players compete 2 against 2. The first to reach {{maxScore}} points or the one who has the most points at the end of the defined time ({{maxTimeMinutes}}:{{maxTimeSeconds}}) qualifies for the next phase. In the case of 2 players, the two players compete until the final. The player with the best score at the end of the tournament wins. The ranking is therefore based on the score.",	
+	"Touch": "Touch",
 
 	"PLAY": "PLAY",
 	"TOURNAMENT": "TOURNAMENT",
 	"STATS": "STATS",
 	"Play": "Play",
-	"1Player": "1 player",
+	"1Player": "1 player vs IA",
 	"2PlayersLocal": "2 players - Local",
 	"2PlayersOnline": "2 players - Online",
 	"TournamentSection": "Tournament Section",
-	"JoinGame": "Join a game",
+	"JoinTournament": "Join a tournament",
 	"Code": "Code",
 	"CreateGame": "Create game",
+	"CreateTournament": "Create tournament",
 	"NumberPlayers": "Number of players",
 	"2Players": "2 players",
 	"4Players": "4 players",
@@ -68,7 +74,7 @@
 	"Stats": "Stats",
 	"GlobalStats": "Global Stats",
 	"StatsGame": "Stats game",
-	"AllGames": "All games",
+	"Allgames": "All games",
 	"Win": "Win",
 	"Lose": "Lose",
 	"Collection": "Collection",
@@ -103,11 +109,21 @@
 	"Winner": "Winner",
 	"Seconds": "seconds",
 	"Minutes": "minutes",
+	"MaxScore": "Max Score",
+	"TournamentCode": "Tournament Code",
 
+	"MedalPlayed": " games played",
+	"MedalWin": " games win",
+	"MedalWonMax": " games won with maximum score",
+	"MedalTime": " games won in less than 2 minutes",
+	
 
 	"Terminal": "Terminal",
 	"Game": "Game",
 	"Chat": "Chat",
+	"FriendProfile": "Friend profile",
+	"Social": "Social",
+	"Forms": "Forms",
 	"CHAT": "CHAT",
 	"GAMECONTROLLER": "GAME CONTROLLER",
 	"Menu": "Menu",
@@ -196,6 +212,7 @@
 		"InvalidRoomName": "The room name may not contain any characters other than alphanumeric characters",
 		"AlreadyRoom": "Already in this room!",
 		"AlreadyConnected": "User already connected!"
+	
 	},
 
 	"ToastsError": "An error has occurred."

@@ -110,7 +110,6 @@ class TournamentView:
     def create_tournament(request):
         token = request.COOKIES.get('token')
         payload = jwt.decode(jwt=token, key=os.getenv('JWT_KEY'), algorithms=['HS256'])
-        user = get_object_or_404(User, name=payload.get('name'))
         data = request.data.copy()
         verif_tournament = Tournament.objects.count()
         print(verif_tournament, flush=True)
@@ -131,10 +130,6 @@ class TournamentView:
 
         if serializer.is_valid():
             tournament_instance = serializer.save()
-
-            user.tournament.add(tournament_instance)
-            user.save()
-
             return Response({"id": tournament_instance.id, **serializer.data}, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

@@ -71,11 +71,9 @@ function GameInstance({ children }) {
             socketRef.current = new WebSocket(`${process.env.REACT_APP_SOCKET_IP}ws/game/${id}`);
         }
         socketRef.current.onopen = () => {
-            console.log("WebSocket connection established.");
         };
 
         socketRef.current.onclose = () => {
-            console.log("WebSocket connection closed.");
         };
 
         socketRef.current.onerror = (error) => {
@@ -143,7 +141,6 @@ function GameInstance({ children }) {
                 elo_Player2: gameData.elo_Player2,
                 status: gameData.status,
             });
-            console.log("gamedata :", response.data)
             setGame(response.data);
             if (gameData.isInTournament === true)
                 {
@@ -153,34 +150,6 @@ function GameInstance({ children }) {
             showToast("error", t('ToastsError'));
         }
     };
-
-    const fetchData = async () => {
-        try {
-            const response = await axiosInstance.get(`/api/game/fetch_data/${id}/`);
-            if (response.data.status == "aborted" || response.data.status == "finished"){
-                setGameData(response.data);
-                setIsGameOngoing(false);
-            }
-        } catch (error) {
-            showToast("error", t('ToastsError'));
-            navigate('/home');
-        }
-    }
-
-	useEffect(() => {
-		if (gameStart === false) {
-			const fetchData = async () => {
-				try {
-					const response = await axiosInstance.get(`/api/game/fetch_data/${id}/`);
-					console.log(response.data)
-					setGame(response.data);
-					setWaitInput(true);
-				} catch (error) {
-					showToast("error", t('ToastsError'));
-				}
-			}
-		}
-	}, []);
 
     useEffect(() => {
         if (canvasRef.current && showModal) {
@@ -250,6 +219,11 @@ function GameInstance({ children }) {
             const fetchData = async () => {
                 try {
                     const response = await axiosInstance.get(`/api/game/fetch_data/${id}/`);
+                    if (response.data.status == "aborted" || response.data.status == "finished"){
+                        setGameData(response.data);
+                        setIsGameOngoing(false);
+                        navigate('/home');
+                    }
                     setGame(response.data);
                     setWaitInput(true);
                 } catch (error) {
@@ -257,7 +231,6 @@ function GameInstance({ children }) {
                 }
             };
             if (!game) fetchData();
-
             if (game && game.player1 === userInfo.name) {
                 const sendGameInstance = () => {
                     if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
