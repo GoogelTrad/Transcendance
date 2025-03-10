@@ -6,8 +6,6 @@ from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
 
 class Room(models.Model):
-    """Modele representant une salle de chat"""
-
     name_validator = RegexValidator(regex=r'^[0-9a-zA-Z]+$')
 
     creation = models.DateTimeField(auto_now_add=True)
@@ -24,7 +22,6 @@ class Room(models.Model):
         return f"Room privée créée par {self.createur.name} - {self.creation}"
 
 class Message(models.Model):
-    """Modèle représentant un message de chat."""
     room = models.ForeignKey(Room, on_delete=models.DO_NOTHING, related_name='messages')
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='messages', default="0")
     content = models.TextField(max_length=300)

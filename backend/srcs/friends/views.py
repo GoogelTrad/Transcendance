@@ -13,7 +13,7 @@ from users.serializer import UserSerializer
 def send_friend_request(request, user_id):
 	
 	if not request.user.is_authenticated:
-		raise AuthenticationFailed('LoginRequiredForFriendRequest')
+		return Response({"error": 'LoginRequiredForFriendRequest'}, status=status.HTTP_400_BAD_REQUEST)
 
 	try:
 		to_user = User.objects.get(id=user_id)
@@ -80,7 +80,7 @@ def friends_list(request, user_id):
     try:
         user = User.objects.prefetch_related('friends').get(id=user_id)
     except User.DoesNotExist:
-        return Response({'error': 'UserNotFound'}, status=404)
+        return Response({'error': 'UserNotFound'}, status=status.HTTP_404_NOT_FOUND)
 
     serializer = UserSerializer(user)
     user_data = serializer.data

@@ -23,10 +23,10 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-+o(vmv8%jyw+((w5t&oomrbm-#h+8yv^hgh9=6ke*$^6l#8rnt'
+SECRET_KEY = os.getenv('SECRET_KEY_DJANGO')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DEBUG_DJANGO')
 
 ALLOWED_HOSTS = [
     "*"
@@ -65,10 +65,6 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-# CORS_ALLOWED_ORIGINS = [
-#     "http://localhost:3000",
-# ]
-
 ROOT_URLCONF = 'core.urls'
 
 TEMPLATES = [
@@ -94,7 +90,7 @@ CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
-            "hosts": [("redis", 6379)],
+            "hosts": [(os.getenv('HOST_REDIS'), os.getenv('REDIS_PORT'))],
         },
     },
 }
@@ -105,12 +101,12 @@ CHANNEL_LAYERS = {
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',  # Le moteur de base de données que vous utilisez
-        'NAME': 'database',    # Nom de la base de données
-        'USER': 'db_user',                # Nom d'utilisateur de la base de données
-        'PASSWORD': 'db_mdp',         # Mot de passe de la base de données
-        'HOST': 'db',                        # Hôte de la base de données (par défaut : 'localhost')
-        'PORT': '5432',                                 # Port de la base de données (par défaut : '')
+        'ENGINE': os.getenv('DB_ENGINE'),  # Le moteur de base de données que vous utilisez
+        'NAME': os.getenv('POSTGRES_DB'),    # Nom de la base de données
+        'USER': os.getenv('POSTGRES_USER'),                # Nom d'utilisateur de la base de données
+        'PASSWORD': os.getenv('POSTGRES_PASSWORD'),         # Mot de passe de la base de données
+        'HOST': os.getenv('DB_HOST'),                        # Hôte de la base de données (par défaut : 'localhost')
+        'PORT': os.getenv('DB_PORT'),                                 # Port de la base de données (par défaut : '')
     }
 }
 
@@ -137,11 +133,8 @@ AUTH_PASSWORD_VALIDATORS = [
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
 
 LANGUAGE_CODE = 'en-us'
-
 TIME_ZONE = 'UTC'
-
 USE_I18N = True
-
 USE_TZ = True
 
 
@@ -173,15 +166,9 @@ CORS_EXPOSE_HEADERS = [
     "Authorization",
 ]
 
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'cmicheztdc@gmail.com'
-EMAIL_HOST_PASSWORD = 'fqrj jmoh xlak ovrs'
-USE_TZ = True
-
-
-# USE_X_FORWARDED_HOST = True
-# SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-# Pour NGINX et le 2FA
+EMAIL_BACKEND = os.getenv('EMAIL_BACKEND')
+EMAIL_HOST = os.getenv('EMAIL_HOST')
+EMAIL_PORT = os.getenv('EMAIL_PORT')
+EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS')
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')

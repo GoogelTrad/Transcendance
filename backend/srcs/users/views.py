@@ -201,7 +201,6 @@ def verify_code(request):
     if confirmation and confirmation.code == code:
         user.is_verified = True
         user.status = 'online'
-        user.last_verified = now()
         user.save()
         
         profile_image_url = user.profile_image.url if user.profile_image else None
@@ -251,10 +250,9 @@ def refresh_token(user, old_token):
 def permission_verif(request, id):
     user = User.objects.filter(id=id).first()
     if not user:
-        return Response({'error': 'User not found!'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'error': 'User not found!'}, status=status.HTTP_404_NOT_FOUND)
     
     user.enable_verified = not user.enable_verified
-    user.last_verified = None
     user.save()
 
     result = True if user.enable_verified else False
@@ -268,7 +266,7 @@ def permission_verif(request, id):
 @jwt_auth_required
 def fetch_user_data(request):
     user = request.user
-    
+
     profile_image_url = user.profile_image.url if user.profile_image else None
     if user.is_authenticated:
         payload = { 
@@ -287,7 +285,7 @@ def fetch_user_data(request):
 def check_auth(request):
     token = request.COOKIES.get('token')
     if not token:
-        return Response({'isAuthenticated': False})
+        return Response({'isAuthenticated': False}, {'error': 'Not connected'}, status=status.HTTP_401_UNAUTHORIZED)
 
     try:
         payload = jwt.decode(token, os.getenv('JWT_KEY'), algorithms=['HS256'])
