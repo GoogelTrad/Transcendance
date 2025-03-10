@@ -91,6 +91,33 @@ function Profile({id})
 			showToast("error", t('ToastsError'));
 		}
 	}
+	const [games, setGames] = useState([]);
+	const [winGames, setWinGames] = useState([]);
+    const [loseGames, setLoseGames] = useState([]);
+
+	useEffect(() => {
+        const fetchStats = async () => {
+            try {
+                const response = await axiosInstance.get(`/api/game/fetch_data_user/${userInfo?.id}/`, {}); 
+                setGames(response.data);
+                console.log("games :", response.data);
+            } catch (error) {
+                showToast("error", t('ToastsError'));
+            }
+        };
+	}, [userInfo?.id]);
+
+	useEffect(() => {
+        if (games.length > 0 && userInfo) {
+            const winGamesFiltered = games.filter(game => game.winner === userInfo?.name);
+            const loseGamesFiltered = games.filter(game => game.loser === userInfo?.name);
+            
+            if (winGamesFiltered)
+                setWinGames(winGamesFiltered);
+            if (loseGamesFiltered)
+                setLoseGames(loseGamesFiltered);
+		}
+    }, [games, id, userInfo]);
 
     const handleFileChange = async (e) => {
 		e.preventDefault();
@@ -235,6 +262,26 @@ function Profile({id})
 										<AddFriend id={user.id} />
 									</div>
 								)}
+								<div className="stats-col d-flex flex-row h-50" style={{ bottom:'0%', position: 'absolute', width: '100%', justifyContent:'space-between', alignItems:'center'}}>
+									<div className="stats-row-element flex-grow-1 w-100">
+									<div className="text-center">
+										<div className="stats-text">{t('GamesPlayed')}</div>
+										<div className="counter">{games?.length || "0"}</div>
+									</div>
+									</div>
+									<div className="stats-row-element flex-grow-1 w-100">
+									<div className="text-center">
+										<div className="stats-text">{t('Win')}</div>
+										<div className="counter">{winGames?.length || "0"}</div>
+									</div>
+									</div>
+									<div className="stats-row-element flex-grow-1 w-100">
+									<div className="text-center">
+										<div className="stats-text">{t('Lose')}</div>
+										<div className="counter">{loseGames?.length || "0"} </div>
+									</div>
+									</div>
+								</div>
 							</>
 						)
 						}
