@@ -14,7 +14,6 @@ import FriendRequests from './friends/Friends';
 import Profile from './users/Profile';
 import { useAuth } from './users/AuthContext';
 
-import { jwtDecode } from "jwt-decode";
 import P from './assets/P.png';
 import S from './assets/S.png';
 import C from './assets/C.png';
@@ -54,19 +53,16 @@ function Home() {
     ]
 
     const [modalZIndexes, setModalZIndexes] = useState({});
-    const [modalPositions, setModalPositions] = useState({});
 
     const modalTerminalRef = useRef(null);
     const modalFormsRef = useRef(null);
     const modalGameRef = useRef(null);
     const modalStatsRef = useRef(null);
-    const modalTournamentRef = useRef(null);
     const modalCreateTournament = useRef(null);
     const modalFriendProfileRef = useRef(null);
     const modalResultRef = useRef(null);
     const modalSocial = useRef(null);
     const modalProfile = useRef(null);
-    const modalCode = useRef(null);
 
     const [items, setItems] = useState([
         { name: 'profile', active: false },
@@ -274,7 +270,7 @@ function Home() {
                         style={{height: '80%'}}
                         onClick={() => launching({ newLaunch: "terminal", setModal: setIsModalTerminal })}
                     />
-                    <div style={{ position: 'absolute', alignItems:'end', textAlign: 'center', justifyContent:'center', textAlign: 'center'}}>{t('TERMINAL')}</div>
+                    <div style={{ position: 'absolute', alignItems:'end', justifyContent:'center', textAlign: 'center'}}>{t('TERMINAL')}</div>
                 </div>
             )}
             {isAuthenticated && (

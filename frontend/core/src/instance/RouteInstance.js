@@ -1,6 +1,6 @@
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../users/AuthContext';
-import React, {useEffect, useState} from "react";
+import { useEffect } from "react";
 
 
 function ProtectedRoute({ children }) {

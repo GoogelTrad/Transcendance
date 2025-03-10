@@ -3,10 +3,8 @@ import './Stats.css';
 import '../Home';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min';
-import Button from 'react-bootstrap/Button';
-import { BrowserRouter as Router, Route, Routes, Link, useNavigate, useParams} from 'react-router-dom';
-import React, { useEffect, useState, useRef} from "react";
-import { jwtDecode } from "jwt-decode";
+import { useNavigate, useParams} from 'react-router-dom';
+import React, { useEffect, useState } from "react";
 import bronze from '../assets/game/bronze.png';
 import silver from '../assets/game/silver.png';
 import gold from '../assets/game/gold.png';
@@ -117,11 +115,10 @@ function Stats({ itemsArray = [] }) {
             setupMedals(BestTimeFiltered, "BestTime", 5, 10, 15);
         }
     }, [games, id, userInfo]);
-
-    const [expandedCells, setExpandedCells] = useState(false);
     
     const handleDivClick = (name) => {
-        if(name != "")
+        console.log("pass", name);
+        if(name !== "")
         {
                 setMode(prevMode => 
                 prevMode.map(mode => ({

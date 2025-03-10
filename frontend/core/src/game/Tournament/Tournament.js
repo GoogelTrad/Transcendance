@@ -72,7 +72,7 @@ function Tournament() {
     const fetchTournement = async () => {
         try {
             const response = await axiosInstance.get(`/api/game/fetch_data_tournament_by_code/${tournamentCode}`);
-            if (response.data.status == "aborted" || response.data.status == "finished"){
+            if (response.data.status === "aborted" || response.data.status === "finished"){
                 if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
                     socketRef.current.close();
                     socketRef.current = null;
@@ -113,8 +113,7 @@ function Tournament() {
     }, [isRunning, socketRef]);
 
     const startTournament = () => {
-
-        if (tournamentResponse.players_connected != tournamentResponse.size) {
+        if (tournamentResponse.players_connected !== tournamentResponse.size) {
             showToast("error", t(`need ${tournamentResponse.size} players`));
             return;
         }
