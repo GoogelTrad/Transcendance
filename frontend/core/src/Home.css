@@ -95,3 +95,7 @@
 .custom-modal.hide, .custom-modal-forms.hide {
     display: none;
 }
+
+.custom-modal.friendProfile {
+    height: clamp(30%, 25%, 30%) !important;
+}

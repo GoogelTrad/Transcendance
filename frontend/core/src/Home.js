@@ -473,7 +473,7 @@ function Home() {
             }
             {isAuthenticated && isLaunched(isLaunch, "profile") && 
                 <ModalInstance
-                    height="13%"
+                    height= "clamp(5%, 13%, 15%)"
                     width="40%"
                     isModal={isModalProfile}
                     modalRef={modalProfile}
@@ -482,13 +482,14 @@ function Home() {
                     onBringToFront={() => bringToFront("profile")}
                     onLaunchUpdate={() => removeLaunch("profile")}
                     onClose={() => setIsModalProfile(false)}
+                    className="Profile"
                 >
                     <Profile id={userInfo.id}/>
                 </ModalInstance>
             }
             {isAuthenticated && isLaunched(isLaunch, "friend") && 
                 <ModalInstance
-                    height="13%"
+                    height= "clamp(8%, 15%, 20%)"
                     width="40%"
                     isModal={isModalFriendProfile}
                     modalRef={modalFriendProfileRef}
@@ -497,6 +498,7 @@ function Home() {
                     onBringToFront={() => bringToFront("friend")}
                     onLaunchUpdate={() => removeLaunch("friend")}
                     onClose={() => setIsModalFriendProfile(false)}
+                    className="friendProfile"
                 >
                     <Profile id={isFriends.id}/>
                 </ModalInstance>

@@ -3,7 +3,7 @@ import './ModalInstance.css';
 import DragableInstance from './DragableInstance'
 
 function ModalInstance(props) {
-    const { children, isModal, modalRef, name, onBringToFront = () => {}, onClose, onLaunchUpdate = () => {}, height, width, zIndex = 1 } = props;
+    const { children, isModal, modalRef, name, onBringToFront = () => {}, onClose, onLaunchUpdate = () => {}, height, width, zIndex = 1, className } = props;
 
     const pourcent_height = parseInt(height, 10) / 100;
     const pourcent_widht = parseInt(width, 10) / 100;
@@ -18,7 +18,7 @@ function ModalInstance(props) {
 
     return (
         <div
-            className={`custom-modal ${isModal ? "show" : "hide"}`}
+            className={`custom-modal ${isModal ? "show" : "hide"} ${className}`}
             ref={modalRef}
             style={{
                 position: "absolute",
