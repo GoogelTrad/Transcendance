@@ -543,43 +543,60 @@ class GameState:
         if self.pong_data["pos_x"] <= 0:
             self.score["score_P2"] += 1
             self.reset_ball(direction=1)
+            return
 
         elif self.pong_data["pos_x"] >= self.paddle_data["width_canvas"]:
             self.score["score_P1"] += 1
             self.reset_ball(direction=-1)
-
+            return
+        
         if self.pong_data["pos_y"] <= 0 or self.pong_data["pos_y"] >= self.paddle_data["height_canvas"]:
             self.pong_data["velocity_y"] *= -1
 
-        if (
-            self.pong_data["pos_x"] <= self.paddle_data["paddleLeftX"] + self.paddle_data["width"]
-            and self.pong_data["pos_x"] >= self.paddle_data["paddleLeftX"]
-            and self.paddle_data["paddleLeftY"] <= self.pong_data["pos_y"] <= self.paddle_data["paddleLeftY"] + self.paddle_data["height"]
-        ):
-            self.pong_data["velocity_x"] *= -1
-            if self.pong_data["velocity_x"] >= -16 and self.pong_data["velocity_x"] <= 16:
-                self.pong_data["velocity_x"] *= 1.25
-            self.pong_data["pos_x"] = self.paddle_data["paddleLeftX"] + self.paddle_data["width"] + 0.1
+        ball_left = self.pong_data["pos_x"] - self.pong_data["width"] / 2
+        ball_right = self.pong_data["pos_x"] + self.pong_data["width"] / 2
+        ball_top = self.pong_data["pos_y"] - self.pong_data["width"] / 2
+        ball_bottom = self.pong_data["pos_y"] + self.pong_data["width"] / 2
 
-        if (
-            self.pong_data["pos_x"] >= self.paddle_data["paddleRightX"] 
-            and self.pong_data["pos_x"] <= self.paddle_data["paddleRightX"] + self.paddle_data["width"]
-            and self.paddle_data["paddleRightY"] <= self.pong_data["pos_y"] <= self.paddle_data["paddleRightY"] + self.paddle_data["height"]
-        ):
-            self.pong_data["velocity_x"] *= -1
-            if self.pong_data["velocity_x"] >= -16 and self.pong_data["velocity_x"] <= 16:
-                self.pong_data["velocity_x"] *= 1.25
-            self.pong_data["pos_x"] = self.paddle_data["paddleRightX"] - self.paddle_data["width"] - 0.1
+        if (ball_right > self.paddle_data["paddleLeftX"] and 
+            ball_left < self.paddle_data["paddleLeftX"] + self.paddle_data["width"] and 
+            ball_bottom > self.paddle_data["paddleLeftY"] and 
+            ball_top < self.paddle_data["paddleLeftY"] + self.paddle_data["height"]):
 
-        if self.paddle_data["paddleLeftY"] < 0:
-            self.paddle_data["paddleLeftY"] = 0
-        if self.paddle_data["paddleLeftY"] + self.paddle_data["height"] > self.paddle_data["height_canvas"]:
-            self.paddle_data["paddleLeftY"] = self.paddle_data["height_canvas"] - self.paddle_data["height"]
-        
-        if self.paddle_data["paddleRightY"] < 0:
-            self.paddle_data["paddleRightY"] = 0
-        if self.paddle_data["paddleRightY"] + self.paddle_data["height"] > self.paddle_data["height_canvas"]:
-            self.paddle_data["paddleRightY"] = self.paddle_data["height_canvas"] - self.paddle_data["height"]
+            if (
+                self.pong_data["pos_x"] <= self.paddle_data["paddleLeftX"] + self.paddle_data["width"]
+                and self.pong_data["pos_x"] >= self.paddle_data["paddleLeftX"]
+                and self.paddle_data["paddleLeftY"] <= self.pong_data["pos_y"] <= self.paddle_data["paddleLeftY"] + self.paddle_data["height"]
+            ):
+                self.pong_data["velocity_x"] *= -1
+                if self.pong_data["velocity_x"] >= -16 and self.pong_data["velocity_x"] <= 16:
+                    self.pong_data["velocity_x"] *= 1.25
+                self.pong_data["pos_x"] = self.paddle_data["paddleLeftX"] + self.paddle_data["width"] + 0.1
+
+        if (ball_left < self.paddle_data["paddleRightX"] + self.paddle_data["width"] and 
+        ball_right > self.paddle_data["paddleRightX"] and 
+        ball_bottom > self.paddle_data["paddleRightY"] and 
+        ball_top < self.paddle_data["paddleRightY"] + self.paddle_data["height"]):
+            
+            if (
+                self.pong_data["pos_x"] >= self.paddle_data["paddleRightX"] 
+                and self.pong_data["pos_x"] <= self.paddle_data["paddleRightX"] + self.paddle_data["width"]
+                and self.paddle_data["paddleRightY"] <= self.pong_data["pos_y"] <= self.paddle_data["paddleRightY"] + self.paddle_data["height"]
+            ):
+                self.pong_data["velocity_x"] *= -1
+                if self.pong_data["velocity_x"] >= -16 and self.pong_data["velocity_x"] <= 16:
+                    self.pong_data["velocity_x"] *= 1.25
+                self.pong_data["pos_x"] = self.paddle_data["paddleRightX"] - self.paddle_data["width"] - 0.1
+
+            if self.paddle_data["paddleLeftY"] < 0:
+                self.paddle_data["paddleLeftY"] = 0
+            if self.paddle_data["paddleLeftY"] + self.paddle_data["height"] > self.paddle_data["height_canvas"]:
+                self.paddle_data["paddleLeftY"] = self.paddle_data["height_canvas"] - self.paddle_data["height"]
+            
+            if self.paddle_data["paddleRightY"] < 0:
+                self.paddle_data["paddleRightY"] = 0
+            if self.paddle_data["paddleRightY"] + self.paddle_data["height"] > self.paddle_data["height_canvas"]:
+                self.paddle_data["paddleRightY"] = self.paddle_data["height_canvas"] - self.paddle_data["height"]
         
     def reset_ball(self, direction=1):
         self.pong_data["pos_x"] = self.paddle_data["width_canvas"] / 2
@@ -834,27 +851,29 @@ class gameConsumer(AsyncWebsocketConsumer):
 
     def IA_in_game(self, game_state):
         paddle_speed = 15
-        random_speed = random.randint(100, 100)
-        random_paddle_speed = paddle_speed * random_speed / 100
         current_time = time.time()
         time_diff = current_time - game_state.IA_last_timer
         game_state.IA_timer += time_diff
         game_state.IA_last_timer = current_time
         if game_state.IA_timer >= 1:
-            game_state.IA_pos_y = game_state.pong_data["pos_y"]
+            time_to_hit = (game_state.paddle_data["paddleRightX"] - game_state.pong_data["pos_x"]) / game_state.pong_data["velocity_x"]
+            game_state.IA_pos_y = game_state.pong_data["pos_y"] + game_state.pong_data["velocity_y"] * time_to_hit
             game_state.IA_timer = 0
-        if game_state.IA_pos_y < game_state.paddle_data["paddleRightY"] + game_state.paddle_data["height"] / 2:
+        if game_state.IA_pos_y < (game_state.paddle_data["paddleRightY"] + game_state.paddle_data["height"] / 2) - 10:
             game_state.IA_up = True
             game_state.IA_down = False
-        elif game_state.IA_pos_y  > game_state.paddle_data["paddleRightY"] + game_state.paddle_data["height"] / 2:
+        elif game_state.IA_pos_y  > (game_state.paddle_data["paddleRightY"] + game_state.paddle_data["height"] / 2 ) + 10:
             game_state.IA_up = False
             game_state.IA_down = True
+        else :
+            game_state.IA_up = False
+            game_state.IA_down = False
         if game_state.IA_up == True:
             game_state.paddle_data["paddleRightY"] = max(
-                0, game_state.paddle_data["paddleRightY"] - random_paddle_speed
+                0, game_state.paddle_data["paddleRightY"] - paddle_speed
             )
         if game_state.IA_down == True:
             game_state.paddle_data["paddleRightY"] = min(
                 game_state.paddle_data["height_canvas"] - game_state.paddle_data["height"],
-                game_state.paddle_data["paddleRightY"] + random_paddle_speed,
+                game_state.paddle_data["paddleRightY"] + paddle_speed,
             )
