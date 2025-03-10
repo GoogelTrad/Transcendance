@@ -25,7 +25,6 @@ services:
       - PORT=3000
     volumes:
       - ./certs:/home/certs
-      - project:/home/
     depends_on:
       - db
       - django
