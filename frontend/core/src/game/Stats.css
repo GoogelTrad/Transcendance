@@ -60,7 +60,6 @@ body, html {
     position: relative;
 }
 
-/* Ajout d'une règle pour les cellules vides */
 .stats-zone-table tbody:empty {
     min-height: 100px;
     display: block;

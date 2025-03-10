@@ -127,10 +127,10 @@ const PacmanSection = ({ tournamentResponse, renderImageWithClick }) => {
                                 width: '94%',
                                 margin: '10px 3%',
                                 fontSize: 'clamp(0.6rem, 1.5vw, 0.9rem)',
-                                lineHeight: '1.4'  // Augmenté pour plus de lisibilité
+                                lineHeight: '1.4' 
                             }}
                         >
-                            <p>  {/* Wrapping du texte dans un paragraphe */}
+                            <p>
                                 The {tournamentResponse.size} players compete 2 against 2. The first to reach {tournamentResponse.maxScore} points or the one who has the most points at the end of the defined time ({tournamentResponse.maxTimeMinutes} : {tournamentResponse.maxTimeSecondes}) qualifies for the next phase. Dans le cas de 2 joueurs, les deux joueurs s'affrontent jusqu'à la finale. Le joueur qui a le meilleur score à la fin du tournoi le remporte. Le classement se fait donc en fonction du score.
                             </p>
                         </div>
@@ -146,7 +146,7 @@ const PacmanSection = ({ tournamentResponse, renderImageWithClick }) => {
                                     <div className="touch-style d-flex flex-column" style={{
                                         transform: `scale(${window.innerHeight <= 700 ? '0.6' : '1'})`,
                                         margin: 'auto',
-                                        gap: '5px'  // Espacement entre les touches
+                                        gap: '5px' 
                                     }}>
                                         <div className="touch-line" style={{ marginBottom: '5px' }}>
                                             <div className="touch-square center">↑</div>

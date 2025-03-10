@@ -7,13 +7,11 @@ import './Home.css';
 import Template from './instance/Template';  
 import ModalInstance from './instance/ModalInstance';
 import Stats from './game/Stats';
-import Tournament from './game/Tournament/Tournament';
 import ResultTournament from './game/Tournament/ResultTournament';
 import CreateTournament from './game/Tournament/CreateTournament';
 import './game/Tournament/Tournament.css';
 import FriendRequests from './friends/Friends';
 import Profile from './users/Profile';
-import HomeChat from './chat/Homechat';
 import { useAuth } from './users/AuthContext';
 
 import { jwtDecode } from "jwt-decode";
@@ -23,8 +21,6 @@ import C from './assets/C.png';
 import T from './assets/T.png';
 
 import { useTranslation } from 'react-i18next';
-import DragableInstance from './instance/DragableInstance';
-import { showToast } from './instance/ToastsInstance';
 
 function Home() {
 
@@ -473,7 +469,7 @@ function Home() {
             }
             {isAuthenticated && isLaunched(isLaunch, "profile") && 
                 <ModalInstance
-                    height="13%"
+                    height= "clamp(5%, 13%, 15%)"
                     width="40%"
                     isModal={isModalProfile}
                     modalRef={modalProfile}
@@ -482,13 +478,14 @@ function Home() {
                     onBringToFront={() => bringToFront("profile")}
                     onLaunchUpdate={() => removeLaunch("profile")}
                     onClose={() => setIsModalProfile(false)}
+                    className="Profile"
                 >
                     <Profile id={userInfo.id}/>
                 </ModalInstance>
             }
             {isAuthenticated && isLaunched(isLaunch, "friend") && 
                 <ModalInstance
-                    height="13%"
+                    height= "clamp(8%, 15%, 20%)"
                     width="40%"
                     isModal={isModalFriendProfile}
                     modalRef={modalFriendProfileRef}
@@ -497,6 +494,7 @@ function Home() {
                     onBringToFront={() => bringToFront("friend")}
                     onLaunchUpdate={() => removeLaunch("friend")}
                     onClose={() => setIsModalFriendProfile(false)}
+                    className="friendProfile"
                 >
                     <Profile id={isFriends.id}/>
                 </ModalInstance>

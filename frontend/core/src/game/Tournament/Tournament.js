@@ -1,8 +1,7 @@
 import './Tournament.css';
 import React, { useEffect, useState, useRef  } from "react";
 import axiosInstance from '../../instance/AxiosInstance.js';
-import { BrowserRouter as Router, Route, Routes, Link, useNavigate, useParams } from 'react-router-dom';
-import { jwtDecode } from "jwt-decode";
+import { BrowserRouter as useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../users/AuthContext.js';
 import { useLocation } from 'react-router-dom';
 import person from '../../assets/game/person.svg';
@@ -87,11 +86,49 @@ function Tournament() {
         }
     };
 
-    const startTournament = () => {
-        if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
-            socketRef.current.send(JSON.stringify({ "Start": "Start games" }));
+    const [seconds, setSeconds] = useState(3);
+    const [isRunning, setIsRunning] = useState(false);
+
+    useEffect(() => {
+        let count = 3;
+        let interval = null;
+
+        if (isRunning) {
+            interval = setInterval(() => {
+                count--;
+                setSeconds(count);
+
+                if (count === 0) {
+                    clearInterval(interval);
+                    setIsRunning(false);
+                    //remettre le status à ready 
+                    if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
+                        socketRef.current.send(JSON.stringify({ "Start": "Start games" }));
+                    }
+                }
+            }, 1000);
         }
-    }
+
+        return () => clearInterval(interval);
+    }, [isRunning, socketRef]);
+
+    const startTournament = () => {
+        if (tournamentResponse.players_connected != tournamentResponse.size) {
+            showToast("error", t(`need ${tournamentResponse.size} players`));
+            return;
+        }
+        if (!isRunning) {
+            setSeconds(3);
+            setIsRunning(true);
+            //mettre le status à timer
+        }
+    };
+
+    // const startTournament = () => {
+    //     if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
+    //         socketRef.current.send(JSON.stringify({ "Start": "Start games" }));
+    //     }
+    // }
 
     useEffect(() => {
         if (tournamentCode) {
@@ -167,37 +204,43 @@ function Tournament() {
         ]
     );
 
+    // tournamentResponse.status === "timer"
     return (
         <Template>
-           <div className="tournament background h-100 w-100">
-            <div className="w-100" style={{ position: "absolute", height: "10%", marginTop: "3%" }}>
-                    <div className="tournament-text d-flex flex-row w-100">
-                        <div className="d-flex flex-column h-100 w-25">Tournament Code</div>
-                        <div className="d-flex flex-column h-100 w-25">Time</div>
-                        <div className="d-flex flex-column h-100 w-25">Max Score</div>
-                        <div className="d-flex flex-column h-100 w-25">Players</div>
-                    </div>
-                    <div className="tournament-text d-flex flex-row w-100">
-                        <div className="d-flex flex-column h-100 w-25">{tournamentResponse?.code || "X"} </div>
-                        <div className="d-flex flex-column h-100 w-25">
-                            {String(tournamentResponse?.timeMaxMinutes || "00").padStart(2, "0")} : {String(tournamentResponse?.timeMaxSecondes || "00").padStart(2, "0")}
+            {isRunning ? (
+                <div className="h-100 w-100 d-flex" style={{ backgroundColor: 'black', alignItems: 'center', justifyContent:'center', textAlign: 'center'}}>
+                    <span className="counter" style={{ fontSize: '30rem'}}>{seconds}</span>
+                </div>
+           ) : (
+            <div className="tournament background h-100 w-100">
+                <div className="w-100" style={{ position: "absolute", height: "10%", marginTop: "3%" }}>
+                        <div className="tournament-text d-flex flex-row w-100">
+                            <div className="d-flex flex-column h-100 w-25">Tournament Code</div>
+                            <div className="d-flex flex-column h-100 w-25">Time</div>
+                            <div className="d-flex flex-column h-100 w-25">Max Score</div>
+                            <div className="d-flex flex-column h-100 w-25">Players</div>
                         </div>
-                        <div className="d-flex flex-column h-100 w-25">{tournamentResponse?.scoreMax || "0"}</div>
-                        <div className="d-flex flex-column h-100 w-25">{tournamentResponse?.size || "X"}</div>
+                        <div className="tournament-text d-flex flex-row w-100">
+                            <div className="d-flex flex-column h-100 w-25">{tournamentResponse?.code || "X"} </div>
+                            <div className="d-flex flex-column h-100 w-25">
+                                {String(tournamentResponse?.timeMaxMinutes || "00").padStart(2, "0")} : {String(tournamentResponse?.timeMaxSecondes || "00").padStart(2, "0")}
+                            </div>
+                            <div className="d-flex flex-column h-100 w-25">{tournamentResponse?.scoreMax || "0"}</div>
+                            <div className="d-flex flex-column h-100 w-25">{tournamentResponse?.size || "X"}</div>
+                        </div>
                     </div>
-                </div>
-                <div className="players-container d-flex flex-row w-100 " style={{ position: "absolute", height: "12%", marginTop: "11%", textAlign: `center`, alignItems: `center`, justifyContent: `center` }}>
-                    <div className="players-co">
-                        {renderPlayerImages(tournamentResponse?.size, tournamentResponse?.players_connected || 0)}
+                    <div className="players-container d-flex flex-row w-100 " style={{ position: "absolute", height: "12%", marginTop: "11%", textAlign: `center`, alignItems: `center`, justifyContent: `center` }}>
+                        <div className="players-co">
+                            {renderPlayerImages(tournamentResponse?.size, tournamentResponse?.players_connected || 0)}
+                        </div>
                     </div>
-                </div>
-                <MarioSection tournamentResponse={tournamentResponse} renderImageWithClick={renderImageWithClick} onStartTournament={startTournament}/>
-           <PacmanSection tournamentResponse={tournamentResponse} renderImageWithClick={renderImageWithClick}/>
-                <div className="tree-tournament" >
-                    <TournamentBracket numberPlayer={tournamentResponse?.size} tournamentResponse={tournamentResponse}/>
-                </div>
-           </div>
-  
+                    <MarioSection tournamentResponse={tournamentResponse} renderImageWithClick={renderImageWithClick} onStartTournament={startTournament}/>
+                    <PacmanSection tournamentResponse={tournamentResponse} renderImageWithClick={renderImageWithClick}/>
+                    <div className="tree-tournament" >
+                        <TournamentBracket numberPlayer={tournamentResponse?.size} tournamentResponse={tournamentResponse}/>
+                    </div>
+            </div>
+        )}
         </Template>
     );
 }

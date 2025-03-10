@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import logo from '../assets/user/logo.png';
 import './Template.css';
 import { isDataWithResponseInit } from '@remix-run/router';
@@ -21,6 +21,7 @@ function Template({ children, taskBarContent, launching, appArray }) {
     const { isAuthenticated } = useAuth();
     const desktopRef = useRef(null);
     const locate = useLocation();
+    const [isCreditOn, setIsCredit] = useState(false);
 
     const { t } = useTranslation();
 
@@ -46,9 +47,79 @@ function Template({ children, taskBarContent, launching, appArray }) {
         setIsDesktop(false);
     }
 
+    const handleInfoClick = (e) => {
+        e.stopPropagation();
+        setIsCredit(true);
+    };
 
     return (
         <div className="general container-fluid">
+            {isCreditOn ? (
+                    <div className="h-100 w-100 d-flex" style={{zIndex:'1', backgroundColor:'black', position:'absolute', color: 'white', padding: '5%', overflowY:'auto'}}>
+                        <table style={{ width: "100%", tableLayout: "relative", overflow: "hidden", zIndex: "12", pointerEvent:'cursor', alignItems: 'center', textAlign:'center' }} >
+                            <thead style={{fontSize: '2rem'}}>
+                                <tr>
+                                    <th
+                                        title={t('image')}
+                                    >{t('IMAGE')}</th>
+                                    <th
+                                        title={t('source')}
+                                    >{t('SOURCE')}</th>
+                                </tr>
+                            </thead>  
+                                <tbody>
+                                    <tr>
+                                        <td>background-collect</td>
+                                        <td>iStock</td>
+                                    </tr>
+                                    <tr>
+                                        <td>block, blockAfter </td>
+                                        <td>hiclipart</td>
+                                    </tr>
+                                    <tr>
+                                        <td>mario-init, mario-jump, mario-run-1, mario-run-2 </td>
+                                        <td>fandom</td>
+                                    </tr>
+                                    <tr>
+                                        <td>ghost2, ghost3, piece </td>
+                                        <td>pngegg</td>
+                                    </tr>
+                                    <tr>
+                                        <td>pacman </td>
+                                        <td>wallpapers</td>
+                                    </tr>
+                                    <tr>
+                                        <td>person, person-fill, power, innfo, home, profile, check, edit, friends, gear, x </td>
+                                        <td>boostrap</td>
+                                    </tr>
+                                    <tr>
+                                        <td>bronze, silver, gold </td>
+                                        <td>flaticon</td>
+                                    </tr>
+                                    <tr>
+                                        <td>EXIT </td>
+                                        <td>vecteezy</td>
+                                    </tr>
+                                    <tr>
+                                        <td>1prize, 2prize, 3prize </td>
+                                        <td>CleanPNG</td>
+                                    </tr>
+                                    <tr>
+                                        <td>loading </td>
+                                        <td>Gifer</td>
+                                    </tr>
+                                    <tr>
+                                        <td>waiting </td>
+                                        <td>icon8</td>
+                                    </tr>    
+                                    <tr>
+                                        <td>logo </td>
+                                        <td>42.fr</td>
+                                    </tr>  
+                            </tbody>
+                        </table>
+                    </div>
+                ) : null}
             <div className="content-area" onClick={handleClickOutside}>{children}</div>
             <div className="task-bar">
                 <div className='left-task'>
@@ -60,10 +131,9 @@ function Template({ children, taskBarContent, launching, appArray }) {
                     />
                 </div>
                 <div className="border-start border-2 border-black border-opacity-25 h-75"></div>          
-
                 {isDesktop && (
                     <div className="desktop-overlay" ref={desktopRef}>
-                        <div className="desktop-content">
+                        <div className="desktop-content" onClick={() => setIsCredit(false)}>
                             <div className="application-desktop d-flex flex-column bd-highlight mb-3">
                                 {!isAuthenticated && <div
                                     className="p-2 bd-highlight flex-item"
@@ -113,6 +183,7 @@ function Template({ children, taskBarContent, launching, appArray }) {
                                 {isAuthenticated && 
                                     <>
                                     <div className="template-icons w-100" style={{ position: 'absolute', left:'0%', height:'10%' }}>
+                                        <img src={info} alt="info" title="Credits" style={{ width: '24px', height: '24px', cursor: 'pointer', margin:'2%' }} onClick={handleInfoClick}/>
                                         <img src={profile} alt="Profile" title="Profile" style={{ width: '24px', height: '24px', cursor: 'pointer', margin:'2%' }} onClick={() => navigate("/home", { state: { modalName: "profile" } })} />
                                         <img src={home} alt="Home" title="Home" style={{ width: '24px', cursor: 'pointer', margin:'2%' }} onClick={() => navigate("/home")} />
                                         <img src={power} alt="Power" title="logout" style={{ width: '24px', height: '24px', cursor: 'pointer', margin:'2%'}} onClick={() => navigate("/logout")} />
