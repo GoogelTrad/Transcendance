@@ -9,11 +9,10 @@ import os
 from django.core.exceptions import ValidationError
 from channels.db import database_sync_to_async
 from game.models import Game
+import re
 
 
 from asgiref.sync import sync_to_async
-from django.contrib.auth.hashers import make_password, check_password
-import re
 
 @sync_to_async
 def get_user_by_name(username):
@@ -33,7 +32,7 @@ def get_room_messages(room_name, user):
 
         for msg in messages:
             if not isinstance(msg.user, User):
-                print(f"Message {msg.id} has invalid user: {msg.user}", flush=True)
+                print(f"Message {msg.id} has invalid user: {msg.user}")
         serializer = MessageSerializer(filtered_messages, many=True)
 
         return serializer.data
@@ -75,7 +74,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         self.room_name = self.scope['url_route']['kwargs']['room']
 
         if not re.match(r'^[0-9a-zA-Z]+$', self.room_name):
-            await self.accept()  # Accepter la connexion pour envoyer un message
+            await self.accept()
             await self.send({
                 "type": "error",
                 "error": f"Invalid room name: {self.room_name}. Use only alphanumeric characters."
@@ -116,9 +115,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
         if message_type == 'send_message':
             await self.sendMessage(data.get('message'))
         elif message_type == 'create_room':
-            await self.createRoom(data.get('room_name'), data.get('password'), data.get('invited_user_id'))
+            await self.createRoom(data.get('room_name'), data.get('invited_user_id'))
         elif message_type == 'join_room':
-            await self.joinRoom(data.get('room_name'), data.get('password'), data.get('dmname'))
+            await self.joinRoom(data.get('room_name'), data.get('dmname'))
 
     async def send(self, data, bytes_data = None, close = False):
         text_data = json.dumps(data)
@@ -140,7 +139,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         return list(result)
 
     
-    async def createRoom(self, room_name, password = None, invited_user_id = None):
+    async def createRoom(self, room_name, invited_user_id = None):
         if not room_name:
             await self.send({
                 "type": "error",
@@ -151,7 +150,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
         
         try:
             room: Room = await Room.objects.aget(name=room_name)
-            print("HEYYYY", flush=True)
             await self.send({
                 "type": "error",
                 "status": False,
@@ -170,20 +168,11 @@ class ChatConsumer(AsyncWebsocketConsumer):
             })
             return
 
-        if password:
-            room = Room(
-                createur=self.user,
-                password=make_password(password),
-                name=room_name,
-                dm=True if invited_user_id is not None else False
-            )
-        else:
-            room = Room(
-                createur=self.user,
-                password=password,
-                name=room_name,
-                dm=True if invited_user_id is not None else False
-            )
+        room = Room(
+            createur=self.user,
+            name=room_name,
+            dm=True if invited_user_id is not None else False
+        )
 
         try:
             await sync_to_async(room.full_clean)()
@@ -211,7 +200,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def deleteRoom(self, room_name):
         pass
 
-    async def joinRoom(self, room_name, password=None, dmname=None):
+    async def joinRoom(self, room_name, dmname=None):
         try:
             room = await Room.objects.aget(name=room_name)
         except Room.DoesNotExist:
@@ -229,15 +218,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     "type": "error",
                     "status": False,
                     "error": "You are not authorized to join this DM."
-                })
-                return
-       
-        if password:
-            if check_password(room.password, password):
-                await self.send({
-                    "type": "error",
-                    "status": False,
-                    "error": "Invalid password"
                 })
                 return
 
@@ -408,13 +388,12 @@ class NotificationConsumer(AsyncWebsocketConsumer):
             if response == "accept":
                 game_data = await self.create_Game_Multi(sender_id, target_id)
                 if game_data:
-                    # Passer les IDs à start_game au lieu des noms
                     await self.start_game(game_data['id'], sender_id, target_id)
                     channel_layer = get_channel_layer()
                     await self.channel_layer.group_send(
                         f"user_{sender_id}",
                         {
-                            "type": "game_created",  # Changement pour un type plus clair
+                            "type": "game_created",
                             "game_id": game_data['id'],
                             "player1": game_data['player1'],
                             "player2": game_data['player2'],
@@ -465,7 +444,6 @@ class NotificationConsumer(AsyncWebsocketConsumer):
                 'player2': game.player2,
             }
         except Exception as e:
-            print(f"Error creating game directly: {e}", flush=True)
             return None
 
     async def create_Game_Multi(self, player1, player2):
@@ -473,7 +451,6 @@ class NotificationConsumer(AsyncWebsocketConsumer):
         if game_data:
             return game_data
         else:
-            print("Failed to create game in create_Game_Multi", flush=True)
             return None
 
     async def game_update(self, event):

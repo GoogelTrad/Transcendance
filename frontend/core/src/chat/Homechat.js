@@ -23,7 +23,6 @@ export default function HomeChat() {
 	const { userInfo, refreshUserInfo, isAuthenticated} = useAuth();
 	const socket = useSocket('chat', 'public');
 	const [createName, setCreateRoomName] = useState("");
-	const [createpassword, setCreatePassword] = useState("");
 	const [createdRoomName, setCreatedRoomName] = useState("");
 	const [showCreatePublicRoom, setShowCreatePublicRoom] = useState(false);
 	const [isCreateSwitchOn, setIsCreateSwitchOn] = useState(false);
@@ -39,7 +38,6 @@ export default function HomeChat() {
 	const navigate = useNavigate();
 
 	const handleChangeCreateRoom = (e) => setCreateRoomName(e.target.value);
-	const handleChangeCreatePassword = (e) => setCreatePassword(e.target.value);
 
 	const handleCreateToggle = () => { setIsCreateSwitchOn(!isCreateSwitchOn) };
 
@@ -59,13 +57,11 @@ export default function HomeChat() {
 			socket.on("create_room", (data) => {
 				if (data.status) {
 					setCreatedRoomName(data.room_name);
-					//showToast("message", data.message);
 					navigate(`/room/${data.room_name}`);
 				}
 			});
 			socket.on("join_room", (data) => {
 				if (data.status) {
-					//showToast("message", data.message);
 					navigate(`/room/${data.room_name}`);
 				}
 			});
@@ -84,19 +80,17 @@ export default function HomeChat() {
 			socket.send({
 				type: "create_room",
 				room_name: roomName,
-				password: createpassword,
 				invited_user_id,
 				invitation_required: true
 			});
 		}
 	};
 
-	const joinRoom = (name, password = null, dmname = null) => {
+	const joinRoom = (name, dmname = null) => {
 		if (socket.ready) {
 			socket.send({
 				type: "join_room",
 				room_name: name,
-				password: password,
 				dmname
 			});
 		}
@@ -211,16 +205,7 @@ export default function HomeChat() {
 			return;
 		}
 
-		if (room.password) {
-			const enteredPassword = prompt(`${t('PasswordRequired')} "${room.name}" :`);
-			if (enteredPassword) {
-				joinRoom(room.name, enteredPassword);
-			} else {
-				showToast("error", t('Toasts.Oui'));
-			}
-		} else {
-			joinRoom(room.name, null, dmname);
-		}
+		joinRoom(room.name, dmname);
 	}
 
 	const handleProfile = (user_id) => {
@@ -248,29 +233,10 @@ export default function HomeChat() {
 				<div className="create-public-room">
 					{showCreatePublicRoom ? (
 						<>
-							<div className="form-check form-switch">
-								<input className="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckDefault" checked={isCreateSwitchOn} onChange={handleCreateToggle} />
-								<label className="form-check-label" htmlFor="flexSwitchCheckDefault">{isCreateSwitchOn ? t('Private') : t('Public')}</label>
-							</div>
-
-							{!isCreateSwitchOn && (
-								<>
-									<input type="text" placeholder={t('RoomName')} value={createName} onChange={handleChangeCreateRoom} />
-									<button onClick={() => setShowCreatePublicRoom(false)}>{t('Cancel')}</button>
-									<button onClick={() => createRoom(createName)}>{t('NewRoom')}</button>
-									{socket && createdRoomName && <Room/>}
-								</>
-							)}
-
-							{isCreateSwitchOn && (
-								<>
-									<input type="text" placeholder={t('RoomName')} value={createName} onChange={handleChangeCreateRoom} />
-									<input type="password" placeholder={t('Password')} value={createpassword} onChange={handleChangeCreatePassword} />
-									<button onClick={() => setShowCreatePublicRoom(false)}>{t('Cancel')}</button>
-									<button onClick={() => createRoom(createName)}>{t('NewRoom')}</button>
-									{socket && createdRoomName && <Room/>}
-								</>
-							)}
+							<input type="text" placeholder={t('RoomName')} value={createName} onChange={handleChangeCreateRoom} />
+							<button onClick={() => setShowCreatePublicRoom(false)}>{t('Cancel')}</button>
+							<button onClick={() => createRoom(createName)}>{t('NewRoom')}</button>
+							{socket && createdRoomName && <Room/>}
 						</>
 					) : (
 						<button onClick={() => setShowCreatePublicRoom(true)}>{t('NewRoom')}</button>
@@ -281,7 +247,7 @@ export default function HomeChat() {
 						{listrooms && listrooms.map((room, index) => (
 							<li key={index}>
 								<Link to={`/room/${room.name}`} onClick={(e) => handleRoomClick(e, room)}>
-									{room.name} {room.password && "🔒"}
+									{room.name}
 								</Link>
 							</li>
 						))}

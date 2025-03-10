@@ -68,7 +68,6 @@ export default function Room() {
 			});
 			socket.on('join_room', (data) => {
 				if (data.status) {
-					showToast("message", data.message);
 					navigate(`/room/${data.room_name}`);
 				}
 			});
@@ -101,12 +100,11 @@ export default function Room() {
 		}
 	};
 
-	const joinRoom = (name, password = null) => {
+	const joinRoom = (name) => {
 		if (socket.ready) {
 			socket.send({
 				type: "join_room",
-				room_name: name,
-				password: password,
+				room_name: name
 			});
 		}
 	};
@@ -138,16 +136,6 @@ export default function Room() {
 			return;
 		}
 
-		if (room.password) {
-			const enteredPassword = prompt(`${t('PasswordRequired')} "${room.name}" :`);
-			if (enteredPassword) {
-				clearRoom();
-				joinRoom(room.name, enteredPassword);
-			} 
-			else {
-				showToast("error", t('Toasts.EnterPassword'));
-			}
-		}
 		if (dmrooms.some(room => room.name === roomName) && roomName !== room.name) {
 			console.log("je rejoins une room depuis un dm");
 			joinRoom(room.name);
@@ -238,7 +226,7 @@ export default function Room() {
 							{listrooms.map((room, index) => (
 								<li key={index}>
 									<Link to={`/room/${room.name}`} onClick={(e) => handleRoomClick(e, room)}>
-										{room.name} {room.password && "🔒"}
+										{room.name}
 									</Link>
 								</li>
 							))}
