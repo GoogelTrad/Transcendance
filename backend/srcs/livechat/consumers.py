@@ -65,7 +65,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             return None
 
     async def connect(self):
-        if not self.scope['cookies']['token']:
+        if not self.scope['cookies'].get('token', None):
             await self.close()
             return
         self.user = await self.getUsers()

@@ -77,14 +77,13 @@ function Profile({id})
 	const [isPermitted, setIsPermitted] = useState(false);
 	const [isStud, setIsStud] = useState(false);
 	const [is2fa, setIs2fa] = useState(false);
-	const [friendList, setFriendList] = useState([]);
+	const [friendList, setFriendList] = useState({ friends: [] });
 	const { userInfo, refreshUserInfo } = useAuth();
-	let friends = friendList?.friends || [];
 
 	const fetchFriendList = async () => {
 
 		try {
-			const reponse = await axiosInstance.get(`/api/friends/list/${id}`);
+			const reponse = await axiosInstance.get(`/api/friends/list/${userInfo?.id}`);
 			setFriendList(reponse.data);
 		}
 		catch(error) {
@@ -164,7 +163,6 @@ function Profile({id})
 			fetchUserData();
 			fetchFriendList();
 		}
-		friends = friendList?.friends || [];
     }, [id]);
 
 	useEffect(() => {
@@ -230,7 +228,7 @@ function Profile({id})
 						:
 						(
 							<>
-								{!friends.some(friend => friend.id === user.id) && (
+								{!friendList.friends.some((friend) => friend.id === user.id) && (
 									<div>
 										<AddFriend id={user.id} />
 									</div>

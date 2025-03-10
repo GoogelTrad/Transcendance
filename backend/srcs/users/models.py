@@ -5,6 +5,7 @@ from datetime import timedelta
 from django.utils import timezone
 import uuid
 import datetime
+import os
 
 class User(AbstractUser):
     name = models.CharField(max_length=32, unique=True)
@@ -33,9 +34,11 @@ class ValidToken(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     
     def clean_expired_tokens(self):
-        expiration_time = now() - timedelta(hours=1)
+        expiration_time = timezone.now() - timedelta(seconds=int(os.getenv('TOKEN_TIME')))
         ValidToken.objects.filter(created_at__lt=expiration_time).delete()
-        
+
+    def is_expired(self):
+        return timezone.now() > (self.created_at + timedelta(seconds=int(os.getenv('TOKEN_TIME'))))
 
 class ConfirmationCode(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
