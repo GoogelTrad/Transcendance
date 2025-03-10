@@ -48,7 +48,7 @@ export default function useNotifications() {
 		return () => {
 			ws.close();
 		};
-	}, []);
+	}, [navigate]);
 
 	useEffect(() => {}, [notifications]);
 

@@ -23,5 +23,3 @@ i18n
       return 'Oops, we forgot to translate this!';
     },
   });
-
-export default i18n;

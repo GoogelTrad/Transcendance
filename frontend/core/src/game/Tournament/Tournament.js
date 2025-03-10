@@ -72,7 +72,7 @@ function Tournament() {
     const fetchTournement = async () => {
         try {
             const response = await axiosInstance.get(`/api/game/fetch_data_tournament_by_code/${tournamentCode}`);
-            if (response.data.status == "aborted" || response.data.status == "finished"){
+            if (response.data.status === "aborted" || response.data.status === "finished"){
                 if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
                     socketRef.current.close();
                     socketRef.current = null;
@@ -109,8 +109,7 @@ function Tournament() {
     }, [isRunning]);
 
     const startTournament = () => {
-
-        if (tournamentResponse.players_connected != tournamentResponse.size) {
+        if (tournamentResponse.players_connected !== tournamentResponse.size) {
             showToast("error", t(`need ${tournamentResponse.size} players`));
             return;
         }
@@ -216,10 +215,10 @@ function Tournament() {
             <div className="tournament background h-100 w-100">
                 <div className="w-100" style={{ position: "absolute", height: "10%", marginTop: "3%" }}>
                         <div className="tournament-text d-flex flex-row w-100">
-                            <div className="d-flex flex-column h-100 w-25">Tournament Code</div>
-                            <div className="d-flex flex-column h-100 w-25">Time</div>
-                            <div className="d-flex flex-column h-100 w-25">Max Score</div>
-                            <div className="d-flex flex-column h-100 w-25">Players</div>
+                            <div className="d-flex flex-column h-100 w-25">{t('TournamentCode')}</div>
+                            <div className="d-flex flex-column h-100 w-25">{t('MaxScore')}</div>
+                            <div className="d-flex flex-column h-100 w-25">{t('Time')}</div>
+                            <div className="d-flex flex-column h-100 w-25">{t('Players')}</div>
                         </div>
                         <div className="tournament-text d-flex flex-row w-100">
                             <div className="d-flex flex-column h-100 w-25">{tournamentResponse?.code || "X"} </div>

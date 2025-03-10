@@ -61,10 +61,10 @@ function Template({ children, taskBarContent, launching, appArray }) {
                                 <tr>
                                     <th
                                         title={t('image')}
-                                    >{t('IMAGE')}</th>
+                                    >{t('Image')}</th>
                                     <th
                                         title={t('source')}
-                                    >{t('SOURCE')}</th>
+                                    >{t('Source')}</th>
                                 </tr>
                             </thead>  
                                 <tbody>

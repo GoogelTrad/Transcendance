@@ -1,11 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axiosInstance from '../instance/AxiosInstance';
-import { jwtDecode } from 'jwt-decode';
 import { showToast } from '../instance/ToastsInstance';
-import { Link } from 'react-router-dom';
-import ModalInstance from '../instance/ModalInstance';
 import { useAuth } from '../users/AuthContext'; 
-import Profile from '../users/Profile';
 import "./Friends.css"
 import friends from './../assets/user/friends.svg'
 

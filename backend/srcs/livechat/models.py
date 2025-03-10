@@ -10,7 +10,6 @@ class Room(models.Model):
 
     creation = models.DateTimeField(auto_now_add=True)
     createur = models.ForeignKey(User, on_delete=models.PROTECT, related_name="rooms_create")
-    password = models.CharField(max_length=255, blank=True, null=True)
     users = models.ManyToManyField(User, related_name="rooms", blank=False)
     name = models.CharField(max_length=15, validators=[name_validator], blank=False, unique=True)
     dm = models.BooleanField(default=False)

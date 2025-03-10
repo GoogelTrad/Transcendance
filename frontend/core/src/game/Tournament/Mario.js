@@ -7,6 +7,7 @@ import marioJump from '../../assets/game/mario-jump.png';
 import blockAfter from '../../assets/game/blockAfter.png';
 import piece from '../../assets/game/piece.png';
 import './Tournament.css';
+import { useTranslation } from 'react-i18next';
 
 const MarioSection = ({ tournamentResponse, renderImageWithClick, onKickPlayer, onStartTournament }) => {
     const [marioData, setMarioData] = useState({
@@ -19,6 +20,8 @@ const MarioSection = ({ tournamentResponse, renderImageWithClick, onKickPlayer, 
         title: false,
     });
 
+    const { t } = useTranslation();
+    
     useEffect(() => {
         const interval = setInterval(() => {
             setMarioData((prev) => ({
@@ -186,7 +189,7 @@ const MarioSection = ({ tournamentResponse, renderImageWithClick, onKickPlayer, 
                                     fontSize: 'clamp(0.5rem, 1.7vw, 1rem)',
                                 }}
                             >
-                                ••• players •••
+                                ••• {t('Players')} •••
                             </div>
                         )}
 
@@ -219,7 +222,7 @@ const MarioSection = ({ tournamentResponse, renderImageWithClick, onKickPlayer, 
                                         fontWeight:'bold'
                                     }}
                                 >
-                                    START
+                                    {t('Start')}
                                 </button>
 
                                 <div
