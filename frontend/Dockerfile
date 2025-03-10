@@ -1,8 +1,7 @@
 FROM node:23-alpine3.19
 
-COPY core ./
-
 WORKDIR /home/frontend/core/
+COPY core ./
 
 RUN npm install
 RUN npm install react-scripts
